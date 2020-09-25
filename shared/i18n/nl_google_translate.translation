@@ -78,7 +78,8 @@
       },
       "translated": "Kopiëren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -942,7 +943,8 @@
       },
       "translated": "hier",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -1158,7 +1160,8 @@
       },
       "translated": "Server wachtwoord",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -1239,7 +1242,8 @@
       },
       "translated": "Opnieuw verbinding maken ...",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -1743,7 +1747,8 @@
       },
       "translated": "Beheer bladwijzers",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -1752,7 +1757,8 @@
       },
       "translated": "Voeg huidige server toe aan bladwijzers",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -1779,7 +1785,8 @@
       },
       "translated": "Verbreek de verbinding met de huidige server",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -1788,7 +1795,8 @@
       },
       "translated": "Verbreek de verbinding met alle servers",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -1815,7 +1823,8 @@
       },
       "translated": "Rechten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -1824,7 +1833,8 @@
       },
       "translated": "Servergroepen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -1833,7 +1843,8 @@
       },
       "translated": "Clientmachtigingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -1851,7 +1862,8 @@
       },
       "translated": "Kanaalgroepen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -1860,7 +1872,8 @@
       },
       "translated": "Kanaalrechten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -2121,7 +2134,8 @@
       },
       "translated": "Instellingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3345,7 +3359,8 @@
       },
       "translated": "Opnieuw afspelen onderbroken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3354,7 +3369,8 @@
       },
       "translated": "Bufferen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3363,7 +3379,8 @@
       },
       "translated": "Video is afgelopen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3372,7 +3389,8 @@
       },
       "translated": "Spelen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3381,7 +3399,8 @@
       },
       "translated": "bezig met laden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3390,7 +3409,8 @@
       },
       "translated": "onbekende spelersstatus",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3408,7 +3428,8 @@
       },
       "translated": "Ontvolgen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3417,7 +3438,8 @@
       },
       "translated": "Watcher lijst",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3534,7 +3556,8 @@
       },
       "translated": "W2G - Volgen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3543,7 +3566,8 @@
       },
       "translated": "W2G - Watcher",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3894,7 +3918,8 @@
       },
       "translated": "Bezig met laden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3903,7 +3928,8 @@
       },
       "translated": "Geen enkele variabele kwam overeen met uw filter",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3912,7 +3938,8 @@
       },
       "translated": "Filter variabelen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3921,7 +3948,8 @@
       },
       "translated": "CSS-variabelenlijst",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3930,7 +3958,8 @@
       },
       "translated": "Naam",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3939,7 +3968,8 @@
       },
       "translated": "Standaardwaarde",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3948,7 +3978,8 @@
       },
       "translated": "Waarde overschrijven",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3957,7 +3988,8 @@
       },
       "translated": "Willekeurig maken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3966,7 +3998,8 @@
       },
       "translated": "Reset",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3984,7 +4017,8 @@
       },
       "translated": "Exporteren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -3993,7 +4027,8 @@
       },
       "translated": "Importeren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -4002,7 +4037,8 @@
       },
       "translated": "Variabele details",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -4353,7 +4389,8 @@
       },
       "translated": "Dichtbij",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -4884,7 +4921,8 @@
       },
       "translated": "Profiel is geldig",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5505,7 +5543,8 @@
       },
       "translated": "De microfoontoegang is geblokkeerd door uw browser.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5514,7 +5553,8 @@
       },
       "translated": "Verleen alstublieft toegang tot uw microfoon.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5523,7 +5563,8 @@
       },
       "translated": "Toegang vragen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5550,7 +5591,8 @@
       },
       "translated": "Het afspelen van webaudio is nog niet geïnitialiseerd.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5559,7 +5601,8 @@
       },
       "translated": "Klik ergens op de basis om deze te initialiseren.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5613,7 +5656,8 @@
       },
       "translated": "Bijwerken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5622,7 +5666,8 @@
       },
       "translated": "Volume",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5640,7 +5685,8 @@
       },
       "translated": "Vertraging bij Push to Talk",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5649,7 +5695,8 @@
       },
       "translated": "Push to Talk",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5658,7 +5705,8 @@
       },
       "translated": "Detectie van spraakactiviteit",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5667,7 +5715,8 @@
       },
       "translated": "Altijd actief",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5676,7 +5725,8 @@
       },
       "translated": "\r\n            Ten eerste moeten we een microfoon instellen.\n\r\n            Ik zal u door de basiselementen van de gebruikersinterface leiden.\n\r\n            \n\r\n            Klik ergens op het scherm om door te gaan.\r\n        ",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5685,7 +5735,8 @@
       },
       "translated": "\r\n            Al uw beschikbare microfoons worden in dit vak weergegeven.\n\r\n            \n\r\n            De momenteel geselecteerde microfoon\n\r\n            is gemarkeerd met een groen vinkje. Om de geselecteerde microfoon te wijzigen\n\r\n            klik gewoon op de nieuwe.\n\r\n            \n\r\n            Klik ergens op het scherm om door te gaan.\r\n        ",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5694,7 +5745,8 @@
       },
       "translated": "TeaSpeak heeft drie soorten detectie van spraakactiviteit:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5703,7 +5755,8 @@
       },
       "translated": "\r\n                    Om audiogegevens te verzenden, moet u\n\r\n                    druk op een knop. De sleutel kan worden geselecteerd via de knop rechts naast het keuzerondje\r\n                ",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5712,7 +5765,8 @@
       },
       "translated": "\r\n                    In deze modus analyseert TeaSpeak continu uw microfooninvoer.\r\n                    Als het audioniveau rasper is dan een bepaalde drempel,\r\n                    de audio wordt verzonden.\r\n                    De drempel kan worden gewijzigd via de schuifregelaar \"Gevoeligheidsinstellingen\"\r\n                ",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5721,7 +5775,8 @@
       },
       "translated": "Verzend continu alle audiogegevens.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5730,7 +5785,8 @@
       },
       "translated": "\r\n                Nu ben je klaar om je microfoon te configureren.\n\r\n                Klik gewoon ergens op het scherm.\r\n            ",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5739,7 +5795,8 @@
       },
       "translated": "Selecteer uw microfoonapparaat",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5748,7 +5805,8 @@
       },
       "translated": "Microfooninstellingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5757,7 +5815,8 @@
       },
       "translated": "Gevoeligheidsinstellingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -5766,7 +5825,8 @@
       },
       "translated": "Geavanceerde instellingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6000,7 +6060,8 @@
       },
       "translated": "Verbinden met de server",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6063,7 +6124,8 @@
       },
       "translated": "uitgeschakeld",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6090,7 +6152,8 @@
       },
       "translated": "Gisteren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6099,7 +6162,8 @@
       },
       "translated": "Vandaag",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6108,7 +6172,8 @@
       },
       "translated": "Ongelezen berichten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6117,7 +6182,8 @@
       },
       "translated": "oudere berichten laden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6126,7 +6192,8 @@
       },
       "translated": "even geduld aub",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6144,7 +6211,8 @@
       },
       "translated": "Laad oudere berichten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6153,7 +6221,8 @@
       },
       "translated": "Geschiedenisquery is mislukt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6162,7 +6231,8 @@
       },
       "translated": "Probeer het opnieuw in",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6180,7 +6250,8 @@
       },
       "translated": "Spring om te presenteren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6189,7 +6260,8 @@
       },
       "translated": "Je bent lid geworden van",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6198,7 +6270,8 @@
       },
       "translated": "Je vertrok om",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6207,7 +6280,8 @@
       },
       "translated": "kan de geschiedenis niet opvragen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6216,7 +6290,8 @@
       },
       "translated": "het verzenden van het bericht is mislukt vanwege toestemming",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6225,7 +6300,8 @@
       },
       "translated": "bericht niet verzonden:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6243,7 +6319,8 @@
       },
       "translated": "U bent & nbsp; nu & nbsp; aan het chatten & nbsp; met",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6252,7 +6329,8 @@
       },
       "translated": "U heeft de verbinding met de server verbroken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6261,7 +6339,8 @@
       },
       "translated": "Chat opnieuw verbonden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6270,7 +6349,8 @@
       },
       "translated": "Je chatpartner heeft het gesprek gesloten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6279,7 +6359,8 @@
       },
       "translated": "Uw chatpartner heeft de verbinding verbroken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6288,7 +6369,8 @@
       },
       "translated": "Je chatpartner heeft weer verbinding",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6297,7 +6379,8 @@
       },
       "translated": "Partner is aan het typen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6315,7 +6398,8 @@
       },
       "translated": "Geen gesprek geselecteerd",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6333,7 +6417,8 @@
       },
       "translated": "Dit gesprek is privé.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6342,7 +6427,8 @@
       },
       "translated": "Word lid van het kanaal om deel te nemen.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6351,7 +6437,8 @@
       },
       "translated": "Je hebt geen toestemming om deel te nemen aan dit gesprek!",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6360,7 +6447,8 @@
       },
       "translated": "De doelserver ondersteunt geen chat tussen kanalen.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6369,7 +6457,8 @@
       },
       "translated": "Word lid van het kanaal als je wilt schrijven.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6378,7 +6467,8 @@
       },
       "translated": "Er zijn nog geen berichten.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6387,7 +6477,8 @@
       },
       "translated": "Wees de eerste die hier praat!",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6396,7 +6487,8 @@
       },
       "translated": "Scroll naar nieuwe berichten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6513,7 +6605,8 @@
       },
       "translated": "Onbekend",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -6657,7 +6750,8 @@
       },
       "translated": "bezig met laden...",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -7080,7 +7174,8 @@
       },
       "translated": "Informatie",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -7152,7 +7247,8 @@
       },
       "translated": "Kanaal",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -7170,7 +7266,8 @@
       },
       "translated": "Creëer",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -7179,7 +7276,8 @@
       },
       "translated": "Aanpassen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -7188,7 +7286,8 @@
       },
       "translated": "Verwijderen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -7251,7 +7350,8 @@
       },
       "translated": "Cliënt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -7818,7 +7918,8 @@
       },
       "translated": "URL:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8034,7 +8135,8 @@
       },
       "translated": "Maak verbinding met een server op een ander tabblad",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8079,7 +8181,8 @@
       },
       "translated": "Aansluiten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8088,7 +8191,8 @@
       },
       "translated": "Maak verbinding op een nieuw tabblad",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8097,7 +8201,8 @@
       },
       "translated": "Online gaan",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8106,7 +8211,8 @@
       },
       "translated": "Zet weg op deze server",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8115,7 +8221,8 @@
       },
       "translated": "Zet het bericht weg op deze server",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8124,7 +8231,8 @@
       },
       "translated": "Ga online voor alle servers",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8133,7 +8241,8 @@
       },
       "translated": "Zet weg op alle servers",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8142,7 +8251,8 @@
       },
       "translated": "Zet wegbericht voor alle servers",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8196,7 +8306,8 @@
       },
       "translated": "Verberg servervragen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8205,7 +8316,8 @@
       },
       "translated": "Serverquery's weergeven",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8214,7 +8326,8 @@
       },
       "translated": "Beheer servervragen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8331,7 +8444,8 @@
       },
       "translated": "Evenement",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8340,7 +8454,8 @@
       },
       "translated": "Focus",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8349,7 +8464,8 @@
       },
       "translated": "Trek de focus naar het raam wanneer de gebeurtenis plaatsvindt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8358,7 +8474,8 @@
       },
       "translated": "Melden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8367,7 +8484,8 @@
       },
       "translated": "Een systeemmelding verzenden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8376,7 +8494,8 @@
       },
       "translated": "Logboek",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8385,7 +8504,8 @@
       },
       "translated": "Leg de gebeurtenis vast in het logboek van de clientserver",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8394,7 +8514,8 @@
       },
       "translated": "Geen evenementen die overeenkomen met uw filter",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8403,7 +8524,8 @@
       },
       "translated": "Filter evenementen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8412,7 +8534,8 @@
       },
       "translated": "Meldingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8772,7 +8895,8 @@
       },
       "translated": "Instelsleutel",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8781,7 +8905,8 @@
       },
       "translated": "Omschrijving",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8808,7 +8933,8 @@
       },
       "translated": "Waarde",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8853,7 +8979,8 @@
       },
       "translated": "Lijst met instellingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8862,7 +8989,8 @@
       },
       "translated": "Editor instellen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8871,7 +8999,8 @@
       },
       "translated": "Algemeen instellingenregister",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8880,7 +9009,8 @@
       },
       "translated": "uren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8898,7 +9028,8 @@
       },
       "translated": "minuten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8916,7 +9047,8 @@
       },
       "translated": "seconden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -8970,7 +9102,8 @@
       },
       "translated": "fout",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -9015,7 +9148,8 @@
       },
       "translated": "en meer",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -9123,7 +9257,8 @@
       },
       "translated": "Sleutel wissen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -9132,7 +9267,8 @@
       },
       "translated": "Keymap",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -9141,7 +9277,8 @@
       },
       "translated": "We hebben de client voor je bijgewerkt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -9159,7 +9296,8 @@
       },
       "translated": "Van toepassing zijn",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -9168,7 +9306,8 @@
       },
       "translated": "annuleren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -9177,7 +9316,8 @@
       },
       "translated": "OK",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -9519,7 +9659,8 @@
       },
       "translated": "Begin",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -9591,7 +9732,8 @@
       },
       "translated": "Identiteit importeren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -10059,7 +10201,8 @@
       },
       "translated": "Toestemmingen voor clientkanaal",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -10068,7 +10211,8 @@
       },
       "translated": "Serverrechten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -10608,7 +10752,8 @@
       },
       "translated": "Kopieer groepsrechten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -10617,7 +10762,8 @@
       },
       "translated": "Brongroep",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -10626,7 +10772,8 @@
       },
       "translated": "Doelgroep",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -10761,7 +10908,8 @@
       },
       "translated": "Groepsnaam",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -10779,7 +10927,8 @@
       },
       "translated": "Type doelgroep",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -10806,7 +10955,8 @@
       },
       "translated": "Sjabloongroep",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -10815,7 +10965,8 @@
       },
       "translated": "Regelmatige groep",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -10824,7 +10975,8 @@
       },
       "translated": "Maak een groep met deze sjabloon",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -10878,7 +11030,8 @@
       },
       "translated": "Groep maken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -10896,7 +11049,8 @@
       },
       "translated": "Maak een nieuwe servergroep",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -10905,7 +11059,8 @@
       },
       "translated": "Maak een nieuwe kanaalgroep",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11148,7 +11303,8 @@
       },
       "translated": "Vernieuwen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11157,7 +11313,8 @@
       },
       "translated": "Deze groep bevat geen klanten.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11166,7 +11323,8 @@
       },
       "translated": "Deze groep is een tijdelijke groep.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11175,7 +11333,8 @@
       },
       "translated": "U heeft geen toestemming om de clients in deze groep te bekijken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11184,7 +11343,8 @@
       },
       "translated": "Kan geen query's uitvoeren op clients:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11193,7 +11353,8 @@
       },
       "translated": "Geen groep geselecteerd",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11328,7 +11489,8 @@
       },
       "translated": "Bijnaam",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11355,7 +11517,8 @@
       },
       "translated": "Pictogram bewerken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11364,7 +11527,8 @@
       },
       "translated": "Pictogram verwijderen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11373,7 +11537,8 @@
       },
       "translated": "Pictogram toevoegen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11382,7 +11547,8 @@
       },
       "translated": "Verberg klanten in groep",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11391,7 +11557,8 @@
       },
       "translated": "Toon klanten in groep",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11400,7 +11567,8 @@
       },
       "translated": "Filterrechten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11409,7 +11577,8 @@
       },
       "translated": "Alleen toegewezen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11688,7 +11857,8 @@
       },
       "translated": "Machtigingsnaam",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11724,7 +11894,8 @@
       },
       "translated": "Overspringen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11742,7 +11913,8 @@
       },
       "translated": "Negeer",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11760,7 +11932,8 @@
       },
       "translated": "Toegegeven",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -11778,7 +11951,8 @@
       },
       "translated": "U heeft geen toestemming om dit te bekijken\r\n                    rechten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12057,7 +12231,8 @@
       },
       "translated": "initialiseren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12660,7 +12835,8 @@
       },
       "translated": "Open het volledige wijzigingslogboek",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12669,7 +12845,8 @@
       },
       "translated": "UI-wijzigingslogboek",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12678,7 +12855,8 @@
       },
       "translated": "Client wijzigingslogboek",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12687,7 +12865,8 @@
       },
       "translated": "We hebben de webclient met succes voor u bijgewerkt.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12696,7 +12875,8 @@
       },
       "translated": "De webclient is bijgewerkt naar de versie van {}.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12705,7 +12885,8 @@
       },
       "translated": "We hebben met succes de native client en de gebruikersinterface bijgewerkt voor\r\n                u.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12714,7 +12895,8 @@
       },
       "translated": "De native client is bijgewerkt naar de versie van {}.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12723,7 +12905,8 @@
       },
       "translated": "De gebruikersinterface is bijgewerkt naar versie {}.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12732,7 +12915,8 @@
       },
       "translated": "We hebben met succes de native client bijgewerkt voor\r\n            u.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12741,7 +12925,8 @@
       },
       "translated": "De native client is bijgewerkt naar de versie {}.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12750,7 +12935,8 @@
       },
       "translated": "We hebben met succes de gebruikersinterface van de native clients bijgewerkt voor\r\n            u.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12759,7 +12945,8 @@
       },
       "translated": "De gebruikersinterface van de native client is bijgewerkt naar de versie van 18.08.2020.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12777,7 +12964,8 @@
       },
       "translated": "Welkom terug!",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12786,7 +12974,8 @@
       },
       "translated": "De client is bijgewerkt.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12795,7 +12984,8 @@
       },
       "translated": "Terwijl je weg was, rustten we wat werk.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12804,7 +12994,8 @@
       },
       "translated": "Een lijst met wijzigingen, bugfixes en nieuwe functies is hieronder te vinden.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -12813,7 +13004,8 @@
       },
       "translated": "Genieten!",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -13371,7 +13563,8 @@
       },
       "translated": "Spraak-echotest",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -13425,7 +13618,8 @@
       },
       "translated": "Spraakbrug aansluiten.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -13434,7 +13628,8 @@
       },
       "translated": "Voice bridge succesvol verbonden.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -13461,7 +13656,8 @@
       },
       "translated": "De spraakbrug is verwijderd. Ik probeer opnieuw verbinding te maken.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -13497,7 +13693,8 @@
       },
       "translated": "De server heeft een wachtwoord nodig om verbinding te maken.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -13506,7 +13703,8 @@
       },
       "translated": "voor",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -14550,7 +14748,8 @@
       },
       "translated": "Bezig met laden...",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -14604,7 +14803,8 @@
       },
       "translated": "IK P",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -14613,7 +14813,8 @@
       },
       "translated": "Unieke ID",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -14622,7 +14823,8 @@
       },
       "translated": "Hardware ID",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15117,7 +15319,8 @@
       },
       "translated": "Onbeperkt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15198,7 +15401,8 @@
       },
       "translated": "Bouwer voor ontbrekende logboekinvoer voor {0}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15243,7 +15447,8 @@
       },
       "translated": "Het tot stand brengen van een spraakverbinding is mislukt:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15252,7 +15457,8 @@
       },
       "translated": "De spraakverbinding is verbroken.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15261,7 +15467,8 @@
       },
       "translated": "Spraakverbinding wordt niet ondersteund door de server.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15270,7 +15477,8 @@
       },
       "translated": "Spraakverbinding wordt niet ondersteund door uw browser.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15279,7 +15487,8 @@
       },
       "translated": "Gebruik een andere browser.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15288,7 +15497,8 @@
       },
       "translated": "spraakverbinding tot stand brengen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15315,7 +15525,8 @@
       },
       "translated": "Echotest starten mislukt:\n{0}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15324,7 +15535,8 @@
       },
       "translated": "Proberen\r\n                    opnieuw",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15333,7 +15545,8 @@
       },
       "translated": "Echotests worden niet ondersteund door de\r\n                server.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15342,7 +15555,8 @@
       },
       "translated": "Gids voor probleemoplossing",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15351,7 +15565,8 @@
       },
       "translated": "Juiste microfoon geselecteerd?",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15360,7 +15575,8 @@
       },
       "translated": "Open Microfooninstellingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15369,7 +15585,8 @@
       },
       "translated": "Controleer binnen de instellingen of de juiste microfoon is geweest\r\n                                    geselecteerd.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15378,7 +15595,8 @@
       },
       "translated": "De indicatoren geven elke spraakactiviteit aan.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15387,7 +15605,8 @@
       },
       "translated": "Zijn er add-ons die de microfoontoegang blokkeren?",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15396,7 +15615,8 @@
       },
       "translated": "Sommige add-ons blokkeren mogelijk de toegang tot uw microfoon. Probeer alles uit te schakelen\r\n                                    addons en laad de site opnieuw.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15405,7 +15625,8 @@
       },
       "translated": "Is WebRTC ingeschakeld?",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15423,7 +15644,8 @@
       },
       "translated": "Laad de site opnieuw",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15432,7 +15654,8 @@
       },
       "translated": "In sommige gevallen lost het opnieuw laden van de site het probleem al op\r\n                                    u.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15441,7 +15664,8 @@
       },
       "translated": "Niets werkte? Dien een probleem in",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15450,7 +15674,8 @@
       },
       "translated": "forum",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15468,7 +15693,8 @@
       },
       "translated": "Test afbreken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15477,7 +15703,8 @@
       },
       "translated": "Nog een keer testen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15486,7 +15713,8 @@
       },
       "translated": "Laat dit zien bij de volgende verbinding",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15495,7 +15723,8 @@
       },
       "translated": "Welkom bij de privé-echotest. Hoor je jezelf praten?",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15549,7 +15778,8 @@
       },
       "translated": "Verbinding maken met {0} {1}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15558,7 +15788,8 @@
       },
       "translated": "Hostnaam omzetten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15567,7 +15798,8 @@
       },
       "translated": "Hostnaam is succesvol omgezet naar {0}: {1}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15576,7 +15808,8 @@
       },
       "translated": "Kan hostnaam niet vinden. Verbinding maken met de opgegeven hostnaam. Fout: {0}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15585,7 +15818,8 @@
       },
       "translated": "Inloggen...",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15594,7 +15828,8 @@
       },
       "translated": "Verbinding mislukt.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15603,7 +15838,8 @@
       },
       "translated": "Verbonden als {0}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15666,7 +15902,8 @@
       },
       "translated": "{0} verschenen van {1} aan {2}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15675,7 +15912,8 @@
       },
       "translated": "{0} leek te kanaliseren {1}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15684,7 +15922,8 @@
       },
       "translated": "{0} verscheen van {1} in {2}, verplaatst door {3}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15693,7 +15932,8 @@
       },
       "translated": "{0} verscheen aan {1}, verplaatst door {2}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15702,7 +15942,8 @@
       },
       "translated": "{0} verscheen van {1} in {2}, geschopt door {3} {4}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15711,7 +15952,8 @@
       },
       "translated": "{0} leek aan {1}, geschopt door {2} {3}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15720,7 +15962,8 @@
       },
       "translated": "Gebruiker de gebeurtenis laten invoeren met een ongeldige reden: {0}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15729,7 +15972,8 @@
       },
       "translated": "{0} is van {1} op uw kanaal verschenen {2}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15738,7 +15982,8 @@
       },
       "translated": "{0} is op je kanaal verschenen {1}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15747,7 +15992,8 @@
       },
       "translated": "{0} verscheen van {1} op je kanaal {2}, verplaatst door {3}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15756,7 +16002,8 @@
       },
       "translated": "{0} is op je kanaal verschenen {1}, verplaatst door {2}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15765,7 +16012,8 @@
       },
       "translated": "{0} verscheen van {1} op je kanaal {2}, geschopt door {3} {4}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15774,7 +16022,8 @@
       },
       "translated": "{0} verscheen op je kanaal {1}, geschopt door {2} {3}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15783,7 +16032,8 @@
       },
       "translated": "Gebruiker naar je kanaalevenement laten komen met een ongeldige reden: {0}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15792,7 +16042,8 @@
       },
       "translated": "{0} is verplaatst van kanaal {1} naar {2} door {3}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15801,7 +16052,8 @@
       },
       "translated": "{0} is overgeschakeld van kanaal {1} naar {2}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15810,7 +16062,8 @@
       },
       "translated": "{0} is van kanaal {1} naar {2} getrapt door {3} {4}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15819,7 +16072,8 @@
       },
       "translated": "Gebeurtenis door gebruiker laten verplaatsen met ongeldige reden: {0}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15828,7 +16082,8 @@
       },
       "translated": "Je bent door {3} verplaatst van kanaal {1} naar {2}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15837,7 +16092,8 @@
       },
       "translated": "U bent overgeschakeld van {1} naar {2}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15846,7 +16102,8 @@
       },
       "translated": "Je bent van het kanaal {1} naar kanaal {2} gezet door {3} {4}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15855,7 +16112,8 @@
       },
       "translated": "Met een eigen verplaatsingsgebeurtenis met een ongeldige reden: {0}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15864,7 +16122,8 @@
       },
       "translated": "{0} verdwenen van {1} naar {2}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15873,7 +16132,8 @@
       },
       "translated": "{0} heeft de server verlaten {1}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15882,7 +16142,8 @@
       },
       "translated": "{0} is van de server verwijderd door {1}. {2}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15891,7 +16152,8 @@
       },
       "translated": "{0} is door {2} van kanaal {1} geschopt. {3}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15900,7 +16162,8 @@
       },
       "translated": "permanent",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15918,7 +16181,8 @@
       },
       "translated": "{0} is verbannen {1} door {2}. {3}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15927,7 +16191,8 @@
       },
       "translated": "{0} time-out {1}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15936,7 +16201,8 @@
       },
       "translated": "{0} verdwenen van {1} naar {2}, verplaatst door {3}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15945,7 +16211,8 @@
       },
       "translated": "Klant het evenement laten verlaten met een ongeldige reden: {0}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15954,7 +16221,8 @@
       },
       "translated": "{0} verdwenen van je kanaal {1} naar {2}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15963,7 +16231,8 @@
       },
       "translated": "{0} verdwenen van je kanaal {1} naar {2}, verplaatst door {3}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15972,7 +16241,8 @@
       },
       "translated": "{0} heeft zijn bijnaam gewijzigd van \"{1}\" in \"{2}\"",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15981,7 +16251,8 @@
       },
       "translated": "Bijnaam is succesvol gewijzigd.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15990,7 +16261,8 @@
       },
       "translated": "Bijnaam wijzigen is mislukt: {0}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -15999,7 +16271,8 @@
       },
       "translated": "{} stuur een serverbericht: {1}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16008,7 +16281,8 @@
       },
       "translated": "Verbinding met de server verbroken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16026,7 +16300,8 @@
       },
       "translated": "Opnieuw verbinden geannuleerd.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16044,7 +16319,8 @@
       },
       "translated": "ooit",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16062,7 +16338,8 @@
       },
       "translated": "Reden:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16071,7 +16348,8 @@
       },
       "translated": "U bent door {0} gedurende {1} van de server verbannen. {2}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16080,7 +16358,8 @@
       },
       "translated": "U bent uitgesloten van de server voor {0}. {1}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16098,7 +16377,8 @@
       },
       "translated": "Server is gesloten ({}).",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16107,7 +16387,8 @@
       },
       "translated": "De server is gesloten.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16116,7 +16397,8 @@
       },
       "translated": "Opdrachtuitvoering resulteerde in: {}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16125,7 +16407,8 @@
       },
       "translated": "Kanaal {} is gemaakt door {}.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16134,7 +16417,8 @@
       },
       "translated": "Kanaal {} is gemaakt.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16143,7 +16427,8 @@
       },
       "translated": "Kanaal {} is verwijderd door {}.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16152,7 +16437,8 @@
       },
       "translated": "Kanaal {} is verwijderd.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16161,7 +16447,8 @@
       },
       "translated": "Je hebt {} gepord.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16170,7 +16457,8 @@
       },
       "translated": "Je hebt een por ontvangen van {}: {}",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16179,7 +16467,8 @@
       },
       "translated": "Je hebt een por gekregen van {}.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16197,7 +16486,8 @@
       },
       "translated": "dagen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16368,7 +16658,8 @@
       },
       "translated": "Bewerk",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16638,7 +16929,8 @@
       },
       "translated": "Bestandsverkenner",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16674,7 +16966,8 @@
       },
       "translated": "Kanaal heeft geen beschrijving",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16692,7 +16985,8 @@
       },
       "translated": "Speex smalband",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16701,7 +16995,8 @@
       },
       "translated": "Speex Wideband",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16710,7 +17005,8 @@
       },
       "translated": "Speex Ultra-Wideband",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16719,7 +17015,8 @@
       },
       "translated": "CELT Mono",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16728,7 +17025,8 @@
       },
       "translated": "Opus Voice",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16737,7 +17035,8 @@
       },
       "translated": "Opus Music",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16746,7 +17045,8 @@
       },
       "translated": "Permanent",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16764,7 +17064,8 @@
       },
       "translated": "Tijdelijk",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16854,7 +17155,8 @@
       },
       "translated": "Niet versleuteld",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -16863,7 +17165,8 @@
       },
       "translated": "Versleuteld",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -17556,7 +17859,8 @@
       },
       "translated": "Weg",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -17574,7 +17878,8 @@
       },
       "translated": "Luidsprekers / koptelefoon uitgeschakeld",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -17583,7 +17888,8 @@
       },
       "translated": "Microfoon uitgeschakeld",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -17592,7 +17898,8 @@
       },
       "translated": "Luidsprekers / koptelefoon gedempt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -17601,7 +17908,8 @@
       },
       "translated": "Microfoon gedempt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18186,7 +18494,8 @@
       },
       "translated": "het dossier",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18204,7 +18513,8 @@
       },
       "translated": "Directory",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18294,7 +18604,8 @@
       },
       "translated": "Kan directory niet opvragen:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18303,7 +18614,8 @@
       },
       "translated": "Time-out van directoryquery.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18312,7 +18624,8 @@
       },
       "translated": "Probeer het alsjeblieft\r\n                        opnieuw.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18321,7 +18634,8 @@
       },
       "translated": "Mapverzoek mislukt op toestemming",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18330,7 +18644,8 @@
       },
       "translated": "Directory-zoekopdracht is mislukt omdat deze met een wachtwoord is beveiligd",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18339,7 +18654,8 @@
       },
       "translated": "Deze map is leeg.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18375,7 +18691,8 @@
       },
       "translated": "Type",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18384,7 +18701,8 @@
       },
       "translated": "Grootte",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18510,7 +18828,8 @@
       },
       "translated": "Toon voltooide transfers",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18528,7 +18847,8 @@
       },
       "translated": "query fout",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18537,7 +18857,8 @@
       },
       "translated": "Geen lopende transfers",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18600,7 +18921,8 @@
       },
       "translated": "Het opvragen van het\r\n                bestandsoverdrachten:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18618,7 +18940,8 @@
       },
       "translated": "Nee\r\n                transfers",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18645,7 +18968,8 @@
       },
       "translated": "Bestandsoverdrachten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18654,7 +18978,8 @@
       },
       "translated": "Bestandsoverdrachten uitvoeren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -18663,7 +18988,8 @@
       },
       "translated": "Verwijderen\r\n                afgewerkt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -19014,7 +19340,8 @@
       },
       "translated": "Typen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -19023,7 +19350,8 @@
       },
       "translated": "Geen berichten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -19167,7 +19495,8 @@
       },
       "translated": "Uploaden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -19176,7 +19505,8 @@
       },
       "translated": "Downloaden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -19185,7 +19515,8 @@
       },
       "translated": "Hernoemen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -19896,7 +20227,8 @@
       },
       "translated": "Versie:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -19905,7 +20237,8 @@
       },
       "translated": "Je praat in Channel",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -19914,7 +20247,8 @@
       },
       "translated": "Uw ping",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -19923,7 +20257,8 @@
       },
       "translated": "Schakel over naar kanaalchat",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -19932,7 +20267,8 @@
       },
       "translated": "Beheer Bot",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -19941,7 +20277,8 @@
       },
       "translated": "Privéchats",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -19959,7 +20296,8 @@
       },
       "translated": "Nummer toevoegen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -19968,7 +20306,8 @@
       },
       "translated": "Upload Avatar",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -19977,7 +20316,8 @@
       },
       "translated": "Online sinds",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -19986,7 +20326,8 @@
       },
       "translated": "Land",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -19995,7 +20336,8 @@
       },
       "translated": "TeaSpeak Forum-account",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20004,7 +20346,8 @@
       },
       "translated": "Versie",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20013,7 +20356,8 @@
       },
       "translated": "Toestand",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20022,7 +20366,8 @@
       },
       "translated": "Kanaalgroep",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20031,7 +20376,8 @@
       },
       "translated": "Volledige info",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20040,7 +20386,8 @@
       },
       "translated": "Afspeellijst ophalen ...",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20049,7 +20396,8 @@
       },
       "translated": "Je hebt geen toestemming om deze afspeellijst te zien",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20058,7 +20406,8 @@
       },
       "translated": "Herlaad",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20067,7 +20416,8 @@
       },
       "translated": "Er is een fout opgetreden bij het ophalen van de afspeellijst",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20085,7 +20435,8 @@
       },
       "translated": "De afspeellijst is momenteel leeg.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20094,7 +20445,8 @@
       },
       "translated": "Voeg een nummer toe",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20103,7 +20455,8 @@
       },
       "translated": "Server adres",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20112,7 +20465,8 @@
       },
       "translated": "Voer een geldig serveradres in",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20121,7 +20475,8 @@
       },
       "translated": "Voer een geldige bijnaam voor de server in",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20130,7 +20485,8 @@
       },
       "translated": "Profiel verbinden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20139,7 +20495,8 @@
       },
       "translated": "Het geselecteerde profiel is ongeldig. Selecteer een andere of herstel het profiel.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20148,7 +20505,8 @@
       },
       "translated": "Profielen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20157,7 +20515,8 @@
       },
       "translated": "Adres",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20166,7 +20525,8 @@
       },
       "translated": "Wachtwoord",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20184,7 +20544,8 @@
       },
       "translated": "Cliënten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20193,7 +20554,8 @@
       },
       "translated": "Verbindingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20202,7 +20564,8 @@
       },
       "translated": "Er zijn nog geen verbindingen gemaakt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20211,7 +20574,8 @@
       },
       "translated": "Kanaal naam",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20229,7 +20593,8 @@
       },
       "translated": "Onderwerp",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20238,7 +20603,8 @@
       },
       "translated": "Kanaalopties",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20247,7 +20613,8 @@
       },
       "translated": "Kanaaltype",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20256,7 +20623,8 @@
       },
       "translated": "Semi-permanent",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20265,7 +20633,8 @@
       },
       "translated": "Standaard kanaal",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20274,7 +20643,8 @@
       },
       "translated": "Kanaalcodec",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20283,7 +20653,8 @@
       },
       "translated": "Aangepast (geavanceerd)",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20292,7 +20663,8 @@
       },
       "translated": "Mobiel",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20301,7 +20673,8 @@
       },
       "translated": "Stem",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20310,7 +20683,8 @@
       },
       "translated": "Muziek",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20319,7 +20693,8 @@
       },
       "translated": "Sorteer- en spreekkracht",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20328,7 +20703,8 @@
       },
       "translated": "Sorteer dit kanaal op:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20337,7 +20713,8 @@
       },
       "translated": "Spreekvermogen:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20346,7 +20723,8 @@
       },
       "translated": "Vereiste kracht om op dit kanaal te praten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20355,7 +20733,8 @@
       },
       "translated": "Standaard",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20364,7 +20743,8 @@
       },
       "translated": "Audio",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20373,7 +20753,8 @@
       },
       "translated": "Diversen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20445,7 +20826,8 @@
       },
       "translated": "Max gebruikers",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20454,7 +20836,8 @@
       },
       "translated": "Beperkt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20463,7 +20846,8 @@
       },
       "translated": "Max. Gebruikers die zich bij het kanaal konden aansluiten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20472,7 +20856,8 @@
       },
       "translated": "Family Max-gebruikers",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20481,7 +20866,8 @@
       },
       "translated": "Overgeërfd",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20499,7 +20885,8 @@
       },
       "translated": "Voorinstellingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20508,7 +20895,8 @@
       },
       "translated": "Voice mobiel",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20517,7 +20905,8 @@
       },
       "translated": "Voice Desktop",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20535,7 +20924,8 @@
       },
       "translated": "Op maat",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20544,7 +20934,8 @@
       },
       "translated": "Aangepaste instellingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20553,7 +20944,8 @@
       },
       "translated": "Codec:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20562,7 +20954,8 @@
       },
       "translated": "Kwaliteit:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20571,7 +20964,8 @@
       },
       "translated": "Geschatte benodigde bandbreedte:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20580,7 +20974,8 @@
       },
       "translated": "Voor een slechte internetverbinding worden lagere instellingen aanbevolen om de bandbreedte te verminderen.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20589,7 +20984,8 @@
       },
       "translated": "Regelmatig benodigde bevoegdheden:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20598,7 +20994,8 @@
       },
       "translated": "Doe mee",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20607,7 +21004,8 @@
       },
       "translated": "Vereiste kracht om lid te worden van dit kanaal",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20616,7 +21014,8 @@
       },
       "translated": "Visie",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20625,7 +21024,8 @@
       },
       "translated": "Vereiste kracht om dit kanaal te zien",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20634,7 +21034,8 @@
       },
       "translated": "Beschrijving bekijken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20643,7 +21044,8 @@
       },
       "translated": "Vereiste voeding om de kanaalbeschrijving te zien",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20652,7 +21054,8 @@
       },
       "translated": "Abonneren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20661,7 +21064,8 @@
       },
       "translated": "Vereiste kracht om je op dit kanaal te abonneren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20670,7 +21074,8 @@
       },
       "translated": "Vereiste kracht om dit kanaal te verwijderen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20679,7 +21084,8 @@
       },
       "translated": "Bestandsoverdracht benodigde bevoegdheden:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20688,7 +21094,8 @@
       },
       "translated": "Bladeren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20697,7 +21104,8 @@
       },
       "translated": "Vereiste kracht om bestanden te uploaden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20706,7 +21114,8 @@
       },
       "translated": "Vereiste kracht om bestanden te downloaden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20715,7 +21124,8 @@
       },
       "translated": "Directory maken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20724,7 +21134,8 @@
       },
       "translated": "Vereiste kracht om een directory te maken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20733,7 +21144,8 @@
       },
       "translated": "Vereiste kracht om een map of bestand te verwijderen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20742,7 +21154,8 @@
       },
       "translated": "Andere instellingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20751,7 +21164,8 @@
       },
       "translated": "Fonetische naam:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20760,7 +21174,8 @@
       },
       "translated": "Vertraging verwijderen:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20769,7 +21184,8 @@
       },
       "translated": "Tijd in seconden voordat het kanaal wordt verwijderd als het leeg is.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20778,7 +21194,8 @@
       },
       "translated": "Max. Hoogte",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20787,7 +21204,8 @@
       },
       "translated": "Versleutel spraakgegevens:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20796,7 +21214,8 @@
       },
       "translated": "Geavanceerde modus",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20805,7 +21224,8 @@
       },
       "translated": "Naam virtuele server",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20823,7 +21243,8 @@
       },
       "translated": "Slots:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20832,7 +21253,8 @@
       },
       "translated": "Maximaal aantal gelijktijdig verbonden clients.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20841,7 +21263,8 @@
       },
       "translated": "Gereserveerde slots:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20850,7 +21273,8 @@
       },
       "translated": "Gereserveerde serverslots voor beheerders.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20859,7 +21283,8 @@
       },
       "translated": "Welkoms bericht",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20868,7 +21293,8 @@
       },
       "translated": "Gastheer",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20877,7 +21303,8 @@
       },
       "translated": "Netwerken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20886,7 +21313,8 @@
       },
       "translated": "Veiligheid",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20895,7 +21323,8 @@
       },
       "translated": "Berichten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20913,7 +21342,8 @@
       },
       "translated": "Hostbericht",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20922,7 +21352,8 @@
       },
       "translated": "Bericht",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20931,7 +21362,8 @@
       },
       "translated": "Voer een bericht in ...",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20940,7 +21372,8 @@
       },
       "translated": "Berichtmodus",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20949,7 +21382,8 @@
       },
       "translated": "Geen bericht",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20958,7 +21392,8 @@
       },
       "translated": "Toon bericht in logboek",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20967,7 +21402,8 @@
       },
       "translated": "Toon bericht als modaal",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20976,7 +21412,8 @@
       },
       "translated": "Toon bericht als modaal en verbreek de verbinding met de client",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20985,7 +21422,8 @@
       },
       "translated": "Hostbanner",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -20994,7 +21432,8 @@
       },
       "translated": "URL",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21003,7 +21442,8 @@
       },
       "translated": "URL die wordt geopend wanneer de klant op de hostbanner klikt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21012,7 +21452,8 @@
       },
       "translated": "afbeelding URL",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21021,7 +21462,8 @@
       },
       "translated": "URL van de afbeelding die wordt weergegeven",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21030,7 +21472,8 @@
       },
       "translated": "Vernieuwingsinterval",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21039,7 +21482,8 @@
       },
       "translated": "Tijd in seconden die bepalen in welk interval de client de hostbanner opnieuw laadt. Een waarde van 0 betekent niet opnieuw laden.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21048,7 +21492,8 @@
       },
       "translated": "Formaat wijzigen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21057,7 +21502,8 @@
       },
       "translated": "Niet aanpassen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21066,7 +21512,8 @@
       },
       "translated": "Pas het verhoudingsaspect aan maar negeer dit",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21075,7 +21522,8 @@
       },
       "translated": "Pas het verhoudingsaspect aan en behoud het",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21084,7 +21532,8 @@
       },
       "translated": "Tijd in seconden die bepaalt in welk interval de client de hostbanner opnieuw laadt. <br> Een waarde van 0 betekent niet opnieuw laden.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21093,7 +21542,8 @@
       },
       "translated": "Voorbeeld van afbeelding",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21102,7 +21552,8 @@
       },
       "translated": "Hostbanner-voorbeeld",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21120,7 +21571,8 @@
       },
       "translated": "Host-knop",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21138,7 +21590,8 @@
       },
       "translated": "URL die wordt geopend wanneer de klant op de hostknop klikt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21147,7 +21600,8 @@
       },
       "translated": "Tooltip",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21156,7 +21610,8 @@
       },
       "translated": "Tekst voor de knopinfo bij zweven met knoppen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21165,7 +21620,8 @@
       },
       "translated": "Pictogram URL",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21183,7 +21639,8 @@
       },
       "translated": "Pictogramvoorbeeld",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21192,7 +21649,8 @@
       },
       "translated": "Hostbutton Voorbeeld",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21210,7 +21668,8 @@
       },
       "translated": "Verbindend",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21228,7 +21687,8 @@
       },
       "translated": "Een door komma's gescheiden set IP-adressen waar de server naar luistert.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21237,7 +21697,8 @@
       },
       "translated": "IPv4 en IPv6 wordt ondersteund!",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21246,7 +21707,8 @@
       },
       "translated": "Opmerking: als u dit wijzigt, moet u de virtuele server opnieuw opstarten!",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21255,7 +21717,8 @@
       },
       "translated": "Haven",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21264,7 +21727,8 @@
       },
       "translated": "De poort waar de server naar moet luisteren.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21282,7 +21746,8 @@
       },
       "translated": "Schakel rapportage naar de TeamSpeak-serverlijst in",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21291,7 +21756,8 @@
       },
       "translated": "Bestand download",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21300,7 +21766,8 @@
       },
       "translated": "Bandbreedtelimiet",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21309,7 +21776,8 @@
       },
       "translated": "Maximale bandbreedte gebruikt door alle bestandsoverdrachtclients.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21318,7 +21786,8 @@
       },
       "translated": "Bytes / s",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21327,7 +21796,8 @@
       },
       "translated": "Quota",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21336,7 +21806,8 @@
       },
       "translated": "Maximale hoeveelheid gegevens in megabytes die kan worden gedownload.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21345,7 +21816,8 @@
       },
       "translated": "Het quotum wordt elke nieuwe maand opnieuw ingesteld",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21354,7 +21826,8 @@
       },
       "translated": "MiB / mo",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21363,7 +21836,8 @@
       },
       "translated": "Quota deze maand",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21372,7 +21846,8 @@
       },
       "translated": "Totaal quotum",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21381,7 +21856,8 @@
       },
       "translated": "Bestand upload",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21471,7 +21947,8 @@
       },
       "translated": "Anti-overstroming",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21480,7 +21957,8 @@
       },
       "translated": "Punten elke ½ seconde verlaagd.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21489,7 +21967,8 @@
       },
       "translated": "Het aantal overstromingspunten wordt verminderd met elke servertik.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21498,7 +21977,8 @@
       },
       "translated": "Punten die nodig zijn om commando's te blokkeren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21507,7 +21987,8 @@
       },
       "translated": "Als de waarde is bereikt, wordt het gebruikerscommando geweigerd.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21516,7 +21997,8 @@
       },
       "translated": "Punten nodig om IP te verbannen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21525,7 +22007,8 @@
       },
       "translated": "Als de waarde is bereikt, wordt de gebruiker tijdelijk van de server verbannen.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21543,7 +22026,8 @@
       },
       "translated": "Kanaal spraakgegevens versleuteling",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21552,7 +22036,8 @@
       },
       "translated": "Bewerk per kanaal afzonderlijk",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21561,7 +22046,8 @@
       },
       "translated": "Wereldwijd gehandicapt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21570,7 +22056,8 @@
       },
       "translated": "Wereldwijd ingeschakeld (aanbevolen)",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21579,7 +22066,8 @@
       },
       "translated": "Nodig beveiligingsniveau",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21588,7 +22076,8 @@
       },
       "translated": "Vereist beveiligingsniveau om lid te worden van de server. (Alleen van toepassing op TeamSpeak-identiteiten)",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21597,7 +22086,8 @@
       },
       "translated": "Level & nbsp; <b> 0 - 23 </b> gegenereerd in seconden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21606,7 +22096,8 @@
       },
       "translated": "Level <b> 24 - 29 </b> gegenereerd in minuten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21615,7 +22106,8 @@
       },
       "translated": "Level <b> 29 - 34 </b> gegenereerd in uren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21624,7 +22116,8 @@
       },
       "translated": "Level <b> 35 - 39 </b> gegenereerd in dagen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21633,7 +22126,8 @@
       },
       "translated": "Level <b> 40 - 43 </b> gegenereerd in maanden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21642,7 +22136,8 @@
       },
       "translated": "Level <b> 44 - 23 </b> gegenereerd in jaren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21660,7 +22155,8 @@
       },
       "translated": "Het standaard onderwerp van het serverkanaal",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21678,7 +22174,8 @@
       },
       "translated": "De standaard cliëntbeschrijving",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21687,7 +22184,8 @@
       },
       "translated": "Standaardgroepen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21696,7 +22194,8 @@
       },
       "translated": "Servergroep",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21705,7 +22204,8 @@
       },
       "translated": "Music Bot Group",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21714,7 +22214,8 @@
       },
       "translated": "Kanaalbeheerdersgroep",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21732,7 +22233,8 @@
       },
       "translated": "Klaagt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21741,7 +22243,8 @@
       },
       "translated": "Klaagt tot verbod",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21750,7 +22253,8 @@
       },
       "translated": "Aantal klachten tegen een gebruiker totdat hij een automatische ban ontvangt.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21759,7 +22263,8 @@
       },
       "translated": "Autoban-tijd",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21777,7 +22282,8 @@
       },
       "translated": "Klacht automatisch verwijderen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21786,7 +22292,8 @@
       },
       "translated": "Tijd in seconden nadat een klacht is verlopen.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21795,7 +22302,8 @@
       },
       "translated": "Anderen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21804,7 +22312,8 @@
       },
       "translated": "Cliënten voor stilte",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21813,7 +22322,8 @@
       },
       "translated": "Minimale klanten binnen een kanaal om stilte af te dwingen.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21822,7 +22332,8 @@
       },
       "translated": "Prioriteit luidspreker dimfactor",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21831,7 +22342,8 @@
       },
       "translated": "Dimfactor in '%' voor prioritaire luidsprekers.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21840,7 +22352,8 @@
       },
       "translated": "Standaard vertraging voor verwijderen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21849,7 +22362,8 @@
       },
       "translated": "De standaardvertraging voor het verwijderen van een tijdelijk kanaal.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21858,7 +22372,8 @@
       },
       "translated": "Wijzigingen opslaan",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21867,7 +22382,8 @@
       },
       "translated": "Algemene instellingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21876,7 +22392,8 @@
       },
       "translated": "Toepassing",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21885,7 +22402,8 @@
       },
       "translated": "Taal",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21894,7 +22412,8 @@
       },
       "translated": "Updates",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21903,7 +22422,8 @@
       },
       "translated": "Chat",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21921,7 +22441,8 @@
       },
       "translated": "Microfoon",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21930,7 +22451,8 @@
       },
       "translated": "Spreker",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21939,7 +22461,8 @@
       },
       "translated": "Klinkt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21948,7 +22471,8 @@
       },
       "translated": "Identiteit",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21966,7 +22490,8 @@
       },
       "translated": "TeaForo-verbinding",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21975,7 +22500,8 @@
       },
       "translated": "Uitgeschakelde backrounds binnen de hostbanner",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21984,7 +22510,8 @@
       },
       "translated": "Lettertypegrootte",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -21993,7 +22520,8 @@
       },
       "translated": "Toon alle machtigingen in de machtigingseditor. Zelfs als hun opdracht niet klopt.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22002,7 +22530,8 @@
       },
       "translated": "Huidige taal:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22011,7 +22540,8 @@
       },
       "translated": "Duitse",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22020,7 +22550,8 @@
       },
       "translated": "Herstarten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22029,7 +22560,8 @@
       },
       "translated": "Let op: het wijzigen van de clienttaal vereist een herstart van de client!",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22038,7 +22570,8 @@
       },
       "translated": "Voeg repository toe",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22047,7 +22580,8 @@
       },
       "translated": "GU",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22056,7 +22590,8 @@
       },
       "translated": "Vaste chat-tijdstempel (schakelt \"2 seconden geleden\" uit ... enz.)",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22065,7 +22600,8 @@
       },
       "translated": "Informele chat-tijdstempel (schakelt 'Gisteren om ...' of 'Vandaag om ...' in)",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22074,7 +22610,8 @@
       },
       "translated": "Schakel over naar kanaalchat bij selecteren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22083,7 +22620,8 @@
       },
       "translated": "Schakel over naar klantinformatie op klantenselectie",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22092,7 +22630,8 @@
       },
       "translated": "Gekleurde emoji's in de chat",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22101,7 +22640,8 @@
       },
       "translated": "Detecteer automatisch geldige URL's en tag ze met [url]",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22110,7 +22650,8 @@
       },
       "translated": "Maakt ondersteuning voor het invoeren van afwaarderingen voor chat mogelijk.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22119,7 +22660,8 @@
       },
       "translated": "Schakel de BBCode-syntaxis in voor uw chat.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22128,7 +22670,8 @@
       },
       "translated": "Grootte van chatpictogram:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22137,7 +22680,8 @@
       },
       "translated": "Selecteer uw luidsprekerapparaat",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22146,7 +22690,8 @@
       },
       "translated": "Speel testgeluid",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22155,7 +22700,8 @@
       },
       "translated": "Luidsprekerinstellingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22164,7 +22710,8 @@
       },
       "translated": "Meester volume",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22173,7 +22720,8 @@
       },
       "translated": "Soundpack-volume",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22182,7 +22730,8 @@
       },
       "translated": "Sound lijst",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22191,7 +22740,8 @@
       },
       "translated": "Zoek naar een geluid",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22200,7 +22750,8 @@
       },
       "translated": "Geluidsinstellingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22209,7 +22760,8 @@
       },
       "translated": "Overlap dezelfde geluiden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22218,7 +22770,8 @@
       },
       "translated": "Demp geluiden wanneer de uitvoer is gedempt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22227,7 +22780,8 @@
       },
       "translated": "TeaSpeak-forumverbinding",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22236,7 +22790,8 @@
       },
       "translated": "Uitloggen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22245,7 +22800,8 @@
       },
       "translated": "Je bent niet verbonden met het TeaSpeak-forum.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22254,7 +22810,8 @@
       },
       "translated": "Log in op het TeaSpeak-forum:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22263,7 +22820,8 @@
       },
       "translated": "Gebruikersnaam",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22281,7 +22839,8 @@
       },
       "translated": "Log in",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22290,7 +22849,8 @@
       },
       "translated": "T",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22299,7 +22859,8 @@
       },
       "translated": "Sec",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22308,7 +22869,8 @@
       },
       "translated": "Uw profielen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22317,7 +22879,8 @@
       },
       "translated": "Maak nieuw",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22326,7 +22889,8 @@
       },
       "translated": "Time-out tijdens het laden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22344,7 +22908,8 @@
       },
       "translated": "Je hebt nog geen profielen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22353,7 +22918,8 @@
       },
       "translated": "Verwijder geselecteerde",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22362,7 +22928,8 @@
       },
       "translated": "Selecteer als standaard",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22371,7 +22938,8 @@
       },
       "translated": "Standaard",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22380,7 +22948,8 @@
       },
       "translated": "Profielinstellingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22389,7 +22958,8 @@
       },
       "translated": "Verander Avatar",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22398,7 +22968,8 @@
       },
       "translated": "Profielnaam",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22407,7 +22978,8 @@
       },
       "translated": "Profielnaam is ongeldig",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22416,7 +22988,8 @@
       },
       "translated": "Standaard bijnaam",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22425,7 +22998,8 @@
       },
       "translated": "Identiteitstype",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22434,7 +23008,8 @@
       },
       "translated": "Uitgeschakeld",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22443,7 +23018,8 @@
       },
       "translated": "Forumaccount",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22452,7 +23028,8 @@
       },
       "translated": "TeamSpeak-identiteit",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22461,7 +23038,8 @@
       },
       "translated": "Bijnaam (alleen foutopsporing!)",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22470,7 +23048,8 @@
       },
       "translated": "Ongeldig identiteitstype",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22479,7 +23058,8 @@
       },
       "translated": "Unieke ID",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22488,7 +23068,8 @@
       },
       "translated": "Niveau",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22497,7 +23078,8 @@
       },
       "translated": "Verbeteren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22506,7 +23088,8 @@
       },
       "translated": "U heeft geen identiteit gegenereerd / geïmporteerd.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22515,7 +23098,8 @@
       },
       "translated": "Genereer een nieuwe of importeer er een.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22524,7 +23108,8 @@
       },
       "translated": "Genereer nieuwe",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22533,7 +23118,8 @@
       },
       "translated": "Identiteit exporteren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22542,7 +23128,8 @@
       },
       "translated": "U gebruikt uw forumaccount als identificatie",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22551,7 +23138,8 @@
       },
       "translated": "U kunt uw TeaSpeak-forumaccount niet gebruiken. Je bent niet verbonden met je forumaccount!",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22560,7 +23148,8 @@
       },
       "translated": "Stel uw verbinding in",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22569,7 +23158,8 @@
       },
       "translated": "Ongeldige bijnaam. Naam moet minimaal 5 tekens lang zijn",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22578,7 +23168,8 @@
       },
       "translated": "Importeren uit tekst",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22587,7 +23178,8 @@
       },
       "translated": "Identiteitsgegevens",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22596,7 +23188,8 @@
       },
       "translated": "Plak hier uw identiteitsgegevens",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22605,7 +23198,8 @@
       },
       "translated": "Importeren uit bestand",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22614,7 +23208,8 @@
       },
       "translated": "Selecteer bestand",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22623,7 +23218,8 @@
       },
       "translated": "Geen bestand geselecteerd",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22632,7 +23228,8 @@
       },
       "translated": "Identiteit:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22641,7 +23238,8 @@
       },
       "translated": "Unieke ID:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22650,7 +23248,8 @@
       },
       "translated": "Huidig niveau:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22659,7 +23258,8 @@
       },
       "translated": "Het aantal threads dat wordt gebruikt om uw identiteit te verbeteren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22668,7 +23268,8 @@
       },
       "translated": "De optimale waarde is gelijk aan het aantal kerneldraden.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22677,7 +23278,8 @@
       },
       "translated": "Doelniveau:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22686,7 +23288,8 @@
       },
       "translated": "Een waarde van nul betekent onbeperkt. Verbeter totdat u afbreekt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22695,7 +23298,8 @@
       },
       "translated": "Discussies:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22704,7 +23308,8 @@
       },
       "translated": "Hashes / seconde:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22713,7 +23318,8 @@
       },
       "translated": "Verstreken tijd:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22722,7 +23328,8 @@
       },
       "translated": "Profiel is ongeldig",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22731,7 +23338,8 @@
       },
       "translated": "Engels (standaard / terugval)",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22740,7 +23348,8 @@
       },
       "translated": "Opslagplaats:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22749,7 +23358,8 @@
       },
       "translated": "Verander het volume voor de klant",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22758,7 +23368,8 @@
       },
       "translated": "Opslaan",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22767,7 +23378,8 @@
       },
       "translated": "Verander latentie voor cliënt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22776,7 +23388,8 @@
       },
       "translated": "Min buffer:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22785,7 +23398,8 @@
       },
       "translated": "Max buffer:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22794,7 +23408,8 @@
       },
       "translated": "Spoel buffer",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22803,7 +23418,8 @@
       },
       "translated": "Unieke klant-ID",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22812,7 +23428,8 @@
       },
       "translated": "Ongeldige unieke id",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22821,7 +23438,8 @@
       },
       "translated": "Bijnaam:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22839,7 +23457,8 @@
       },
       "translated": "Klantdatabase-ID:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22893,7 +23512,8 @@
       },
       "translated": "Wisselende groepen van",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22902,7 +23522,8 @@
       },
       "translated": "Verwijder alle groepen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22911,7 +23532,8 @@
       },
       "translated": "Ongeldige groepsnaam",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22920,7 +23542,8 @@
       },
       "translated": "De aangemaakte groep moet het type hebben:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22929,7 +23552,8 @@
       },
       "translated": "ServerQuery-groep",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22938,7 +23562,8 @@
       },
       "translated": "filterrechten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22947,7 +23572,8 @@
       },
       "translated": "Filter machtigingen op machtigingsnaam",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22956,7 +23582,8 @@
       },
       "translated": "Alleen toegekende machtigingen weergeven",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22965,7 +23592,8 @@
       },
       "translated": "U heeft geen toestemming om deze rechten te bekijken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -22992,7 +23620,8 @@
       },
       "translated": "Toon alleen toestemming die is toegewezen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23001,7 +23630,8 @@
       },
       "translated": "Toon alleen machtigingen die u zelf kunt bewerken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23010,7 +23640,8 @@
       },
       "translated": "Alleen bewerkbaar",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23028,7 +23659,8 @@
       },
       "translated": "Je hebt geen toestemming om verboden te creëren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23037,7 +23669,8 @@
       },
       "translated": "Gebruikersnaam om te verbannen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23046,7 +23679,8 @@
       },
       "translated": "IP om te verbieden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23055,7 +23689,8 @@
       },
       "translated": "Interpreteer IP / naam als",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23064,7 +23699,8 @@
       },
       "translated": "Wildcard IPv4",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23073,7 +23709,8 @@
       },
       "translated": "Wildcard IPv6",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23082,7 +23719,8 @@
       },
       "translated": "Vaste snaar",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23091,7 +23729,8 @@
       },
       "translated": "Reguliere expressie",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23100,7 +23739,8 @@
       },
       "translated": "Klant uniek ID om te verbannen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23109,7 +23749,8 @@
       },
       "translated": "Geen hardware-ID opgegeven",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23118,7 +23759,8 @@
       },
       "translated": "Reden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23127,7 +23769,8 @@
       },
       "translated": "Geen reden gegeven",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23136,7 +23779,8 @@
       },
       "translated": "Looptijd",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23145,7 +23789,8 @@
       },
       "translated": "permanent",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23154,7 +23799,8 @@
       },
       "translated": "Gebruik dit verbod als een wereldwijd verbod",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23163,7 +23809,8 @@
       },
       "translated": "Geen gebruikersnaam opgegeven",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23172,7 +23819,8 @@
       },
       "translated": "Geen IP opgegeven",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23226,7 +23874,8 @@
       },
       "translated": "Geen unieke ID opgegeven",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23280,7 +23929,8 @@
       },
       "translated": "Schepper",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23289,7 +23939,8 @@
       },
       "translated": "Handhaving",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23298,7 +23949,8 @@
       },
       "translated": "Toon lijst",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23307,7 +23959,8 @@
       },
       "translated": "Dit verbod is een wereldwijd verbod",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23316,7 +23969,8 @@
       },
       "translated": "Filter",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23325,7 +23979,8 @@
       },
       "translated": "Naam / IP / UID / HWID",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23343,7 +23998,8 @@
       },
       "translated": "Vervalt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23352,7 +24008,8 @@
       },
       "translated": "Toon alleen eigen verboden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23361,7 +24018,8 @@
       },
       "translated": "Benadruk eigen verboden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23379,7 +24037,8 @@
       },
       "translated": "Eigendommen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23388,7 +24047,8 @@
       },
       "translated": "Tijdstempel",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23397,7 +24057,8 @@
       },
       "translated": "Markeer de oorzaak",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23424,7 +24085,8 @@
       },
       "translated": "Reden verbieden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23433,7 +24095,8 @@
       },
       "translated": "Bijnaam en unieke ID",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23442,7 +24105,8 @@
       },
       "translated": "IP adres",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23451,7 +24115,8 @@
       },
       "translated": "Geen muziek spelen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23460,7 +24125,8 @@
       },
       "translated": "Naam:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23469,7 +24135,8 @@
       },
       "translated": "Omschrijving:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23487,7 +24154,8 @@
       },
       "translated": "Browser informatie",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23496,7 +24164,8 @@
       },
       "translated": "Online sinds:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23505,7 +24174,8 @@
       },
       "translated": "Volume:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23514,7 +24184,8 @@
       },
       "translated": "TeaSpeak-account:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23523,7 +24194,8 @@
       },
       "translated": "Server groepen:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23532,7 +24204,8 @@
       },
       "translated": "Kanaalgroep:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23559,7 +24232,8 @@
       },
       "translated": "Livetime:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23577,7 +24251,8 @@
       },
       "translated": "Server start",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23586,7 +24261,8 @@
       },
       "translated": "Volume op afstand:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23595,7 +24271,8 @@
       },
       "translated": "Lokaal volume:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23604,7 +24281,8 @@
       },
       "translated": "Momenteel herhalen:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23640,7 +24318,8 @@
       },
       "translated": "Adres:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23649,7 +24328,8 @@
       },
       "translated": "Peer adres:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23658,7 +24338,8 @@
       },
       "translated": "Type:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23676,7 +24357,8 @@
       },
       "translated": "Uptime:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23685,7 +24367,8 @@
       },
       "translated": "Huidige kanalen:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23694,7 +24377,8 @@
       },
       "translated": "Huidige klanten:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23703,7 +24387,8 @@
       },
       "translated": "Slots gereserveerd",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23712,7 +24397,8 @@
       },
       "translated": "clients verborgen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23721,7 +24407,8 @@
       },
       "translated": "Huidige zoekopdrachten:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23730,7 +24417,8 @@
       },
       "translated": "Update informatie",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23748,7 +24436,8 @@
       },
       "translated": "Onderwerp:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23766,7 +24455,8 @@
       },
       "translated": "Codec kwaliteit:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23784,7 +24474,8 @@
       },
       "translated": "Huidige klanten:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23793,7 +24484,8 @@
       },
       "translated": "Abonnementsstatus:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23802,7 +24494,8 @@
       },
       "translated": "Geabonneerd",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23811,7 +24504,8 @@
       },
       "translated": "Afgemeld",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23820,7 +24514,8 @@
       },
       "translated": "Versleuteling van spraakgegevens:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23829,7 +24524,8 @@
       },
       "translated": "(Overschreven door de server met versleuteld)",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23838,7 +24534,8 @@
       },
       "translated": "(Overschreven door de server met niet-versleuteld)",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23847,7 +24544,8 @@
       },
       "translated": "Link type:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23856,7 +24554,8 @@
       },
       "translated": "TeaWeb",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23865,7 +24564,8 @@
       },
       "translated": "TeaClient",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23874,7 +24574,8 @@
       },
       "translated": "Team gesprek",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23883,7 +24584,8 @@
       },
       "translated": "Maak direct verbinding",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23892,7 +24594,8 @@
       },
       "translated": "Gebruik een opgelost adres",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23901,7 +24604,8 @@
       },
       "translated": "Stel de inlognaam in voor uw Server Query-account.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23910,7 +24614,8 @@
       },
       "translated": "U ontvangt uw wachtwoord in de volgende stap.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23919,7 +24624,8 @@
       },
       "translated": "De inloggegevens van uw server:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23937,7 +24643,8 @@
       },
       "translated": "Kopieer gebruikersnaam",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23946,7 +24653,8 @@
       },
       "translated": "Wachtwoord:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23964,7 +24672,8 @@
       },
       "translated": "Accountlijst",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23973,7 +24682,8 @@
       },
       "translated": "Maak een account aan",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23982,7 +24692,8 @@
       },
       "translated": "Zoek op zoekopdracht",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -23991,7 +24702,8 @@
       },
       "translated": "Accountgegevens",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24000,7 +24712,8 @@
       },
       "translated": "Account verwijderen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24009,7 +24722,8 @@
       },
       "translated": "Inlog naam",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24018,7 +24732,8 @@
       },
       "translated": "Gebonden server-ID",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24027,7 +24742,8 @@
       },
       "translated": "Wijzig wachtwoord",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24036,7 +24752,8 @@
       },
       "translated": "Hernoem account",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24045,7 +24762,8 @@
       },
       "translated": "Maak afspeellijst",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24054,7 +24772,8 @@
       },
       "translated": "Afspeellijst verwijderen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24063,7 +24782,8 @@
       },
       "translated": "Bewerk afspeellijst",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24072,7 +24792,8 @@
       },
       "translated": "zoeken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24081,7 +24802,8 @@
       },
       "translated": "ID kaart",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24090,7 +24812,8 @@
       },
       "translated": "Titel",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24108,7 +24831,8 @@
       },
       "translated": "Gebruikt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24117,7 +24841,8 @@
       },
       "translated": "Markeer eigen afspeellijsten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24126,7 +24851,8 @@
       },
       "translated": "Afspeellijst wordt gebruikt door bot",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24135,7 +24861,8 @@
       },
       "translated": "Afspeellijst wordt niet gebruikt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24144,7 +24871,8 @@
       },
       "translated": "Nummer ID:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24153,7 +24881,8 @@
       },
       "translated": "Nummer volgorde:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24162,7 +24891,8 @@
       },
       "translated": "URL-resolver:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24171,7 +24901,8 @@
       },
       "translated": "Nummer geladen:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24180,7 +24911,8 @@
       },
       "translated": "Ja",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24189,7 +24921,8 @@
       },
       "translated": "Nee",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24198,7 +24931,8 @@
       },
       "translated": "Geef metdata hier weer!",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24207,7 +24941,8 @@
       },
       "translated": "Metadata:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24216,7 +24951,8 @@
       },
       "translated": "URL-lader:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24225,7 +24961,8 @@
       },
       "translated": "Voeg URL toe",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24234,7 +24971,8 @@
       },
       "translated": "Uw bladwijzers",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24252,7 +24990,8 @@
       },
       "translated": "Map toevoegen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24270,7 +25009,8 @@
       },
       "translated": "Voeg bladwijzer toe",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24297,7 +25037,8 @@
       },
       "translated": "Bladwijzernaam",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24306,7 +25047,8 @@
       },
       "translated": "De weergegeven naam van deze bladwijzer.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24324,7 +25066,8 @@
       },
       "translated": "Het profiel waarmee u verbinding maakt wanneer u de bladwijzer gebruikt.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24342,7 +25085,8 @@
       },
       "translated": "Het serveradres van de bladwijzer. De poort is gescheiden via een dubbele punt",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24351,7 +25095,8 @@
       },
       "translated": "Server wachtwoord",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24360,7 +25105,8 @@
       },
       "translated": "De serverpoort van de bladwijzer",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24378,7 +25124,8 @@
       },
       "translated": "Nog niet geimplementeerd",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24396,7 +25143,8 @@
       },
       "translated": "Kanaalwachtwoord",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24423,7 +25171,8 @@
       },
       "translated": "Server naam",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24432,7 +25181,8 @@
       },
       "translated": "Server regio",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24441,7 +25191,8 @@
       },
       "translated": "Laatste ping",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24450,7 +25201,8 @@
       },
       "translated": "Laatste klantentelling",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24459,7 +25211,8 @@
       },
       "translated": "Uw verbinding",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24468,7 +25221,8 @@
       },
       "translated": "Duplicaat",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24477,7 +25231,8 @@
       },
       "translated": "Afgelegen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24486,7 +25241,8 @@
       },
       "translated": "U heeft geen toestemming om de pictogrammen te bekijken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24495,7 +25251,8 @@
       },
       "translated": "Lokaal",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24513,7 +25270,8 @@
       },
       "translated": "Selecteer",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24522,7 +25280,8 @@
       },
       "translated": "Verwijder geselecteerde",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24531,7 +25290,8 @@
       },
       "translated": "afbreken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24540,7 +25300,8 @@
       },
       "translated": "okey",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24558,7 +25319,8 @@
       },
       "translated": "Datum",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24576,7 +25338,8 @@
       },
       "translated": "Avatar-ID",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24585,7 +25348,8 @@
       },
       "translated": "Afbeelding info:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24594,7 +25358,8 @@
       },
       "translated": "Bytes",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24603,7 +25368,8 @@
       },
       "translated": "Breedte",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24612,7 +25378,8 @@
       },
       "translated": "Hoogte",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24621,7 +25388,8 @@
       },
       "translated": "Selecteer een gebruiker",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24630,7 +25398,8 @@
       },
       "translated": "Ondersteunde afbeeldingstypen: SVG, PNG, JPEG",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24639,7 +25408,8 @@
       },
       "translated": "Ondersteunde afbeeldingsformaten: elk",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24648,7 +25418,8 @@
       },
       "translated": "Upload avatar",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24657,7 +25428,8 @@
       },
       "translated": "Verwijder avatar",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24666,7 +25438,8 @@
       },
       "translated": "Voorbeeld",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24675,7 +25448,8 @@
       },
       "translated": "Klant info",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24684,7 +25458,8 @@
       },
       "translated": "Chat avatar",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24693,7 +25468,8 @@
       },
       "translated": "Chatlijst avatar",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24702,7 +25478,8 @@
       },
       "translated": "Speciale dank",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24711,7 +25488,8 @@
       },
       "translated": "Contact",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24720,7 +25498,8 @@
       },
       "translated": "E-mail:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24729,7 +25508,8 @@
       },
       "translated": "WWW:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24738,7 +25518,8 @@
       },
       "translated": "Gemeenschap:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24747,7 +25528,8 @@
       },
       "translated": "Licentie",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24756,7 +25538,8 @@
       },
       "translated": "Druk op een willekeurige toets die u wilt gebruiken.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24765,7 +25548,8 @@
       },
       "translated": "Sleutel opslaan",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24774,7 +25558,8 @@
       },
       "translated": "Afwezigheidsbericht",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24783,7 +25568,8 @@
       },
       "translated": "Basis informatie",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24792,7 +25578,8 @@
       },
       "translated": "Groepen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24801,7 +25588,8 @@
       },
       "translated": "Pakketten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24810,7 +25598,8 @@
       },
       "translated": "Database-ID:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24819,7 +25608,8 @@
       },
       "translated": "TeaForo-verbinding",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24837,7 +25627,8 @@
       },
       "translated": "Bouw tijdstempel:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24855,7 +25646,8 @@
       },
       "translated": "IP adres",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24864,7 +25656,8 @@
       },
       "translated": "Eerst verbonden",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24873,7 +25666,8 @@
       },
       "translated": "Verbind tellen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24891,7 +25685,8 @@
       },
       "translated": "Inactieve tijd",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24900,7 +25695,8 @@
       },
       "translated": "Ping",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24909,7 +25705,8 @@
       },
       "translated": "Client heeft geen eigen servergroep",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24918,7 +25715,8 @@
       },
       "translated": "Beheer client-servergroepen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24927,7 +25725,8 @@
       },
       "translated": "Pakketverlies",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24936,7 +25735,8 @@
       },
       "translated": "Stroomafwaarts",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24945,7 +25745,8 @@
       },
       "translated": "Stroomopwaarts",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24954,7 +25755,8 @@
       },
       "translated": "Verzonden pakketten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -24981,7 +25783,8 @@
       },
       "translated": "Verzonden bytes",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25008,7 +25811,8 @@
       },
       "translated": "Gebruikt / Max. Quota voor bestandsoverdracht",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25035,7 +25839,8 @@
       },
       "translated": "Bandbreedte laatste seconde",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25062,7 +25867,8 @@
       },
       "translated": "Bandbreedte last minute",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25098,7 +25904,8 @@
       },
       "translated": "Chat-modus",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25107,7 +25914,8 @@
       },
       "translated": "Huidige klanten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25116,7 +25924,8 @@
       },
       "translated": "Audiocodec",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25125,7 +25934,8 @@
       },
       "translated": "Audio versleuteld",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25134,7 +25944,8 @@
       },
       "translated": "Beschermd met een wachtwoord",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25170,7 +25981,8 @@
       },
       "translated": "Slots",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25179,7 +25991,8 @@
       },
       "translated": "Eerste loop",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25188,7 +26001,8 @@
       },
       "translated": "Uptime",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25215,7 +26029,8 @@
       },
       "translated": "Platform",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25224,7 +26039,8 @@
       },
       "translated": "Bandbreedte weergeven",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25233,7 +26049,8 @@
       },
       "translated": "Gemiddelde ping",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25242,7 +26059,8 @@
       },
       "translated": "Gemiddeld pakketverlies",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25251,7 +26069,8 @@
       },
       "translated": "Globaal uniek ID",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25260,7 +26079,8 @@
       },
       "translated": "Huidige kanalen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25269,7 +26089,8 @@
       },
       "translated": "Versleuteling van spraakgegevens",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25278,7 +26099,8 @@
       },
       "translated": "Minimaal beveiligingsniveau",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25296,7 +26118,8 @@
       },
       "translated": "Verzonden pakketten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25305,7 +26128,8 @@
       },
       "translated": "Upload bandbreedte",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25314,7 +26138,8 @@
       },
       "translated": "Download bandbreedte",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25323,7 +26148,8 @@
       },
       "translated": "Verzonden bytes",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25350,7 +26176,8 @@
       },
       "translated": "Overgedragen bytes voor bestandsoverdracht",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25377,7 +26204,8 @@
       },
       "translated": "Huidige bandbreedte",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25404,7 +26232,8 @@
       },
       "translated": "Huidige bandbreedte voor bestandsoverdracht",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25431,7 +26260,8 @@
       },
       "translated": "Welkom bij de eenvoudige installatiehandleiding!",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25440,7 +26270,8 @@
       },
       "translated": "Identiteitsopstelling",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25449,7 +26280,8 @@
       },
       "translated": "Microfoon setup",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25458,7 +26290,8 @@
       },
       "translated": "Luidsprekeropstelling",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25467,7 +26300,8 @@
       },
       "translated": "Installatie voltooid",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25476,7 +26310,8 @@
       },
       "translated": "Welkom beste TeaSpeak-gebruiker.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25485,7 +26320,8 @@
       },
       "translated": "We willen graag een paar dingen instellen voordat u klaar bent om te gaan. <br>",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25494,7 +26330,8 @@
       },
       "translated": "Maak je geen zorgen! We begeleiden u door het basisconfiguratieproces.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25503,7 +26340,8 @@
       },
       "translated": "Samen doorlopen we deze stappen:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25512,7 +26350,8 @@
       },
       "translated": "Welkomstgroet",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25521,7 +26360,8 @@
       },
       "translated": "Microfoon configuratie",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25539,7 +26379,8 @@
       },
       "translated": "Luidsprekerconfiguratie",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25548,7 +26389,8 @@
       },
       "translated": "Het is veilig om deze gids op elk moment te verlaten en direct vooruit te springen met behulp van de client.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25557,7 +26399,8 @@
       },
       "translated": "Gefeliciteerd, je bent klaar met het opzetten van TeaSpeak",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25566,7 +26409,8 @@
       },
       "translated": "U bent klaar met het instellen van uw cliënt. Maar maak je geen zorgen, <br>",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25575,7 +26419,8 @@
       },
       "translated": "je zou al deze instellingen kunnen vinden in het instellingenmenu <br>",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25584,7 +26429,8 @@
       },
       "translated": "Om de client-instellingen te openen klikt u op \"tools\" en vervolgens op \"instellingen\" <br>",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25593,7 +26439,8 @@
       },
       "translated": "Muziek Bot",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25602,7 +26449,8 @@
       },
       "translated": "Muziekbot is kanaalcommandant",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25611,7 +26459,8 @@
       },
       "translated": "Muziekbot is prioriteitspreker",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25620,7 +26469,8 @@
       },
       "translated": "Herhaling",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25629,7 +26479,8 @@
       },
       "translated": "Opnieuw afspelen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25638,7 +26489,8 @@
       },
       "translated": "Normaal",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25647,7 +26499,8 @@
       },
       "translated": "Doorgelust",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25656,7 +26509,8 @@
       },
       "translated": "Enkele lus",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25665,7 +26519,8 @@
       },
       "translated": "Shuffle",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25674,7 +26529,8 @@
       },
       "translated": "Maximale grootte van afspeellijst",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25683,7 +26539,8 @@
       },
       "translated": "Verwijder afgespeelde nummers uit de afspeellijst",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25692,7 +26549,8 @@
       },
       "translated": "Stuur een kanaalbericht wanneer het nummer verandert",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25710,7 +26568,8 @@
       },
       "translated": "Toestemming",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25719,7 +26578,8 @@
       },
       "translated": "Vereiste waarde",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25728,7 +26588,8 @@
       },
       "translated": "Zoek een klant:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25737,7 +26598,8 @@
       },
       "translated": "Zoeken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25746,7 +26608,8 @@
       },
       "translated": "Selectie ongedaan maken",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25755,7 +26618,8 @@
       },
       "translated": "Toestemmingen weergeven voor:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25764,7 +26628,8 @@
       },
       "translated": "Botmachtigingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25773,7 +26638,8 @@
       },
       "translated": "Bevoegdheid om de muziekbot te hernoemen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25782,7 +26648,8 @@
       },
       "translated": "Bevoegdheid om de machtigingen van de muziekbot te wijzigen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25791,7 +26658,8 @@
       },
       "translated": "Bevoegdheid om de muziekbot te verwijderen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25800,7 +26668,8 @@
       },
       "translated": "Machtigingen voor afspeellijsten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25809,7 +26678,8 @@
       },
       "translated": "Vermogen om de nummers van de afspeellijst te zien",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25818,7 +26688,8 @@
       },
       "translated": "Kracht voor het bewerken van afspeellijstinstellingen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25827,7 +26698,8 @@
       },
       "translated": "Kracht voor het bekijken van machtigingen voor afspeellijsten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25836,7 +26708,8 @@
       },
       "translated": "Kracht voor het bewerken van machtigingen voor afspeellijsten",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25845,7 +26718,8 @@
       },
       "translated": "Kracht voor het toevoegen van een nummer aan de afspeellijst",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25854,7 +26728,8 @@
       },
       "translated": "Bevoegdheid om een nummer in de afspeellijst opnieuw te ordenen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25863,7 +26738,8 @@
       },
       "translated": "Bevoegdheid om een nummer uit de afspeellijst te verwijderen",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25872,7 +26748,8 @@
       },
       "translated": "Deze groepen kunnen de bot hernoemen:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25881,7 +26758,8 @@
       },
       "translated": "Geen enkele groep kon dat doen.",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25890,7 +26768,8 @@
       },
       "translated": "mislukt op toestemming",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25899,7 +26778,8 @@
       },
       "translated": "Deze groepen kunnen de bot wijzigen:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25926,7 +26806,8 @@
       },
       "translated": "Deze groepen kunnen de bot verwijderen:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25953,7 +26834,8 @@
       },
       "translated": "Deze groepen kunnen de afspeellijst bekijken:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -25980,7 +26862,8 @@
       },
       "translated": "Deze groepen kunnen de instellingen van de afspeellijst bewerken:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -26007,7 +26890,8 @@
       },
       "translated": "Deze groepen kunnen de machtigingen voor de afspeellijst bekijken:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -26034,7 +26918,8 @@
       },
       "translated": "Deze groepen kunnen de machtigingen voor de afspeellijst bewerken:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -26061,7 +26946,8 @@
       },
       "translated": "Deze groepen kunnen een nummer toevoegen:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -26088,7 +26974,8 @@
       },
       "translated": "Deze groepen kunnen de nummers opnieuw ordenen:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -26115,7 +27002,8 @@
       },
       "translated": "Deze groepen kunnen een nummer verwijderen:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -26142,7 +27030,8 @@
       },
       "translated": "De klant zou deze actie kunnen uitvoeren",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -26187,7 +27076,8 @@
       },
       "translated": "Client kon de machtigingen niet zien",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -26232,7 +27122,8 @@
       },
       "translated": "Clients met speciale machtigingen:",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -26241,7 +27132,8 @@
       },
       "translated": "Geen enkele klant komt overeen met het filter",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -26250,7 +27142,8 @@
       },
       "translated": "Geen klanten beschikbaar",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     },
     {
@@ -26259,7 +27152,8 @@
       },
       "translated": "Vernieuw de klantenlijst",
       "flags": [
-        "google-translated"
+        "google-translated",
+        "ui-visible"
       ]
     }
   ]
