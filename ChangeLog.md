@@ -1,4 +1,7 @@
 # Changelog:
+* **25.09.20**
+    - Update the translation files
+    
 * **24.09.20**
     - Improved the server tab menu
         - Better scroll handling
