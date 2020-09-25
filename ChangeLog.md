@@ -1,6 +1,7 @@
 # Changelog:
 * **25.09.20**
     - Update the translation files
+    - Made the server tabs moveable
     
 * **24.09.20**
     - Improved the server tab menu

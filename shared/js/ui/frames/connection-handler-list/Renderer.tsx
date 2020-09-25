@@ -57,7 +57,6 @@ const ConnectionHandler = React.memo((props: { handlerId: string, mode: Connecti
 
             case "disconnected":
                 displayedName = <Translatable key={"not connected"}>Not connected</Translatable>;
-                displayedName = props.handlerId;
                 break;
         }
     }
