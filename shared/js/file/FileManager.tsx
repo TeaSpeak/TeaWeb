@@ -4,7 +4,6 @@ import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {ServerCommand} from "tc-shared/connection/ConnectionBase";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
-import {IconManager} from "tc-shared/file/Icons";
 import {AvatarManager} from "tc-shared/file/LocalAvatars";
 import {
     CancelReason,
@@ -393,7 +392,6 @@ export class FileManager {
     private static readonly MAX_CONCURRENT_TRANSFERS = 6;
 
     readonly connectionHandler: ConnectionHandler;
-    readonly icons: IconManager;
     readonly avatars: AvatarManager;
     readonly events : Registry<FileManagerEvents>;
     readonly finishedTransfers: FinishedFileTransfer[] = [];
@@ -409,7 +407,6 @@ export class FileManager {
         this.commandHandler = new FileCommandHandler(this);
 
         this.events = new Registry<FileManagerEvents>();
-        this.icons = new IconManager(this);
         this.avatars = new AvatarManager(this);
 
         this.transerUpdateIntervalId = setInterval(() => this.scheduleTransferUpdate(), 1000);
@@ -420,7 +417,6 @@ export class FileManager {
         this.registeredTransfers_.forEach(e => e.transfer.requestCancel(CancelReason.SERVER_DISCONNECTED));
         /* all transfers should be unregistered now, or will be soonly */
 
-        this.icons.destroy();
         this.avatars.destroy();
         clearInterval(this.transerUpdateIntervalId);
     }
@@ -500,6 +496,16 @@ export class FileManager {
             cpw: props.cpw,
             path: props.path || "",
             name: props.name
+        });
+    }
+
+    async deleteIcon(iconId: number) : Promise<void> {
+        if(iconId <= 1000) {
+            throw "invalid id!";
+        }
+
+        await this.deleteFile({
+            name: '/icon_' + (iconId >>> 0)
         });
     }
 

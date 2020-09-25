@@ -4,7 +4,7 @@ import * as ipc from "../ipc/BrowserIPC";
 import {ChannelMessage} from "../ipc/BrowserIPC";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
-import {image_type, ImageCache, media_image_type} from "../file/ImageCache";
+import {responseImageType, ImageCache, imageType2MediaType} from "../file/ImageCache";
 import {FileManager} from "../file/FileManager";
 import {
     FileDownloadTransfer,
@@ -43,17 +43,18 @@ class LocalClientAvatar extends ClientAvatar {
 }
 
 export class AvatarManager extends AbstractAvatarManager {
-    handle: FileManager;
     private static cache: ImageCache;
 
-
+    readonly handle: FileManager;
     private cachedAvatars: {[avatarId: string]: LocalClientAvatar} = {};
+
     constructor(handle: FileManager) {
         super();
         this.handle = handle;
 
-        if(!AvatarManager.cache)
+        if(!AvatarManager.cache) {
             AvatarManager.cache = new ImageCache("avatars");
+        }
     }
 
     destroy() {
@@ -86,7 +87,7 @@ export class AvatarManager extends AbstractAvatarManager {
                 await AvatarManager.cache.setup();
             }
 
-            const response = await AvatarManager.cache.resolve_cached('avatar_' + avatar.clientAvatarId); //TODO age!
+            const response = await AvatarManager.cache.resolveCached('avatar_' + avatar.clientAvatarId); //TODO age!
             if(!response) {
                 break cache_lookup;
             }
@@ -165,15 +166,15 @@ export class AvatarManager extends AbstractAvatarManager {
                 throw tr("Avatar response missing media bytes");
             }
 
-            const type = image_type(headers.get('X-media-bytes'));
-            const media = media_image_type(type);
+            const type = responseImageType(headers.get('X-media-bytes'));
+            const media = imageType2MediaType(type);
 
             if(avatar.getAvatarHash() !== initialAvatarHash) {
                 log.debug(LogCategory.GENERAL, tr("Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"), initialAvatarHash, avatar.getAvatarHash());
                 return;
             }
 
-            await AvatarManager.cache.put_cache('avatar_' + avatar.clientAvatarId, transferResponse.getResponse().clone(), "image/" + media, {
+            await AvatarManager.cache.putCache('avatar_' + avatar.clientAvatarId, transferResponse.getResponse().clone(), "image/" + media, {
                 "X-avatar-version": avatar.getAvatarHash()
             });
 
@@ -189,8 +190,8 @@ export class AvatarManager extends AbstractAvatarManager {
             if(!avatarResponse.headers.has('X-media-bytes'))
                 throw "missing media bytes";
 
-            const type = image_type(avatarResponse.headers.get('X-media-bytes'));
-            const media = media_image_type(type);
+            const type = responseImageType(avatarResponse.headers.get('X-media-bytes'));
+            const media = imageType2MediaType(type);
 
             const blob = await avatarResponse.blob();
 
@@ -240,7 +241,7 @@ export class AvatarManager extends AbstractAvatarManager {
                 log.info(LogCategory.GENERAL, tr("Deleting cached avatar for client %s. Cached version: %s; New version: %s"), cached.getAvatarHash(), clientAvatarHash);
             }
 
-            const response = await AvatarManager.cache.resolve_cached('avatar_' + clientAvatarId);
+            const response = await AvatarManager.cache.resolveCached('avatar_' + clientAvatarId);
             if(response) {
                 let cachedAvatarHash = response.headers.has("X-avatar-version") ? response.headers.get("X-avatar-version") : undefined;
                 if(cachedAvatarHash !== clientAvatarHash) {
@@ -353,7 +354,7 @@ export class AvatarManager extends AbstractAvatarManager {
     });
 };
 
-/* FIXME: unsubscribe if the other client isn't alive any mnore */
+/* FIXME: unsubscribe if the other client isn't alive any anymore */
 class LocalAvatarManagerFactory extends AbstractAvatarManagerFactory {
     private ipcChannel: IPCChannel;
 
