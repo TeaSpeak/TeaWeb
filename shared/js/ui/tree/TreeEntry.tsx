@@ -23,5 +23,4 @@ export class UnreadMarker extends ReactComponentBase<UnreadMarkerProperties, {}>
     }
 }
 
-export class TreeEntry<Props, State> extends ReactComponentBase<Props, State> {
-}
+export class TreeEntry<Props, State> extends ReactComponentBase<Props, State> { }

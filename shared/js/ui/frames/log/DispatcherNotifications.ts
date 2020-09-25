@@ -10,6 +10,7 @@ import {findLogDispatcher} from "../../../ui/frames/log/DispatcherLog";
 import {formatDate} from "../../../MessageFormatter";
 import {Settings, settings} from "../../../settings";
 import {server_connections} from "tc-shared/ConnectionManager";
+import {getIconManager} from "tc-shared/file/Icons";
 
 export type DispatcherLog<T extends keyof TypeInfo> = (data: TypeInfo[T], handlerId: string, eventType: T) => void;
 
@@ -58,9 +59,12 @@ async function resolveServerIconUrl(handlerId: string) {
     const connection = server_connections.findConnection(handlerId);
 
     if(connection.channelTree.server.properties.virtualserver_icon_id) {
-        const icon = connection.fileManager.icons.load_icon(connection.channelTree.server.properties.virtualserver_icon_id);
-        await icon.await_loading();
-        return icon.loaded_url;
+        const icon = getIconManager().resolveIcon(connection.channelTree.server.properties.virtualserver_icon_id, connection.getCurrentServerUniqueId(), connection.handlerId);
+        await icon.awaitLoaded();
+
+        if(icon.getState() === "loaded" && icon.iconId > 1000) {
+            return icon.getImageUrl();
+        }
     }
 
     return kDefaultIcon;

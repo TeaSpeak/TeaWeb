@@ -23,7 +23,6 @@ import {ConnectionEvents} from "tc-shared/ConnectionHandler";
 
 const viewStyle = require("./View.scss");
 
-
 export interface ChannelTreeViewProperties {
     tree: ChannelTree;
     onMoveStart: (start: { x: number, y: number }, current: { x: number, y: number }) => void;

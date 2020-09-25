@@ -11,11 +11,12 @@ import {LogCategory} from "tc-shared/log";
 import ResizeObserver from "resize-observer-polyfill";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {Button} from "tc-shared/ui/react-elements/Button";
-import {IconRenderer, LocalIconRenderer} from "tc-shared/ui/react-elements/Icon";
+import {IconRenderer, LocalIconRenderer, RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import {createInfoModal} from "tc-shared/ui/elements/Modal";
+import {getIconManager} from "tc-shared/file/Icons";
 
 const cssStyle = require("./PermissionEditor.scss");
 
@@ -165,8 +166,9 @@ const ButtonIconPreview = (props: { events: Registry<PermissionEditorEvents>, co
     });
 
     let icon;
-    if (!unset && iconId > 0)
-        icon = <LocalIconRenderer key={"icon-" + iconId} icon={props.connection.fileManager.icons.load_icon(iconId)}/>;
+    if (!unset && iconId > 0) {
+        icon = <RemoteIconRenderer key={"icon-" + iconId} icon={getIconManager().resolveIcon(iconId, props.connection.getCurrentServerUniqueId(), props.connection.handlerId)} />;
+    }
 
     return (
         <div className={cssStyle.containerIconSelect}>

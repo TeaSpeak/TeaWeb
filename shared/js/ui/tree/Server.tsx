@@ -1,11 +1,12 @@
 import {BatchUpdateAssignment, BatchUpdateType} from "tc-shared/ui/react-elements/ReactComponentBase";
 import {ServerEntry as ServerEntryController, ServerEvents} from "../../tree/Server";
 import * as React from "react";
-import {LocalIconRenderer} from "tc-shared/ui/react-elements/Icon";
+import {LocalIconRenderer, RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {EventHandler, ReactEventHandler} from "tc-shared/events";
 import {Settings, settings} from "tc-shared/settings";
 import {TreeEntry, UnreadMarker} from "tc-shared/ui/tree/TreeEntry";
 import {ConnectionEvents, ConnectionState} from "tc-shared/ConnectionHandler";
+import {getIconManager} from "tc-shared/file/Icons";
 
 const serverStyle = require("./Server.scss");
 const viewStyle = require("./View.scss");
@@ -72,6 +73,8 @@ export class ServerEntry extends TreeEntry<ServerEntryProperties, ServerEntrySta
         else if (this.state.connection_state === "connecting")
             name = tr("Connecting to ") + this.props.server.remote_address.host + (this.props.server.remote_address.port !== 9987 ? ":" + this.props.server.remote_address.host : "");
 
+        const connection = this.props.server.channelTree.client;
+
         return <div
             className={this.classList(serverStyle.serverEntry, viewStyle.treeEntry, this.props.server.isSelected() && viewStyle.selected)}
             style={{top: this.props.offset}}
@@ -81,8 +84,7 @@ export class ServerEntry extends TreeEntry<ServerEntryProperties, ServerEntrySta
             <UnreadMarker entry={this.props.server}/>
             <div className={"icon client-server_green " + serverStyle.server_type}/>
             <div className={this.classList(serverStyle.name)}>{name}</div>
-            <LocalIconRenderer
-                icon={this.props.server.channelTree.client.fileManager?.icons.load_icon(this.props.server.properties.virtualserver_icon_id)}/>
+            <RemoteIconRenderer icon={getIconManager().resolveIcon(this.props.server.properties.virtualserver_icon_id, this.props.server.properties.virtualserver_unique_identifier, connection.handlerId)} />
         </div>
     }
 

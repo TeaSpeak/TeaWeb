@@ -20,7 +20,8 @@ import * as i18nc from "../../i18n/country";
 import {formatMessage} from "../../ui/frames/chat";
 import * as top_menu from "../frames/MenuBar";
 import {control_bar_instance} from "../../ui/frames/control-bar";
-import {icon_cache_loader, IconManager} from "../../file/Icons";
+import {icon_cache_loader, IconManager} from "../../file/IconsOld";
+import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 
 export function spawnBookmarkModal() {
     let modal: Modal;
@@ -153,8 +154,8 @@ export function spawnBookmarkModal() {
                     if (entry.type === BookmarkType.ENTRY) {
                         const bookmark = entry as Bookmark;
                         container.append(
-                            bookmark.last_icon_id ?
-                                IconManager.generate_tag(icon_cache_loader.load_icon(bookmark.last_icon_id, bookmark.last_icon_server_id), {animate: false}) :
+                            bookmark.last_icon_id && bookmark.last_icon_server_id ?
+                                generateIconJQueryTag(getIconManager().resolveIcon(bookmark.last_icon_id, bookmark.last_icon_server_id), {animate: false}) :
                                 $.spawn("div").addClass("icon-container icon_em")
                         );
                     } else {

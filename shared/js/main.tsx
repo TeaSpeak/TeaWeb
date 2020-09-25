@@ -43,6 +43,8 @@ import {ConnectRequestData} from "tc-shared/ipc/ConnectHandler";
 import "./video-viewer/Controller";
 import "./profiles/ConnectionProfile";
 import "./update/UpdaterWeb";
+import "./file/LocalIcons";
+
 import {defaultConnectProfile, findConnectProfile} from "tc-shared/profiles/ConnectionProfile";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {initializeConnectionUIList} from "tc-shared/ui/frames/connection-handler-list/Controller";

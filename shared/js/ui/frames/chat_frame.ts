@@ -9,6 +9,7 @@ import {ClientInfo} from "../../ui/frames/side/client_info";
 import {MusicInfo} from "../../ui/frames/side/music_info";
 import {ConversationManager} from "../../ui/frames/side/ConversationManager";
 import {PrivateConversationManager} from "../../ui/frames/side/PrivateConversationManager";
+import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 
 export enum InfoFrameMode {
     NONE = "none",
@@ -126,8 +127,10 @@ export class InfoFrame {
         html_tag.children().remove();
 
         if(channel) {
-            if(channel.properties.channel_icon_id != 0)
-                client.handle.fileManager.icons.generateTag(channel.properties.channel_icon_id).appendTo(html_tag);
+            if(channel.properties.channel_icon_id != 0) {
+                const connection = channel.channelTree.client;
+                generateIconJQueryTag(getIconManager().resolveIcon(channel.properties.channel_icon_id, connection.getCurrentServerUniqueId(), connection.handlerId)).appendTo(html_tag);
+            }
             $.spawn("div").text(channel.formattedChannelName()).appendTo(html_tag);
 
             this.update_channel_limit(channel, html_limit_tag);
@@ -154,8 +157,10 @@ export class InfoFrame {
 
         /* initialize */
         if(channel) {
-            if(channel.properties.channel_icon_id != 0)
-                this.handle.handle.fileManager.icons.generateTag(channel.properties.channel_icon_id).appendTo(html_tag);
+            if(channel.properties.channel_icon_id != 0) {
+                const connection = channel.channelTree.client;
+                generateIconJQueryTag(getIconManager().resolveIcon(channel.properties.channel_icon_id, connection.getCurrentServerUniqueId(), connection.handlerId)).appendTo(html_tag);
+            }
             $.spawn("div").text(channel.formattedChannelName()).appendTo(html_tag);
 
             this.update_channel_limit(channel, html_limit_tag);
@@ -163,8 +168,10 @@ export class InfoFrame {
             html_tag.append(formatMessage(tr("Unknown channel id {}"), current_channel_id));
         } else if(channel_tree && current_channel_id == 0) {
             const server = this.handle.handle.channelTree.server;
-            if(server.properties.virtualserver_icon_id != 0)
-                this.handle.handle.fileManager.icons.generateTag(server.properties.virtualserver_icon_id).appendTo(html_tag);
+            if(server.properties.virtualserver_icon_id != 0) {
+                const connection = server.channelTree.client;
+                generateIconJQueryTag(getIconManager().resolveIcon(server.properties.virtualserver_icon_id, connection.getCurrentServerUniqueId(), connection.handlerId)).appendTo(html_tag);
+            }
             $.spawn("div").text(server.properties.virtualserver_name).appendTo(html_tag);
             html_tag_title.text(tr("You're chatting in Server"));
 

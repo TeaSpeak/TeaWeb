@@ -6,13 +6,14 @@ import {
 } from "tc-shared/ui/frames/connection-handler-list/Definitions";
 import * as React from "react";
 import {useContext, useEffect, useRef, useState} from "react";
-import {IconRenderer, LocalIconRenderer} from "tc-shared/ui/react-elements/Icon";
+import {IconRenderer, LocalIconRenderer, RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import ResizeObserver from 'resize-observer-polyfill';
 import {LogCategory, logWarn} from "tc-shared/log";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
+import {getIconManager} from "tc-shared/file/Icons";
 
 const cssStyle = require("./Renderer.scss");
 const Events = React.createContext<Registry<ConnectionListUIEvents>>(undefined);
@@ -46,9 +47,7 @@ const ConnectionHandler = React.memo((props: { handlerId: string, mode: Connecti
                 cutoffName = status.handlerName.length > 30;
                 voiceReplaying = status.voiceReplaying;
                 displayedName = <React.Fragment key={"connected"}>{status.handlerName}</React.Fragment>;
-                if(status.serverIcon) {
-                    icon = <LocalIconRenderer icon={status.serverIcon} key={"server-icon"} />;
-                }
+                icon = <RemoteIconRenderer icon={getIconManager().resolveIcon(status.serverIcon.iconId, status.serverIcon.serverUniqueId, props.handlerId)} />;
                 break;
 
             case "connecting":

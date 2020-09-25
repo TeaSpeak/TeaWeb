@@ -10,6 +10,7 @@ import * as tooltip from "../../ui/elements/Tooltip";
 import {spawnIconSelect} from "../../ui/modal/ModalIconSelect";
 import {hashPassword} from "../../utils/helpers";
 import {sliderfy} from "../../ui/elements/Slider";
+import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 
 export function createChannelModal(connection: ConnectionHandler, channel: ChannelEntry | undefined, parent: ChannelEntry | undefined, permissions: PermissionManager, callback: (properties?: ChannelProperties, permissions?: PermissionValue[]) => any) {
     let properties: ChannelProperties = { } as ChannelProperties; //The changes properties
@@ -21,8 +22,9 @@ export function createChannelModal(connection: ConnectionHandler, channel: Chann
                 channel_flag_maxfamilyclients_unlimited: true,
                 channel_flag_maxclients_unlimited: true,
             });
-            render_properties["channel_icon_tab"] = connection.fileManager.icons.generateTag(channel ? channel.properties.channel_icon_id : 0);
-            render_properties["channel_icon_general"] = connection.fileManager.icons.generateTag(channel ? channel.properties.channel_icon_id : 0);
+
+            render_properties["channel_icon_tab"] = generateIconJQueryTag(getIconManager().resolveIcon(channel ? channel.properties.channel_icon_id : 0, connection.getCurrentServerUniqueId(), connection.handlerId));
+            render_properties["channel_icon_general"] = generateIconJQueryTag(getIconManager().resolveIcon(channel ? channel.properties.channel_icon_id : 0, connection.getCurrentServerUniqueId(), connection.handlerId));
             render_properties["create"] = !channel;
 
             let template = $("#tmpl_channel_edit").renderTag(render_properties);
@@ -134,7 +136,7 @@ function applyGeneralListener(connection: ConnectionHandler, properties: Channel
         spawnIconSelect(connection, id => {
             const icon_node = tag.find(".icon-preview");
             icon_node.children().remove();
-            icon_node.append(connection.fileManager.icons.generateTag(id));
+            icon_node.append(generateIconJQueryTag(getIconManager().resolveIcon(id, connection.getCurrentServerUniqueId(), connection.handlerId)));
 
             console.log("Selected icon ID: %d", id);
             properties.channel_icon_id = id;
@@ -144,7 +146,7 @@ function applyGeneralListener(connection: ConnectionHandler, properties: Channel
     tag.find(".button-icon-remove").on('click', event => {
         const icon_node = tag.find(".icon-preview");
         icon_node.children().remove();
-        icon_node.append(connection.fileManager.icons.generateTag(0));
+        icon_node.append(generateIconJQueryTag(getIconManager().resolveIcon(0, connection.getCurrentServerUniqueId(), connection.handlerId)));
 
         console.log("Remove channel icon");
         properties.channel_icon_id = 0;

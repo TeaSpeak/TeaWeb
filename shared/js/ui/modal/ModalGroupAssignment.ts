@@ -4,6 +4,7 @@ import * as log from "../../log";
 import {ClientEntry} from "../../tree/Client";
 import {GroupManager, GroupType} from "../../permission/GroupManager";
 import PermissionType from "../../permission/PermissionType";
+import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 
 let current_modal: Modal;
 export function createServerGroupAssignmentModal(client: ClientEntry, callback: (groups: number[], flag: boolean) => Promise<boolean>) {
@@ -27,7 +28,7 @@ export function createServerGroupAssignmentModal(client: ClientEntry, callback: 
                 entry["name"] = group.name;
                 entry["disabled"] = !client.channelTree.client.permissions.neededPermission(PermissionType.I_GROUP_MEMBER_ADD_POWER).granted(group.requiredMemberRemovePower);
                 entry["default"] = client.channelTree.server.properties.virtualserver_default_server_group == group.id;
-                tag["icon_" + group.id] = client.channelTree.client.fileManager.icons.generateTag(group.properties.iconid);
+                tag["icon_" + group.id] = generateIconJQueryTag(getIconManager().resolveIcon(group.properties.iconid, client.channelTree.server.properties.virtualserver_unique_identifier, client.channelTree.client.handlerId));
                 groups.push(entry);
             }
 

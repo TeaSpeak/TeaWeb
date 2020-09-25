@@ -6,6 +6,7 @@ import * as image_preview from "../image_preview";
 import * as i18nc from "../../../i18n/country";
 import {ClientEntry, LocalClientEntry} from "../../../tree/Client";
 import {format_online_time} from "../../../utils/TimeUtils";
+import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 
 export class ClientInfo {
     readonly handle: Frame;
@@ -246,7 +247,7 @@ export class ClientInfo {
                     container_groups.append(
                         $.spawn("div").addClass("group-container")
                             .append(
-                                this.handle.handle.fileManager.icons.generateTag(group.properties.iconid)
+                                generateIconJQueryTag(getIconManager().resolveIcon(group.properties.iconid, this.handle.handle.getCurrentServerUniqueId(), this.handle.handle.handlerId))
                             ).append(
                             $.spawn("a").text(group.name).attr("title", tr("Group id: ") + group.id)
                         )
@@ -265,7 +266,7 @@ export class ClientInfo {
                     container_group.append(
                         $.spawn("div").addClass("group-container")
                             .append(
-                                this.handle.handle.fileManager.icons.generateTag(group.properties.iconid)
+                                generateIconJQueryTag(getIconManager().resolveIcon(group.properties.iconid, this.handle.handle.getCurrentServerUniqueId(), this.handle.handle.handlerId))
                             ).append(
                             $.spawn("a").text(group.name).attr("title", tr("Group id: ") + group_id)
                         )

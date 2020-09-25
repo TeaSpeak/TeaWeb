@@ -6,6 +6,7 @@ import * as i18nc from "../../i18n/country";
 import * as tooltip from "../../ui/elements/Tooltip";
 import * as moment from "moment";
 import {format_number, network} from "../../ui/frames/chat";
+import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 
 type InfoUpdateCallback = (info: ClientConnectionInfo) => any;
 
@@ -311,8 +312,9 @@ function apply_groups(client: ClientEntry, tag: JQuery, modal: Modal, callbacks:
                 if (!group) continue; //This shall never happen!
 
                 container_empty.hide();
+
                 container_entries.append($.spawn("div").addClass("entry").append(
-                    client.channelTree.client.fileManager.icons.generateTag(group.properties.iconid),
+                    generateIconJQueryTag(getIconManager().resolveIcon(group.properties.iconid, client.channelTree.client.getCurrentServerUniqueId(), client.channelTree.client.handlerId)),
                     $.spawn("a").addClass("name").text(group.name + " (" + group.id + ")"),
                     $.spawn("div").addClass("button-delete").append(
                         $.spawn("div").addClass("icon_em client-delete").attr("title", tr("Delete group")).on('click', event => {

@@ -4,7 +4,7 @@ import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import {ChannelInfo, GroupProperties, PermissionModalEvents} from "tc-shared/ui/modal/permission/ModalPermissionEditor";
 import {PermissionEditorEvents} from "tc-shared/ui/modal/permission/PermissionEditor";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {LocalIconRenderer} from "tc-shared/ui/react-elements/Icon";
+import {LocalIconRenderer, RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {createInputModal} from "tc-shared/ui/elements/Modal";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
@@ -14,6 +14,7 @@ import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import {FlatInputField} from "tc-shared/ui/react-elements/InputField";
 import {arrayBufferBase64} from "tc-shared/utils/buffers";
 import {tra} from "tc-shared/i18n/localize";
+import {getIconManager} from "tc-shared/file/Icons";
 
 const cssStyle = require("./TabHandler.scss");
 
@@ -56,7 +57,7 @@ const GroupsListEntry = (props: { connection: ConnectionHandler, group: GroupPro
     return (
         <div className={cssStyle.entry + " " + (props.selected ? cssStyle.selected : "")} onClick={props.callbackSelect}
              onContextMenu={props.onContextMenu}>
-            <LocalIconRenderer icon={props.connection.fileManager.icons.load_icon(props.group.iconId)}/>
+            <RemoteIconRenderer icon={getIconManager().resolveIcon(props.group.iconId, props.connection.getCurrentServerUniqueId(), props.connection.handlerId)} />
             <div className={cssStyle.name}>{groupTypePrefix + props.group.name + " (" + props.group.id + ")"}</div>
         </div>
     )
@@ -476,8 +477,9 @@ class ServerClientList extends React.Component<{ connection: ConnectionHandler, 
                  onContextMenu={e => this.onListContextMenu(e)}>
                 {selectedGroup ?
                     <div key={"selected-group"} className={cssStyle.entry + " " + cssStyle.selectedGroup}>
-                        <div className={cssStyle.icon}><LocalIconRenderer
-                            icon={this.props.connection.fileManager.icons.load_icon(selectedGroup.iconId)}/></div>
+                        <div className={cssStyle.icon}>
+                            <RemoteIconRenderer icon={getIconManager().resolveIcon(selectedGroup.iconId, this.props.connection.getCurrentServerUniqueId(), this.props.connection.handlerId)} />
+                        </div>
                         <div
                             className={cssStyle.name}>{groupTypePrefix + selectedGroup.name + " (" + selectedGroup.id + ")"}</div>
                     </div>
@@ -847,7 +849,7 @@ class ChannelList extends React.Component<{ connection: ConnectionHandler, event
                                  id: e.id
                              })}
                         >
-                            <LocalIconRenderer icon={this.props.connection.fileManager.icons.load_icon(e.iconId)}/>
+                            <RemoteIconRenderer icon={getIconManager().resolveIcon(e.iconId, this.props.connection.getCurrentServerUniqueId(), this.props.connection.handlerId)} />
                             <a className={cssStyle.name}>{e.name + " (" + e.id + ")"}</a>
                         </div>
                     ))}

@@ -6,6 +6,7 @@ import {hashPassword} from "../../utils/helpers";
 import * as tooltip from "../../ui/elements/Tooltip";
 import {spawnIconSelect} from "../../ui/modal/ModalIconSelect";
 import {network} from "../../ui/frames/chat";
+import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 
 export function createServerModal(server: ServerEntry, callback: (properties?: ServerProperties) => Promise<void>) {
     const properties = Object.assign({}, server.properties);
@@ -43,7 +44,7 @@ export function createServerModal(server: ServerEntry, callback: (properties?: S
         header: tr("Manage the Virtual Server"),
         body: () => {
             const template = $("#tmpl_server_edit").renderTag(Object.assign(Object.assign({}, server.properties), {
-                server_icon: server.channelTree.client.fileManager.icons.generateTag(server.properties.virtualserver_icon_id)
+                server_icon: generateIconJQueryTag(getIconManager().resolveIcon(server.properties.virtualserver_icon_id, server.properties.virtualserver_unique_identifier, server.channelTree.client.handlerId))
             }));
 
             /* the tab functionality */
@@ -120,7 +121,7 @@ function apply_general_listener(tag: JQuery, server: ServerEntry, properties: Se
             spawnIconSelect(server.channelTree.client, id => {
                 const icon_node = tag.find(".icon-preview");
                 icon_node.children().remove();
-                icon_node.append(server.channelTree.client.fileManager.icons.generateTag(id));
+                icon_node.append(generateIconJQueryTag(getIconManager().resolveIcon(id, server.properties.virtualserver_unique_identifier, server.channelTree.client.handlerId)));
 
                 console.log("Selected icon ID: %d", id);
                 properties.virtualserver_icon_id = id;
@@ -131,7 +132,7 @@ function apply_general_listener(tag: JQuery, server: ServerEntry, properties: Se
         tag.find(".button-icon-remove").on('click', event => {
             const icon_node = tag.find(".icon-preview");
             icon_node.children().remove();
-            icon_node.append(server.channelTree.client.fileManager.icons.generateTag(0));
+            icon_node.append(generateIconJQueryTag(getIconManager().resolveIcon(0, server.properties.virtualserver_unique_identifier)));
 
             console.log("Remove server icon");
             properties.virtualserver_icon_id = 0;

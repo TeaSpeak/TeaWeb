@@ -10,6 +10,7 @@ import * as crc32 from "../../crypto/crc32";
 import {FileInfo} from "../../file/FileManager";
 import {FileTransferState, TransferProvider} from "../../file/Transfer";
 import {ErrorCode} from "../../connection/ErrorCode";
+import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 
 export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: number) => any, selected_icon?: number) {
     selected_icon = selected_icon || 0;
@@ -49,22 +50,24 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
     const update_local_icons = (icons: number[]) => {
         container_icons_local.empty();
 
-        for (const icon_id of icons) {
-            const tag = client.fileManager.icons.generateTag(icon_id, {animate: false}).attr('title', "Icon " + icon_id);
+        for (const iconId of icons) {
+            const iconTag = generateIconJQueryTag(getIconManager().resolveIcon(iconId, client.channelTree.server.properties.virtualserver_unique_identifier), { animate: false });
+
+            const tag = iconTag.attr('title', "Icon " + iconId);
             if (callback_icon) {
                 tag.on('click', event => {
                     container_icons.find(".selected").removeClass("selected");
                     tag.addClass("selected");
 
                     selected_container.empty().append(tag.clone());
-                    selected_icon = icon_id;
+                    selected_icon = iconId;
                     button_select.prop("disabled", false);
                 });
                 tag.on('dblclick', event => {
-                    callback_icon(icon_id);
+                    callback_icon(iconId);
                     modal.close();
                 });
-                if (icon_id == selected_icon)
+                if (iconId == selected_icon)
                     tag.trigger('click');
             }
             tag.appendTo(container_icons_local);
@@ -101,19 +104,21 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
                 if (!chunk) return;
 
                 for (const icon of chunk) {
-                    const icon_id = parseInt(icon.name.substr("icon_".length));
-                    if (Number.isNaN(icon_id)) {
+                    const iconId = parseInt(icon.name.substr("icon_".length));
+                    if (Number.isNaN(iconId)) {
                         log.warn(LogCategory.GENERAL, tr("Received an unparsable icon within icon list (%o)"), icon);
                         continue;
                     }
-                    const tag = client.fileManager.icons.generateTag(icon_id, {animate: false}).attr('title', "Icon " + icon_id);
+
+                    const iconTag = generateIconJQueryTag(getIconManager().resolveIcon(iconId, client.channelTree.server.properties.virtualserver_unique_identifier), { animate: false });
+                    const tag = iconTag.attr('title', "Icon " + iconId);
                     if (callback_icon || allow_manage) {
                         tag.on('click', event => {
                             container_icons.find(".selected").removeClass("selected");
                             tag.addClass("selected");
 
                             selected_container.empty().append(tag.clone());
-                            selected_icon = icon_id;
+                            selected_icon = iconId;
                             button_select.prop("disabled", false);
                             button_delete.prop("disabled", !allow_manage);
                         });
@@ -121,10 +126,10 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
                             if (!callback_icon)
                                 return;
 
-                            callback_icon(icon_id);
+                            callback_icon(iconId);
                             modal.close();
                         });
-                        if (icon_id == selected_icon)
+                        if (iconId == selected_icon)
                             tag.trigger('click');
                     }
                     tag.appendTo(container_icons_remote);
@@ -158,7 +163,7 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
 
         if (selected_icon < 1000) return; /* we cant delete local icons */
 
-        client.fileManager.icons.delete_icon(selected_icon).then(() => {
+        client.fileManager.deleteIcon(selected_icon).then(() => {
             selected.detach();
         }).catch(error => {
             if (error instanceof CommandResult && error.id == ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS)

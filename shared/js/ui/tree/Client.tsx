@@ -7,8 +7,6 @@ import * as React from "react";
 import {
     ClientEntry as ClientEntryController,
     ClientEvents,
-    ClientProperties,
-    ClientType,
     LocalClientEntry,
     MusicClientEntry
 } from "../../tree/Client";
@@ -16,11 +14,12 @@ import {EventHandler, ReactEventHandler} from "tc-shared/events";
 import {Group, GroupEvents} from "tc-shared/permission/GroupManager";
 import {Settings, settings} from "tc-shared/settings";
 import {TreeEntry, UnreadMarker} from "tc-shared/ui/tree/TreeEntry";
-import {LocalIconRenderer} from "tc-shared/ui/react-elements/Icon";
+import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import * as DOMPurify from "dompurify";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {useState} from "react";
+import {getIconManager} from "tc-shared/file/Icons";
 
 const clientStyle = require("./Client.scss");
 const viewStyle = require("./View.scss");
@@ -73,10 +72,13 @@ class ClientServerGroupIcons extends ReactComponentBase<ClientServerGroupIconsPr
         const group_icons = groups.filter(e => e?.properties.iconid)
             .sort((a, b) => a.properties.sortid - b.properties.sortid);
         if (group_icons.length === 0) return null;
+
+
+        const connection = this.props.client.channelTree.client;
         return [
             group_icons.map(e => {
-                return <LocalIconRenderer key={"group-icon-" + e.id}
-                                          icon={this.props.client.channelTree.client.fileManager.icons.load_icon(e.properties.iconid)}/>;
+                return <RemoteIconRenderer key={"group-icon-" + e.id}
+                                           icon={getIconManager().resolveIcon(e.properties.iconid, connection.getCurrentServerUniqueId(), connection.handlerId)} />
             })
         ];
     }
@@ -126,14 +128,16 @@ class ClientChannelGroupIcon extends ReactComponentBase<ClientChannelGroupIconPr
         this.subscribed_group = channel_group;
 
         if (channel_group.properties.iconid === 0) return null;
-        return <LocalIconRenderer key={"cg-icon"}
-                                  icon={this.props.client.channelTree.client.fileManager.icons.load_icon(channel_group.properties.iconid)}/>;
+
+        const connection = this.props.client.channelTree.client;
+        return <RemoteIconRenderer icon={getIconManager().resolveIcon(channel_group.properties.iconid, connection.getCurrentServerUniqueId(), connection.handlerId)} key={"cg-icon"} />;
     }
 
     @EventHandler<ClientEvents>("notify_properties_updated")
     private handlePropertiesUpdated(event: ClientEvents["notify_properties_updated"]) {
-        if (typeof event.updated_properties.client_servergroups)
+        if (typeof event.updated_properties.client_servergroups) {
             this.forceUpdate();
+        }
     }
 }
 
@@ -153,9 +157,11 @@ class ClientIcons extends ReactComponentBase<ClientIconsProperties, {}> {
 
         icons.push(<ClientServerGroupIcons key={"sg-icons"} client={this.props.client}/>);
         icons.push(<ClientChannelGroupIcon key={"channel-icons"} client={this.props.client}/>);
-        if (this.props.client.properties.client_icon_id !== 0)
-            icons.push(<LocalIconRenderer key={"client-icon"}
-                                          icon={this.props.client.channelTree.client.fileManager.icons.load_icon(this.props.client.properties.client_icon_id)}/>);
+        if (this.props.client.properties.client_icon_id !== 0) {
+            const connection = this.props.client.channelTree.client;
+            icons.push(<RemoteIconRenderer key={"client-icon"}
+                                           icon={getIconManager().resolveIcon(this.props.client.properties.client_icon_id, connection.getCurrentServerUniqueId(), connection.handlerId)} />);
+        }
 
         return (
             <div className={clientStyle.containerIcons}>
