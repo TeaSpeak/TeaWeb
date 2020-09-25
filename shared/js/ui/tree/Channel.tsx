@@ -187,18 +187,19 @@ class ChannelEntryIcon extends ReactComponentBase<ChannelEntryIconProperties, {}
 
         const channel_properties = this.props.channel.properties;
 
-        let type;
-        if (channel_properties.channel_flag_password === true && !this.props.channel.cached_password())
-            type = "yellow";
-        else if (!channel_properties.channel_flag_maxclients_unlimited && this.props.channel.clients().length >= channel_properties.channel_maxclients)
-            type = "red";
-        else if (!channel_properties.channel_flag_maxfamilyclients_unlimited && channel_properties.channel_maxfamilyclients >= 0 && this.props.channel.clients(true).length >= channel_properties.channel_maxfamilyclients)
-            type = "red";
-        else
-            type = "green";
+        const subscribed = this.props.channel.flag_subscribed;
+        let channelIcon: ClientIcon;
+        if (channel_properties.channel_flag_password === true && !this.props.channel.cached_password()) {
+            channelIcon = subscribed ? ClientIcon.ChannelYellowSubscribed : ClientIcon.ChannelYellow;
+        } else if (!channel_properties.channel_flag_maxclients_unlimited && this.props.channel.clients().length >= channel_properties.channel_maxclients) {
+            channelIcon = subscribed ? ClientIcon.ChannelRedSubscribed : ClientIcon.ChannelRed;
+        } else if (!channel_properties.channel_flag_maxfamilyclients_unlimited && channel_properties.channel_maxfamilyclients >= 0 && this.props.channel.clients(true).length >= channel_properties.channel_maxfamilyclients) {
+            channelIcon = subscribed ? ClientIcon.ChannelRedSubscribed : ClientIcon.ChannelRed;
+        } else {
+            channelIcon = ClientIcon.ChannelGreen;
+        }
 
-        return <div
-            className={"icon client-channel_" + type + (this.props.channel.flag_subscribed ? "_subscribed" : "") + " " + channelStyle.channelType}/>;
+        return <ClientIconRenderer icon={channelIcon} className={channelStyle.channelType} />;
     }
 
     @EventHandler<ChannelEvents>("notify_properties_updated")
