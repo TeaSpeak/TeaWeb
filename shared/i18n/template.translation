@@ -11,6 +11,8 @@
             "flags": [ /* [optional] some flags for this translation */
                 "google-translate", /* this translation has been made with google translator */
                 "verified" /* this translation has been verified by a native speaker */
+                "in-use-system" /* this translation is been used (detected by the system) */
+                "ui-visible" /* this translation will be visible for the user */
             ]
         }
     ]
