@@ -196,7 +196,7 @@ class ChannelEntryIcon extends ReactComponentBase<ChannelEntryIconProperties, {}
         } else if (!channel_properties.channel_flag_maxfamilyclients_unlimited && channel_properties.channel_maxfamilyclients >= 0 && this.props.channel.clients(true).length >= channel_properties.channel_maxfamilyclients) {
             channelIcon = subscribed ? ClientIcon.ChannelRedSubscribed : ClientIcon.ChannelRed;
         } else {
-            channelIcon = ClientIcon.ChannelGreen;
+            channelIcon = subscribed ? ClientIcon.ChannelGreenSubscribed : ClientIcon.ChannelGreen;
         }
 
         return <ClientIconRenderer icon={channelIcon} className={channelStyle.channelType} />;
