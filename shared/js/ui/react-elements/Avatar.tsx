@@ -9,9 +9,9 @@ export const AvatarRenderer = React.memo((props: { avatar: ClientAvatar | "loadi
 
     let image;
     if(props.avatar === "loading") {
-        image = <img src={kLoadingAvatarImage} />;
+        image = <img draggable={false} src={kLoadingAvatarImage} alt={tr("loading")}/>;
     } else if(props.avatar === "default") {
-        image = <img src={kDefaultAvatarImage} />;
+        image = <img draggable={false} src={kDefaultAvatarImage} alt={tr("default avatar")} />;
     } else {
         const imageUrl = props.avatar.getAvatarUrl();
         switch (props.avatar.getState()) {
