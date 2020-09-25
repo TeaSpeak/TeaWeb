@@ -9,7 +9,7 @@ export enum ImageType {
     JPEG
 }
 
-export function media_image_type(type: ImageType, file?: boolean) {
+export function imageType2MediaType(type: ImageType, file?: boolean) {
     switch (type) {
         case ImageType.BITMAP:
             return "bmp";
@@ -26,7 +26,7 @@ export function media_image_type(type: ImageType, file?: boolean) {
     }
 }
 
-export function image_type(encoded_data: string | ArrayBuffer, base64_encoded?: boolean) {
+export function responseImageType(encoded_data: string | ArrayBuffer, base64_encoded?: boolean) {
     const ab2str10 = () => {
         const buf = new Uint8Array(encoded_data as ArrayBuffer);
         if(buf.byteLength < 10)
@@ -97,7 +97,7 @@ export class ImageCache {
         /* FIXME: TODO */
     }
 
-    async resolve_cached(key: string, max_age?: number) : Promise<Response | undefined> {
+    async resolveCached(key: string, max_age?: number) : Promise<Response | undefined> {
         max_age = typeof(max_age) === "number" ? max_age : -1;
 
         const cached_response = await this._cache_category.match("https://_local_cache/cache_request_" + key);
@@ -108,7 +108,7 @@ export class ImageCache {
         return cached_response;
     }
 
-    async put_cache(key: string, value: Response, type?: string, headers?: {[key: string]:string}) {
+    async putCache(key: string, value: Response, type?: string, headers?: {[key: string]:string}) {
         const new_headers = new Headers();
         for(const key of value.headers.keys())
             new_headers.set(key, value.headers.get(key));
