@@ -5,7 +5,7 @@ import {AbstractIconManager, RemoteIcon, RemoteIconState, setIconManager} from "
 import * as log from "tc-shared/log";
 import {LogCategory, logDebug, logError, logWarn} from "tc-shared/log";
 import {server_connections} from "tc-shared/ConnectionManager";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import {ConnectionEvents, ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {FileTransferState, ResponseTransferTarget, TransferProvider, TransferTargetType} from "tc-shared/file/Transfer";
 import {tr} from "tc-shared/i18n/localize";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
@@ -54,9 +54,49 @@ class LocalRemoteIcon extends RemoteIcon {
 export let localIconCache: ImageCache;
 class IconManager extends AbstractIconManager {
     private cachedIcons: {[key: string]: LocalRemoteIcon} = {};
+    private connectionStateChangeListener: {[key: string]: (handlerId: string, event: ConnectionEvents["notify_connection_state_changed"]) => void} = {};
 
     private static iconUniqueKey(iconId: number, serverUniqueId: string) : string {
         return "v2-" + serverUniqueId + "-" + iconId;
+    }
+
+    constructor() {
+        super();
+
+        server_connections.events().on("notify_handler_created", event => {
+            this.connectionStateChangeListener[event.handlerId] = this.handleHandlerStateChange.bind(this, event.handlerId);
+            event.handler.events().on("notify_connection_state_changed", this.connectionStateChangeListener[event.handlerId] as any);
+        });
+
+        server_connections.events().on("notify_handler_deleted", event => {
+             if(this.connectionStateChangeListener[event.handlerId]) {
+                 event.handler.events().off("notify_connection_state_changed", this.connectionStateChangeListener[event.handlerId] as any);
+                 delete this.connectionStateChangeListener[event.handlerId];
+             }
+        });
+    }
+
+    private handleHandlerStateChange(handlerId: string, event: ConnectionEvents["notify_connection_state_changed"]) {
+        const connection = server_connections.findConnection(handlerId);
+        if(!connection) {
+            logWarn(LogCategory.CLIENT, tr("Received handler state changed event for invalid handler id %s"), handlerId);
+            return;
+        }
+
+        if(event.new_state !== ConnectionState.CONNECTED) {
+            return;
+        }
+
+        /* update all empty icons */
+        Object.values(this.cachedIcons).forEach((icon: LocalRemoteIcon) => {
+            if(icon.serverUniqueId !== connection.getCurrentServerUniqueId()) {
+                return;
+            }
+
+            if(icon.getState() === "empty") {
+                this.wrapIconDownload(icon, connection, IconManager.iconUniqueKey(icon.iconId, icon.serverUniqueId)).then(() => {});
+            }
+        });
     }
 
     resolveIcon(iconId: number, serverUniqueId: string, handlerIdHint: string): RemoteIcon {
@@ -146,6 +186,10 @@ class IconManager extends AbstractIconManager {
             handler = connections[0];
         }
 
+        await this.wrapIconDownload(icon, handler, iconUniqueId);
+    }
+
+    private async wrapIconDownload(icon: LocalRemoteIcon, handler: ConnectionHandler, iconUniqueId: string) {
         try {
             await this.downloadIcon(icon, handler, iconUniqueId);
         } catch (error) {
