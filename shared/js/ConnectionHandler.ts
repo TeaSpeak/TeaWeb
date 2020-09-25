@@ -792,7 +792,6 @@ export class ConnectionHandler {
         /* update the recorder state */
         const currentInput = voiceConnection.voiceRecorder()?.input;
         if(currentInput) {
-            console.error("Should record: %o | %o", shouldRecord, this.getInputHardwareState());
             if(shouldRecord || this.echoTestRunning) {
                 if(this.getInputHardwareState() !== InputHardwareState.START_FAILED) {
                     this.startVoiceRecorder(Date.now() - this._last_record_error_popup > 10 * 1000).then(() => {
@@ -857,7 +856,6 @@ export class ConnectionHandler {
             return { state: "no-input" };
         }
 
-        console.error("Input statuis: %o", InputState[input.currentState()], FilterMode[input.getFilterMode()]);
         if(input.currentState() === InputState.PAUSED && this.connection_state === ConnectionState.CONNECTED) {
             try {
                 const result = await input.start();
