@@ -13,6 +13,9 @@ const UserUITags = [
     "js-template"
 ]
 
+const kFlagInUseSystem = "in-use-system";
+const kFlagInUseManual = "in-use-manual";
+
 async function run_translate(messages: string[], source_language: string, target_language: string) : Promise<(string | undefined)[]> {
     let messages_left = messages.slice(0);
     let result = [];
@@ -84,7 +87,7 @@ function updateUIFlag(entry: TranslationEntry, type: string) {
     }
 }
 
-async function translate_messages(input_file: string, output_file: string, source_language: string, target_language: string) {
+async function translate_messages(input_files: string[], output_file: string, source_language: string, target_language: string, noTranslate: boolean) {
     let output_data: TranslationFile;
     if(await fs.pathExists(output_file)) {
         try {
@@ -109,19 +112,24 @@ async function translate_messages(input_file: string, output_file: string, sourc
         }
     }
 
-    if(!Array.isArray(output_data.translations))
+    if(!Array.isArray(output_data.translations)) {
         output_data.translations = [];
-    
-    let messages_to_translate: InputFile[] = [];
-    try {
-        messages_to_translate = await fs.readJSON(input_file);
-    } catch (error) {
-        console.log("Failed to parse input file %o", error);
-        throw "failed to read input file";
     }
 
-    const original_messages = messages_to_translate.length;
-    messages_to_translate = messages_to_translate.filter(e => {
+    let known_messages: InputFile[] = [];
+    for(const file of input_files) {
+        try {
+            const messages = await fs.readJSON(file);
+            known_messages.push(...messages);
+        } catch (error) {
+            console.log("Failed to parse input file %o", error);
+            throw "failed to read input file";
+        }
+    }
+
+    /* TODO: Check in the unused translations if that phrase has already been translated */
+    const original_messages = known_messages.length;
+    const messages_to_translate = known_messages.filter(e => {
         const entry = output_data.translations.find(f => e.message === f.key.message);
         if(!entry) {
             /* needs translation */
@@ -131,30 +139,48 @@ async function translate_messages(input_file: string, output_file: string, sourc
         /* update ui status */
         updateUIFlag(entry, e.type);
     });
-    console.log("Messages to translate: %d out of %d", messages_to_translate.length, original_messages);
 
-    const response = await run_translate(messages_to_translate.map(e => e.message), source_language, target_language);
-    if(messages_to_translate.length !== response.length)
-        throw "invalid response length";
+    if(noTranslate) {
+        console.log("Messages %d out of %d have been translated", messages_to_translate.length, original_messages);
+    } else {
+        console.log("Messages to translate: %d out of %d", messages_to_translate.length, original_messages);
+        const response = await run_translate(messages_to_translate.map(e => e.message), source_language, target_language);
+        if(messages_to_translate.length !== response.length)
+            throw "invalid response length";
 
-    for(let index = 0; index < response.length; index++) {
-        if(typeof response[index] !== "string") {
-            console.log("Failed to translate message %s", messages_to_translate[index]);
-            continue;
+        for(let index = 0; index < response.length; index++) {
+            if(typeof response[index] !== "string") {
+                console.log("Failed to translate message %s", messages_to_translate[index]);
+                continue;
+            }
+
+            let translated = {
+                key: {
+                    message: messages_to_translate[index].message
+                },
+                translated: response[index],
+                flags: [
+                    "google-translated"
+                ]
+            } as TranslationEntry;
+            updateUIFlag(translated, messages_to_translate[index].type);
+            output_data.translations.push(translated);
         }
-
-        let translated = {
-            key: {
-                message: messages_to_translate[index].message
-            },
-            translated: response[index],
-            flags: [
-                "google-translated"
-            ]
-        } as TranslationEntry;
-        updateUIFlag(translated, messages_to_translate[index].type);
-        output_data.translations.push(translated);
     }
+
+    output_data.translations.filter(translation => {
+        const inUse = known_messages.findIndex(message => message.message === translation.key.message) !== -1;
+        if(inUse) {
+            if(translation.flags.indexOf(kFlagInUseSystem) === -1) {
+                translation.flags.push(kFlagInUseSystem);
+            }
+        } else {
+            const index = translation.flags.indexOf(kFlagInUseSystem);
+            if(index !== -1) {
+                translation.flags.splice(index, 1);
+            }
+        }
+    });
 
     await fs.writeJSON(output_file, output_data, {
         spaces: "  "
@@ -172,8 +198,7 @@ const input_files = ["../dist/translations.json", "generated/translations_html.j
 const output_file = process_args[1] || path.join(__dirname, "i18n", process_args[0] + "_google_translate.translation");
 
 (async () => {
-    for(const file of input_files)
-        await translate_messages(file, output_file, "en", process_args[0]);
+    await translate_messages(input_files, output_file, "en", process_args[0], process_args[0] === "none");
 })().catch(error => {
     console.error("Failed to create translation files: %o", error);
     process.exit(1);
