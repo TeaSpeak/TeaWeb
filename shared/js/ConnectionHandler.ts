@@ -853,14 +853,11 @@ export class ConnectionHandler {
 
     async startVoiceRecorder(notifyError: boolean) : Promise<{ state: "success" | "no-input" } | { state: "error", message: string }> {
         const input = this.getVoiceRecorder()?.input;
-        console.error("Input: %o", input);
         if(!input) {
-            console.error("NO - INPUT");
             return { state: "no-input" };
         }
 
-        console.error("XXX");
-        console.log("Input statuis: %o", input.currentState());
+        console.error("Input statuis: %o", InputState[input.currentState()], FilterMode[input.getFilterMode()]);
         if(input.currentState() === InputState.PAUSED && this.connection_state === ConnectionState.CONNECTED) {
             try {
                 const result = await input.start();

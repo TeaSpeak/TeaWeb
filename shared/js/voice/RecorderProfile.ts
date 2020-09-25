@@ -245,7 +245,7 @@ export class RecorderProfile {
                 log.warn(LogCategory.VOICE, tr("Failed to unmount input consumer for profile (%o)"), error);
             }
 
-            this.input.setFilterMode(FilterMode.Block);
+            /* this.input.setFilterMode(FilterMode.Block); */
         }
 
         this.callback_input_initialized = undefined;
