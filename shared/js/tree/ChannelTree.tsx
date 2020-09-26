@@ -70,7 +70,7 @@ export interface ChannelTreeEvents {
     },
     notify_client_moved: {
         client: ClientEntry,
-        oldChannel: ChannelEntry,
+        oldChannel: ChannelEntry | undefined,
         newChannel: ChannelEntry
     }
     notify_client_leave_view: {
