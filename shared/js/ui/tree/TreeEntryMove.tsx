@@ -1,7 +1,7 @@
 import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {ChannelTreeView} from "./RendererView.tsx.old";
+import {ChannelTreeView} from "tc-shared/ui/tree/RendererView";
 
 const moveStyle = require("./TreeEntryMove.scss");
 

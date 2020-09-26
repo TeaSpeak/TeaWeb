@@ -16,6 +16,7 @@ import {
 import {ConversationPanel} from "../../../ui/frames/side/ConversationUI";
 import {AbstractChat, AbstractChatManager, kMaxChatFrameMessageSize} from "./AbstractConversion";
 import {ErrorCode} from "../../../connection/ErrorCode";
+import {LocalClientEntry} from "tc-shared/tree/Client";
 
 const kSuccessQueryThrottle = 5 * 1000;
 const kErrorQueryThrottle = 30 * 1000;
@@ -327,9 +328,11 @@ export class ConversationManager extends AbstractChatManager<ConversationUIEvent
             this.handlePanelShow();
         }));
 
-        connection.events().one("notify_handler_initialized", () => this.uiEvents.on("notify_destroy", connection.getClient().events.on("notify_client_moved", event => {
-            this.findOrCreateConversation(event.oldChannel.channelId).localClientSwitchedChannel("leave");
-            this.findOrCreateConversation(event.newChannel.channelId).localClientSwitchedChannel("join");
+        connection.events().one("notify_handler_initialized", () => this.uiEvents.on("notify_destroy", connection.channelTree.events.on("notify_client_moved", event => {
+            if(event.client instanceof LocalClientEntry) {
+                this.findOrCreateConversation(event.oldChannel.channelId).localClientSwitchedChannel("leave");
+                this.findOrCreateConversation(event.newChannel.channelId).localClientSwitchedChannel("join");
+            }
         })));
 
         this.uiEvents.register_handler(this, true);
