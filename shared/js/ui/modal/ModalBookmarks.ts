@@ -20,7 +20,6 @@ import * as i18nc from "../../i18n/country";
 import {formatMessage} from "../../ui/frames/chat";
 import * as top_menu from "../frames/MenuBar";
 import {control_bar_instance} from "../../ui/frames/control-bar";
-import {icon_cache_loader, IconManager} from "../../file/IconsOld";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 
 export function spawnBookmarkModal() {

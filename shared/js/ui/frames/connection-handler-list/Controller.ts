@@ -6,8 +6,6 @@ import {ConnectionHandlerList} from "tc-shared/ui/frames/connection-handler-list
 import {server_connections} from "tc-shared/ConnectionManager";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
-import {LocalIcon} from "../../../file/IconsOld";
-import {RemoteIconInfo} from "tc-shared/file/Icons";
 
 export function initializeConnectionUIList() {
     const container = document.getElementById("connection-handler-list");

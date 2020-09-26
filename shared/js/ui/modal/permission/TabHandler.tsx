@@ -4,7 +4,7 @@ import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import {ChannelInfo, GroupProperties, PermissionModalEvents} from "tc-shared/ui/modal/permission/ModalPermissionEditor";
 import {PermissionEditorEvents} from "tc-shared/ui/modal/permission/PermissionEditor";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {LocalIconRenderer, RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
+import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {createInputModal} from "tc-shared/ui/elements/Modal";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";

@@ -7,7 +7,6 @@ import {ConnectionProfile, defaultConnectProfile, findConnectProfile, availableC
 import {KeyCode} from "../../PPTListener";
 import * as i18nc from "../../i18n/country";
 import {spawnSettingsModal} from "../../ui/modal/ModalSettings";
-import {icon_cache_loader, IconManager} from "../../file/IconsOld";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 

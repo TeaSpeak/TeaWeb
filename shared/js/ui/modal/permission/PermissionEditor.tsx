@@ -11,7 +11,7 @@ import {LogCategory} from "tc-shared/log";
 import ResizeObserver from "resize-observer-polyfill";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {Button} from "tc-shared/ui/react-elements/Button";
-import {IconRenderer, LocalIconRenderer, RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
+import {IconRenderer, RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {copy_to_clipboard} from "tc-shared/utils/helpers";

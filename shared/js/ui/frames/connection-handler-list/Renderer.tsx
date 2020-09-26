@@ -6,7 +6,7 @@ import {
 } from "tc-shared/ui/frames/connection-handler-list/Definitions";
 import * as React from "react";
 import {useContext, useEffect, useRef, useState} from "react";
-import {IconRenderer, LocalIconRenderer, RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
+import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
@@ -38,7 +38,7 @@ const ConnectionHandler = React.memo((props: { handlerId: string, mode: Connecti
     let displayedName;
     let cutoffName = false;
     let voiceReplaying = false;
-    let icon = <IconRenderer icon={ClientIcon.ServerGreen} key={"default"} />;
+    let icon = <ClientIconRenderer icon={ClientIcon.ServerGreen} key={"default"} />;
     if(status === "loading") {
         displayedName = tr("loading status");
     } else {
@@ -79,7 +79,7 @@ const ConnectionHandler = React.memo((props: { handlerId: string, mode: Connecti
             <div className={cssStyle.buttonClose} onClick={() => {
                 events.fire("action_destroy_handler", { handlerId: props.handlerId })
             }}>
-                <IconRenderer icon={ClientIcon.TabCloseButton} />
+                <ClientIconRenderer icon={ClientIcon.TabCloseButton} />
             </div>
         </div>
     );

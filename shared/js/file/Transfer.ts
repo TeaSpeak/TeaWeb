@@ -239,7 +239,7 @@ export class FileTransfer {
         this.setTransferState(FileTransferState.PENDING);
 
         this.events = new Registry<FileTransferEvents>();
-        this.events.on("notify_transfer_canceled", event => {
+        this.events.on("notify_transfer_canceled", () => {
             this.setTransferState(FileTransferState.CANCELED);
         });
     }
