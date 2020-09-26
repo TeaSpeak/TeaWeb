@@ -38,7 +38,7 @@ export class ServerRenderer extends React.Component<{ server: RDPServer }, {}> {
         return (
             <div
                 className={serverStyle.serverEntry + " " + viewStyle.treeEntry + " " + (selected ? viewStyle.selected : "")}
-                style={{ paddingLeft: server.offsetLeft, top: server.offsetTop }}
+                style={{ top: server.offsetTop }}
                 onMouseUp={event => {
                     if (event.button !== 0) {
                         return; /* only left mouse clicks */
@@ -59,6 +59,7 @@ export class ServerRenderer extends React.Component<{ server: RDPServer }, {}> {
                     events.fire("action_show_context_menu", { treeEntryId: server.entryId, pageX: event.pageX, pageY: event.pageY });
                 }}
             >
+                <div className={viewStyle.leftPadding} style={{ paddingLeft: server.offsetLeft + "em" }} />
                 <UnreadMarkerRenderer entry={server} ref={server.refUnread} />
                 <div className={"icon client-server_green " + serverStyle.server_type}/>
                 <div className={serverStyle.name}>{name}</div>

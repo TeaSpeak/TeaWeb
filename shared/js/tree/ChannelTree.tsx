@@ -642,7 +642,8 @@ export class ChannelTree {
             contextmenu.Entry.CLOSE(on_close)
         );
     }
-    private open_multiselect_context_menu(entries: ChannelTreeEntry<any>[], x: number, y: number) {
+
+    public open_multiselect_context_menu(entries: ChannelTreeEntry<any>[], x: number, y: number) {
         const clients = entries.filter(e => e instanceof ClientEntry) as ClientEntry[];
         const channels = entries.filter(e => e instanceof ChannelEntry) as ChannelEntry[];
         const server = entries.find(e => e instanceof ServerEntry) as ServerEntry;

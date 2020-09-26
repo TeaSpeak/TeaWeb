@@ -109,6 +109,7 @@ class ChannelTreeController {
 
         this.channelTree.events.register_handler(this);
         this.channelTree.channels.forEach(channel => this.initializeChannelEvents(channel));
+        this.channelTree.clients.forEach(client => this.initializeClientEvents(client));
     }
 
     destroy() {
@@ -177,7 +178,6 @@ class ChannelTreeController {
     /* general channel tree event handlers */
     @EventHandler<ChannelTreeEvents>("notify_channel_list_received")
     private handleChannelListReceived() {
-        console.error("Channel list received");
         this.channelTreeInitialized = true;
         this.channelTree.channels.forEach(channel => this.initializeChannelEvents(channel));
         this.channelTree.clients.forEach(channel => this.initializeClientEvents(channel));
@@ -656,7 +656,7 @@ function initializeTreeController(events: Registry<ChannelTreeUIEvents>, channel
         }
 
         if (channelTree.selection.is_multi_select() && entry.isSelected()) {
-            /* TODO: Spawn the context menu! */
+            channelTree.open_multiselect_context_menu(channelTree.selection.selected_entries, event.pageX, event.pageY);
             return;
         }
 

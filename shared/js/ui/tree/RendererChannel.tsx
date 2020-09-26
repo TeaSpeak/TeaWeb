@@ -92,7 +92,7 @@ const ChannelName = React.memo((props: { channelName: string | undefined, alignm
 
 const ChannelCollapsedIndicator = (props: { collapsed: boolean, onToggle: () => void }) => {
     return <div className={channelStyle.containerArrow + (!props.collapsed ? " " + channelStyle.down : "")}>
-        <div className={"arrow " + (props.collapsed ? "right" : "down")} onClick={event => {
+        <div className={viewStyle.arrow + " " + (props.collapsed ? viewStyle.right : viewStyle.down)} onClick={event => {
             event.preventDefault();
             props.onToggle();
         }}/>
@@ -126,7 +126,7 @@ export class RendererChannel extends React.Component<{ channel: RDPChannel }, {}
         return (
             <div
                 className={viewStyle.treeEntry + " " + channelStyle.channelEntry + " " + (channel.selected ? viewStyle.selected : "")}
-                style={{ paddingLeft: channel.offsetLeft, top: channel.offsetTop }}
+                style={{ top: channel.offsetTop }}
                 onMouseUp={event => {
                     if (event.button !== 0) {
                         return; /* only left mouse clicks */
@@ -156,6 +156,7 @@ export class RendererChannel extends React.Component<{ channel: RDPChannel }, {}
                     events.fire("action_channel_open_file_browser", { treeEntryId: entryId });
                 }}
             >
+                <div className={viewStyle.leftPadding} style={{ paddingLeft: channel.offsetLeft + "em" }} />
                 <UnreadMarkerRenderer entry={this.props.channel} ref={this.props.channel.refUnread} />
                 {collapsedIndicator}
                 {channelIcon}
