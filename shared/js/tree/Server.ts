@@ -13,8 +13,6 @@ import {spawnAvatarList} from "../ui/modal/ModalAvatarList";
 import {connection_log} from "../ui/modal/ModalConnect";
 import * as top_menu from "../ui/frames/MenuBar";
 import {control_bar_instance} from "../ui/frames/control-bar";
-import { ServerEntry as ServerEntryView } from "../ui/tree/Server";
-import * as React from "react";
 import {Registry} from "../events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 
@@ -138,7 +136,6 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
     properties: ServerProperties;
 
     readonly events: Registry<ServerEvents>;
-    readonly view: React.Ref<ServerEntryView>;
 
     private info_request_promise: Promise<void> = undefined;
     private info_request_promise_resolve: any = undefined;
@@ -157,7 +154,6 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
         super();
 
         this.events = new Registry<ServerEvents>();
-        this.view = React.createRef();
 
         this.properties = new ServerProperties();
         this.channelTree = tree;
@@ -266,7 +262,7 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
         ];
     }
 
-    spawnContextMenu(x: number, y: number, on_close: () => void = () => {}) {
+    showContextMenu(x: number, y: number, on_close: () => void = () => {}) {
         contextmenu.spawn_context_menu(x, y, ...this.contextMenuItems(),
             contextmenu.Entry.CLOSE(on_close)
         );
