@@ -1,7 +1,8 @@
 # Changelog:
 * **16.09.20**
     - Updating group prefix/suffixes when the group naming mode changes
-    - Added an client talk power indicator
+    - Added a client talk power indicator
+    - Fixed channel info description not rendering
     
 * **25.09.20**
     - Update the translation files
