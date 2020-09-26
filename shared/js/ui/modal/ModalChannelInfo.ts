@@ -3,6 +3,7 @@ import {ChannelEntry} from "../../tree/Channel";
 import {copy_to_clipboard} from "../../utils/helpers";
 import * as tooltip from "../../ui/elements/Tooltip";
 import {formatMessage} from "../../ui/frames/chat";
+import {renderBBCodeAsJQuery} from "tc-shared/text/bbcode";
 
 export function openChannelInfo(channel: ChannelEntry) {
     let modal: Modal;
@@ -38,16 +39,13 @@ export function openChannelInfo(channel: ChannelEntry) {
     modal.open();
 }
 
-declare const xbbcode;
-
 function apply_channel_description(container: JQuery, channel: ChannelEntry) {
     const container_value = container.find(".value");
     const container_no_value = container.find(".no-value");
 
     channel.getChannelDescription().then(description => {
         if (description) {
-            const result = xbbcode.parse(description, {});
-            container_value[0].innerHTML = result.build_html();
+            renderBBCodeAsJQuery(description, { convertSingleUrls: true }).forEach(element => container_value.append(element));
             container_no_value.hide();
             container_value.show();
         } else {
