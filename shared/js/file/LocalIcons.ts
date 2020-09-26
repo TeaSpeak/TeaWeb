@@ -1,7 +1,7 @@
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {ImageCache, ImageType, imageType2MediaType, responseImageType} from "tc-shared/file/ImageCache";
-import {AbstractIconManager, RemoteIcon, RemoteIconState, setIconManager} from "tc-shared/file/Icons";
+import {AbstractIconManager, kIPCIconChannel, RemoteIcon, RemoteIconState, setIconManager} from "tc-shared/file/Icons";
 import * as log from "tc-shared/log";
 import {LogCategory, logDebug, logError, logWarn} from "tc-shared/log";
 import {server_connections} from "tc-shared/ConnectionManager";
@@ -10,6 +10,9 @@ import {FileTransferState, ResponseTransferTarget, TransferProvider, TransferTar
 import {tr} from "tc-shared/i18n/localize";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {ChannelMessage, IPCChannel} from "tc-shared/ipc/BrowserIPC";
+import * as ipc from "tc-shared/ipc/BrowserIPC";
+import {kIPCAvatarChannel} from "tc-shared/file/Avatars";
 
 /* TODO: Retry icon download after some time */
 /* TODO: Download icon when we're connected to the server were we want the icon from and update the icon */
@@ -38,6 +41,13 @@ class LocalRemoteIcon extends RemoteIcon {
         super(serverUniqueId, iconId);
     }
 
+    destroy() {
+        super.destroy();
+        if(this.imageUrl && "revokeObjectURL" in URL) {
+            URL.revokeObjectURL(this.imageUrl);
+        }
+    }
+
     public setImageUrl(url: string) {
         super.setImageUrl(url);
     }
@@ -55,13 +65,13 @@ export let localIconCache: ImageCache;
 class IconManager extends AbstractIconManager {
     private cachedIcons: {[key: string]: LocalRemoteIcon} = {};
     private connectionStateChangeListener: {[key: string]: (handlerId: string, event: ConnectionEvents["notify_connection_state_changed"]) => void} = {};
-
-    private static iconUniqueKey(iconId: number, serverUniqueId: string) : string {
-        return "v2-" + serverUniqueId + "-" + iconId;
-    }
+    private ipcChannel: IPCChannel;
 
     constructor() {
         super();
+
+        this.ipcChannel = ipc.getInstance().createChannel(undefined, kIPCIconChannel);
+        this.ipcChannel.messageHandler = this.handleIpcMessage.bind(this);
 
         server_connections.events().on("notify_handler_created", event => {
             this.connectionStateChangeListener[event.handlerId] = this.handleHandlerStateChange.bind(this, event.handlerId);
@@ -74,6 +84,13 @@ class IconManager extends AbstractIconManager {
                  delete this.connectionStateChangeListener[event.handlerId];
              }
         });
+    }
+
+    destroy() {
+        Object.values(this.cachedIcons).forEach(icon => icon.destroy());
+        this.cachedIcons = {};
+
+        /* TODO: Unregister server handler events */
     }
 
     private handleHandlerStateChange(handlerId: string, event: ConnectionEvents["notify_connection_state_changed"]) {
@@ -99,6 +116,40 @@ class IconManager extends AbstractIconManager {
         });
     }
 
+    private handleIconStateChanged(icon: RemoteIcon) {
+        this.sendIconStateChange(icon);
+    }
+
+    private sendIconStateChange(icon: RemoteIcon, remoteId?: string) {
+        let data = {} as any;
+
+        data.iconUniqueId = IconManager.iconUniqueKey(icon.iconId, icon.serverUniqueId);
+        data.status = icon.getState();
+
+        switch (icon.getState()) {
+            case "loaded":
+                data.url = icon.hasImageUrl() ? icon.getImageUrl() : undefined;
+                break;
+
+            case "error":
+                data.errorMessage = icon.getErrorMessage();
+                break;
+        }
+
+        this.ipcChannel.sendMessage("notify-icon-status", data, remoteId);
+    }
+
+
+    private handleIpcMessage(remoteId: string, broadcast: boolean, message: ChannelMessage) {
+        if(broadcast) { return; }
+        if(message.type === "initialize") {
+            this.ipcChannel.sendMessage("initialized", {}, remoteId);
+            return;
+        } else if(message.type === "icon-resolve") {
+            this.sendIconStateChange(this.resolveIcon(message.data.iconId, message.data.serverUniqueId, message.data.handlerId), remoteId);
+        }
+    }
+
     resolveIcon(iconId: number, serverUniqueId: string, handlerIdHint: string): RemoteIcon {
         /* just to ensure */
         iconId = iconId >>> 0;
@@ -110,6 +161,8 @@ class IconManager extends AbstractIconManager {
 
         let icon = new LocalRemoteIcon(serverUniqueId, iconId);
         this.cachedIcons[iconUniqueId] = icon;
+
+        icon.events.on("notify_state_changed", () => this.handleIconStateChanged(icon));
 
         if(iconId >= 0 && iconId <= 1000) {
             icon.setState("loaded");

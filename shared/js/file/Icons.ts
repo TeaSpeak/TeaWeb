@@ -1,6 +1,6 @@
 import {Registry} from "tc-shared/events";
 
-export const kIPCIconChannel = "avatars";
+export const kIPCIconChannel = "icons";
 export const kGlobalIconHandlerId = "global";
 
 export interface RemoteIconEvents {
@@ -22,8 +22,8 @@ export abstract class RemoteIcon {
 
     private state: RemoteIconState;
 
-    private imageUrl: string;
-    private errorMessage: string;
+    protected imageUrl: string;
+    protected errorMessage: string;
 
     protected constructor(serverUniqueId: string, iconId: number) {
         this.events = new Registry<RemoteIconEvents>();
@@ -55,6 +55,10 @@ export abstract class RemoteIcon {
         this.events.fire("notify_state_changed", { newState: state, oldState: oldState });
     }
 
+    hasImageUrl() : boolean {
+        return !!this.imageUrl;
+    }
+
     /**
      * Will throw an string if the icon isn't in loaded state
      */
@@ -64,7 +68,7 @@ export abstract class RemoteIcon {
         }
 
         if(!this.imageUrl) {
-            throw tr("remote icon is missing an image url");
+            throw tra("remote {} icon is missing an image url", this.iconId);
         }
 
         return this.imageUrl;
@@ -112,6 +116,10 @@ export abstract class RemoteIcon {
 }
 
 export abstract class AbstractIconManager {
+    protected static iconUniqueKey(iconId: number, serverUniqueId: string) : string {
+        return "v2-" + serverUniqueId + "-" + iconId;
+    }
+
     /**
      * @param iconId The requested icon
      * @param serverUniqueId The server unique id for the icon
