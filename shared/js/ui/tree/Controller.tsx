@@ -32,6 +32,9 @@ export function renderChannelTree(channelTree: ChannelTree, target: HTMLElement)
     ], target);
 
     (window as any).chan_pop = () => {
+        const events = new Registry<ChannelTreeUIEvents>();
+        events.enableDebug("channel-tree-view-modal");
+        initializeTreeController(events, channelTree);
         const modal = spawnExternalModal("channel-tree", events, { handlerId: channelTree.client.handlerId });
         modal.show();
     }
