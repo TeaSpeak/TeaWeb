@@ -16,12 +16,10 @@
         margin-left: -16px;
         text-align: center;
 
+        flex-shrink: 0;
+
         &.down {
             align-self: normal;
-        }
-
-        :global .arrow {
-            border-color: hsla(220, 5%, 30%, 1);
         }
     }
 

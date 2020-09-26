@@ -91,6 +91,13 @@ html:root {
         }
     }
 
+    .leftPadding {
+        flex-shrink: 0;
+
+        padding-left: 2px;
+        font-size: 16px;
+    }
+
     &.move {
         .treeEntry.selected {
             background-color: var(--channel-tree-entry-move);
@@ -112,5 +119,45 @@ html:root {
 
     &.smoothScroll {
         scroll-behavior: smooth;
+    }
+}
+
+.arrow {
+    display: inline-block;
+    border: solid hsla(220, 5%, 30%, 1);
+
+    border-width: 0 .2em .2em 0;
+    padding: .21em;
+    height: .5em;
+    width: .5em;
+
+    &.right {
+        transform: rotate(-45deg);
+        -webkit-transform: rotate(-45deg);
+    }
+
+    &.left {
+        transform: rotate(135deg);
+        -webkit-transform: rotate(135deg);
+    }
+
+    &.up {
+        transform: rotate(-135deg);
+        -webkit-transform: rotate(-135deg);
+    }
+
+    &.down {
+        transform: rotate(45deg);
+        -webkit-transform: rotate(45deg);
+    }
+}
+
+@media all and (max-width: 250px) {
+    .channelTree .leftPadding {
+        font-size: 6px;
+    }
+
+    .treeEntry {
+        padding-left: 10px; /* space for the arrow */
     }
 }

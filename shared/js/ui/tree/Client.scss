@@ -18,6 +18,10 @@ html:root {
         margin-right: 2px;
     }
 
+    .statusIcon {
+        flex-shrink: 0;
+    }
+
     .clientName {
         line-height: 16px;
         min-width: 2em;

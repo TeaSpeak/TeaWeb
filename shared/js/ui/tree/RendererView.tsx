@@ -29,21 +29,6 @@ export interface ChannelTreeViewState {
     tree: RDPEntry[];
 }
 
-/*
-export function renderFlatTreeEntry(entry: FlatTreeEntry) {
-    if(entry.rendered) { return entry.rendered; }
-
-    if(entry.type === "channel") {
-        entry.rendered = <RendererChannel entryId={entry.entryId} offsetTop={entry.index * ChannelTreeView.EntryHeight} offsetLeft={entry.depth * 16 + 2} key={entry.entryId} />;
-    } else if(entry.type === "client" || entry.type === "client-local") {
-        entry.rendered = <RendererClient entryId={entry.entryId} offsetTop={entry.index * ChannelTreeView.EntryHeight} offsetLeft={entry.depth * 16 + 2} key={entry.entryId} localClient={entry.type === "client-local"} />;
-    } else {
-        entry.rendered = <div className={viewStyle.treeEntry} style={{ top: entry.index * ChannelTreeView.EntryHeight + "px" }} key={entry.entryId}><a>{entry.type + " - " + entry.entryId}</a></div>;
-    }
-    return entry.rendered;
-}
- */
-
 @ReactEventHandler<ChannelTreeView>(e => e.props.events)
 @BatchUpdateAssignment(BatchUpdateType.CHANNEL_TREE)
 export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewProperties, ChannelTreeViewState> {

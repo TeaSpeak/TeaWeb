@@ -14,7 +14,7 @@ const viewStyle = require("./View.scss");
 /* TODO: Render a talk power request */
 export class ClientStatus extends React.Component<{ client: RDPClient }, {}> {
     render() {
-        return <IconRenderer icon={this.props.client.status} />
+        return <IconRenderer icon={this.props.client.status} className={clientStyle.statusIcon} />
     }
 }
 
@@ -115,11 +115,34 @@ interface ClientNameEditProps {
     initialName: string;
 }
 
+declare global{
+    interface HTMLElement {
+        createTextRange;
+    }
+}
+function selectText(node: HTMLElement) {
+    if (document.body.createTextRange) {
+        const range = document.body.createTextRange();
+        range.moveToElementText(node);
+        range.select();
+    } else if (window.getSelection) {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    } else {
+        console.warn("Could not select text in node: Unsupported browser.");
+    }
+}
+
+
 class ClientNameEdit extends React.Component<ClientNameEditProps, {}> {
     private readonly refDiv: React.RefObject<HTMLDivElement> = React.createRef();
 
     componentDidMount(): void {
         this.refDiv.current.focus();
+        selectText(this.refDiv.current);
     }
 
     render() {
@@ -145,7 +168,6 @@ class ClientNameEdit extends React.Component<ClientNameEditProps, {}> {
     }
 }
 
-/* TODO: Client rename! */
 export class RendererClient extends React.Component<{ client: RDPClient }, {}> {
     render() {
         const client = this.props.client;
@@ -154,7 +176,7 @@ export class RendererClient extends React.Component<{ client: RDPClient }, {}> {
 
         return (
             <div className={clientStyle.clientEntry + " " + viewStyle.treeEntry + " " + (selected ? viewStyle.selected : "")}
-                 style={{ paddingLeft: client.offsetLeft, top: client.offsetTop }}
+                 style={{ top: client.offsetTop }}
                  onContextMenu={event => {
                      if (settings.static(Settings.KEY_DISABLE_CONTEXT_MENU)) {
                          return;
@@ -176,6 +198,7 @@ export class RendererClient extends React.Component<{ client: RDPClient }, {}> {
                  }}
                  onDoubleClick={() => events.fire("action_client_double_click", { treeEntryId: client.entryId })}
             >
+                <div className={viewStyle.leftPadding} style={{ paddingLeft: client.offsetLeft + "em" }} />
                 <UnreadMarkerRenderer entry={client} ref={client.refUnread} />
                 <ClientStatus client={client} ref={client.refStatus} />
                 {...(client.rename ? [

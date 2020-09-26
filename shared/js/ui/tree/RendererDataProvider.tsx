@@ -209,7 +209,6 @@ export class RDPChannelTree {
 
     @EventHandler<ChannelTreeUIEvents>("notify_tree_entries")
     private handleNotifyTreeEntries(event: ChannelTreeUIEvents["notify_tree_entries"]) {
-        console.error("Having entries");
         const oldEntryInstances = this.treeEntries;
         this.treeEntries = {};
 
@@ -241,12 +240,11 @@ export class RDPChannelTree {
             }
 
             this.treeEntries[entry.entryId] = result;
-            result.handlePositionUpdate(index * ChannelTreeView.EntryHeight, entry.depth * 16 + 2);
+            result.handlePositionUpdate(index * ChannelTreeView.EntryHeight, entry.depth);
 
             return result;
         }).filter(e => !!e);
 
-        console.error("Obsolete entries: %o", oldEntryInstances);
         Object.keys(oldEntryInstances).map(key => oldEntryInstances[key]).forEach(entry => {
             entry.destroy();
         });
@@ -473,9 +471,9 @@ export class RDPClient extends RDPEntry {
 
     handleOpenRename(initialValue: string) {
         if(!initialValue) {
-            this.refClient.current?.forceUpdate();
             this.rename = false;
             this.renameDefault = undefined;
+            this.refClient.current?.forceUpdate();
             return;
         }
         if(!this.handle.refTree.current || !this.refClient.current) {
