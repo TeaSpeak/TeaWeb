@@ -18,6 +18,7 @@ import * as log from "../../../log";
 import {LogCategory} from "../../../log";
 import {queryConversationEvents, registerConversationEvent} from "../../../ui/frames/side/PrivateConversationHistory";
 import {AbstractChat, AbstractChatManager} from "../../../ui/frames/side/AbstractConversion";
+import {ChannelTreeEvents} from "tc-shared/tree/ChannelTree";
 
 export type OutOfViewClient = {
     nickname: string,
@@ -181,25 +182,30 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
         }
     }
 
+    handleEventLeftView(event: ChannelTreeEvents["notify_client_leave_view"]) {
+        if(event.client !== this.activeClient) {
+            return;
+        }
+
+        if(event.isServerLeave) {
+            this.setActiveClientEntry(undefined);
+            this.registerChatEvent({
+                type: "partner-action",
+                action: "disconnect",
+                timestamp: Date.now(),
+                uniqueId: "pa-" + this.chatId + "-" + Date.now() + "-" + (++receivingEventUniqueIdIndex)
+            }, true);
+        } else {
+            this.setActiveClientEntry({
+                uniqueId: event.client.clientUid(),
+                nickname: event.client.clientNickName(),
+                clientId: event.client.clientId()
+            } as OutOfViewClient)
+        }
+    }
+
     private registerClientEvents(client: ClientEntry) {
         this.activeClientListener = [];
-        this.activeClientListener.push(client.events.on("notify_left_view", event => {
-            if(event.serverLeave) {
-                this.setActiveClientEntry(undefined);
-                this.registerChatEvent({
-                    type: "partner-action",
-                    action: "disconnect",
-                    timestamp: Date.now(),
-                    uniqueId: "pa-" + this.chatId + "-" + Date.now() + "-" + (++receivingEventUniqueIdIndex)
-                }, true);
-            } else {
-                this.setActiveClientEntry({
-                    uniqueId: client.clientUid(),
-                    nickname: client.clientNickName(),
-                    clientId: client.clientId()
-                } as OutOfViewClient)
-            }
-        }));
         this.activeClientListener.push(client.events.on("notify_properties_updated", event => {
             if('client_nickname' in event.updated_properties)
                 this.updateClientInfo();
