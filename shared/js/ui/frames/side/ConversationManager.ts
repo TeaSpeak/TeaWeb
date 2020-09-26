@@ -330,7 +330,7 @@ export class ConversationManager extends AbstractChatManager<ConversationUIEvent
 
         connection.events().one("notify_handler_initialized", () => this.uiEvents.on("notify_destroy", connection.channelTree.events.on("notify_client_moved", event => {
             if(event.client instanceof LocalClientEntry) {
-                this.findOrCreateConversation(event.oldChannel.channelId).localClientSwitchedChannel("leave");
+                event.oldChannel && this.findOrCreateConversation(event.oldChannel.channelId).localClientSwitchedChannel("leave");
                 this.findOrCreateConversation(event.newChannel.channelId).localClientSwitchedChannel("join");
             }
         })));
