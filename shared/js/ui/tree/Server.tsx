@@ -1,7 +1,7 @@
 import {BatchUpdateAssignment, BatchUpdateType} from "tc-shared/ui/react-elements/ReactComponentBase";
 import {ServerEntry as ServerEntryController, ServerEvents} from "../../tree/Server";
 import * as React from "react";
-import {LocalIconRenderer, RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
+import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {EventHandler, ReactEventHandler} from "tc-shared/events";
 import {Settings, settings} from "tc-shared/settings";
 import {TreeEntry, UnreadMarker} from "tc-shared/ui/tree/TreeEntry";

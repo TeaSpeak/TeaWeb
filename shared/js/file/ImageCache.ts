@@ -93,19 +93,19 @@ export class ImageCache {
         this._cache_category = await caches.open(this.cache_name);
     }
 
-    async cleanup(max_age: number) {
+    async cleanup(maxAge: number) {
         /* FIXME: TODO */
     }
 
-    async resolveCached(key: string, max_age?: number) : Promise<Response | undefined> {
-        max_age = typeof(max_age) === "number" ? max_age : -1;
+    async resolveCached(key: string, maxAge?: number) : Promise<Response | undefined> {
+        maxAge = typeof(maxAge) === "number" ? maxAge : -1;
 
-        const cached_response = await this._cache_category.match("https://_local_cache/cache_request_" + key);
-        if(!cached_response)
+        const cachedResponse = await this._cache_category.match("https://_local_cache/cache_request_" + key);
+        if(!cachedResponse)
             return undefined;
 
         /* FIXME: Max age */
-        return cached_response;
+        return cachedResponse;
     }
 
     async putCache(key: string, value: Response, type?: string, headers?: {[key: string]:string}) {
