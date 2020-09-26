@@ -71,13 +71,19 @@ export const ServerLogRenderer = (props: { events: Registry<ServerLogUIEvents>, 
         setRevision(revision + 1);
     });
 
-    useEffect(() => {
-        const id = requestAnimationFrame(() => {
-            if(!refContainer.current)
-                return;
+    const fixScroll = () => {
+        if(!refContainer.current)
+            return;
 
-            refContainer.current.scrollTop = scrollOffset.current === "bottom" ? refContainer.current.scrollHeight : scrollOffset.current;
-        });
+        refContainer.current.scrollTop = scrollOffset.current === "bottom" ? refContainer.current.scrollHeight : scrollOffset.current;
+    };
+
+    props.events.reactUse("notify_show", () => {
+        requestAnimationFrame(fixScroll);
+    });
+
+    useEffect(() => {
+        const id = requestAnimationFrame(fixScroll);
         return () => cancelAnimationFrame(id);
     });
 

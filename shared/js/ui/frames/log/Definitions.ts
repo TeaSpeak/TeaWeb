@@ -332,5 +332,6 @@ export interface ServerLogUIEvents {
     },
     "notify_log_add": {
         event: LogMessage
-    }
+    },
+    "notify_show": {}
 }

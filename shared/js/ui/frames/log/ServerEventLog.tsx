@@ -14,6 +14,8 @@ let uniqueLogEventId = 0;
 export class ServerEventLog {
     private readonly connection: ConnectionHandler;
     private readonly uiEvents: Registry<ServerLogUIEvents>;
+    private readonly listenerHandlerVisibilityChanged;
+
     private htmlTag: HTMLDivElement;
 
     private maxHistoryLength: number = 100;
@@ -31,6 +33,12 @@ export class ServerEventLog {
         });
 
         ReactDOM.render(<ServerLogRenderer events={this.uiEvents} handlerId={this.connection.handlerId} />, this.htmlTag);
+
+        this.connection.events().on("notify_visibility_changed",  this.listenerHandlerVisibilityChanged =event => {
+            if(event.visible) {
+                this.uiEvents.fire("notify_show");
+            }
+        });
     }
 
     log<T extends keyof TypeInfo>(type: T, data: TypeInfo[T]) {
@@ -70,6 +78,9 @@ export class ServerEventLog {
             this.htmlTag = undefined;
         }
 
+        this.connection.events().off(this.listenerHandlerVisibilityChanged);
         this.eventLog = undefined;
+
+        this.uiEvents.destroy();
     }
 }
