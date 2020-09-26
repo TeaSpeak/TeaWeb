@@ -33,6 +33,8 @@ export class GroupPermissionRequest {
     promise: LaterPromise<PermissionValue[]>;
 }
 
+export type GroupUpdate = { key: GroupProperty, group: Group, oldValue: any, newValue: any };
+
 export interface GroupManagerEvents {
     notify_reset: {},
     notify_groups_created: {
@@ -42,7 +44,11 @@ export interface GroupManagerEvents {
     notify_groups_deleted: {
         groups: Group[],
         cause: "list-update" | "reset" | "user-action"
-    }
+    },
+    notify_groups_updated: { updates: GroupUpdate[] },
+
+    /* will be fired when all server and channel groups have been received */
+    notify_groups_received: {}
 }
 
 export type GroupProperty = "name" | "icon" | "sort-id" | "save-db" | "name-mode";
@@ -82,41 +88,43 @@ export class Group {
         this.name = name;
     }
 
-    updatePropertiesFromGroupList(data: any) {
-        const updates: GroupProperty[] = [];
+    updatePropertiesFromGroupList(data: any) : GroupUpdate[] {
+        const updates = [] as GroupUpdate[];
 
         if(this.name !== data["name"]) {
+            updates.push({ key: "name", group: this, oldValue: this.name, newValue: data["name"] });
             this.name = data["name"];
-            updates.push("name");
         }
 
         /* icon */
         let value = parseInt(data["iconid"]) >>> 0;
         if(value !== this.properties.iconid) {
+            updates.push({ key: "icon", group: this, oldValue: this.properties.iconid, newValue: value });
             this.properties.iconid = value;
-            updates.push("icon");
         }
 
         value = parseInt(data["sortid"]);
         if(value !== this.properties.sortid) {
+            updates.push({ key: "sort-id", group: this, oldValue: this.properties.sortid, newValue: value });
             this.properties.sortid = value;
-            updates.push("sort-id");
         }
 
         let flag = parseInt(data["savedb"]) >= 1;
         if(flag !== this.properties.savedb) {
+            updates.push({ key: "save-db", group: this, oldValue: this.properties.savedb, newValue: flag });
             this.properties.savedb = flag;
-            updates.push("save-db");
         }
 
         value = parseInt(data["namemode"]);
         if(value !== this.properties.namemode) {
+            updates.push({ key: "name-mode", group: this, oldValue: this.properties.namemode, newValue: flag });
             this.properties.namemode = value;
-            updates.push("name-mode");
         }
 
-        if(updates.length > 0)
-            this.events.fire("notify_properties_updated", { updated_properties: updates });
+        if(updates.length > 0) {
+            this.events.fire("notify_properties_updated", { updated_properties: updates.map(e => e.key) });
+        }
+        return updates;
     }
 }
 
@@ -147,6 +155,7 @@ export class GroupManager extends AbstractCommandHandler {
     serverGroups: Group[] = [];
     channelGroups: Group[] = [];
 
+    private allGroupsReceived = false;
     private readonly connectionStateListener;
     private groupPermissionRequests: GroupPermissionRequest[] = [];
 
@@ -155,8 +164,9 @@ export class GroupManager extends AbstractCommandHandler {
         this.connectionHandler = client;
 
         this.connectionStateListener = (event: ConnectionEvents["notify_connection_state_changed"]) => {
-            if(event.new_state === ConnectionState.DISCONNECTING || event.new_state === ConnectionState.UNCONNECTED || event.new_state === ConnectionState.CONNECTING)
+            if(event.new_state === ConnectionState.DISCONNECTING || event.new_state === ConnectionState.UNCONNECTED || event.new_state === ConnectionState.CONNECTING) {
                 this.reset();
+            }
         };
 
         client.serverConnection.command_handler_boss().register_handler(this);
@@ -174,15 +184,18 @@ export class GroupManager extends AbstractCommandHandler {
     }
 
     reset() {
-        if(this.serverGroups.length === 0 && this.channelGroups.length === 0)
+        if(this.serverGroups.length === 0 && this.channelGroups.length === 0) {
             return;
+        }
 
         log.debug(LogCategory.PERMISSIONS, tr("Resetting server/channel groups"));
         this.serverGroups = [];
         this.channelGroups = [];
+        this.allGroupsReceived = false;
 
-        for(const permission of this.groupPermissionRequests)
+        for(const permission of this.groupPermissionRequests) {
             permission.promise.rejected(tr("Group manager reset"));
+        }
         this.groupPermissionRequests = [];
         this.events.fire("notify_reset");
     }
@@ -215,9 +228,11 @@ export class GroupManager extends AbstractCommandHandler {
     }
 
     findServerGroup(id: number) : Group | undefined {
-        for(let group of this.serverGroups)
-            if(group.id === id)
+        for(let group of this.serverGroups) {
+            if(group.id === id) {
                 return group;
+            }
+        }
         return undefined;
     }
 
@@ -232,6 +247,7 @@ export class GroupManager extends AbstractCommandHandler {
         let groupList = target == GroupTarget.SERVER ? this.serverGroups : this.channelGroups;
         const deleteGroups = groupList.slice(0);
         const newGroups: Group[] = [];
+        const groupUpdates: GroupUpdate[] = [];
 
         const isInitialList = groupList.length === 0;
         for(const groupData of json) {
@@ -253,14 +269,15 @@ export class GroupManager extends AbstractCommandHandler {
                 group = new Group(this, groupId, target, type, groupData["name"]);
                 groupList.push(group);
                 newGroups.push(group);
+                group.updatePropertiesFromGroupList(groupData);
             } else {
                 group = deleteGroups.splice(groupIndex, 1)[0];
+                groupUpdates.push(...group.updatePropertiesFromGroupList(groupData));
             }
 
             group.requiredMemberRemovePower = parseInt(groupData["n_member_removep"]);
             group.requiredMemberAddPower = parseInt(groupData["n_member_addp"]);
             group.requiredModifyPower = parseInt(groupData["n_modifyp"]);
-            group.updatePropertiesFromGroupList(groupData);
             group.events.fire("notify_needed_powers_updated");
         }
 
@@ -275,6 +292,13 @@ export class GroupManager extends AbstractCommandHandler {
 
         if(deleteGroups.length !== 0) {
             this.events.fire("notify_groups_deleted", { groups: deleteGroups, cause: "list-update" });
+        }
+
+        this.events.fire("notify_groups_updated", { updates: groupUpdates });
+
+        if(!this.allGroupsReceived && this.serverGroups.length > 0 && this.channelGroups.length > 0) {
+            this.allGroupsReceived = true;
+            this.events.fire("notify_groups_received");
         }
     }
 

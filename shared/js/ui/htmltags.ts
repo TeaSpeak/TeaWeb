@@ -152,7 +152,7 @@ export namespace callbacks {
 
             if(!client) {
                 if(current_connection.channelTree.server.properties.virtualserver_unique_identifier === client_unique_id) {
-                    current_connection.channelTree.server.spawnContextMenu(mouse_coordinates.x, mouse_coordinates.y);
+                    current_connection.channelTree.server.showContextMenu(mouse_coordinates.x, mouse_coordinates.y);
                     return;
                 }
             }

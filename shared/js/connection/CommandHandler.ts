@@ -315,7 +315,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         if(ignoreOrder) {
             for(let ch of tree.channels) {
                 if(ch.properties.channel_order == channel.channelId) {
-                    tree.moveChannel(ch, channel, channel.parent); //Corrent the order :)
+                    tree.moveChannel(ch, channel, channel.parent, true); //Corrent the order :)
                 }
             }
         }
@@ -324,7 +324,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             key: string,
             value: string
         }[] = [];
-        for(let key in json) {
+        for(let key of Object.keys(json)) {
             if(key === "cid") continue;
             if(key === "cpid") continue;
             if(key === "invokerid") continue;
@@ -692,7 +692,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             return 0;
         }
 
-        tree.moveChannel(channel, prev, parent);
+        tree.moveChannel(channel, prev, parent, true);
     }
 
     handleNotifyChannelEdited(json) {

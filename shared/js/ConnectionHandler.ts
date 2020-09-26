@@ -197,6 +197,7 @@ export class ConnectionHandler {
         this.serverConnection.getVoiceConnection().setWhisperSessionInitializer(this.initializeWhisperSession.bind(this));
 
         this.serverFeatures = new ServerFeatures(this);
+        this.groups = new GroupManager(this);
 
         this.channelTree = new ChannelTree(this);
         this.fileManager = new FileManager(this);
@@ -209,7 +210,6 @@ export class ConnectionHandler {
         this.sound = new SoundManager(this);
         this.hostbanner = new Hostbanner(this);
 
-        this.groups = new GroupManager(this);
         this._local_client = new LocalClientEntry(this);
 
         this.event_registry.register_handler(this);

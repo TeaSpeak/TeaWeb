@@ -12,6 +12,9 @@ import {WebModalRenderer} from "../../../ui/react-elements/external-modal/Popout
 import {ClientModalRenderer} from "../../../ui/react-elements/external-modal/PopoutRendererClient";
 import {setupJSRender} from "../../../ui/jsrender";
 
+import "../../../file/RemoteAvatars";
+import "../../../file/RemoteIcons";
+
 let modalRenderer: ModalRenderer;
 let modalInstance: AbstractModal;
 let modalClass: new <T>(events: Registry<T>, userData: any) => AbstractModal;

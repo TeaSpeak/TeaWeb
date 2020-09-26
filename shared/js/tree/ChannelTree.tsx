@@ -1,7 +1,7 @@
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {MenuEntryType} from "tc-shared/ui/elements/ContextMenu";
 import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import {LogCategory, logWarn} from "tc-shared/log";
 import {Settings, settings} from "tc-shared/settings";
 import {PermissionType} from "tc-shared/permission/PermissionType";
 import {KeyCode, SpecialKey} from "tc-shared/PPTListener";
@@ -14,7 +14,6 @@ import {ChannelTreeEntry} from "./ChannelTreeEntry";
 import {ConnectionHandler, ViewReasonId} from "tc-shared/ConnectionHandler";
 import {createChannelModal} from "tc-shared/ui/modal/ModalCreateChannel";
 import {Registry} from "tc-shared/events";
-import {ChannelTreeView} from "tc-shared/ui/tree/View";
 import * as ReactDOM from "react-dom";
 import * as React from "react";
 import * as ppt from "tc-backend/ppt";
@@ -25,8 +24,8 @@ import {spawnBanClient} from "tc-shared/ui/modal/ModalBanClient";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {tra} from "tc-shared/i18n/localize";
-import {TreeEntryMove} from "tc-shared/ui/tree/TreeEntryMove";
 import {EventType} from "tc-shared/ui/frames/log/Definitions";
+import {renderChannelTree} from "tc-shared/ui/tree/Controller";
 
 export interface ChannelTreeEvents {
     action_select_entries: {
@@ -40,25 +39,19 @@ export interface ChannelTreeEvents {
         mode: "auto" | "exclusive" | "append" | "remove";
     },
 
-    notify_selection_changed: {},
-    notify_root_channel_changed: {},
+    /* general tree notified */
     notify_tree_reset: {},
+    notify_selection_changed: {},
     notify_query_view_state_changed: { queries_shown: boolean },
 
     notify_entry_move_begin: {},
     notify_entry_move_end: {},
 
-    notify_client_enter_view: {
-        client: ClientEntry,
-        reason: ViewReasonId,
-        isServerJoin: boolean
-    },
-    notify_client_leave_view: {
-        client: ClientEntry,
-        reason: ViewReasonId,
-        message?: string,
-        isServerLeave: boolean
-    },
+    /* channel tree events */
+    notify_channel_created: { channel: ChannelEntry },
+    notify_channel_moved: { channel: ChannelEntry },
+    notify_channel_deleted: { channel: ChannelEntry },
+    notify_channel_client_order_changed: { channel: ChannelEntry },
 
     notify_channel_updated: {
         channel: ChannelEntry,
@@ -67,6 +60,26 @@ export interface ChannelTreeEvents {
     },
 
     notify_channel_list_received: {}
+
+    /* client events */
+    notify_client_enter_view: {
+        client: ClientEntry,
+        reason: ViewReasonId,
+        isServerJoin: boolean,
+        targetChannel: ChannelEntry
+    },
+    notify_client_moved: {
+        client: ClientEntry,
+        oldChannel: ChannelEntry,
+        newChannel: ChannelEntry
+    }
+    notify_client_leave_view: {
+        client: ClientEntry,
+        reason: ViewReasonId,
+        message?: string,
+        isServerLeave: boolean,
+        sourceChannel: ChannelEntry
+    }
 }
 
 export class ChannelTreeEntrySelect {
@@ -198,8 +211,11 @@ export class ChannelTreeEntrySelect {
             console.warn("Received entry select event with unknown mode: %s", event.mode);
         }
 
+        /*
+        TODO!
         if(this.selected_entries.length === 1)
             this.handle.view.current?.scrollEntryInView(this.selected_entries[0] as any);
+         */
     }
 }
 
@@ -212,8 +228,8 @@ export class ChannelTree {
     channels: ChannelEntry[] = [];
     clients: ClientEntry[] = [];
 
-    readonly view: React.RefObject<ChannelTreeView>;
-    readonly view_move: React.RefObject<TreeEntryMove>;
+    //readonly view: React.RefObject<ChannelTreeView>;
+    //readonly view_move: React.RefObject<TreeEntryMove>;
     readonly selection: ChannelTreeEntrySelect;
 
     private readonly _tag_container: JQuery;
@@ -231,33 +247,38 @@ export class ChannelTree {
         this.events.enableDebug("channel-tree");
 
         this.client = client;
-        this.view = React.createRef();
-        this.view_move = React.createRef();
 
         this.server = new ServerEntry(this, "undefined", undefined);
         this.selection = new ChannelTreeEntrySelect(this);
 
         this._tag_container = $.spawn("div").addClass("channel-tree-container");
+        renderChannelTree(this, this._tag_container[0]);
+        /*
         ReactDOM.render([
             <ChannelTreeView key={"tree"} onMoveStart={(a,b) => this.onChannelEntryMove(a, b)} tree={this} ref={this.view} />,
             <TreeEntryMove key={"move"} onMoveEnd={(point) => this.onMoveEnd(point.x, point.y)} ref={this.view_move} />
         ], this._tag_container[0]);
+        */
 
         this.reset();
 
         if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
+            /*
+            TODO: Move this into the channel tree renderer
             this._tag_container.on("contextmenu", (event) => {
                 event.preventDefault();
 
                 const entry = this.view.current?.getEntryFromPoint(event.pageX, event.pageY);
                 if(entry) {
-                    if(this.selection.is_multi_select())
+                    if(this.selection.is_multi_select()) {
                         this.open_multiselect_context_menu(this.selection.selected_entries, event.pageX, event.pageY);
+                    }
                 } else {
                     this.selection.clear_selection();
                     this.showContextMenu(event.pageX, event.pageY);
                 }
             });
+             */
         }
 
         this._listener_document_key = event => this.handle_key_press(event);
@@ -293,6 +314,25 @@ export class ChannelTree {
         return result;
     }
 
+    findEntryId(entryId: number) : ServerEntry | ChannelEntry | ClientEntry {
+        /* TODO: Build a cache and don't iterate over everything */
+        if(this.server.uniqueEntryId === entryId) {
+            return this.server;
+        }
+
+        const channelIndex = this.channels.findIndex(channel => channel.uniqueEntryId === entryId);
+        if(channelIndex !== -1) {
+            return this.channels[channelIndex];
+        }
+
+        const clientIndex = this.clients.findIndex(client => client.uniqueEntryId === entryId);
+        if(clientIndex !== -1) {
+            return this.clients[clientIndex];
+        }
+
+        return undefined;
+    }
+
     destroy() {
         ReactDOM.unmountComponentAtNode(this._tag_container[0]);
 
@@ -320,7 +360,6 @@ export class ChannelTree {
         this.server.reset();
         this.server.remote_address = Object.assign({}, address);
         this.server.properties.virtualserver_name = serverName;
-        this.events.fire("notify_root_channel_changed");
     }
 
     rootChannel() : ChannelEntry[] {
@@ -338,19 +377,20 @@ export class ChannelTree {
 
         batch_updates(BatchUpdateType.CHANNEL_TREE);
         try {
-            if(!this.channels.remove(channel))
+            if(!this.channels.remove(channel)) {
                 log.warn(LogCategory.CHANNEL, tr("Deleting an unknown channel!"));
+            }
 
             channel.children(false).forEach(e => this.deleteChannel(e));
             if(channel.clients(false).length !== 0) {
                 log.warn(LogCategory.CHANNEL, tr("Deleting a non empty channel! This could cause some errors."));
-                for(const client of channel.clients(false))
+                for(const client of channel.clients(false)) {
                     this.deleteClient(client, { reason: ViewReasonId.VREASON_SYSTEM, serverLeave: false });
+                }
             }
 
-            const is_root_tree = !channel.parent;
             this.unregisterChannelFromTree(channel);
-            if(is_root_tree) this.events.fire("notify_root_channel_changed");
+            this.events.fire("notify_channel_deleted", { channel: channel });
         } finally {
             flush_batched_updates(BatchUpdateType.CHANNEL_TREE);
         }
@@ -360,7 +400,8 @@ export class ChannelTree {
         channel.channelTree = this;
         this.channels.push(channel);
 
-        this.moveChannel(channel, previous, parent);
+        this.moveChannel(channel, previous, parent, false);
+        this.events.fire("notify_channel_created", { channel: channel });
     }
 
     findChannel(channelId: number) : ChannelEntry | undefined {
@@ -379,63 +420,56 @@ export class ChannelTree {
         return undefined;
     }
 
-    private unregisterChannelFromTree(channel: ChannelEntry, new_parent?: ChannelEntry) {
-        let oldChannelParent;
+    private unregisterChannelFromTree(channel: ChannelEntry) {
         if(channel.parent) {
-            if(channel.parent.child_channel_head === channel)
+            if(channel.parent.child_channel_head === channel) {
                 channel.parent.child_channel_head = channel.channel_next;
-
-            /* We need only trigger this once.
-               If the new parent is equal to the old one with applying the "new" parent this event will get triggered */
-            oldChannelParent = channel.parent;
+            }
         }
 
-        if(channel.channel_previous)
+        if(channel.channel_previous) {
             channel.channel_previous.channel_next = channel.channel_next;
+        }
 
-        if(channel.channel_next)
+        if(channel.channel_next) {
             channel.channel_next.channel_previous = channel.channel_previous;
+        }
 
-        if(channel === this.channel_last)
+        if(channel === this.channel_last) {
             this.channel_last = channel.channel_previous;
+        }
 
-        if(channel === this.channel_first)
+        if(channel === this.channel_first) {
             this.channel_first = channel.channel_next;
+        }
 
         channel.channel_next = undefined;
         channel.channel_previous = undefined;
         channel.parent = undefined;
-
-        if(oldChannelParent && oldChannelParent !== new_parent)
-            oldChannelParent.events.fire("notify_children_changed");
     }
 
-    moveChannel(channel: ChannelEntry, channel_previous: ChannelEntry, parent: ChannelEntry) {
-        if(channel_previous != null && channel_previous.parent != parent) {
-            console.error(tr("Invalid channel move (different parents! (%o|%o)"), channel_previous.parent, parent);
+    moveChannel(channel: ChannelEntry, channelPrevious: ChannelEntry, parent: ChannelEntry, triggerMoveEvent: boolean) {
+        if(channelPrevious != null && channelPrevious.parent != parent) {
+            console.error(tr("Invalid channel move (different parents! (%o|%o)"), channelPrevious.parent, parent);
             return;
         }
 
-        let root_tree_updated = !channel.parent;
-        this.unregisterChannelFromTree(channel, parent);
-        channel.channel_previous = channel_previous;
+        this.unregisterChannelFromTree(channel);
+        channel.channel_previous = channelPrevious;
         channel.channel_next = undefined;
         channel.parent = parent;
 
-        if(channel_previous) {
-            if(channel_previous == this.channel_last)
+        if(channelPrevious) {
+            if(channelPrevious == this.channel_last) {
                 this.channel_last = channel;
+            }
 
-            channel.channel_next = channel_previous.channel_next;
-            channel_previous.channel_next = channel;
+            channel.channel_next = channelPrevious.channel_next;
+            channelPrevious.channel_next = channel;
 
-            if(channel.channel_next)
+            if(channel.channel_next) {
                 channel.channel_next.channel_previous = channel;
-
-            if(!channel.parent_channel())
-                root_tree_updated = true;
-            else
-                channel.parent.events.fire("notify_children_changed");
+            }
         } else {
             if(parent) {
                 let children = parent.children();
@@ -446,7 +480,6 @@ export class ChannelTree {
                     channel.channel_next = children[0];
                     channel.channel_next.channel_previous = channel;
                 }
-                parent.events.fire("notify_children_changed");
             } else {
                 channel.channel_next = this.channel_first;
                 if(this.channel_first)
@@ -454,13 +487,8 @@ export class ChannelTree {
 
                 this.channel_first = channel;
                 this.channel_last = this.channel_last || channel;
-                root_tree_updated = true;
             }
         }
-
-        //channel.update_family_index();
-        //channel.children(true).forEach(e => e.update_family_index());
-        //channel.clients(true).forEach(e => e.update_family_index());
 
         if(channel.channel_previous == channel) {  /* shall never happen */
             channel.channel_previous = undefined;
@@ -471,22 +499,23 @@ export class ChannelTree {
             debugger;
         }
 
-        if(root_tree_updated)
-            this.events.fire("notify_root_channel_changed");
+        if(triggerMoveEvent) {
+            this.events.fire("notify_channel_moved", { channel: channel });
+        }
     }
 
     deleteClient(client: ClientEntry, reason: { reason: ViewReasonId, message?: string, serverLeave: boolean }) {
-        const old_channel = client.currentChannel();
-        old_channel?.unregisterClient(client);
+        const oldChannel = client.currentChannel();
+        oldChannel?.unregisterClient(client);
         this.clients.remove(client);
 
-        client.events.fire("notify_left_view", reason);
-        if(old_channel) {
-            this.events.fire("notify_client_leave_view", { client: client, message: reason.message, reason: reason.reason, isServerLeave: reason.serverLeave });
-            this.client.side_bar.info_frame().update_channel_client_count(old_channel);
+        if(oldChannel) {
+            this.events.fire("notify_client_leave_view", { client: client, message: reason.message, reason: reason.reason, isServerLeave: reason.serverLeave, sourceChannel: oldChannel });
+            this.client.side_bar.info_frame().update_channel_client_count(oldChannel);
+        } else {
+            logWarn(LogCategory.CHANNEL, tr("Deleting client %s from channel tree which hasn't a channel."), client.clientId());
         }
 
-        //FIXME: Trigger the notify_clients_changed event!
         const voice_connection = this.client.serverConnection.getVoiceConnection();
         if(client.getVoiceClient()) {
             const voiceClient = client.getVoiceClient();
@@ -530,7 +559,7 @@ export class ChannelTree {
             client["_channel"] = channel;
             channel.registerClient(client);
 
-            this.events.fire("notify_client_enter_view", { client: client, reason: reason.reason, isServerJoin: reason.isServerJoin });
+            this.events.fire("notify_client_enter_view", { client: client, reason: reason.reason, isServerJoin: reason.isServerJoin, targetChannel: channel });
             return client;
         } finally {
             flush_batched_updates(BatchUpdateType.CHANNEL_TREE);
@@ -553,9 +582,7 @@ export class ChannelTree {
                 this.client.side_bar.info_frame().update_channel_client_count(targetChannel);
             }
 
-            if(oldChannel && targetChannel) {
-                client.events.fire("notify_client_moved", { oldChannel: oldChannel, newChannel: targetChannel });
-            }
+            this.events.fire("notify_client_moved", { oldChannel: oldChannel, newChannel: targetChannel, client: client });
         } finally {
             flush_batched_updates(BatchUpdateType.CHANNEL_TREE);
         }
@@ -916,7 +943,7 @@ export class ChannelTree {
 
     private select_next_channel(channel: ChannelEntry, select_client: boolean) {
         if(select_client) {
-            const clients = channel.clients_ordered();
+            const clients = channel.channelClientsOrdered();
             if(clients.length > 0) {
                 this.events.fire("action_select_entries", {
                     mode: "exclusive",
@@ -974,7 +1001,7 @@ export class ChannelTree {
                         if(siblings.length == 0) break;
                         previous = siblings.last();
                     }
-                    const clients = previous.clients_ordered();
+                    const clients = previous.channelClientsOrdered();
                     if(clients.length > 0) {
                         this.events.fire("action_select_entries", {
                             mode: "exclusive",
@@ -990,7 +1017,7 @@ export class ChannelTree {
                     }
                 } else if(selected.hasParent()) {
                     const channel = selected.parent_channel();
-                    const clients = channel.clients_ordered();
+                    const clients = channel.channelClientsOrdered();
                     if(clients.length > 0) {
                         this.events.fire("action_select_entries", {
                             mode: "exclusive",
@@ -1012,7 +1039,7 @@ export class ChannelTree {
                 }
             } else if(selected instanceof ClientEntry) {
                 const channel = selected.currentChannel();
-                const clients = channel.clients_ordered();
+                const clients = channel.channelClientsOrdered();
                 const index = clients.indexOf(selected);
                 if(index > 0) {
                     this.events.fire("action_select_entries", {
@@ -1034,7 +1061,7 @@ export class ChannelTree {
                 this.select_next_channel(selected, true);
             } else if(selected instanceof ClientEntry){
                 const channel = selected.currentChannel();
-                const clients = channel.clients_ordered();
+                const clients = channel.channelClientsOrdered();
                 const index = clients.indexOf(selected);
                 if(index + 1 < clients.length) {
                     this.events.fire("action_select_entries", {
@@ -1131,6 +1158,7 @@ export class ChannelTree {
         }
     }
 
+    /*
     private onChannelEntryMove(start, current) {
         const move = this.view_move.current;
         if(!move) return;
@@ -1175,8 +1203,10 @@ export class ChannelTree {
             flush_batched_updates(BatchUpdateType.CHANNEL_TREE);
         }
     }
+    */
 
     isClientMoveActive() {
-        return !!this.view_move.current?.isActive();
+        //return !!this.view_move.current?.isActive();
+        return false;
     }
 }

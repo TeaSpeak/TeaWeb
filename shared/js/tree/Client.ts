@@ -19,8 +19,6 @@ import {spawnChangeLatency} from "../ui/modal/ModalChangeLatency";
 import {formatMessage} from "../ui/frames/chat";
 import {spawnYesNo} from "../ui/modal/ModalYesNo";
 import * as hex from "../crypto/hex";
-import {ClientEntry as ClientEntryView} from "../ui/tree/Client";
-import * as React from "react";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 import {spawnClientVolumeChange, spawnMusicBotVolumeChange} from "../ui/modal/ModalChangeVolumeNew";
 import {spawnPermissionEditorModal} from "../ui/modal/permission/ModalPermissionEditor";
@@ -30,6 +28,7 @@ import {global_client_actions} from "../events/GlobalEvents";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {VoiceClient} from "../voice/VoiceClient";
 import {VoicePlayerEvents, VoicePlayerState} from "../voice/VoicePlayer";
+import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 
 export enum ClientType {
     CLIENT_VOICE,
@@ -83,6 +82,10 @@ export class ClientProperties {
     client_total_bytes_downloaded: number = 0;
 
     client_talk_power: number = 0;
+    client_talk_request: number = 0;
+    client_talk_request_msg: string = "";
+    client_is_talker: boolean = false;
+
     client_is_priority_speaker: boolean = false;
 }
 
@@ -139,14 +142,6 @@ export class ClientConnectionInfo {
 }
 
 export interface ClientEvents extends ChannelTreeEntryEvents {
-    notify_enter_view: {},
-    notify_client_moved: { oldChannel: ChannelEntry, newChannel: ChannelEntry }
-    notify_left_view: {
-        reason: ViewReasonId;
-        message?: string;
-        serverLeave: boolean;
-    },
-
     notify_properties_updated: {
         updated_properties: {[Key in keyof ClientProperties]: ClientProperties[Key]};
         client_properties: ClientProperties
@@ -183,7 +178,6 @@ const StatusIconUpdateKeys: (keyof ClientProperties)[] = [
 
 export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
     readonly events: Registry<ClientEvents>;
-    readonly view: React.RefObject<ClientEntryView> = React.createRef<ClientEntryView>();
     channelTree: ChannelTree;
 
     protected _clientId: number;
@@ -997,7 +991,7 @@ export class LocalClientEntry extends ClientEntry {
                     tr("Change name") +
                     (contextmenu.get_provider().html_format_enabled() ? "</b>" : ""),
                 icon_class: "client-change_nickname",
-                callback: () => this.openRename(),
+                callback: () => this.openRenameModal(), /* FIXME: Pass the UI event registry */
                 type: contextmenu.MenuEntryType.ENTRY
             }, {
                 name: tr("Change description"),
@@ -1046,20 +1040,20 @@ export class LocalClientEntry extends ClientEntry {
         });
     }
 
-    openRename() : void {
-        const view = this.channelTree.view.current;
-        if(!view) return; //TODO: Fallback input modal
-        view.scrollEntryInView(this, () => {
-            const own_view = this.view.current;
-            if(!own_view) {
-                return; //TODO: Fallback input modal
+    openRenameModal() {
+        createInputModal(tr("Enter your new name"), tr("Enter your new client name"), text => text.length >= 3 && text.length <= 30, value => {
+            if(value) {
+                this.renameSelf(value as string).then(result => {
+                    if(!result) {
+                        createErrorModal(tr("Failed change nickname"), tr("Failed to change your client nickname")).open();
+                    }
+                });
             }
+        }).open();
+    }
 
-            own_view.setState({
-                rename: true,
-                renameInitialName: this.properties.client_nickname
-            });
-        });
+    openRename(events: Registry<ChannelTreeUIEvents>) : void {
+        events.fire("notify_client_name_edit", { initialValue: this.clientNickName(), treeEntryId: this.uniqueEntryId });
     }
 }
 

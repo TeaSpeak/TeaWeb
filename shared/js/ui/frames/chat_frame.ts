@@ -184,10 +184,13 @@ export class InfoFrame {
     }
 
     update_channel_client_count(channel: ChannelEntry) {
-        if(channel === this._channel_text)
+        if(channel === this._channel_text) {
             this.update_channel_limit(channel, this._html_tag.find(".value-text-limit"));
-        if(channel === this._channel_voice)
+        }
+
+        if(channel === this._channel_voice) {
             this.update_channel_limit(channel, this._html_tag.find(".value-voice-limit"));
+        }
     }
 
     private update_channel_limit(channel: ChannelEntry, tag: JQuery) {

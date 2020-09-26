@@ -3,6 +3,7 @@ import {LogCategory} from "./log";
 import {guid} from "./crypto/uid";
 import * as React from "react";
 import {useEffect} from "react";
+import {unstable_batchedUpdates} from "react-dom";
 
 export interface Event<Events, T = keyof Events> {
     readonly type: T;
@@ -38,6 +39,9 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
     }[] = [];
     private debugPrefix = undefined;
     private warnUnhandledEvents = false;
+
+    private pendingCallbacks: { type: any, data: any }[] = [];
+    private pendingCallbacksTimeout: number = 0;
 
     constructor() {
         this.registryUuid = "evreg_data_" + guid();
@@ -200,11 +204,23 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
     }
 
     fire_async<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void) {
-        /* TODO: Optimize, bundle them */
-        setTimeout(() => {
-            this.fire(event_type, data);
-            if(typeof callback === "function")
-                callback();
+        if(!this.pendingCallbacksTimeout) {
+            this.pendingCallbacksTimeout = setTimeout(() => this.invokeAsyncCallbacks());
+            this.pendingCallbacks = [];
+        }
+        this.pendingCallbacks.push({ type: event_type, data: data });
+    }
+
+    private invokeAsyncCallbacks() {
+        const callbacks = this.pendingCallbacks;
+        this.pendingCallbacksTimeout = 0;
+        this.pendingCallbacks = undefined;
+
+        unstable_batchedUpdates(() => {
+            let index = callbacks.length;
+            while(index--) {
+                this.fire(callbacks[index].type, callbacks[index].data);
+            }
         });
     }
 

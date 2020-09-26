@@ -31,3 +31,8 @@ registerHandler({
     name: "css-editor",
     loadClass: async () => await import("tc-shared/ui/modal/css-editor/Renderer")
 });
+
+registerHandler({
+    name: "channel-tree",
+    loadClass: async () => await import("tc-shared/ui/tree/RendererModal")
+});

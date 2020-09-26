@@ -15,14 +15,13 @@ import {openChannelInfo} from "../ui/modal/ModalChannelInfo";
 import {createChannelModal} from "../ui/modal/ModalCreateChannel";
 import {formatMessage} from "../ui/frames/chat";
 
-import * as React from "react";
 import {Registry} from "../events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
-import {ChannelEntryView as ChannelEntryView} from "../ui/tree/Channel";
 import {spawnFileTransferModal} from "../ui/modal/transfer/ModalFileTransfer";
 import {ViewReasonId} from "../ConnectionHandler";
 import {EventChannelData} from "../ui/frames/log/Definitions";
 import {ErrorCode} from "../connection/ErrorCode";
+import {ClientIcon} from "svg-sprites/client-icons";
 
 export enum ChannelType {
     PERMANENT,
@@ -94,32 +93,28 @@ export interface ChannelEvents extends ChannelTreeEntryEvents {
     },
     notify_collapsed_state_changed: {
         collapsed: boolean
-    },
-
-    notify_children_changed: {},
-    notify_clients_changed: {}, /* will also be fired when clients haven been reordered */
+    }
 }
 
 export class ParsedChannelName {
-    readonly original_name: string;
-    alignment: "center" | "right" | "left" | "normal";
-    repetitive: boolean;
+    readonly originalName: string;
+    alignment: "center" | "right" | "left" | "normal" | "repetitive";
     text: string; /* does not contain any alignment codes */
 
-    constructor(name: string, has_parent_channel: boolean) {
-        this.original_name = name;
-        this.parse(has_parent_channel);
+    constructor(name: string, hasParentChannel: boolean) {
+        this.originalName = name;
+        this.parse(hasParentChannel);
     }
 
     private parse(has_parent_channel: boolean) {
         this.alignment = "normal";
 
         parse_type:
-        if(!has_parent_channel && this.original_name.charAt(0) == '[') {
-            let end = this.original_name.indexOf(']');
+        if(!has_parent_channel && this.originalName.charAt(0) == '[') {
+            let end = this.originalName.indexOf(']');
             if(end === -1) break parse_type;
 
-            let options = this.original_name.substr(1, end - 1);
+            let options = this.originalName.substr(1, end - 1);
             if(options.indexOf("spacer") === -1) break parse_type;
             options = options.substr(0, options.indexOf("spacer"));
 
@@ -139,17 +134,16 @@ export class ParsedChannelName {
                     this.alignment = "center";
                     break;
                 case "*":
-                    this.alignment = "center";
-                    this.repetitive = true;
+                    this.alignment = "repetitive";
                     break;
                 default:
                     break parse_type;
             }
 
-            this.text = this.original_name.substr(end + 1);
+            this.text = this.originalName.substr(end + 1);
         }
         if(!this.text && this.alignment === "normal")
-            this.text = this.original_name;
+            this.text = this.originalName;
     }
 }
 
@@ -164,7 +158,6 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     child_channel_head?: ChannelEntry;
 
     readonly events: Registry<ChannelEvents>;
-    readonly view: React.RefObject<ChannelEntryView>;
 
     parsed_channel_name: ParsedChannelName;
 
@@ -184,14 +177,13 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     private _subscribe_mode: ChannelSubscribeMode;
 
     private client_list: ClientEntry[] = []; /* this list is sorted correctly! */
-    private readonly client_property_listener;
+    private readonly clientPropertyChangedListener;
 
     constructor(channelId, channelName) {
         super();
 
         this.events = new Registry<ChannelEvents>();
-        this.view = React.createRef<ChannelEntryView>();
-        
+
         this.properties = new ChannelProperties();
         this.channelId = channelId;
         this.properties.channel_name = channelName;
@@ -199,9 +191,10 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
         this.parsed_channel_name = new ParsedChannelName("undefined", false);
 
-        this.client_property_listener = (event: ClientEvents["notify_properties_updated"]) => {
-            if(typeof event.updated_properties.client_nickname !== "undefined" || typeof event.updated_properties.client_talk_power !== "undefined")
+        this.clientPropertyChangedListener = (event: ClientEvents["notify_properties_updated"]) => {
+            if("client_nickname" in event.updated_properties || "client_talk_power" in event.updated_properties) {
                 this.reorderClientList(true);
+            }
         };
 
         this.events.on("notify_properties_updated", event => {
@@ -262,20 +255,16 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     }
 
     registerClient(client: ClientEntry) {
-        client.events.on("notify_properties_updated", this.client_property_listener);
+        client.events.on("notify_properties_updated", this.clientPropertyChangedListener);
         this.client_list.push(client);
         this.reorderClientList(false);
-
-        this.events.fire("notify_clients_changed");
     }
 
-    unregisterClient(client: ClientEntry, no_event?: boolean) {
-        client.events.off("notify_properties_updated", this.client_property_listener);
-        if(!this.client_list.remove(client))
+    unregisterClient(client: ClientEntry, noEvent?: boolean) {
+        client.events.off("notify_properties_updated", this.clientPropertyChangedListener);
+        if(!this.client_list.remove(client)) {
             log.warn(LogCategory.CHANNEL, tr("Unregistered unknown client from channel %s"), this.channelName());
-
-        if(!no_event)
-            this.events.fire("notify_clients_changed");
+        }
     }
 
     private reorderClientList(fire_event: boolean) {
@@ -299,7 +288,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
             /* only fire if really something has changed ;) */
             for(let index = 0; index < this.client_list.length; index++) {
                 if(this.client_list[index] !== original_list[index]) {
-                    this.events.fire("notify_clients_changed");
+                    this.channelTree.events.fire("notify_channel_client_order_changed", { channel: this });
                     break;
                 }
             }
@@ -333,7 +322,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         }, result);
     }
 
-    clients_ordered() : ClientEntry[] {
+    channelClientsOrdered() : ClientEntry[] {
         return this.client_list;
     }
 
@@ -595,7 +584,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 info_update = true;
             } else if(key == "channel_order") {
                 let order = this.channelTree.findChannel(this.properties.channel_order);
-                this.channelTree.moveChannel(this, order, this.parent);
+                this.channelTree.moveChannel(this, order, this.parent, true);
             } else if(key === "channel_icon_id") {
                 this.properties.channel_icon_id = variable.value as any >>> 0; /* unsigned 32 bit number! */
             } else if(key == "channel_description") {
@@ -746,7 +735,6 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
         this._flag_collapsed = flag;
         this.events.fire("notify_collapsed_state_changed", { collapsed: flag });
-        this.view.current?.forceUpdate();
         this.channelTree.client.settings.changeServer(Settings.FN_SERVER_CHANNEL_COLLAPSED(this.channelId), flag);
     }
 
@@ -778,6 +766,23 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         return {
             channel_name: this.channelName(),
             channel_id: this.channelId
+        }
+    }
+
+    getStatusIcon() : ClientIcon | undefined {
+        if(this.parsed_channel_name.alignment !== "normal") {
+            return undefined;
+        }
+
+        const subscribed = this.flag_subscribed;
+        if (this.properties.channel_flag_password === true && !this.cached_password()) {
+            return subscribed ? ClientIcon.ChannelYellowSubscribed : ClientIcon.ChannelYellow;
+        } else if (!this.properties.channel_flag_maxclients_unlimited && this.clients().length >= this.properties.channel_maxclients) {
+            return subscribed ? ClientIcon.ChannelRedSubscribed : ClientIcon.ChannelRed;
+        } else if (!this.properties.channel_flag_maxfamilyclients_unlimited && this.properties.channel_maxfamilyclients >= 0 && this.clients(true).length >= this.properties.channel_maxfamilyclients) {
+            return subscribed ? ClientIcon.ChannelRedSubscribed : ClientIcon.ChannelRed;
+        } else {
+            return subscribed ? ClientIcon.ChannelGreenSubscribed : ClientIcon.ChannelGreen;
         }
     }
 }
