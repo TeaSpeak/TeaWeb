@@ -20,6 +20,7 @@ import {
     RendererClient
 } from "tc-shared/ui/tree/RendererClient";
 import {ServerRenderer} from "tc-shared/ui/tree/RendererServer";
+import {RendererMove} from "./RendererMove";
 
 function isEquivalent(a, b) {
     const typeA = typeof a;
@@ -66,8 +67,10 @@ export class RDPChannelTree {
 
     private registeredEventHandlers = [];
 
+    readonly refMove = React.createRef<RendererMove>();
     readonly refTree = React.createRef<ChannelTreeView>();
 
+    private treeRevision: number = 0;
     private orderedTree: RDPEntry[] = [];
     private treeEntries: {[key: number]: RDPEntry} = {};
 
@@ -250,8 +253,20 @@ export class RDPChannelTree {
         });
 
         this.refTree?.current.setState({
-            tree: this.orderedTree.slice()
+            tree: this.orderedTree.slice(),
+            treeRevision: ++this.treeRevision
         });
+    }
+
+
+    @EventHandler<ChannelTreeUIEvents>("notify_entry_move")
+    private handleNotifyEntryMove(event: ChannelTreeUIEvents["notify_entry_move"]) {
+        if(!this.refMove.current) {
+            this.events.fire_async("action_move_entries", { treeEntryId: 0 });
+            return;
+        }
+
+        this.refMove.current.enableEntryMove(event.entries, event.begin, event.current);
     }
 }
 

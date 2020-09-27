@@ -108,8 +108,10 @@ class ChannelTreeController {
         this.initializeServerEvents(this.channelTree.server);
 
         this.channelTree.events.register_handler(this);
-        this.channelTree.channels.forEach(channel => this.initializeChannelEvents(channel));
-        this.channelTree.clients.forEach(client => this.initializeClientEvents(client));
+
+        if(this.channelTree.channelsInitialized) {
+            this.handleChannelListReceived();
+        }
     }
 
     destroy() {
@@ -688,6 +690,11 @@ function initializeTreeController(events: Registry<ChannelTreeUIEvents>, channel
             return;
         }
 
+        if(moveSelection) {
+            /* don't select entries while we're moving */
+            return;
+        }
+
         channelTree.events.fire("action_select_entries", {
             entries: [entry],
             mode: "exclusive"
@@ -730,6 +737,37 @@ function initializeTreeController(events: Registry<ChannelTreeUIEvents>, channel
             if(result) { return; }
             events.fire("notify_client_name_edit", { treeEntryId: event.treeEntryId, initialValue: event.name });
         })
+    });
+
+    let moveSelection: ClientEntry[];
+    events.on("action_start_entry_move", event => {
+        const selection = channelTree.selection.selected_entries.slice();
+        if(selection.length === 0) { return; }
+        if(selection.findIndex(element => !(element instanceof ClientEntry)) !== -1) { return; }
+
+        moveSelection = selection as any;
+        events.fire_async("notify_entry_move", { entries: selection.map(client => (client as ClientEntry).clientNickName()).join(", "), begin: event.start, current: event.current });
+    });
+
+    events.on("action_move_entries", event => {
+        if(event.treeEntryId === 0 || !moveSelection?.length) {
+            moveSelection = undefined;
+            return;
+        }
+
+        const entry = channelTree.findEntryId(event.treeEntryId);
+        if(!entry || !(entry instanceof ChannelEntry)) {
+            logWarn(LogCategory.CHANNEL, tr("Tried to move clients to an invalid tree entry with id %o"), event.treeEntryId);
+            return;
+        }
+
+        moveSelection.filter(e => e.currentChannel() !== entry).forEach(e => {
+            channelTree.client.serverConnection.send_command("clientmove", {
+                clid: e.clientId(),
+                cid: entry.channelId
+            });
+        });
+        moveSelection = undefined;
     });
 
     events.on("notify_client_name_edit_failed", event => {

@@ -8,6 +8,7 @@ import * as React from "react";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 import ResizeObserver from 'resize-observer-polyfill';
 import {RDPEntry, RDPChannelTree} from "./RendererDataProvider";
+import {RendererMove} from "./RendererMove";
 
 const viewStyle = require("./View.scss");
 
@@ -27,6 +28,7 @@ export interface ChannelTreeViewState {
 
     /* the currently rendered tree */
     tree: RDPEntry[];
+    treeRevision: number;
 }
 
 @ReactEventHandler<ChannelTreeView>(e => e.props.events)
@@ -61,7 +63,8 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
             view_height: 0,
             tree_version: 0,
             smoothScroll: false,
-            tree: []
+            tree: [],
+            treeRevision: -1
         };
 
         this.documentMouseListener = (e: MouseEvent) => {
@@ -164,7 +167,6 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
             }
         }
 
-        /* className={this.classList(viewStyle.channelTree, this.props.tree.isClientMoveActive() && viewStyle.move)} */
         return (
             <div
                 className={viewStyle.channelTreeContainer + " " + (this.state.smoothScroll ? viewStyle.smoothScroll : "")}
@@ -177,6 +179,16 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
                     style={{height: (this.state.tree.length * ChannelTreeView.EntryHeight) + "px"}}>
                     {elements}
                 </div>
+                <RendererMove
+                    onMoveEnd={target => {
+                        const targetEntry = this.getEntryFromPoint(target.x, target.y);
+                        this.props.events.fire("action_move_entries", { treeEntryId: typeof targetEntry === "number" ? targetEntry : 0 });
+                    }}
+                    onMoveCancel={() => {
+                        this.props.events.fire("action_move_entries", { treeEntryId: 0 });
+                    }}
+                    ref={this.props.dataProvider.refMove}
+                />
             </div>
         )
     }
