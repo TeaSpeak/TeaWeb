@@ -1,4 +1,4 @@
-import {ChannelMessage, getInstance as getIPCInstance, IPCChannel} from "../../../ipc/BrowserIPC";
+import {getInstance as getIPCInstance} from "../../../ipc/BrowserIPC";
 import {Settings, SettingsKey} from "../../../settings";
 import {
     Controller2PopoutMessages, EventControllerBase,

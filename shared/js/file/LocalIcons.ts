@@ -12,7 +12,6 @@ import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {ChannelMessage, IPCChannel} from "tc-shared/ipc/BrowserIPC";
 import * as ipc from "tc-shared/ipc/BrowserIPC";
-import {kIPCAvatarChannel} from "tc-shared/file/Avatars";
 
 /* TODO: Retry icon download after some time */
 /* TODO: Download icon when we're connected to the server were we want the icon from and update the icon */

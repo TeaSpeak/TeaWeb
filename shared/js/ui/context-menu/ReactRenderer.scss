@@ -1,0 +1,186 @@
+@import "../../../css/static/mixin";
+
+.globalContainer {
+    display: flex;
+    flex-direction: column;
+
+    position: static;
+
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.container {
+    overflow: visible;
+    display: block;
+    z-index: 120000;
+    position: absolute;
+
+    opacity: 0;
+
+    .menuContainer {
+        border: 1px solid #CCC;
+        white-space: nowrap;
+        font-family: sans-serif;
+        background: #FFF;
+        color: #333;
+        padding: 3px;
+
+        &.left {
+            margin-left: -100%;
+            width: 100%;
+        }
+
+        * {
+            font-family: Arial, serif;
+            font-size: 12px;
+            white-space: pre;
+            line-height: 1;
+            vertical-align: middle;
+        }
+
+        .label {
+            /* nothing really to do here */
+
+            &.bold {
+                font-weight: bold;
+            }
+        }
+
+        hr {
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        .entry {
+            /*padding: 8px 12px;*/
+            padding-right: 12px;
+            cursor: pointer;
+            list-style-type: none;
+            transition: all .3s ease;
+            user-select: none;
+            align-items: center;
+
+            display: flex;
+
+            &.disabled {
+                pointer-events: none;
+                background-color: lightgray;
+                cursor: not-allowed;
+            }
+
+            &:hover:not(.disabled) {
+                background-color: #DEF;
+            }
+        }
+
+        .icon {
+            margin-right: 4px;
+        }
+
+        .arrow {
+            cursor: pointer;
+            pointer-events: all;
+            width: 7px;
+            height: 7px;
+            padding: 0;
+            margin-right: 5px;
+            margin-left: 5px;
+
+            display: inline-block;
+            border: solid black;
+            border-width: 0 .2em .2em 0;
+
+            transform: rotate(-45deg);
+            -webkit-transform: rotate(-45deg);
+
+            position: absolute;
+            right: 3px;
+        }
+
+        .subContainer {
+            margin-right: -3px;
+            padding-right: 24px;
+            position: relative;
+
+            &:hover {
+                > .subMenu {
+                    display: block;
+                }
+            }
+        }
+
+        .subMenu {
+            display: none;
+            left: 100%;
+            top: -4px;
+            position: absolute;
+            margin-left: 0;
+        }
+    }
+
+    &.shown {
+        pointer-events: all;
+        opacity: 1;
+    }
+}
+
+.checkbox {
+    margin-top: 1px;
+    margin-left: 1px;
+    display: block;
+    position: relative;
+    padding-left: 14px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 22px;
+
+    @include user-select(none);
+
+    /* Hide the browser's default checkbox */
+    input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        display: none;
+    }
+
+    .checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 11px;
+        width: 11px;
+        background-color: #eee;
+
+        &:after {
+            content: "";
+            position: absolute;
+            display: none;
+
+            left: 4px;
+            top: 1px;
+            width: 3px;
+            height: 7px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            -webkit-transform: rotate(45deg);
+            -ms-transform: rotate(45deg);
+            transform: rotate(45deg);
+        }
+    }
+
+    &:hover input ~ .checkmark {
+        background-color: #ccc;
+    }
+
+    input:checked ~ .checkmark {
+        background-color: #2196F3;
+    }
+
+    input:checked ~ .checkmark:after {
+        display: block;
+    }
+}
