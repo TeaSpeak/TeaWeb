@@ -40,6 +40,7 @@ export interface ChannelTreeUIEvents {
     action_channel_open_file_browser: { treeEntryId: number },
     action_client_double_click: { treeEntryId: number },
     action_client_name_submit: { treeEntryId: number, name: string },
+    action_move_entries: { treeEntryId: number /* zero if move failed */ }
 
     /* queries */
     query_tree_entries: {},
@@ -75,6 +76,8 @@ export interface ChannelTreeUIEvents {
 
     notify_unread_state: { treeEntryId: number, unread: boolean },
     notify_select_state: { treeEntryId: number, selected: boolean },
+
+    notify_entry_move: { entries: string, begin: { x: number, y: number }, current: { x: number, y: number } },
 
     notify_visibility_changed: { visible: boolean },
     notify_destroy: {}

@@ -228,6 +228,9 @@ export class ChannelTree {
     channels: ChannelEntry[] = [];
     clients: ClientEntry[] = [];
 
+    /* whatever all channels have been initiaized */
+    channelsInitialized: boolean = false;
+
     //readonly view: React.RefObject<ChannelTreeView>;
     //readonly view_move: React.RefObject<TreeEntryMove>;
     readonly selection: ChannelTreeEntrySelect;
@@ -875,6 +878,7 @@ export class ChannelTree {
     }
 
     reset() {
+        this.channelsInitialized = false;
         batch_updates(BatchUpdateType.CHANNEL_TREE);
 
         this.selection.clear_selection();
