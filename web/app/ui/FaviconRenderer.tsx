@@ -61,7 +61,10 @@ function initializeFaviconController(events: Registry<FaviconEvents>) {
 
     const setCurrentHandler = (handler: ConnectionHandler) => {
         finalizeCurrentHandler();
-        initializeCurrentHandler(handler);
+        if(handler) {
+            initializeCurrentHandler(handler);
+        }
+        currentHandler = handler;
         sendFavicon();
     }
 
@@ -85,6 +88,7 @@ function initializeFaviconController(events: Registry<FaviconEvents>) {
         events.fire_async("notify_icon", { icon: icon })
     };
 
+    setCurrentHandler(server_connections.active_connection());
     events.on("query_icon", () => sendFavicon());
 }
 
@@ -108,7 +112,7 @@ const FaviconRenderer = (props: { events: Registry<FaviconEvents> }) => {
     if(!favicon) {
         return <DefaultFaviconRenderer key={"default"} />;
     } else {
-        return <ClientIconFaviconRenderer icon={favicon} key={"icon"} />;
+        return <ClientIconFaviconRenderer icon={favicon} key={"icon-" + favicon} />;
     }
 }
 
