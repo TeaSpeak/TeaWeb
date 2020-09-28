@@ -15,6 +15,8 @@ export class AudioClient {
     async initialize() { }
 
     destroy() {
+        this.callback_ended = undefined;
+        this.callback_decoded = undefined;
         this.handle.destroyClient(this.clientId);
     }
 

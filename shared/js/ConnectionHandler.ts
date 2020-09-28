@@ -993,7 +993,14 @@ export class ConnectionHandler {
         this.pluginCmdRegistry?.destroy();
         this.pluginCmdRegistry = undefined;
 
-        this._local_client?.destroy();
+        if(this._local_client) {
+            const voiceHandle = this._local_client.getVoiceClient();
+            if(voiceHandle) {
+                this._local_client.setVoiceClient(undefined);
+                this.serverConnection.getVoiceConnection().unregisterVoiceClient(voiceHandle);
+            }
+            this._local_client.destroy();
+        }
         this._local_client = undefined;
 
         this.channelTree?.destroy();
