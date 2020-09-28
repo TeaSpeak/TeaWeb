@@ -110,6 +110,13 @@ export class VoiceConnection extends AbstractVoiceConnection {
             this.voiceClients = undefined;
             this.currentAudioSource = undefined;
         });
+        if(Object.keys(this.voiceClients).length !== 0) {
+            logWarn(LogCategory.AUDIO, tr("Voice connection will be destroyed, but some voice clients are still left (%d)."), Object.keys(this.voiceClients).length);
+        }
+        const whisperSessions = Object.keys(this.whisperSessions);
+        whisperSessions.forEach(session => this.whisperSessions[session].destroy());
+        this.whisperSessions = {};
+
         this.events.destroy();
     }
 
@@ -118,8 +125,9 @@ export class VoiceConnection extends AbstractVoiceConnection {
     }
 
     async acquireVoiceRecorder(recorder: RecorderProfile | undefined, enforce?: boolean) {
-        if(this.currentAudioSource === recorder && !enforce)
+        if(this.currentAudioSource === recorder && !enforce) {
             return;
+        }
 
         if(this.currentAudioSource) {
             await this.voiceBridge?.setInput(undefined);
@@ -157,7 +165,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
                 this.handleRecorderStart();
             }
         } else {
-            await this.voiceBridge.setInput(undefined);
+            await this.voiceBridge?.setInput(undefined);
         }
 
         this.events.fire("notify_recorder_changed");
