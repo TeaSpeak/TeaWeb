@@ -2,8 +2,8 @@ import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import {useState} from "react";
+import * as ReactDOM from "react-dom";
 import {server_connections} from "tc-shared/ConnectionManager";
 
 import {
@@ -11,9 +11,18 @@ import {
     spriteEntries as kClientSpriteEntries,
     spriteUrl as kClientSpriteUrl
 } from "svg-sprites/client-icons";
+import {Registry} from "tc-shared/events";
+
+interface FaviconEvents {
+    query_icon: {},
+    notify_icon: { icon: ClientIcon | undefined }
+}
 
 let iconImage: HTMLImageElement;
 async function initializeFaviconRenderer() {
+    const events = new Registry<FaviconEvents>();
+    initializeFaviconController(events);
+
     iconImage = new Image();
     iconImage.src = kClientSpriteUrl;
     await new Promise((resolve, reject) => {
@@ -22,7 +31,7 @@ async function initializeFaviconRenderer() {
     });
 
     let container = document.createElement("span");
-    ReactDOM.render(ReactDOM.createPortal(<FaviconRenderer />, document.head), container, () => {
+    ReactDOM.render(ReactDOM.createPortal(<FaviconRenderer events={events} />, document.head), container, () => {
         document.getElementById("favicon").remove();
     });
     //container.remove();
@@ -44,13 +53,40 @@ function clientIconToDataUrl(icon: ClientIcon) : string | undefined {
     return canvas.toDataURL();
 }
 
-const FaviconRenderer = () => {
-    const [ handler, setHandler ] = useState<ConnectionHandler>(server_connections.active_connection());
+function initializeFaviconController(events: Registry<FaviconEvents>) {
+    let currentHandler: ConnectionHandler;
+    let currentEvents: (() => void)[] = [];
 
-    server_connections.events().reactUse("notify_active_handler_changed", event => setHandler(event.newHandler));
+    server_connections.events().on("notify_active_handler_changed", event => setCurrentHandler(event.newHandler));
 
-    return handler ? <HandlerFaviconRenderer connection={handler} key={"handler-" + handler.handlerId} /> : <DefaultFaviconRenderer key={"default"} />;
-};
+    const setCurrentHandler = (handler: ConnectionHandler) => {
+        finalizeCurrentHandler();
+        initializeCurrentHandler(handler);
+        sendFavicon();
+    }
+
+    const initializeCurrentHandler = (handler: ConnectionHandler) => {
+        currentEvents.push(handler.events().on("notify_connection_state_changed", () => sendFavicon()));
+        currentEvents.push(handler.getClient().events.on("notify_status_icon_changed", () => sendFavicon()));
+    };
+
+    const finalizeCurrentHandler = () => {
+        currentEvents.forEach(callback => callback());
+        currentEvents = [];
+    }
+
+    const sendFavicon = () => {
+        let icon: ClientIcon;
+
+        if(currentHandler?.connection_state === ConnectionState.CONNECTED) {
+            icon = currentHandler.getClient().getStatusIcon();
+        }
+
+        events.fire_async("notify_icon", { icon: icon })
+    };
+
+    events.on("query_icon", () => sendFavicon());
+}
 
 const DefaultFaviconRenderer = () => <link key={"normal"} rel={"shortcut icon"} href={"img/favicon/teacup.png"} type={"image/x-icon"} />;
 const ClientIconFaviconRenderer = (props: { icon: ClientIcon }) => {
@@ -62,20 +98,19 @@ const ClientIconFaviconRenderer = (props: { icon: ClientIcon }) => {
     }
 };
 
-const HandlerFaviconRenderer = (props: { connection: ConnectionHandler }) => {
-    const [ showClientStatus, setShowClientStatus ] = useState(props.connection.connection_state === ConnectionState.CONNECTED);
-    props.connection.events().reactUse("notify_connection_state_changed", event => setShowClientStatus(event.new_state === ConnectionState.CONNECTED));
+const FaviconRenderer = (props: { events: Registry<FaviconEvents> }) => {
+    const [ favicon, setFavicon ] = useState<ClientIcon>(() => {
+        props.events.fire("query_icon");
+        return undefined;
+    });
+    props.events.reactUse("notify_icon", event => setFavicon(event.icon));
 
-    const [ statusIcon, setStatusIcon ] = useState<ClientIcon>(props.connection.getClient().getStatusIcon());
-    props.connection.getClient().events.reactUse("notify_status_icon_changed", event => setStatusIcon(event.newIcon));
-
-    if(showClientStatus) {
-        return <ClientIconFaviconRenderer icon={statusIcon} key={"server"} />;
-    } else {
+    if(!favicon) {
         return <DefaultFaviconRenderer key={"default"} />;
+    } else {
+        return <ClientIconFaviconRenderer icon={favicon} key={"icon"} />;
     }
 }
-
 
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     name: "favicon renderer",
