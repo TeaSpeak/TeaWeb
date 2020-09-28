@@ -171,7 +171,7 @@ export function spawnModalCssVariableEditor() {
     const events = new Registry<CssEditorEvents>();
     cssVariableEditorController(events);
 
-    const modal = spawnExternalModal("css-editor", events, {});
+    const modal = spawnExternalModal("css-editor", { default: events }, {});
     modal.show();
 }
 

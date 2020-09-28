@@ -37,7 +37,6 @@ import {ServerFeature, ServerFeatures} from "./connection/ServerFeatures";
 import {ChannelTree} from "./tree/ChannelTree";
 import {LocalClientEntry} from "./tree/Client";
 import {ServerAddress} from "./tree/Server";
-import {server_connections} from "tc-shared/ConnectionManager";
 
 export enum InputHardwareState {
     MISSING,

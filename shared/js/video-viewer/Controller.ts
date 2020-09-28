@@ -40,7 +40,7 @@ class VideoViewer {
             throw tr("Missing video viewer plugin");
         }
 
-        this.modal = spawnExternalModal("video-viewer", this.events, { handlerId: connection.handlerId });
+        this.modal = spawnExternalModal("video-viewer", { default: this.events }, { handlerId: connection.handlerId });
 
         this.registerPluginListeners();
         this.plugin.getCurrentWatchers().forEach(watcher => this.registerWatcherEvents(watcher));

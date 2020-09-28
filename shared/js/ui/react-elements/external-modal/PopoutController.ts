@@ -4,7 +4,7 @@ import {
     Controller2PopoutMessages, EventControllerBase,
     PopoutIPCMessage
 } from "../../../ui/react-elements/external-modal/IPCMessage";
-import {Registry} from "../../../events";
+import {Registry, RegistryMap} from "../../../events";
 
 const kSettingIPCChannel: SettingsKey<string> = {
     key: "ipc-channel",
@@ -24,16 +24,14 @@ class PopoutController extends EventControllerBase<"popout"> {
     private callbackControllerHello: (accepted: boolean | string) => void;
 
     constructor() {
-        super(new Registry());
+        super();
         this.ipcRemoteId = Settings.instance.static(Settings.KEY_IPC_REMOTE_ADDRESS, "invalid");
 
         this.ipcChannel = getIPCInstance().createChannel(this.ipcRemoteId, Settings.instance.static(kSettingIPCChannel, "invalid"));
         this.ipcChannel.messageHandler = this.handleIPCMessage.bind(this);
     }
 
-    getEventRegistry() {
-        return this.localEventRegistry;
-    }
+    getEventRegistries() : RegistryMap { return this.localRegistries; }
 
     async initialize() {
         this.sendIPCMessage("hello-popout", { version: __build.version });
@@ -65,8 +63,22 @@ class PopoutController extends EventControllerBase<"popout"> {
             case "hello-controller": {
                 const tpayload = payload as PopoutIPCMessage["hello-controller"];
                 console.log("Received Hello World from controller. Window instance accpected: %o", tpayload.accepted);
-                if(!this.callbackControllerHello)
+                if(!this.callbackControllerHello) {
                     return;
+                }
+
+                if(this.getEventRegistries()) {
+                    const registries = this.getEventRegistries();
+                    const invalidIndex = tpayload.registries.findIndex(reg => !registries[reg]);
+                    if(invalidIndex !== -1) {
+                        console.error("Received miss matching event registry keys (missing %s)", tpayload.registries[invalidIndex]);
+                        this.callbackControllerHello("miss matching registry keys (locally)");
+                    }
+                } else {
+                    let map = {};
+                    tpayload.registries.forEach(reg => map[reg] = new Registry());
+                    this.initializeRegistries(map);
+                }
 
                 this.userData = tpayload.userData;
                 this.callbackControllerHello(tpayload.accepted ? true : tpayload.message || false);

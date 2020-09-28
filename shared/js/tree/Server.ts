@@ -12,7 +12,6 @@ import {spawnIconSelect} from "../ui/modal/ModalIconSelect";
 import {spawnAvatarList} from "../ui/modal/ModalAvatarList";
 import {connection_log} from "../ui/modal/ModalConnect";
 import * as top_menu from "../ui/frames/MenuBar";
-import {control_bar_instance} from "../ui/frames/control-bar";
 import {Registry} from "../events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 
@@ -294,8 +293,6 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
                 update_bookmarks = true;
             } else if(variable.key.indexOf('hostbanner') != -1) {
                 update_bannner = true;
-            } else if(variable.key.indexOf('hostbutton') != -1) {
-                update_button = true;
             }
         }
         {
@@ -315,16 +312,11 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
                 });
                 bookmarks.save_bookmark();
                 top_menu.rebuild_bookmarks();
-
-                control_bar_instance()?.events().fire("update_state", { state: "bookmarks" });
             }
         }
 
         if(update_bannner)
             this.channelTree.client.hostbanner.update();
-
-        if(update_button)
-            control_bar_instance()?.events().fire("server_updated", { handler: this.channelTree.client, category: "hostbanner" });
 
         group.end();
         if(is_self_notify && this.info_request_promise_resolve) {

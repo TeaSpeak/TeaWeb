@@ -168,17 +168,21 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
         ReactDOM.render(<ContextMenuRenderer ref={refRenderer} />, globalContainer);
 
         reactContextMenuInstance = new class implements ContextMenuFactory {
-            spawnContextMenu(position: { pageX: number; pageY: number }, entries: ContextMenuEntry[]) {
+            spawnContextMenu(position: { pageX: number; pageY: number }, entries: ContextMenuEntry[], closeCallback: () => void) {
                 entries.forEach(generateUniqueIds);
                 refRenderer.current?.setState({
                     entries: entries,
                     pageX: position.pageX,
-                    pageY: position.pageY
+                    pageY: position.pageY,
+                    callbackClose: closeCallback
                 });
             }
 
             closeContextMenu() {
                 if(refRenderer.current?.state.entries?.length) {
+                    const callback = refRenderer.current?.state.callbackClose;
+                    if(callback) { callback(); }
+
                     refRenderer.current?.setState({ callbackClose: undefined, entries: [] });
                 }
             }

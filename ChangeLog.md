@@ -1,5 +1,8 @@
 # Changelog:
-* **16.09.20**
+* **27.09.20**
+    - Middle clicking on bookmarks now directly connects in a new tab
+    
+* **26.09.20**
     - Updating group prefix/suffixes when the group naming mode changes
     - Added a client talk power indicator
     - Fixed channel info description not rendering

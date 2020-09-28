@@ -1,7 +1,7 @@
 import * as React from "react";
 import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
-import {DropdownContainer} from "tc-shared/ui/frames/control-bar/dropdown";
-const cssStyle = require("./button.scss");
+import {DropdownContainer} from "./DropDown";
+const cssStyle = require("./Button.scss");
 
 export interface ButtonState {
     switched: boolean;
@@ -21,7 +21,7 @@ export interface ButtonProperties {
 
     onToggle?: (state: boolean) => boolean | void;
 
-    dropdownButtonExtraClass?: string;
+    className?: string;
 
     switched?: boolean;
 }
@@ -41,21 +41,23 @@ export class Button extends ReactComponentBase<ButtonProperties, ButtonState> {
             cssStyle.button,
             switched ? cssStyle.activated : "",
             typeof this.props.colorTheme === "string" ? cssStyle["theme-" + this.props.colorTheme] : "");
-        const button = (
-            <div className={buttonRootClass} title={this.props.tooltip} onClick={this.onClick.bind(this)}>
-                <div className={this.classList("icon_em ", (switched ? this.props.iconSwitched : "") || this.props.iconNormal)} />
-            </div>
-        );
 
-        if(!this.hasChildren())
-            return button;
+        if(!this.hasChildren()) {
+            return (
+                <div className={buttonRootClass + " " + this.props.className} title={this.props.tooltip} onClick={this.onClick.bind(this)}>
+                    <div className={this.classList("icon_em ", (switched ? this.props.iconSwitched : "") || this.props.iconNormal)} />
+                </div>
+            );
+        }
 
         return (
-            <div className={this.classList(cssStyle.buttonDropdown, this.state.dropdownShowed || this.state.dropdownForceShow ? cssStyle.dropdownDisplayed : "", this.props.dropdownButtonExtraClass)} onMouseLeave={this.onMouseLeave.bind(this)}>
+            <div className={this.classList(cssStyle.buttonDropdown, this.state.dropdownShowed || this.state.dropdownForceShow ? cssStyle.dropdownDisplayed : "", this.props.className)} onMouseLeave={this.onMouseLeave.bind(this)}>
                 <div className={cssStyle.buttons}>
-                    {button}
+                    <div className={buttonRootClass} title={this.props.tooltip} onClick={this.onClick.bind(this)}>
+                        <div className={this.classList("icon_em ", (switched ? this.props.iconSwitched : "") || this.props.iconNormal)} />
+                    </div>
                     <div className={cssStyle.dropdownArrow} onMouseEnter={this.onMouseEnter.bind(this)}>
-                        <div className={this.classList("arrow", "down")} />
+                        <div className={cssStyle.arrow + " " + cssStyle.down} />
                     </div>
                 </div>
                 <DropdownContainer>

@@ -22,7 +22,6 @@ import * as ppt from "tc-backend/ppt";
 import * as keycontrol from "./KeyControl";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import * as cbar from "./ui/frames/control-bar";
 import * as global_ev_handler from "./events/ClientGlobalControlHandler";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {FileTransferState, TransferProvider,} from "tc-shared/file/Transfer";
@@ -49,6 +48,10 @@ import {defaultConnectProfile, findConnectProfile} from "tc-shared/profiles/Conn
 import {server_connections} from "tc-shared/ConnectionManager";
 import {initializeConnectionUIList} from "tc-shared/ui/frames/connection-handler-list/Controller";
 import ContextMenuEvent = JQuery.ContextMenuEvent;
+import {Registry} from "tc-shared/events";
+import {ControlBarEvents} from "tc-shared/ui/frames/control-bar/Definitions";
+import {ControlBar2} from "tc-shared/ui/frames/control-bar/Renderer";
+import {initializeControlBarController} from "tc-shared/ui/frames/control-bar/Controller";
 
 let preventWelcomeUI = false;
 async function initialize() {
@@ -68,11 +71,9 @@ async function initialize_app() {
 
     global_ev_handler.initialize(global_client_actions);
     {
-        const bar = (
-            <cbar.ControlBar ref={cbar.react_reference()} multiSession={true} />
-        );
-
-        ReactDOM.render(bar, $(".container-control-bar")[0]);
+        const events = new Registry<ControlBarEvents>()
+        initializeControlBarController(events, "main");
+        ReactDOM.render(<ControlBar2 events={events} />, $(".container-control-bar")[0]);
     }
 
     /*
