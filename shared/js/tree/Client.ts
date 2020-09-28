@@ -226,10 +226,8 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
 
     destroy() {
         if(this.voiceHandle) {
-            log.warn(LogCategory.AUDIO, tr("Destroying client with an active audio handle. This could cause memory leaks!"));
-            /* TODO: Unregister all voice events? */
-            this.voiceHandle.abortReplay();
-            this.voiceHandle = undefined;
+            log.error(LogCategory.AUDIO, tr("Destroying client with an active audio handle. This could cause memory leaks!"));
+            this.setVoiceClient(undefined);
         }
 
         this._channel = undefined;

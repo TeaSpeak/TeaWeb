@@ -20,21 +20,30 @@ import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTrans
 import {GroupManager, GroupManagerEvents} from "tc-shared/permission/GroupManager";
 import {ServerEntry} from "tc-shared/tree/Server";
 import {spawnChannelTreePopout} from "tc-shared/ui/tree/popout/Controller";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 export function renderChannelTree(channelTree: ChannelTree, target: HTMLElement) {
     const events = new Registry<ChannelTreeUIEvents>();
     events.enableDebug("channel-tree-view");
     initializeChannelTreeController(events, channelTree);
 
-    ReactDOM.render(
-        <ChannelTreeRenderer handlerId={channelTree.client.handlerId} events={events} />
-    , target);
+    ReactDOM.render(<ChannelTreeRenderer handlerId={channelTree.client.handlerId} events={events} />, target);
 
-    /*
+    let handlerDestroyListener;
+    server_connections.events().on("notify_handler_deleted", handlerDestroyListener = event => {
+        if(event.handler !== channelTree.client) {
+            return;
+        }
+
+        ReactDOM.unmountComponentAtNode(target);
+        server_connections.events().off("notify_handler_deleted", handlerDestroyListener);
+        events.fire("notify_destroy");
+        events.destroy();
+    });
+
     (window as any).chan_pop = () => {
         spawnChannelTreePopout(channelTree.client);
     }
-    */
 }
 
 /* FIXME: Client move is not a part of the channel tree, it's part of our own controller here */
