@@ -34,5 +34,5 @@ registerHandler({
 
 registerHandler({
     name: "channel-tree",
-    loadClass: async () => await import("tc-shared/ui/tree/RendererModal")
+    loadClass: async () => await import("tc-shared/ui/tree/popout/RendererModal")
 });

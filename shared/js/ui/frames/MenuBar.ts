@@ -19,7 +19,6 @@ import {spawnQueryCreate} from "../../ui/modal/ModalQuery";
 import {spawnAbout} from "../../ui/modal/ModalAbout";
 import * as loader from "tc-loader";
 import {formatMessage} from "../../ui/frames/chat";
-import {control_bar_instance} from "../../ui/frames/control-bar";
 import {spawnPermissionEditorModal} from "../../ui/modal/permission/ModalPermissionEditor";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {server_connections} from "tc-shared/ConnectionManager";
@@ -346,7 +345,6 @@ export function initialize() {
             for(const handler of handlers)
                 handler.disconnectFromServer();
 
-            control_bar_instance()?.events().fire("update_state", { state: "connect-state" });
             update_state();
         };
         item = menu.append_item(tr("Disconnect from current server"));

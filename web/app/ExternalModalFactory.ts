@@ -4,14 +4,17 @@ import * as ipc from "tc-shared/ipc/BrowserIPC";
 import {ChannelMessage} from "tc-shared/ipc/BrowserIPC";
 import {LogCategory, logDebug, logWarn} from "tc-shared/log";
 import {Popout2ControllerMessages, PopoutIPCMessage} from "tc-shared/ui/react-elements/external-modal/IPCMessage";
+import {RegistryMap} from "tc-shared/events";
 
 export class ExternalModalController extends AbstractExternalModalController {
+    private readonly uniqueModalId: string;
     private currentWindow: Window;
     private windowClosedTestInterval: number = 0;
     private windowClosedTimeout: number;
 
-    constructor(a, b, c) {
-        super(a, b, c);
+    constructor(modal: string, registries: RegistryMap, userData: any, uniqueModalId: string) {
+        super(modal, registries, userData);
+        this.uniqueModalId = uniqueModalId || modal;
     }
 
     protected async spawnWindow() : Promise<boolean> {
@@ -37,8 +40,9 @@ export class ExternalModalController extends AbstractExternalModalController {
             });
         }
 
-        if(!this.currentWindow)
+        if(!this.currentWindow) {
             return false;
+        }
 
         this.currentWindow.onbeforeunload = () => {
             clearInterval(this.windowClosedTestInterval);
@@ -101,7 +105,7 @@ export class ExternalModalController extends AbstractExternalModalController {
         let baseUrl = location.origin + location.pathname + "?";
         return window.open(
             baseUrl + Object.keys(parameters).map(e => e + "=" + encodeURIComponent(parameters[e])).join("&"),
-            this.modalType,
+            this.uniqueModalId,
             Object.keys(features).map(e => e + "=" + features[e]).join(",")
         );
     }

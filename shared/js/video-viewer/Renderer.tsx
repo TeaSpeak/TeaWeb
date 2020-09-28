@@ -3,7 +3,7 @@ import {LogCategory} from "tc-shared/log";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import * as React from "react";
 import {useEffect, useRef, useState} from "react";
-import {Registry} from "tc-shared/events";
+import {Registry, RegistryMap} from "tc-shared/events";
 import {PlayerStatus, VideoViewerEvents} from "./Definitions";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import ReactPlayer from 'react-player'
@@ -494,11 +494,11 @@ class ModalVideoPopout extends AbstractModal {
     readonly events: Registry<VideoViewerEvents>;
     readonly handlerId: string;
 
-    constructor(registry: Registry<VideoViewerEvents>, userData: any) {
+    constructor(registryMap: RegistryMap, userData: any) {
         super();
 
         this.handlerId = userData.handlerId;
-        this.events = registry;
+        this.events = registryMap["default"] as any;
     }
 
     title(): string | React.ReactElement<Translatable> {

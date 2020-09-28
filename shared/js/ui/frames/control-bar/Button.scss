@@ -73,6 +73,9 @@ html:root {
     flex-direction: row;
     justify-content: center;
 
+    flex-grow: 0;
+    flex-shrink: 0;
+
     height: 2em;
     width: 2em;
 
@@ -271,5 +274,35 @@ html:root {
 .buttonBookmarks {
     .dropdown {
         width: 300px;
+    }
+}
+
+.arrow {
+    display: inline-block;
+    border: solid black;
+
+    border-width: 0 .2em .2em 0;
+    padding: .21em;
+    height: .5em;
+    width: .5em;
+
+    &.right {
+        transform: rotate(-45deg);
+        -webkit-transform: rotate(-45deg);
+    }
+
+    &.left {
+        transform: rotate(135deg);
+        -webkit-transform: rotate(135deg);
+    }
+
+    &.up {
+        transform: rotate(-135deg);
+        -webkit-transform: rotate(-135deg);
+    }
+
+    &.down {
+        transform: rotate(45deg);
+        -webkit-transform: rotate(45deg);
     }
 }

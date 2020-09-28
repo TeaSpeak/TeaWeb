@@ -5,9 +5,16 @@ import {createErrorModal, createInfoModal, createInputModal} from "./ui/elements
 import {defaultConnectProfile, findConnectProfile} from "./profiles/ConnectionProfile";
 import {spawnConnectModal} from "./ui/modal/ModalConnect";
 import * as top_menu from "./ui/frames/MenuBar";
-import {control_bar_instance} from "./ui/frames/control-bar";
 import {ConnectionHandler} from "./ConnectionHandler";
 import {server_connections} from "tc-shared/ConnectionManager";
+import {Registry} from "tc-shared/events";
+
+/* TODO: much better events? */
+export interface BookmarkEvents {
+    notify_bookmarks_updated: {}
+}
+
+export const bookmarkEvents = new Registry<BookmarkEvents>();
 
 export const boorkmak_connect = (mark: Bookmark, new_tab?: boolean) => {
     const profile = findConnectProfile(mark.connect_profile) || defaultConnectProfile();
@@ -217,6 +224,7 @@ export function change_directory(parent: DirectoryBookmark, bookmark: Bookmark |
 }
 
 export function save_bookmark(bookmark?: Bookmark | DirectoryBookmark) {
+    bookmarkEvents.fire("notify_bookmarks_updated");
     save_config(); /* nvm we dont give a fuck... saving everything */
 }
 
@@ -249,10 +257,7 @@ export function add_server_to_bookmarks(server: ConnectionHandler) {
                 }, name);
                 save_bookmark(bookmark);
 
-                control_bar_instance().events().fire("update_state", { state: "bookmarks" });
-                //control_bar.update_bookmarks();
                 top_menu.rebuild_bookmarks();
-
                 createInfoModal(tr("Server added"), tr("Server has been successfully added to your bookmarks.")).open();
             }
         }).open();

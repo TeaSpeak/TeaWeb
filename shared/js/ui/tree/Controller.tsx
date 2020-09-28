@@ -19,25 +19,22 @@ import {VoiceConnectionEvents, VoiceConnectionStatus} from "tc-shared/connection
 import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
 import {GroupManager, GroupManagerEvents} from "tc-shared/permission/GroupManager";
 import {ServerEntry} from "tc-shared/tree/Server";
-import {spawnExternalModal} from "tc-shared/ui/react-elements/external-modal";
+import {spawnChannelTreePopout} from "tc-shared/ui/tree/popout/Controller";
 
 export function renderChannelTree(channelTree: ChannelTree, target: HTMLElement) {
     const events = new Registry<ChannelTreeUIEvents>();
     events.enableDebug("channel-tree-view");
-    initializeTreeController(events, channelTree);
+    initializeChannelTreeController(events, channelTree);
 
-    ReactDOM.render([
+    ReactDOM.render(
         <ChannelTreeRenderer handlerId={channelTree.client.handlerId} events={events} />
-        //<TreeEntryMove key={"move"} onMoveEnd={(point) => this.onMoveEnd(point.x, point.y)} ref={this.view_move} />
-    ], target);
+    , target);
 
+    /*
     (window as any).chan_pop = () => {
-        const events = new Registry<ChannelTreeUIEvents>();
-        events.enableDebug("channel-tree-view-modal");
-        initializeTreeController(events, channelTree);
-        const modal = spawnExternalModal("channel-tree", events, { handlerId: channelTree.client.handlerId });
-        modal.show();
+        spawnChannelTreePopout(channelTree.client);
     }
+    */
 }
 
 /* FIXME: Client move is not a part of the channel tree, it's part of our own controller here */
@@ -514,7 +511,7 @@ class ChannelTreeController {
     }
 }
 
-function initializeTreeController(events: Registry<ChannelTreeUIEvents>, channelTree: ChannelTree) {
+export function initializeChannelTreeController(events: Registry<ChannelTreeUIEvents>, channelTree: ChannelTree) {
     /* initialize the general update handler */
     const controller = new ChannelTreeController(events, channelTree);
     controller.initialize();

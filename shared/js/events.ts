@@ -4,6 +4,7 @@ import {guid} from "./crypto/uid";
 import * as React from "react";
 import {useEffect} from "react";
 import {unstable_batchedUpdates} from "react-dom";
+import {ext} from "twemoji";
 
 export interface Event<Events, T = keyof Events> {
     readonly type: T;
@@ -217,9 +218,10 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
         this.pendingCallbacks = undefined;
 
         unstable_batchedUpdates(() => {
-            let index = callbacks.length;
-            while(index--) {
+            let index = 0;
+            while(index < callbacks.length) {
                 this.fire(callbacks[index].type, callbacks[index].data);
+                index++;
             }
         });
     }
@@ -286,6 +288,8 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
         }
     }
 }
+
+export type RegistryMap = {[key: string]: any /* can't use Registry here since the template parameter is missing */ };
 
 export function EventHandler<EventTypes>(events: (keyof EventTypes) | (keyof EventTypes)[]) {
     return function (target: any,

@@ -38,3 +38,11 @@ html:root {
         min-width: 0;
     }
 }
+
+@media all and (max-width: 300px) {
+    .controlBar.mode-channel-popout {
+        .hideSmallPopout {
+            display: none!important;
+        }
+    }
+}

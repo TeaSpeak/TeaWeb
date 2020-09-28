@@ -2,7 +2,7 @@ import * as log from "../../../log";
 import {LogCategory} from "../../../log";
 import * as ipc from "../../../ipc/BrowserIPC";
 import {ChannelMessage} from "../../../ipc/BrowserIPC";
-import {Registry} from "../../../events";
+import {Registry, RegistryMap} from "../../../events";
 import {
     EventControllerBase,
     Popout2ControllerMessages,
@@ -20,8 +20,9 @@ export abstract class AbstractExternalModalController extends EventControllerBas
     private readonly documentUnloadListener: () => void;
     private callbackWindowInitialized: (error?: string) => void;
 
-    protected constructor(modal: string, localEventRegistry: Registry, userData: any) {
-        super(localEventRegistry);
+    protected constructor(modal: string, registries: RegistryMap, userData: any) {
+        super();
+        this.initializeRegistries(registries);
 
         this.modalEvents = new Registry<ModalEvents>();
 
@@ -154,7 +155,7 @@ export abstract class AbstractExternalModalController extends EventControllerBas
                     this.callbackWindowInitialized = undefined;
                 }
 
-                this.sendIPCMessage("hello-controller", { accepted: true, userData: this.userData });
+                this.sendIPCMessage("hello-controller", { accepted: true, userData: this.userData, registries: Object.keys(this.localRegistries) });
                 break;
             }
 

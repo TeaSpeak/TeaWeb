@@ -7,7 +7,7 @@ import {AbstractModal, ModalRenderer} from "../../../ui/react-elements/ModalDefi
 import {Settings, SettingsKey} from "../../../settings";
 import {getPopoutController} from "./PopoutController";
 import {findPopoutHandler} from "../../../ui/react-elements/external-modal/PopoutRegistry";
-import {Registry} from "../../../events";
+import {RegistryMap} from "../../../events";
 import {WebModalRenderer} from "../../../ui/react-elements/external-modal/PopoutRendererWeb";
 import {ClientModalRenderer} from "../../../ui/react-elements/external-modal/PopoutRendererClient";
 import {setupJSRender} from "../../../ui/jsrender";
@@ -18,7 +18,7 @@ import "../../context-menu";
 
 let modalRenderer: ModalRenderer;
 let modalInstance: AbstractModal;
-let modalClass: new <T>(events: Registry<T>, userData: any) => AbstractModal;
+let modalClass: new (events: RegistryMap, userData: any) => AbstractModal;
 
 const kSettingModalTarget: SettingsKey<string> = {
     key: "modal-target",
@@ -92,7 +92,7 @@ loader.register_task(Stage.LOADED, {
     priority: 100,
     function: async () => {
         try {
-            modalInstance = new modalClass(getPopoutController().getEventRegistry(), getPopoutController().getUserData());
+            modalInstance = new modalClass(getPopoutController().getEventRegistries(), getPopoutController().getUserData());
             modalRenderer.renderModal(modalInstance);
         } catch(error) {
             loader.critical_error("Failed to invoker modal", "Lookup the console for more detail");
