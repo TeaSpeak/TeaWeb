@@ -83,8 +83,9 @@ export class ServerConnection extends AbstractServerConnection {
             log.warn(LogCategory.NETWORKING, tr("Failed to disconnect on server connection destroy: %o"), error);
         }).then(() => {
             clearInterval(this.pingStatistics.thread_id);
-            if(this.connectCancelCallback)
+            if(this.connectCancelCallback) {
                 this.connectCancelCallback();
+            }
 
             for(const listener of this.returnListeners) {
                 try {
@@ -92,6 +93,7 @@ export class ServerConnection extends AbstractServerConnection {
                 } catch(error) {
                     log.warn(LogCategory.NETWORKING, tr("Failed to reject command promise: %o"), error);
                 }
+                clearTimeout(listener.timeout);
             }
             this.returnListeners = undefined;
 
