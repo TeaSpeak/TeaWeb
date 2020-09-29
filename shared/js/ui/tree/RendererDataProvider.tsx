@@ -6,7 +6,7 @@ import {
     ClientIcons,
     ClientNameInfo, ClientTalkIconState, ServerState
 } from "tc-shared/ui/tree/Definitions";
-import {ChannelTreeView} from "tc-shared/ui/tree/RendererView";
+import {ChannelTreeView, PopoutButton} from "tc-shared/ui/tree/RendererView";
 import * as React from "react";
 import {ChannelIconClass, ChannelIconsRenderer, RendererChannel} from "tc-shared/ui/tree/RendererChannel";
 import {ClientIcon} from "svg-sprites/client-icons";
@@ -69,6 +69,10 @@ export class RDPChannelTree {
 
     readonly refMove = React.createRef<RendererMove>();
     readonly refTree = React.createRef<ChannelTreeView>();
+    readonly refPopoutButton = React.createRef<PopoutButton>();
+
+    popoutShown: boolean = false;
+    popoutButtonShown: boolean = false;
 
     private treeRevision: number = 0;
     private orderedTree: RDPEntry[] = [];
@@ -198,6 +202,7 @@ export class RDPChannelTree {
         }));
 
         this.events.fire("query_tree_entries");
+        this.events.fire("query_popout_state");
     }
 
     destroy() {
@@ -267,6 +272,13 @@ export class RDPChannelTree {
         }
 
         this.refMove.current.enableEntryMove(event.entries, event.begin, event.current);
+    }
+
+    @EventHandler<ChannelTreeUIEvents>("notify_popout_state")
+    private handleNotifyPopoutState(event: ChannelTreeUIEvents["notify_popout_state"]) {
+        this.popoutShown = event.shown;
+        this.popoutButtonShown = event.showButton;
+        this.refPopoutButton.current?.forceUpdate();
     }
 }
 

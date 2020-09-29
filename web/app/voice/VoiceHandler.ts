@@ -542,7 +542,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
                 logWarn(LogCategory.CLIENT, tr("Failed to clear the whisper target: %o"), error);
             });
         }
-        this.voiceBridge.stopWhispering();
+        this.voiceBridge?.stopWhispering();
     }
 }
 

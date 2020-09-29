@@ -108,8 +108,9 @@ export abstract class AbstractExternalModalController extends EventControllerBas
             return;
 
         this.doDestroyWindow();
-        if(this.ipcChannel)
+        if(this.ipcChannel) {
             ipc.getInstance().deleteChannel(this.ipcChannel);
+        }
 
         this.destroyIPC();
         this.modalState = ModalState.DESTROYED;
@@ -117,6 +118,7 @@ export abstract class AbstractExternalModalController extends EventControllerBas
     }
 
     protected handleWindowClosed() {
+        /* no other way currently */
         this.destroy();
     }
 

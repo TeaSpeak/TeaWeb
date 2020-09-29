@@ -50,24 +50,6 @@ export default class implements ApplicationLoader {
                     container.setAttribute('id', "sounds");
                     body.append(container);
                 }
-
-                /* mouse move container */
-                {
-                    const container = document.createElement("div");
-                    container.setAttribute('id', "mouse-move");
-
-                    body.append(container);
-                }
-
-                /* tooltip container */
-                {
-                    const container = document.createElement("div");
-                    container.setAttribute('id', "global-tooltip");
-
-                    container.append(document.createElement("a"));
-
-                    body.append(container);
-                }
             },
             priority: 10
         });

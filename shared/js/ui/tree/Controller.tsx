@@ -19,13 +19,16 @@ import {VoiceConnectionEvents, VoiceConnectionStatus} from "tc-shared/connection
 import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
 import {GroupManager, GroupManagerEvents} from "tc-shared/permission/GroupManager";
 import {ServerEntry} from "tc-shared/tree/Server";
-import {spawnChannelTreePopout} from "tc-shared/ui/tree/popout/Controller";
 import {server_connections} from "tc-shared/ConnectionManager";
 
-export function renderChannelTree(channelTree: ChannelTree, target: HTMLElement) {
+export interface ChannelTreeRendererOptions {
+    popoutButton: boolean;
+}
+
+export function renderChannelTree(channelTree: ChannelTree, target: HTMLElement, options: ChannelTreeRendererOptions) {
     const events = new Registry<ChannelTreeUIEvents>();
     events.enableDebug("channel-tree-view");
-    initializeChannelTreeController(events, channelTree);
+    initializeChannelTreeController(events, channelTree, options);
 
     ReactDOM.render(<ChannelTreeRenderer handlerId={channelTree.client.handlerId} events={events} />, target);
 
@@ -40,10 +43,6 @@ export function renderChannelTree(channelTree: ChannelTree, target: HTMLElement)
         events.fire("notify_destroy");
         events.destroy();
     });
-
-    (window as any).chan_pop = () => {
-        spawnChannelTreePopout(channelTree.client);
-    }
 }
 
 /* FIXME: Client move is not a part of the channel tree, it's part of our own controller here */
@@ -86,6 +85,7 @@ const ClientTalkStatusUpdateKeys: (keyof ClientProperties)[] = [
 class ChannelTreeController {
     readonly events: Registry<ChannelTreeUIEvents>;
     readonly channelTree: ChannelTree;
+    readonly options: ChannelTreeRendererOptions;
 
     /* the key here is the unique entry id! */
     private eventListeners: {[key: number]: (() => void)[]} = {};
@@ -96,9 +96,10 @@ class ChannelTreeController {
     private readonly groupUpdatedListener;
     private readonly groupsReceivedListener;
 
-    constructor(events, channelTree) {
+    constructor(events, channelTree, options: ChannelTreeRendererOptions) {
         this.events = events;
         this.channelTree = channelTree;
+        this.options = options;
 
         this.connectionStateListener = this.handleConnectionStateChanged.bind(this);
         this.voiceConnectionStateListener = this.handleVoiceConnectionStateChanged.bind(this);
@@ -184,6 +185,11 @@ class ChannelTreeController {
     }
 
     /* general channel tree event handlers */
+    @EventHandler<ChannelTreeEvents>("notify_popout_state_changed")
+    private handlePoputStateChanged() {
+        this.sendPopoutState();
+    }
+
     @EventHandler<ChannelTreeEvents>("notify_channel_list_received")
     private handleChannelListReceived() {
         this.channelTreeInitialized = true;
@@ -338,6 +344,13 @@ class ChannelTreeController {
     }
 
     /* notify state update methods */
+    public sendPopoutState() {
+        this.events.fire_async("notify_popout_state", {
+            showButton: this.options.popoutButton,
+            shown: this.channelTree.popoutController.hasBeenPopedOut()
+        });
+    }
+
     public sendChannelTreeEntries() {
         const entries = [] as ChannelTreeEntry[];
 
@@ -520,13 +533,14 @@ class ChannelTreeController {
     }
 }
 
-export function initializeChannelTreeController(events: Registry<ChannelTreeUIEvents>, channelTree: ChannelTree) {
+export function initializeChannelTreeController(events: Registry<ChannelTreeUIEvents>, channelTree: ChannelTree, options: ChannelTreeRendererOptions) {
     /* initialize the general update handler */
-    const controller = new ChannelTreeController(events, channelTree);
+    const controller = new ChannelTreeController(events, channelTree, options);
     controller.initialize();
     events.on("notify_destroy", () => controller.destroy());
 
     /* initialize the query handlers */
+    events.on("query_popout_state", () => controller.sendPopoutState());
 
     events.on("query_unread_state", event => {
         const entry = channelTree.findEntryId(event.treeEntryId);
@@ -623,6 +637,14 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
 
         controller.sendServerStatus(entry);
     });
+
+    events.on("action_toggle_popout", event => {
+        if(event.shown) {
+            channelTree.popoutController.popout();
+        } else {
+            channelTree.popoutController.popin();
+        }
+    })
 
     events.on("action_set_collapsed_state", event => {
         const entry = channelTree.findEntryId(event.treeEntryId);

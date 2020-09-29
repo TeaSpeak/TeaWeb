@@ -301,7 +301,7 @@ const QueryButton = () => {
             >
                 {toggle}
                 <DropdownEntry icon={ClientIcon.ServerQuery} text={<Translatable>Manage server queries</Translatable>}
-                               onClick={() => events.fire("action_query_manage")}/>
+                               onClick={() => events.fire("action_query_manage")} key={"manage-entries"} />
             </Button>
         );
     }
@@ -347,16 +347,16 @@ export const ControlBar2 = (props: { events: Registry<ControlBarEvents>, classNa
 
     if(mode !== "channel-popout") {
         items.push(<ConnectButton key={"connect"} />);
+        items.push(<BookmarkButton key={"bookmarks"} />);
+        items.push(<div className={cssStyle.divider + " "  + cssStyle.hideSmallPopout} key={"divider-1"} />);
     }
-    items.push(<BookmarkButton key={"bookmarks"} />);
-    items.push(<div className={cssStyle.divider + " "  + cssStyle.hideSmallPopout} />);
     items.push(<AwayButton key={"away"} />);
     items.push(<MicrophoneButton key={"microphone"} />);
     items.push(<SpeakerButton key={"speaker"} />);
-    items.push(<div className={cssStyle.divider + " "  + cssStyle.hideSmallPopout} />);
+    items.push(<div className={cssStyle.divider + " "  + cssStyle.hideSmallPopout} key={"divider-2"} />);
     items.push(<SubscribeButton key={"subscribe"} />);
     items.push(<QueryButton key={"query"} />);
-    items.push(<div className={cssStyle.spacer} />);
+    items.push(<div className={cssStyle.spacer} key={"spacer"} />);
     items.push(<HostButton key={"hostbutton"} />);
 
     return (
