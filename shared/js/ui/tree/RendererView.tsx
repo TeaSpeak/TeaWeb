@@ -7,10 +7,22 @@ import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import * as React from "react";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 import ResizeObserver from 'resize-observer-polyfill';
-import {RDPEntry, RDPChannelTree} from "./RendererDataProvider";
+import {RDPChannelTree, RDPEntry} from "./RendererDataProvider";
 import {RendererMove} from "./RendererMove";
+import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
+import {ClientIcon} from "svg-sprites/client-icons";
 
 const viewStyle = require("./View.scss");
+
+const PopoutButton = (props: {}) => {
+    return (
+        <div className={viewStyle.popoutButton}>
+            <div className={viewStyle.button}>
+                <ClientIconRenderer icon={ClientIcon.ChannelPopout} />
+            </div>
+        </div>
+    )
+};
 
 export interface ChannelTreeViewProperties {
     events: Registry<ChannelTreeUIEvents>;
@@ -168,27 +180,30 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         }
 
         return (
-            <div
-                className={viewStyle.channelTreeContainer + " " + (this.state.smoothScroll ? viewStyle.smoothScroll : "")}
-                onScroll={() => this.onScroll()}
-                ref={this.refContainer}
-                onMouseDown={e => this.onMouseDown(e)}
-                onMouseMove={e => this.onMouseMove(e)}>
+            <div className={viewStyle.treeContainer}>
                 <div
-                    className={viewStyle.channelTree}
-                    style={{height: (this.state.tree.length * ChannelTreeView.EntryHeight) + "px"}}>
-                    {elements}
+                    className={viewStyle.channelTreeContainer + " " + (this.state.smoothScroll ? viewStyle.smoothScroll : "")}
+                    onScroll={() => this.onScroll()}
+                    ref={this.refContainer}
+                    onMouseDown={e => this.onMouseDown(e)}
+                    onMouseMove={e => this.onMouseMove(e)}>
+                    <div
+                        className={viewStyle.channelTree}
+                        style={{height: (this.state.tree.length * ChannelTreeView.EntryHeight) + "px"}}>
+                        {elements}
+                    </div>
+                    <RendererMove
+                        onMoveEnd={target => {
+                            const targetEntry = this.getEntryFromPoint(target.x, target.y);
+                            this.props.events.fire("action_move_entries", { treeEntryId: typeof targetEntry === "number" ? targetEntry : 0 });
+                        }}
+                        onMoveCancel={() => {
+                            this.props.events.fire("action_move_entries", { treeEntryId: 0 });
+                        }}
+                        ref={this.props.dataProvider.refMove}
+                    />
                 </div>
-                <RendererMove
-                    onMoveEnd={target => {
-                        const targetEntry = this.getEntryFromPoint(target.x, target.y);
-                        this.props.events.fire("action_move_entries", { treeEntryId: typeof targetEntry === "number" ? targetEntry : 0 });
-                    }}
-                    onMoveCancel={() => {
-                        this.props.events.fire("action_move_entries", { treeEntryId: 0 });
-                    }}
-                    ref={this.props.dataProvider.refMove}
-                />
+                <PopoutButton />
             </div>
         )
     }

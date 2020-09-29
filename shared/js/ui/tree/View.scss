@@ -105,6 +105,25 @@ html:root {
     }
 }
 
+.treeContainer {
+    height: 100%;
+
+    flex-grow: 1;
+    flex-shrink: 1;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+    position: relative;
+
+    &:hover {
+        .popoutButton {
+            top: 1em;
+        }
+    }
+}
+
 .channelTreeContainer {
     @include chat-scrollbar-vertical();
 
@@ -119,6 +138,33 @@ html:root {
 
     &.smoothScroll {
         scroll-behavior: smooth;
+    }
+}
+
+.popoutButton {
+    position: absolute;
+    top: -3em;
+    right: 1em;
+
+    @include transition(all ease-in-out $button_hover_animation_time);
+
+    .button {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        border-radius: 50%;
+        background-color: #0000004f;
+
+        padding: .6em;
+
+        cursor: pointer;
+
+        @include transition(all ease-in-out $button_hover_animation_time);
+
+        &:hover {
+            background-color: #0000008f;
+        }
     }
 }
 
