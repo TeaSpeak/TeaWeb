@@ -47,6 +47,8 @@ const ActivityBar = (props: { events: Registry<MicrophoneSettingsEvents>, device
     const refHider = useRef<HTMLDivElement>();
     const [status, setStatus] = useState<ActivityBarStatus>({mode: "loading"});
 
+    if(typeof props.deviceId === "undefined") { throw "invalid device id"; }
+
     props.events.reactUse("notify_device_level", event => {
         if (event.status === "uninitialized") {
             if (status.mode === "uninitialized")
@@ -62,8 +64,9 @@ const ActivityBar = (props: { events: Registry<MicrophoneSettingsEvents>, device
         } else {
             const device = event.level[props.deviceId];
             if (!device) {
-                if (status.mode === "loading")
+                if (status.mode === "loading") {
                     return;
+                }
 
                 setStatus({mode: "loading"});
             } else if (device.status === "success") {
@@ -503,7 +506,7 @@ const ThresholdSelector = (props: { events: Registry<MicrophoneSettingsEvents> }
     return (
         <div className={cssStyle.containerSensitivity}>
             <div className={cssStyle.containerBar}>
-                <ActivityBar events={props.events} deviceId={currentDevice} disabled={!isActive || !currentDevice}/>
+                <ActivityBar events={props.events} deviceId={currentDevice || "none"} disabled={!isActive || !currentDevice} key={"activity-" + currentDevice} />
             </div>
             <Slider
                 ref={refSlider}
