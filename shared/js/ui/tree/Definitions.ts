@@ -29,7 +29,7 @@ export type ServerState = { state: "disconnected" } | { state: "connecting", tar
 export interface ChannelTreeUIEvents {
     /* actions */
     action_toggle_popout: { shown: boolean },
-    action_show_context_menu: { treeEntryId: number, pageX: number, pageY: number },
+    action_show_context_menu: { treeEntryId: number | 0, pageX: number, pageY: number },
     action_start_entry_move: { start: { x: number, y: number }, current: { x: number, y: number } },
     action_set_collapsed_state: { treeEntryId: number, state: "collapsed" | "expended" },
     action_select: {
