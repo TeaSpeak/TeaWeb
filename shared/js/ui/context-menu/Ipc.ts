@@ -27,7 +27,7 @@ class IPCContextMenu implements ContextMenuFactory {
     private closeCallback: () => void;
 
     constructor() {
-        this.ipcChannel = ipc.getInstance().createChannel(Settings.instance.static(Settings.KEY_IPC_REMOTE_ADDRESS, undefined), kIPCContextMenuChannel);
+        this.ipcChannel = ipc.getInstance().createChannel(undefined, kIPCContextMenuChannel);
         this.ipcChannel.messageHandler = this.handleIpcMessage.bind(this);
 
         /* if we're just created we're the focused window ;) */
@@ -64,9 +64,7 @@ class IPCContextMenu implements ContextMenuFactory {
 
                 /* fall through wanted! */
             case "checkbox":
-                if(!entry.click) {
-                    return entry;
-                }
+                if(!entry.click) { break; }
 
                 if(!entry.uniqueId) {
                     entry.uniqueId = "r_" + (++this.uniqueEntryId);
@@ -74,11 +72,9 @@ class IPCContextMenu implements ContextMenuFactory {
 
                 this.menuCallbacks[entry.uniqueId] = entry.click;
                 entry.click = undefined;
-                return entry;
-
-            default:
-                return entry;
+                break;
         }
+        return entry;
     }
 
     private wrapMenuEntryFromRemote(entry: ContextMenuEntry) : ContextMenuEntry {
@@ -87,23 +83,23 @@ class IPCContextMenu implements ContextMenuFactory {
                 if(entry.subMenu) {
                     entry.subMenu = entry.subMenu.map(entry => this.wrapMenuEntryFromRemote(entry));
                 }
-                if(entry.icon) {
+
+                if(typeof entry.icon === "object") {
                     const icon = entry.icon as any;
                     entry.icon = getIconManager().resolveIcon(icon.iconId, icon.serverUniqueId);
                 }
 
                 /* fall through wanted! */
             case "checkbox":
-                if(!entry.uniqueId) {
-                    return entry;
-                }
+                if(!entry.uniqueId) { break; }
 
-                entry.click = () => this.remoteContextMenuSupplierId && this.ipcChannel.sendMessage("notify-entry-click", { id: entry.uniqueId }, this.remoteContextMenuSupplierId);
-                return entry;
-
-            default:
-                return entry;
+                entry.click = () => {
+                    console.error("Click: %O", this.remoteContextMenuSupplierId);
+                    this.remoteContextMenuSupplierId && this.ipcChannel.sendMessage("notify-entry-click", { id: entry.uniqueId }, this.remoteContextMenuSupplierId);
+                };
+                break;
         }
+        return entry;
     }
 
     closeContextMenu() {
@@ -142,6 +138,7 @@ class IPCContextMenu implements ContextMenuFactory {
             /* close out context menu if we've any */
             reactContextMenuInstance.closeContextMenu();
         } else if(message.type === "notify-entry-click") {
+            console.error("Entry click: %o", message.data.id);
             const callback = this.menuCallbacks[message.data.id];
             if(!callback) { return; }
             callback();
