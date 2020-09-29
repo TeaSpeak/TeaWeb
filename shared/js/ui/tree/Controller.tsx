@@ -684,6 +684,10 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
     });
 
     events.on("action_show_context_menu", event => {
+        if(event.treeEntryId === 0) {
+            channelTree.showContextMenu(event.pageX, event.pageY);
+            return;
+        }
         const entry = channelTree.findEntryId(event.treeEntryId);
         if(!entry) {
             logWarn(LogCategory.CHANNEL, tr("Tried to open a context menu for an invalid channel tree entry with id %o"), event.treeEntryId);

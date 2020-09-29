@@ -191,7 +191,14 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
                 onScroll={() => this.onScroll()}
                 ref={this.refContainer}
                 onMouseDown={e => this.onMouseDown(e)}
-                onMouseMove={e => this.onMouseMove(e)}>
+                onMouseMove={e => this.onMouseMove(e)}
+                onContextMenu={event => {
+                    if(event.target !== this.refContainer.current) { return; }
+
+                    event.preventDefault();
+                    this.props.events.fire("action_show_context_menu", { pageY: event.pageY, pageX: event.pageX, treeEntryId: 0 });
+                }}
+            >
                 <div
                     className={viewStyle.channelTree}
                     style={{height: (this.state.tree.length * ChannelTreeView.EntryHeight) + "px"}}>
