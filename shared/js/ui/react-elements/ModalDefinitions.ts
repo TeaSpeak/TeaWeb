@@ -40,7 +40,7 @@ export abstract class AbstractModal {
     protected constructor() {}
 
     abstract renderBody() : ReactElement;
-    abstract title() : string | React.ReactElement<Translatable>;
+    abstract title() : string | React.ReactElement;
 
     /* only valid for the "inline" modals */
     type() : ModalType { return "none"; }

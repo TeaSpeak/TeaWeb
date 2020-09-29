@@ -14,15 +14,21 @@ import {ClientIcon} from "svg-sprites/client-icons";
 
 const viewStyle = require("./View.scss");
 
-const PopoutButton = (props: {}) => {
-    return (
-        <div className={viewStyle.popoutButton}>
-            <div className={viewStyle.button}>
-                <ClientIconRenderer icon={ClientIcon.ChannelPopout} />
+export class PopoutButton extends React.Component<{ tree: RDPChannelTree }, {}> {
+    render() {
+        if(!this.props.tree.popoutButtonShown) {
+            return null;
+        }
+
+        return (
+            <div className={viewStyle.popoutButton} onClick={() => this.props.tree.events.fire("action_toggle_popout", { shown: !this.props.tree.popoutShown })}>
+                <div className={viewStyle.button} title={this.props.tree.popoutShown ? tr("Popin the second channel tree view") : tr("Popout the channel tree view")}>
+                    <ClientIconRenderer icon={this.props.tree.popoutShown ? ClientIcon.ChannelPopin : ClientIcon.ChannelPopout} />
+                </div>
             </div>
-        </div>
-    )
-};
+        );
+    }
+}
 
 export interface ChannelTreeViewProperties {
     events: Registry<ChannelTreeUIEvents>;
@@ -203,7 +209,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
                         ref={this.props.dataProvider.refMove}
                     />
                 </div>
-                <PopoutButton />
+                <PopoutButton tree={this.props.dataProvider} ref={this.props.dataProvider.refPopoutButton} />
             </div>
         )
     }

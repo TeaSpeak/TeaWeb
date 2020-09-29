@@ -26,6 +26,7 @@ import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {tra} from "tc-shared/i18n/localize";
 import {EventType} from "tc-shared/ui/frames/log/Definitions";
 import {renderChannelTree} from "tc-shared/ui/tree/Controller";
+import {ChannelTreePopoutController} from "tc-shared/ui/tree/popout/Controller";
 
 export interface ChannelTreeEvents {
     action_select_entries: {
@@ -43,6 +44,7 @@ export interface ChannelTreeEvents {
     notify_tree_reset: {},
     notify_selection_changed: {},
     notify_query_view_state_changed: { queries_shown: boolean },
+    notify_popout_state_changed: { popoutShown: boolean },
 
     notify_entry_move_begin: {},
     notify_entry_move_end: {},
@@ -231,19 +233,18 @@ export class ChannelTree {
     /* whatever all channels have been initiaized */
     channelsInitialized: boolean = false;
 
-    //readonly view: React.RefObject<ChannelTreeView>;
-    //readonly view_move: React.RefObject<TreeEntryMove>;
     readonly selection: ChannelTreeEntrySelect;
+    readonly popoutController: ChannelTreePopoutController;
 
-    private readonly _tag_container: JQuery;
+    private readonly tagContainer: JQuery;
 
     private _show_queries: boolean;
     private channel_last?: ChannelEntry;
     private channel_first?: ChannelEntry;
 
-    private _tag_container_focused = false;
-    private _listener_document_click;
-    private _listener_document_key;
+    private tagContainerFocused = false;
+    private listenerDocumentClick;
+    private listenerDocumentKeyPress;
 
     constructor(client) {
         this.events = new Registry<ChannelTreeEvents>();
@@ -253,21 +254,16 @@ export class ChannelTree {
 
         this.server = new ServerEntry(this, "undefined", undefined);
         this.selection = new ChannelTreeEntrySelect(this);
+        this.popoutController = new ChannelTreePopoutController(this);
 
-        this._tag_container = $.spawn("div").addClass("channel-tree-container");
-        renderChannelTree(this, this._tag_container[0]);
-        /*
-        ReactDOM.render([
-            <ChannelTreeView key={"tree"} onMoveStart={(a,b) => this.onChannelEntryMove(a, b)} tree={this} ref={this.view} />,
-            <TreeEntryMove key={"move"} onMoveEnd={(point) => this.onMoveEnd(point.x, point.y)} ref={this.view_move} />
-        ], this._tag_container[0]);
-        */
+        this.tagContainer = $.spawn("div").addClass("channel-tree-container");
+        renderChannelTree(this, this.tagContainer[0], { popoutButton: true });
 
         this.reset();
 
         if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
             /*
-            TODO: Move this into the channel tree renderer
+            TODO: Show the context menu when clicked on no channel
             this._tag_container.on("contextmenu", (event) => {
                 event.preventDefault();
 
@@ -284,24 +280,25 @@ export class ChannelTree {
              */
         }
 
-        this._listener_document_key = event => this.handle_key_press(event);
-        this._listener_document_click = event => {
-            this._tag_container_focused = false;
+        /* FIXME: Move this to the channel tree renderer */
+        this.listenerDocumentKeyPress = event => this.handle_key_press(event);
+        this.listenerDocumentClick = event => {
+            this.tagContainerFocused = false;
             let element = event.target as HTMLElement;
             while(element) {
-                if(element === this._tag_container[0]) {
-                    this._tag_container_focused = true;
+                if(element === this.tagContainer[0]) {
+                    this.tagContainerFocused = true;
                     break;
                 }
                 element = element.parentNode as HTMLElement;
             }
         };
-        document.addEventListener('click', this._listener_document_click);
-        document.addEventListener('keydown', this._listener_document_key);
+        document.addEventListener('click', this.listenerDocumentClick);
+        document.addEventListener('keydown', this.listenerDocumentKeyPress);
     }
 
     tag_tree() : JQuery {
-        return this._tag_container;
+        return this.tagContainer;
     }
 
     channelsOrdered() : ChannelEntry[] {
@@ -337,13 +334,13 @@ export class ChannelTree {
     }
 
     destroy() {
-        ReactDOM.unmountComponentAtNode(this._tag_container[0]);
+        ReactDOM.unmountComponentAtNode(this.tagContainer[0]);
 
-        this._listener_document_click && document.removeEventListener('click', this._listener_document_click);
-        this._listener_document_click = undefined;
+        this.listenerDocumentClick && document.removeEventListener('click', this.listenerDocumentClick);
+        this.listenerDocumentClick = undefined;
 
-        this._listener_document_key && document.removeEventListener('keydown', this._listener_document_key);
-        this._listener_document_key = undefined;
+        this.listenerDocumentKeyPress && document.removeEventListener('keydown', this.listenerDocumentKeyPress);
+        this.listenerDocumentKeyPress = undefined;
 
         if(this.server) {
             this.server.destroy();
@@ -354,7 +351,8 @@ export class ChannelTree {
         this.channel_first = undefined;
         this.channel_last = undefined;
 
-        this._tag_container.remove();
+        this.popoutController.destroy();
+        this.tagContainer.remove();
         this.selection.destroy();
         this.events.destroy();
     }
@@ -992,7 +990,7 @@ export class ChannelTree {
     }
 
     handle_key_press(event: KeyboardEvent) {
-        if(!this._tag_container_focused || !this.selection.is_anything_selected() || this.selection.is_multi_select()) return;
+        if(!this.tagContainerFocused || !this.selection.is_anything_selected() || this.selection.is_multi_select()) return;
 
         const selected = this.selection.selected_entries[0];
         if(event.keyCode == KeyCode.KEY_UP) {

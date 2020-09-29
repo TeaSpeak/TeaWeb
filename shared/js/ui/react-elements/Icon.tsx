@@ -2,13 +2,15 @@ import * as React from "react";
 import {RemoteIcon} from "tc-shared/file/Icons";
 import {useState} from "react";
 
+const cssStyle = require("./Icon.scss");
+
 export const IconRenderer = (props: {
     icon: string;
     title?: string;
     className?: string;
 }) => {
     if(!props.icon) {
-        return <div className={"icon-container icon-empty " + props.className} title={props.title} />;
+        return <div className={cssStyle.empty + " icon-container icon-empty " + props.className} title={props.title} />;
     } else if(typeof props.icon === "string") {
         return <div className={"icon " + props.icon + " " + props.className} title={props.title} />;
     } else {

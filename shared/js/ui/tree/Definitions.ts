@@ -28,6 +28,7 @@ export type ServerState = { state: "disconnected" } | { state: "connecting", tar
 
 export interface ChannelTreeUIEvents {
     /* actions */
+    action_toggle_popout: { shown: boolean },
     action_show_context_menu: { treeEntryId: number, pageX: number, pageY: number },
     action_start_entry_move: { start: { x: number, y: number }, current: { x: number, y: number } },
     action_set_collapsed_state: { treeEntryId: number, state: "collapsed" | "expended" },
@@ -44,6 +45,8 @@ export interface ChannelTreeUIEvents {
 
     /* queries */
     query_tree_entries: {},
+    query_popout_state: {},
+
     query_unread_state: { treeEntryId: number },
     query_select_state: { treeEntryId: number },
 
@@ -60,6 +63,7 @@ export interface ChannelTreeUIEvents {
 
     /* notifies */
     notify_tree_entries: { entries: ChannelTreeEntry[] },
+    notify_popout_state: { shown: boolean, showButton: boolean },
 
     notify_channel_info: { treeEntryId: number, info: ChannelEntryInfo },
     notify_channel_icon: { treeEntryId: number, icon: ClientIcon },
