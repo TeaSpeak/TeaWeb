@@ -4,7 +4,7 @@ import * as log from "tc-shared/log";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {Settings, settings} from "tc-shared/settings";
 import {PermissionType} from "tc-shared/permission/PermissionType";
-import {KeyCode, SpecialKey} from "tc-shared/PPTListener";
+import {SpecialKey} from "tc-shared/PPTListener";
 import {Sound} from "tc-shared/sound/Sounds";
 import {Group} from "tc-shared/permission/GroupManager";
 import {ServerAddress, ServerEntry} from "./Server";
@@ -86,14 +86,14 @@ export interface ChannelTreeEvents {
 
 export class ChannelTreeEntrySelect {
     readonly handle: ChannelTree;
-    selected_entries: ChannelTreeEntry<any>[] = [];
+    selectedEntries: ChannelTreeEntry<any>[] = [];
 
-    private readonly handler_select_entries;
+    private readonly handlerSelectEntries;
 
     constructor(handle: ChannelTree) {
         this.handle = handle;
 
-        this.handler_select_entries = e => {
+        this.handlerSelectEntries = e => {
             batch_updates(BatchUpdateType.CHANNEL_TREE);
             try {
                 this.handleSelectEntries(e)
@@ -102,122 +102,248 @@ export class ChannelTreeEntrySelect {
             }
         };
 
-        this.handle.events.on("action_select_entries", this.handler_select_entries);
+        this.handle.events.on("action_select_entries", this.handlerSelectEntries);
     }
 
     reset() {
-        this.selected_entries.splice(0, this.selected_entries.length);
+        this.selectedEntries.splice(0, this.selectedEntries.length);
     }
 
     destroy() {
-        this.handle.events.off("action_select_entries", this.handler_select_entries);
-        this.selected_entries.splice(0, this.selected_entries.length);
+        this.handle.events.off("action_select_entries", this.handlerSelectEntries);
+        this.selectedEntries.splice(0, this.selectedEntries.length);
     }
 
-    is_multi_select() {
-        return this.selected_entries.length > 1;
+    isMultiSelect() {
+        return this.selectedEntries.length > 1;
     }
 
-    is_anything_selected() {
-        return this.selected_entries.length > 0;
+    isAnythingSelected() {
+        return this.selectedEntries.length > 0;
     }
 
-    clear_selection() {
+    clearSelection() {
         this.handleSelectEntries({
             entries: [],
             mode: "exclusive"
         });
     }
 
-    private handleSelectEntries(event: ChannelTreeEvents["action_select_entries"]) {
-        if(event.mode === "exclusive") {
-            let deleted_entries = this.selected_entries;
+    /**
+     * auto      := Select/unselect/add/remove depending on the selected state & shift key state
+     * exclusive := Only selected these entries
+     * append    := Append these entries to the current selection
+     * remove    := Remove these entries from the current selection
+     */
+    select(entries: ChannelTreeEntry<any>[], mode: "auto" | "exclusive" | "append" | "remove") {
+        entries = entries.filter(entry => !!entry);
+
+        if(mode === "exclusive") {
+            let deleted_entries = this.selectedEntries;
             let new_entries = [];
 
-            this.selected_entries = [];
-            for(const new_entry of event.entries) {
-                if(!deleted_entries.remove(new_entry))
+            this.selectedEntries = [];
+            for(const new_entry of entries) {
+                if(!deleted_entries.remove(new_entry)) {
                     new_entries.push(new_entry);
-                this.selected_entries.push(new_entry);
+                }
+
+                this.selectedEntries.push(new_entry);
             }
 
-            for(const deleted of deleted_entries)
+            for(const deleted of deleted_entries) {
                 deleted["onUnselect"]();
+            }
 
-            for(const new_entry of new_entries)
-                new_entry["onSelect"](!this.is_multi_select());
+            for(const new_entry of new_entries) {
+                new_entry["onSelect"](!this.isMultiSelect());
+            }
 
-            if(deleted_entries.length !== 0 || new_entries.length !== 0)
+            if(deleted_entries.length !== 0 || new_entries.length !== 0) {
                 this.handle.events.fire("notify_selection_changed");
-        } else if(event.mode === "append") {
+            }
+        } else if(mode === "append") {
             let new_entries = [];
-            for(const entry of event.entries) {
-                if(this.selected_entries.findIndex(e => e === entry) !== -1)
+            for(const entry of entries) {
+                if(this.selectedEntries.findIndex(e => e === entry) !== -1)
                     continue;
 
-                this.selected_entries.push(entry);
+                this.selectedEntries.push(entry);
                 new_entries.push(entry);
             }
 
-            for(const new_entry of new_entries)
-                new_entry["onSelect"](!this.is_multi_select());
-
-            if(new_entries.length !== 0)
-                this.handle.events.fire("notify_selection_changed");
-        } else if(event.mode === "remove") {
-            let deleted_entries = [];
-            for(const entry of event.entries) {
-                if(this.selected_entries.remove(entry))
-                    deleted_entries.push(entry);
+            for(const new_entry of new_entries) {
+                new_entry["onSelect"](!this.isMultiSelect());
             }
 
-            for(const deleted of deleted_entries)
-                deleted["onUnselect"]();
-
-            if(deleted_entries.length !== 0)
+            if(new_entries.length !== 0) {
                 this.handle.events.fire("notify_selection_changed");
-        } else if(event.mode === "auto") {
+            }
+        } else if(mode === "remove") {
+            let deleted_entries = [];
+            for(const entry of entries) {
+                if(this.selectedEntries.remove(entry)) {
+                    deleted_entries.push(entry);
+                }
+            }
+
+            for(const deleted of deleted_entries) {
+                deleted["onUnselect"]();
+            }
+
+            if(deleted_entries.length !== 0) {
+                this.handle.events.fire("notify_selection_changed");
+            }
+        } else if(mode === "auto") {
             let deleted_entries = [];
             let new_entries = [];
 
             if(ppt.key_pressed(SpecialKey.SHIFT)) {
-                for(const entry of event.entries) {
-                    const index = this.selected_entries.findIndex(e => e === entry);
+                for(const entry of entries) {
+                    const index = this.selectedEntries.findIndex(e => e === entry);
                     if(index === -1) {
-                        this.selected_entries.push(entry);
+                        this.selectedEntries.push(entry);
                         new_entries.push(entry);
                     } else {
-                        this.selected_entries.splice(index, 1);
+                        this.selectedEntries.splice(index, 1);
                         deleted_entries.push(entry);
                     }
                 }
             } else {
-                deleted_entries = this.selected_entries.splice(0, this.selected_entries.length);
-                if(event.entries.length !== 0) {
-                    const entry = event.entries[event.entries.length - 1];
-                    this.selected_entries.push(entry);
+                deleted_entries = this.selectedEntries.splice(0, this.selectedEntries.length);
+                if(entries.length !== 0) {
+                    const entry = entries[entries.length - 1];
+                    this.selectedEntries.push(entry);
                     if(!deleted_entries.remove(entry))
                         new_entries.push(entry); /* entry wans't selected yet */
                 }
             }
 
-            for(const deleted of deleted_entries)
+            for(const deleted of deleted_entries) {
                 deleted["onUnselect"]();
+            }
 
-            for(const new_entry of new_entries)
-                new_entry["onSelect"](!this.is_multi_select());
+            for(const new_entry of new_entries) {
+                new_entry["onSelect"](!this.isMultiSelect());
+            }
 
-            if(deleted_entries.length !== 0 || new_entries.length !== 0)
+            if(deleted_entries.length !== 0 || new_entries.length !== 0) {
                 this.handle.events.fire("notify_selection_changed");
+            }
         } else {
-            console.warn("Received entry select event with unknown mode: %s", event.mode);
+            console.warn("Received entry select event with unknown mode: %s", mode);
         }
 
         /*
         TODO!
         if(this.selected_entries.length === 1)
             this.handle.view.current?.scrollEntryInView(this.selected_entries[0] as any);
-         */
+        */
+    }
+
+    private selectNextChannel(currentChannel: ChannelEntry, selectClients: boolean) {
+        if(selectClients) {
+            const clients = currentChannel.channelClientsOrdered();
+            if(clients.length > 0) {
+                this.select([clients[0]], "exclusive");
+                return;
+            }
+        }
+
+        const children = currentChannel.children();
+        if(children.length > 0) {
+            this.select([children[0]], "exclusive")
+            return;
+        }
+
+        const next = currentChannel.channel_next;
+        if(next) {
+            this.select([next], "exclusive")
+            return;
+        }
+
+        let parent = currentChannel.parent_channel();
+        while(parent) {
+            const p_next = parent.channel_next;
+            if(p_next) {
+                this.select([p_next], "exclusive")
+                return;
+            }
+
+            parent = parent.parent_channel();
+        }
+    }
+
+    selectNextTreeEntry() {
+        if(this.selectedEntries.length !== 1) { return; }
+        const selected = this.selectedEntries[0];
+
+        if(selected instanceof ChannelEntry) {
+            this.selectNextChannel(selected, true);
+        } else if(selected instanceof ClientEntry){
+            const channel = selected.currentChannel();
+            const clients = channel.channelClientsOrdered();
+            const index = clients.indexOf(selected);
+            if(index + 1 < clients.length) {
+                this.select([clients[index + 1]], "exclusive");
+                return;
+            }
+
+            this.selectNextChannel(channel, false);
+        } else if(selected instanceof ServerEntry) {
+            this.select([this.handle.get_first_channel()], "exclusive");
+        }
+    }
+
+    selectPreviousTreeEntry() {
+        if(this.selectedEntries.length !== 1) { return; }
+        const selected = this.selectedEntries[0];
+
+        if(selected instanceof ChannelEntry) {
+            let previous = selected.channel_previous;
+
+            if(previous) {
+                while(true) {
+                    const siblings = previous.children();
+                    if(siblings.length == 0) break;
+                    previous = siblings.last();
+                }
+                const clients = previous.channelClientsOrdered();
+                if(clients.length > 0) {
+                    this.select([ clients.last() ], "exclusive");
+                    return;
+                } else {
+                    this.select([ previous ], "exclusive");
+                    return;
+                }
+            } else if(selected.hasParent()) {
+                const channel = selected.parent_channel();
+                const clients = channel.channelClientsOrdered();
+                if(clients.length > 0) {
+                    this.select([ clients.last() ], "exclusive");
+                    return;
+                } else {
+                    this.select([ channel ], "exclusive");
+                    return;
+                }
+            } else {
+                this.select([ this.handle.server ], "exclusive");
+            }
+        } else if(selected instanceof ClientEntry) {
+            const channel = selected.currentChannel();
+            const clients = channel.channelClientsOrdered();
+            const index = clients.indexOf(selected);
+            if(index > 0) {
+                this.select([ clients[index - 1] ], "exclusive");
+                return;
+            }
+            this.select([ channel ], "exclusive");
+            return;
+        }
+    }
+
+    private handleSelectEntries(event: ChannelTreeEvents["action_select_entries"]) {
+        this.select(event.entries, event.mode);
     }
 }
 
@@ -230,7 +356,7 @@ export class ChannelTree {
     channels: ChannelEntry[] = [];
     clients: ClientEntry[] = [];
 
-    /* whatever all channels have been initiaized */
+    /* whatever all channels have been initialized */
     channelsInitialized: boolean = false;
 
     readonly selection: ChannelTreeEntrySelect;
@@ -241,10 +367,6 @@ export class ChannelTree {
     private _show_queries: boolean;
     private channel_last?: ChannelEntry;
     private channel_first?: ChannelEntry;
-
-    private tagContainerFocused = false;
-    private listenerDocumentClick;
-    private listenerDocumentKeyPress;
 
     constructor(client) {
         this.events = new Registry<ChannelTreeEvents>();
@@ -279,22 +401,6 @@ export class ChannelTree {
             });
              */
         }
-
-        /* FIXME: Move this to the channel tree renderer */
-        this.listenerDocumentKeyPress = event => this.handle_key_press(event);
-        this.listenerDocumentClick = event => {
-            this.tagContainerFocused = false;
-            let element = event.target as HTMLElement;
-            while(element) {
-                if(element === this.tagContainer[0]) {
-                    this.tagContainerFocused = true;
-                    break;
-                }
-                element = element.parentNode as HTMLElement;
-            }
-        };
-        document.addEventListener('click', this.listenerDocumentClick);
-        document.addEventListener('keydown', this.listenerDocumentKeyPress);
     }
 
     tag_tree() : JQuery {
@@ -335,12 +441,6 @@ export class ChannelTree {
 
     destroy() {
         ReactDOM.unmountComponentAtNode(this.tagContainer[0]);
-
-        this.listenerDocumentClick && document.removeEventListener('click', this.listenerDocumentClick);
-        this.listenerDocumentClick = undefined;
-
-        this.listenerDocumentKeyPress && document.removeEventListener('keydown', this.listenerDocumentKeyPress);
-        this.listenerDocumentKeyPress = undefined;
 
         if(this.server) {
             this.server.destroy();
@@ -674,7 +774,7 @@ export class ChannelTree {
                                         msg: result
                                     });
 
-                                this.selection.clear_selection();
+                                this.selection.clearSelection();
                             }
                         }, {width: 400, maxLength: 512}).open();
                     }
@@ -691,7 +791,7 @@ export class ChannelTree {
                             clid: client.clientId(),
                             cid: target
                         });
-                    this.selection.clear_selection();
+                    this.selection.clearSelection();
                 }
             });
             if (!local_client) {//local client cant be kicked and/or banned or kicked
@@ -711,7 +811,7 @@ export class ChannelTree {
                                     });
                             }
                         }, {width: 400, maxLength: 255}).open();
-                        this.selection.clear_selection();
+                        this.selection.clearSelection();
                     }
                 });
 
@@ -721,7 +821,7 @@ export class ChannelTree {
                         icon_class: "client-poke",
                         name: tr("Poke clients"),
                         callback: () => {
-                            this.selection.clear_selection();
+                            this.selection.clearSelection();
                             createInputModal(tr("Poke clients"), tr("Poke message:<br>"), text => true, result => {
                                 if (result) {
                                     const elements = clients.map(e => { return { clid: e.clientId() } as any });
@@ -735,7 +835,7 @@ export class ChannelTree {
                         icon_class: "client-kick_server",
                         name: tr("Kick clients fom server"),
                         callback: () => {
-                            this.selection.clear_selection();
+                            this.selection.clearSelection();
                             createInputModal(tr("Kick clients from server"), tr("Kick reason:<br>"), text => true, result => {
                                 if (result) {
                                     for (const client of clients)
@@ -753,7 +853,7 @@ export class ChannelTree {
                         name: tr("Ban clients"),
                         invalidPermission: !this.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
                         callback: () => {
-                            this.selection.clear_selection();
+                            this.selection.clearSelection();
                             spawnBanClient(this.client, (clients).map(entry => {
                                 return {
                                     name: entry.clientNickName(),
@@ -791,7 +891,7 @@ export class ChannelTree {
                                         this.client.serverConnection.send_command("musicbotdelete", {
                                             botid: client.properties.client_database_id
                                         });
-                                    this.selection.clear_selection();
+                                    this.selection.clearSelection();
                                 }
                             });
                         },
@@ -813,7 +913,7 @@ export class ChannelTree {
                         if(typeof result === "boolean" && result) {
                             for(const channel of channels)
                                 this.client.serverConnection.send_command("channeldelete", { cid: channel.channelId });
-                            this.selection.clear_selection();
+                            this.selection.clearSelection();
                         }
                     });
                 }
@@ -879,7 +979,7 @@ export class ChannelTree {
         this.channelsInitialized = false;
         batch_updates(BatchUpdateType.CHANNEL_TREE);
 
-        this.selection.clear_selection();
+        this.selection.clearSelection();
         try {
             this.selection.reset();
 
@@ -944,149 +1044,6 @@ export class ChannelTree {
         });
     }
 
-    private select_next_channel(channel: ChannelEntry, select_client: boolean) {
-        if(select_client) {
-            const clients = channel.channelClientsOrdered();
-            if(clients.length > 0) {
-                this.events.fire("action_select_entries", {
-                    mode: "exclusive",
-                    entries: [ clients[0] ]
-                });
-                return;
-            }
-        }
-
-        const children = channel.children();
-        if(children.length > 0) {
-            this.events.fire("action_select_entries", {
-                mode: "exclusive",
-                entries: [ children[0] ]
-            });
-            return;
-        }
-
-        const next = channel.channel_next;
-        if(next) {
-            this.events.fire("action_select_entries", {
-                mode: "exclusive",
-                entries: [ next ]
-            });
-            return;
-        }
-
-        let parent = channel.parent_channel();
-        while(parent) {
-            const p_next = parent.channel_next;
-            if(p_next) {
-                this.events.fire("action_select_entries", {
-                    mode: "exclusive",
-                    entries: [ p_next ]
-                });
-                return;
-            }
-
-            parent = parent.parent_channel();
-        }
-    }
-
-    handle_key_press(event: KeyboardEvent) {
-        if(!this.tagContainerFocused || !this.selection.is_anything_selected() || this.selection.is_multi_select()) return;
-
-        const selected = this.selection.selected_entries[0];
-        if(event.keyCode == KeyCode.KEY_UP) {
-            event.preventDefault();
-            if(selected instanceof ChannelEntry) {
-                let previous = selected.channel_previous;
-
-                if(previous) {
-                    while(true) {
-                        const siblings = previous.children();
-                        if(siblings.length == 0) break;
-                        previous = siblings.last();
-                    }
-                    const clients = previous.channelClientsOrdered();
-                    if(clients.length > 0) {
-                        this.events.fire("action_select_entries", {
-                            mode: "exclusive",
-                            entries: [ clients.last() ]
-                        });
-                        return;
-                    } else {
-                        this.events.fire("action_select_entries", {
-                            mode: "exclusive",
-                            entries: [ previous ]
-                        });
-                        return;
-                    }
-                } else if(selected.hasParent()) {
-                    const channel = selected.parent_channel();
-                    const clients = channel.channelClientsOrdered();
-                    if(clients.length > 0) {
-                        this.events.fire("action_select_entries", {
-                            mode: "exclusive",
-                            entries: [ clients.last() ]
-                        });
-                        return;
-                    } else {
-                        this.events.fire("action_select_entries", {
-                            mode: "exclusive",
-                            entries: [ channel ]
-                        });
-                        return;
-                    }
-                } else {
-                    this.events.fire("action_select_entries", {
-                        mode: "exclusive",
-                        entries: [ this.server ]
-                    });
-                }
-            } else if(selected instanceof ClientEntry) {
-                const channel = selected.currentChannel();
-                const clients = channel.channelClientsOrdered();
-                const index = clients.indexOf(selected);
-                if(index > 0) {
-                    this.events.fire("action_select_entries", {
-                        mode: "exclusive",
-                        entries: [ clients[index - 1] ]
-                    });
-                    return;
-                }
-                this.events.fire("action_select_entries", {
-                    mode: "exclusive",
-                    entries: [ channel ]
-                });
-                return;
-            }
-
-        } else if(event.keyCode == KeyCode.KEY_DOWN) {
-            event.preventDefault();
-            if(selected instanceof ChannelEntry) {
-                this.select_next_channel(selected, true);
-            } else if(selected instanceof ClientEntry){
-                const channel = selected.currentChannel();
-                const clients = channel.channelClientsOrdered();
-                const index = clients.indexOf(selected);
-                if(index + 1 < clients.length) {
-                    this.events.fire("action_select_entries", {
-                        mode: "exclusive",
-                        entries: [ clients[index + 1] ]
-                    });
-                    return;
-                }
-
-                this.select_next_channel(channel, false);
-            } else if(selected instanceof ServerEntry)
-                this.events.fire("action_select_entries", {
-                    mode: "exclusive",
-                    entries: [ this.channel_first ]
-                });
-        } else if(event.keyCode == KeyCode.KEY_RETURN) {
-            if(selected instanceof ChannelEntry) {
-                selected.joinChannel();
-            }
-        }
-    }
-
     toggle_server_queries(flag: boolean) {
         if(this._show_queries == flag) return;
         this._show_queries = flag;
@@ -1112,7 +1069,7 @@ export class ChannelTree {
 
             if(channels.length > 0) {
                 this.client.serverConnection.send_command('channelsubscribe', channels.map(e => { return {cid: e}; })).catch(error => {
-                    console.warn(tr("Failed to subscribe to specific channels (%o)"), channels);
+                    console.warn(tr("Failed to subscribe to specific channels (%o): %o"), channels, error);
                 });
             }
         }).catch(error => {
@@ -1133,7 +1090,7 @@ export class ChannelTree {
 
             if(channels.length > 0) {
                 this.client.serverConnection.send_command('channelunsubscribe', channels.map(e => { return {cid: e}; })).catch(error => {
-                    console.warn(tr("Failed to unsubscribe to specific channels (%o)"), channels);
+                    console.warn(tr("Failed to unsubscribe to specific channels (%o): %o"), channels, error);
                 });
             }
         }).catch(error => {
@@ -1159,57 +1116,5 @@ export class ChannelTree {
             for(const child of root.children(false))
                 this.collapse_channels(child);
         }
-    }
-
-    /*
-    private onChannelEntryMove(start, current) {
-        const move = this.view_move.current;
-        if(!move) return;
-
-        const target = this.view.current.getEntryFromPoint(start.x, start.y);
-        if(target && this.selection.selected_entries.findIndex(e => e === target) === -1)
-            this.events.fire("action_select_entries", { mode: "auto", entries: [ target ]});
-
-        const selection = this.selection.selected_entries;
-        if(selection.length === 0 || selection.filter(e => !(e instanceof ClientEntry)).length > 0)
-            return;
-
-        move.enableEntryMove(this.view.current, selection.map(e => e as ClientEntry).map(e => e.clientNickName()).join(","), start, current, () => {
-            this.events.fire("notify_entry_move_begin");
-        });
-    }
-
-    private onMoveEnd(x: number, y: number) {
-        batch_updates(BatchUpdateType.CHANNEL_TREE);
-        try {
-            this.events.fire("notify_entry_move_end");
-
-            const selection = this.selection.selected_entries.filter(e => e instanceof ClientEntry) as ClientEntry[];
-            if(selection.length === 0) return;
-            this.selection.clear_selection();
-
-            const target = this.view.current.getEntryFromPoint(x, y);
-            let target_channel: ChannelEntry;
-            if(target instanceof ClientEntry)
-                target_channel = target.currentChannel();
-            else if(target instanceof ChannelEntry)
-                target_channel = target;
-            if(!target_channel) return;
-
-            selection.filter(e => e.currentChannel() !== target_channel).forEach(e => {
-                this.client.serverConnection.send_command("clientmove", {
-                    clid: e.clientId(),
-                    cid: target_channel.channelId
-                });
-            });
-        } finally {
-            flush_batched_updates(BatchUpdateType.CHANNEL_TREE);
-        }
-    }
-    */
-
-    isClientMoveActive() {
-        //return !!this.view_move.current?.isActive();
-        return false;
     }
 }

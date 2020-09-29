@@ -257,7 +257,7 @@ export class RDPChannelTree {
             entry.destroy();
         });
 
-        this.refTree?.current.setState({
+        this.refTree.current?.setState({
             tree: this.orderedTree.slice(),
             treeRevision: ++this.treeRevision
         });
