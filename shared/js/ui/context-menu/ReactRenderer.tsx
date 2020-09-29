@@ -45,10 +45,12 @@ const MenuLabelRenderer = (props: { label: MenuEntryLabel }) => {
 const MenuEntryRenderer = (props: { entry: ContextMenuEntry }) => {
     const closeCallback = useContext(CloseCallback);
     const clickListener = () => {
-        closeCallback();
-
-        if("click" in props.entry && typeof props.entry.click === "function") {
-            props.entry.click();
+        try {
+            if("click" in props.entry && typeof props.entry.click === "function") {
+                props.entry.click();
+            }
+        } finally {
+            closeCallback();
         }
     };
 
