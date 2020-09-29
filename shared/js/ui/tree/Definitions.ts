@@ -37,7 +37,8 @@ export interface ChannelTreeUIEvents {
         mode: "auto" | "exclusive" | "append" | "remove",
         ignoreClientMove: boolean
     },
-    action_channel_join: { treeEntryId: number, ignoreMultiSelect: boolean },
+    action_select_auto: { direction: "next" | "previous" },
+    action_channel_join: { treeEntryId: number | "selected", ignoreMultiSelect: boolean },
     action_channel_open_file_browser: { treeEntryId: number },
     action_client_double_click: { treeEntryId: number },
     action_client_name_submit: { treeEntryId: number, name: string },

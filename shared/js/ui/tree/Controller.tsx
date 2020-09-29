@@ -657,7 +657,7 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
     });
 
     events.on("action_select", event => {
-        if(!event.ignoreClientMove && channelTree.isClientMoveActive()) {
+        if(!event.ignoreClientMove && moveSelection?.length) {
             return;
         }
 
@@ -672,10 +672,15 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
             entries.push(entry);
         }
 
-        channelTree.events.fire("action_select_entries", {
-            mode: event.mode,
-            entries: entries
-        });
+        channelTree.selection.select(entries, event.mode);
+    });
+
+    events.on("action_select_auto", event => {
+        if(event.direction === "next") {
+            channelTree.selection.selectNextTreeEntry();
+        } else if(event.direction === "previous") {
+            channelTree.selection.selectPreviousTreeEntry();
+        }
     });
 
     events.on("action_show_context_menu", event => {
@@ -685,8 +690,8 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
             return;
         }
 
-        if (channelTree.selection.is_multi_select() && entry.isSelected()) {
-            channelTree.open_multiselect_context_menu(channelTree.selection.selected_entries, event.pageX, event.pageY);
+        if (channelTree.selection.isMultiSelect() && entry.isSelected()) {
+            channelTree.open_multiselect_context_menu(channelTree.selection.selectedEntries, event.pageX, event.pageY);
             return;
         }
 
@@ -698,13 +703,15 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
     });
 
     events.on("action_channel_join", event => {
-        if(!event.ignoreMultiSelect && channelTree.selection.is_multi_select()) {
+        if(!event.ignoreMultiSelect && channelTree.selection.isMultiSelect()) {
             return;
         }
 
-        const entry = channelTree.findEntryId(event.treeEntryId);
+        const entry = event.treeEntryId === "selected" ? channelTree.selection.selectedEntries[0] : channelTree.findEntryId(event.treeEntryId);
         if(!entry || !(entry instanceof ChannelEntry)) {
-            logWarn(LogCategory.CHANNEL, tr("Tried to join an invalid tree entry with id %o"), event.treeEntryId);
+            if(event.treeEntryId !== "selected") {
+                logWarn(LogCategory.CHANNEL, tr("Tried to join an invalid tree entry with id %o"), event.treeEntryId);
+            }
             return;
         }
 
@@ -737,7 +744,7 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
             return;
         }
 
-        if(channelTree.selection.is_multi_select()) {
+        if(channelTree.selection.isMultiSelect()) {
             return;
         }
 
@@ -769,7 +776,7 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
 
     let moveSelection: ClientEntry[];
     events.on("action_start_entry_move", event => {
-        const selection = channelTree.selection.selected_entries.slice();
+        const selection = channelTree.selection.selectedEntries.slice();
         if(selection.length === 0) { return; }
         if(selection.findIndex(element => !(element instanceof ClientEntry)) !== -1) { return; }
 

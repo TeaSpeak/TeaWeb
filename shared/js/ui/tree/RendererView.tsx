@@ -186,30 +186,27 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         }
 
         return (
-            <div className={viewStyle.treeContainer}>
+            <div
+                className={viewStyle.channelTreeContainer + " " + (this.state.smoothScroll ? viewStyle.smoothScroll : "")}
+                onScroll={() => this.onScroll()}
+                ref={this.refContainer}
+                onMouseDown={e => this.onMouseDown(e)}
+                onMouseMove={e => this.onMouseMove(e)}>
                 <div
-                    className={viewStyle.channelTreeContainer + " " + (this.state.smoothScroll ? viewStyle.smoothScroll : "")}
-                    onScroll={() => this.onScroll()}
-                    ref={this.refContainer}
-                    onMouseDown={e => this.onMouseDown(e)}
-                    onMouseMove={e => this.onMouseMove(e)}>
-                    <div
-                        className={viewStyle.channelTree}
-                        style={{height: (this.state.tree.length * ChannelTreeView.EntryHeight) + "px"}}>
-                        {elements}
-                    </div>
-                    <RendererMove
-                        onMoveEnd={target => {
-                            const targetEntry = this.getEntryFromPoint(target.x, target.y);
-                            this.props.events.fire("action_move_entries", { treeEntryId: typeof targetEntry === "number" ? targetEntry : 0 });
-                        }}
-                        onMoveCancel={() => {
-                            this.props.events.fire("action_move_entries", { treeEntryId: 0 });
-                        }}
-                        ref={this.props.dataProvider.refMove}
-                    />
+                    className={viewStyle.channelTree}
+                    style={{height: (this.state.tree.length * ChannelTreeView.EntryHeight) + "px"}}>
+                    {elements}
                 </div>
-                <PopoutButton tree={this.props.dataProvider} ref={this.props.dataProvider.refPopoutButton} />
+                <RendererMove
+                    onMoveEnd={target => {
+                        const targetEntry = this.getEntryFromPoint(target.x, target.y);
+                        this.props.events.fire("action_move_entries", { treeEntryId: typeof targetEntry === "number" ? targetEntry : 0 });
+                    }}
+                    onMoveCancel={() => {
+                        this.props.events.fire("action_move_entries", { treeEntryId: 0 });
+                    }}
+                    ref={this.props.dataProvider.refMove}
+                />
             </div>
         )
     }
