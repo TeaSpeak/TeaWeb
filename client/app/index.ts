@@ -1,7 +1,4 @@
-declare const __webpack_require__;
-window["shared-require"] = __webpack_require__;
+window.__native_client_init_shared(__webpack_require__);
 
 import "./index.scss";
-
-/* firstly assign the shared-require */
-setTimeout(() => require("tc-shared/main"), 0);
+import "tc-shared/main";

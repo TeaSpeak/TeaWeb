@@ -42,6 +42,8 @@ export type Task = {
     function: (taskId?: number) => Promise<void>
 };
 
+type InternalTask = Task & { initiator: string }
+
 export enum Stage {
     /*
         loading loader required files (incl this)
@@ -88,7 +90,7 @@ export enum Stage {
 
 let cache_tag: string | undefined;
 let currentStage: Stage = undefined;
-const tasks: {[key:number]:Task[]} = {};
+const tasks: {[key:number]: InternalTask[]} = {};
 
 /* test if all files shall be load from cache or fetch again */
 function loader_cache_tag() {
@@ -129,18 +131,23 @@ export function finished() {
 export function running() { return typeof(currentStage) !== "undefined"; }
 
 export function register_task(stage: Stage, task: Task) {
+    let callee = new Error().stack.split("\n")[2].replace(/^\s*at (Object\.\.\/)?/, "");
+    if(callee.match(/^.* \(([:\\/_\-+0-9a-zA-Z.]+):([0-9]+):([0-9]+)\)$/)) {
+        callee = callee.replace(/^.* \(([:\\/_\-+0-9a-zA-Z.]+):([0-9]+):([0-9]+)\)$/, "$1:$2:$3");
+    }
     if(!task.function) {
         debugger;
-        throw "tried to register a loader task without a function";
+        throw "tried to register a loader task without a function at " + callee;
     }
 
     if(currentStage > stage) {
-        if(config.error)
-            console.warn("Register loading task, but it had already been finished. Executing task anyways!");
+        if(config.error) {
+            console.warn("Register loading task, but it had already been finished. Executing task anyways! Registerer: %s", callee);
+        }
 
         const promise = task.function();
         if(!promise) {
-            console.error("Loading task %s hasn't returned a promise!", task.name);
+            console.error("Loading task %s (%s) hasn't returned a promise!", task.name, callee);
             return;
         }
         promise.catch(error => {
@@ -155,7 +162,9 @@ export function register_task(stage: Stage, task: Task) {
     }
 
     const task_array = tasks[stage] || [];
-    task_array.push(task);
+    task_array.push(Object.assign({
+        initiator: callee
+    }, task));
     tasks[stage] = task_array.sort((a, b) => a.priority - b.priority);
 }
 
@@ -190,7 +199,7 @@ export async function execute() {
     let end: number = Date.now();
     while(currentStage <= Stage.LOADED || typeof(currentStage) === "undefined") {
 
-        let pendingTasks: Task[] = [];
+        let pendingTasks: InternalTask[] = [];
         while((tasks[currentStage] || []).length > 0) {
             if(pendingTasks.length == 0 || pendingTasks[0].priority == tasks[currentStage][0].priority) {
                 pendingTasks.push(tasks[currentStage].pop());
@@ -199,7 +208,7 @@ export async function execute() {
 
         const errors: {
             error: any,
-            task: Task
+            task: InternalTask
         }[] = [];
 
         for(const task of pendingTasks) {
@@ -210,8 +219,9 @@ export async function execute() {
             } as RunningTask;
 
            try {
-               if(config.verbose)
+               if(config.verbose) {
                    console.debug("Executing loader %s (%d)", task.name, task.priority);
+               }
 
                runningTasks.push(rTask);
                const promise = task.function(rTask.taskId);
@@ -256,9 +266,11 @@ export async function execute() {
         if(errors.length > 0) {
            if(config.loader_groups)
                console.groupEnd();
+
            console.error("Failed to execute loader. The following tasks failed (%d):", errors.length);
-           for(const error of errors)
-               console.error("  - %s: %o", error.task.name, error.error);
+           for(const error of errors) {
+               console.error("  - %s (%s): %o", error.task.name, error.task.initiator, error.error);
+           }
 
            throw "failed to process step " + Stage[currentStage];
         }

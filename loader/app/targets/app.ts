@@ -10,23 +10,8 @@ declare global {
     }
 }
 
-function cache_tag() {
-    const ui = ui_version();
-    return "?_ts=" + (!!ui && ui !== "unknown" ? ui : Date.now());
-}
-
-let _ui_version;
-export function ui_version() {
-    if(typeof(_ui_version) !== "string") {
-        const version_node = document.getElementById("app_version");
-        if(!version_node) return undefined;
-
-        const version = version_node.hasAttribute("value") ? version_node.getAttribute("value") : undefined;
-        if(!version) return undefined;
-
-        return (_ui_version = version);
-    }
-    return _ui_version;
+function getCacheTag() {
+    return "?_ts=" + (__build.mode === "debug" ? Date.now() : __build.timestamp);
 }
 
 const LoaderTaskCallback = taskId => (script: SourcePath, state) => {
@@ -101,7 +86,7 @@ loader.register_task(loader.Stage.TEMPLATES, {
             "templates/modal/musicmanage.html",
             "templates/modal/newcomer.html",
         ], {
-            cache_tag: cache_tag(),
+            cache_tag: getCacheTag(),
             max_parallel_requests: -1
         }, LoaderTaskCallback(taskId));
     },
@@ -154,7 +139,6 @@ loader.register_task(loader.Stage.SETUP, {
 loader.register_task(loader.Stage.SETUP, {
     name: "TeaClient tester",
     function: async () => {
-        //@ts-ignore
         if(typeof __teaclient_preview_notice !== "undefined" && typeof __teaclient_preview_error !== "undefined") {
             loader.critical_error("Why you're opening TeaWeb within the TeaSpeak client?!");
             throw "we're already a TeaClient!";
@@ -165,34 +149,6 @@ loader.register_task(loader.Stage.SETUP, {
 
 export default class implements ApplicationLoader {
     execute() {
-        /* TeaClient */
-        if(window.require) {
-            if(__build.target !== "client") {
-                loader.critical_error("App seems not to be compiled for the client.", "This app has been compiled for " + __build.target);
-                return;
-            }
-            window.native_client = true;
-
-            const path = __non_webpack_require__("path");
-            const remote = __non_webpack_require__('electron').remote;
-
-            const render_entry = path.join(remote.app.getAppPath(), "/modules/", "renderer");
-            const render = __non_webpack_require__(render_entry);
-
-            loader.register_task(loader.Stage.INITIALIZING, {
-                name: "teaclient initialize",
-                function: render.initialize,
-                priority: 40
-            });
-        } else {
-            if(__build.target !== "web") {
-                loader.critical_error("App seems not to be compiled for the web.", "This app has been compiled for " + __build.target);
-                return;
-            }
-
-            window.native_client = false;
-        }
-
         loader.execute_managed();
     }
 }
