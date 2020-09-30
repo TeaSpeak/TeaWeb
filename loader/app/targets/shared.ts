@@ -1,9 +1,6 @@
 import * as loader from "../loader/loader";
 import {Stage} from "../loader/loader";
-import {
-    BrowserInfo,
-    detect as detectBrowser,
-} from "detect-browser";
+import {BrowserInfo, detect as detectBrowser,} from "detect-browser";
 
 declare global {
     interface Window {
@@ -11,6 +8,30 @@ declare global {
         removeLoaderContextMenuHook: () => void
     }
 }
+
+loader.register_task(Stage.SETUP, {
+    name: "app init",
+    function: async () => {
+        /* TeaClient */
+        if(window.require || window.__native_client_init_hook) {
+            if(__build.target !== "client") {
+                loader.critical_error("App seems not to be compiled for the client.", "This app has been compiled for " + __build.target);
+                return;
+            }
+
+            window.__native_client_init_hook();
+            window.native_client = true;
+        } else {
+            if(__build.target !== "web") {
+                loader.critical_error("App seems not to be compiled for the web.", "This app has been compiled for " + __build.target);
+                return;
+            }
+
+            window.native_client = false;
+        }
+    },
+    priority: 1000
+});
 
 if(__build.target === "web") {
     loader.register_task(Stage.SETUP, {

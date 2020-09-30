@@ -15,6 +15,10 @@ import {setupJSRender} from "../../../ui/jsrender";
 import "../../../file/RemoteAvatars";
 import "../../../file/RemoteIcons";
 
+if("__native_client_init_shared" in window) {
+    window.__native_client_init_shared(__webpack_require__);
+}
+
 let modalRenderer: ModalRenderer;
 let modalInstance: AbstractModal;
 let modalClass: new (events: RegistryMap, userData: any) => AbstractModal;

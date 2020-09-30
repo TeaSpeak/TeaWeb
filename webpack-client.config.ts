@@ -16,8 +16,10 @@ export = () => config_base.config("client").then(config => {
         throw "invalid config";
 
     config.externals.push((context, request, callback) => {
-        if (request.startsWith("tc-backend/"))
+        if (request.startsWith("tc-backend/")) {
             return callback(null, `window["backend-loader"].require("${request}")`);
+        }
+
         callback(undefined, undefined);
     });
 
