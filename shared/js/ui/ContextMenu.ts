@@ -1,14 +1,12 @@
 import {RemoteIcon} from "tc-shared/file/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
 
-import "./Ipc";
-
 export type MenuEntryLabel = {
     text: string,
     bold?: boolean;
 } | string;
 
-type MenuEntryClickable = {
+export type MenuEntryClickable = {
     uniqueId?: string,
     label: MenuEntryLabel,
 

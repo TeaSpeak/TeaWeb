@@ -5,11 +5,10 @@ import {
     ContextMenuEntry,
     ContextMenuFactory,
     setGlobalContextMenuFactory
-} from "tc-shared/ui/context-menu/index";
+} from "tc-shared/ui/ContextMenu";
 import {ChannelMessage, IPCChannel} from "tc-shared/ipc/BrowserIPC";
 import * as ipc from "tc-shared/ipc/BrowserIPC";
-import {Settings} from "tc-shared/settings";
-import {reactContextMenuInstance} from "tc-shared/ui/context-menu/ReactRenderer";
+import {reactContextMenuInstance} from "./ReactRenderer";
 import {getIconManager, RemoteIcon} from "tc-shared/file/Icons";
 
 const kIPCContextMenuChannel = "context-menu";

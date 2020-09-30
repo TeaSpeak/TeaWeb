@@ -11,7 +11,7 @@ import {useContext, useRef, useState} from "react";
 import {DropdownEntry} from "tc-shared/ui/frames/control-bar/DropDown";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {Button} from "tc-shared/ui/frames/control-bar/Button";
-import {spawnContextMenu} from "tc-shared/ui/context-menu";
+import {spawnContextMenu} from "tc-shared/ui/ContextMenu";
 import {ClientIcon} from "svg-sprites/client-icons";
 
 const cssStyle = require("./Renderer.scss");

@@ -5,7 +5,7 @@ import {
     ContextMenuEntry,
     ContextMenuEntryNormal,
     ContextMenuFactory, MenuEntryLabel,
-} from "tc-shared/ui/context-menu/index";
+} from "tc-shared/ui/ContextMenu";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {IconRenderer, RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
@@ -189,91 +189,5 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
                 }
             }
         };
-
-        /*
-        setTimeout(() => {
-            spawnContextMenu({ pageX: 100, pageY: 100 }, [
-                {
-                    type: "normal",
-                    label: { text: "test", bold: true },
-                    icon: ClientIcon.IsTalker
-                },
-                {
-                    type: "normal",
-                    label: "test 2",
-                    icon: ClientIcon.ServerGreen
-                },
-                {
-                    type: "separator"
-                },
-                {
-                    type: "normal",
-                    label: "test 3",
-                    subMenu: [
-                        {
-                            type: "checkbox",
-                            label: "test - cb",
-                            checked: false
-                        },
-                        {
-                            type: "checkbox",
-                            label: "test - cb 1",
-                            checked: true
-                        }
-                    ]
-                },
-                {
-                    type: "normal",
-                    label: "test 4",
-                    subMenu: [
-                        {
-                            type: "normal",
-                            label: "test 1",
-                            icon: ClientIcon.IsTalker
-                        },
-                        {
-                            type: "normal",
-                            label: "test 2",
-                            icon: ClientIcon.ServerGreen
-                        },
-                        {
-                            type: "separator"
-                        },
-                        {
-                            type: "normal",
-                            label: "test 3"
-                        },
-                        {
-                            type: "normal",
-                            label: "test 4",
-                            subMenu: [
-                                {
-                                    type: "normal",
-                                    label: "test 1",
-                                    icon: ClientIcon.IsTalker
-                                },
-                                {
-                                    type: "normal",
-                                    label: "test 2",
-                                    icon: ClientIcon.ServerGreen
-                                },
-                                {
-                                    type: "separator"
-                                },
-                                {
-                                    type: "normal",
-                                    label: "test 3"
-                                },
-                                {
-                                    type: "normal",
-                                    label: "test 4"
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]);
-        }, 1000);
-         */
     }
 })

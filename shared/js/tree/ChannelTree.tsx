@@ -382,25 +382,6 @@ export class ChannelTree {
         renderChannelTree(this, this.tagContainer[0], { popoutButton: true });
 
         this.reset();
-
-        if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
-            /*
-            TODO: Show the context menu when clicked on no channel
-            this._tag_container.on("contextmenu", (event) => {
-                event.preventDefault();
-
-                const entry = this.view.current?.getEntryFromPoint(event.pageX, event.pageY);
-                if(entry) {
-                    if(this.selection.is_multi_select()) {
-                        this.open_multiselect_context_menu(this.selection.selected_entries, event.pageX, event.pageY);
-                    }
-                } else {
-                    this.selection.clear_selection();
-                    this.showContextMenu(event.pageX, event.pageY);
-                }
-            });
-             */
-        }
     }
 
     tag_tree() : JQuery {

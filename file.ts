@@ -314,6 +314,7 @@ namespace server {
     }
 
     async function serve_file(pathname: string, response: http.ServerResponse) {
+        if(pathname.startsWith("//")) { pathname = pathname.substring(1); }
         const file = await generator.search_http_file(files, pathname, options.search_options);
         if(!file) {
             console.log("[SERVER] Client requested unknown file %s", pathname);
