@@ -14,7 +14,6 @@ import {setupJSRender} from "../../../ui/jsrender";
 
 import "../../../file/RemoteAvatars";
 import "../../../file/RemoteIcons";
-import "../../context-menu";
 
 let modalRenderer: ModalRenderer;
 let modalInstance: AbstractModal;

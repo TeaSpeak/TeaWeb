@@ -1,4 +1,4 @@
-import {closeContextMenu, ContextMenuEntry, spawnContextMenu} from "tc-shared/ui/context-menu";
+import {closeContextMenu, ContextMenuEntry, spawnContextMenu} from "tc-shared/ui/ContextMenu";
 import {ClientIcon} from "svg-sprites/client-icons";
 
 export interface MenuEntry {

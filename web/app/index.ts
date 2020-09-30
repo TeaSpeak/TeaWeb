@@ -12,7 +12,7 @@ import "./hooks/AudioRecorder";
 
 import "./UnloadHandler";
 
-
+import "./ui/context-menu";
 import "./ui/FaviconRenderer";
 
 export = require("tc-shared/main");
