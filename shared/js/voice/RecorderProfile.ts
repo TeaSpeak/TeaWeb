@@ -90,6 +90,12 @@ export class RecorderProfile {
         this.pptHookRegistered = false;
     }
 
+    destroy() {
+        /* TODO */
+        this.input?.destroy();
+        this.input = undefined;
+    }
+
     async initialize() : Promise<void> {
         {
             let config = {};
