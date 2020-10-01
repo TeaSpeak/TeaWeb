@@ -132,8 +132,8 @@ export function running() { return typeof(currentStage) !== "undefined"; }
 
 export function register_task(stage: Stage, task: Task) {
     let callee = new Error().stack.split("\n")[2].replace(/^\s*at (Object\.\.\/)?/, "");
-    if(callee.match(/^.* \(([:\\/_\-+0-9a-zA-Z.]+):([0-9]+):([0-9]+)\)$/)) {
-        callee = callee.replace(/^.* \(([:\\/_\-+0-9a-zA-Z.]+):([0-9]+):([0-9]+)\)$/, "$1:$2:$3");
+    if(callee.match(/^.* \(([:\\/~_\-+0-9a-zA-Z.]+):([0-9]+):([0-9]+)\)$/)) {
+        callee = callee.replace(/^.* \(([:\\/~_\-+0-9a-zA-Z.]+):([0-9]+):([0-9]+)\)$/, "$1:$2:$3");
     }
     if(!task.function) {
         debugger;

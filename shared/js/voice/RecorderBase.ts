@@ -75,6 +75,7 @@ export interface AbstractInput {
     readonly events: Registry<InputEvents>;
 
     currentState() : InputState;
+    destroy();
 
     start() : Promise<InputStartResult>;
     stop() : Promise<void>;

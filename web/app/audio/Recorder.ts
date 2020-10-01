@@ -102,6 +102,12 @@ export class WebAudioRecorder implements AudioRecorderBacked {
     getDeviceList(): DeviceList {
         return inputDeviceList;
     }
+
+    isRnNoiseSupported() {
+        return false;
+    }
+
+    toggleRnNoise(target: boolean) { throw "not supported"; }
 }
 
 class JavascriptInput implements AbstractInput {
@@ -137,6 +143,8 @@ class JavascriptInput implements AbstractInput {
         aplayer.on_ready(() => this.handleAudioInitialized());
         this.audioScriptProcessorCallback = this.handleAudio.bind(this);
     }
+
+    destroy() { }
 
     private handleAudioInitialized() {
         this.audioContext = aplayer.context();

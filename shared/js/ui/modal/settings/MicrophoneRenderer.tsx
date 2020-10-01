@@ -1,6 +1,6 @@
 import * as React from "react";
 import {useEffect, useRef, useState} from "react";
-import {Translatable} from "tc-shared/ui/react-elements/i18n";
+import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {Registry} from "tc-shared/events";
 import {MicrophoneDevice, MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/Microphone";
@@ -416,6 +416,32 @@ const PPTDelaySettings = (props: { events: Registry<MicrophoneSettingsEvents> })
     );
 }
 
+const RNNoiseLabel = () => (
+    <VariadicTranslatable text={"Enable RNNoise cancelation ({})"}>
+        <a href={"https://jmvalin.ca/demo/rnnoise/"} target={"_blank"} style={{ margin: 0 }}><Translatable>more info</Translatable></a>
+    </VariadicTranslatable>
+)
+
+const RNNoiseSettings = (props: { events: Registry<MicrophoneSettingsEvents> }) => {
+    if(__build.target === "web") {
+        return null;
+    }
+
+    const [ enabled, setEnabled ] = useState<boolean | "loading">(() => {
+        props.events.fire("query_setting", { setting: "rnnoise" });
+        return "loading";
+    });
+    props.events.reactUse("notify_setting", event => event.setting === "rnnoise" && setEnabled(event.value));
+
+    return (
+        <Checkbox label={<RNNoiseLabel />}
+                  disabled={enabled === "loading"}
+                  value={enabled === true}
+                  onChange={value => props.events.fire("action_set_setting", { setting: "rnnoise", value: value })}
+        />
+    )
+}
+
 const VadSelector = (props: { events: Registry<MicrophoneSettingsEvents> }) => {
     const [selectedType, setSelectedType] = useState<VadType | "loading">(() => {
         props.events.fire("query_setting", {setting: "vad-type"});
@@ -630,6 +656,7 @@ export const MicrophoneSettings = (props: { events: Registry<MicrophoneSettingsE
                     <div className={cssStyle.body}>
                         <div className={cssStyle.containerAdvanced}>
                             <PPTDelaySettings events={props.events}/>
+                            <RNNoiseSettings events={props.events} />
                         </div>
                     </div>
                 </HighlightRegion>

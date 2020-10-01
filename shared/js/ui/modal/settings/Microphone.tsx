@@ -6,6 +6,7 @@ import * as log from "tc-shared/log";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {defaultRecorder} from "tc-shared/voice/RecorderProfile";
 import {DeviceListState, getRecorderBackend, IDevice} from "tc-shared/audio/recorder";
+import {Settings, settings} from "tc-shared/settings";
 
 export type MicrophoneSetting =
     "volume"
@@ -13,7 +14,8 @@ export type MicrophoneSetting =
     | "ppt-key"
     | "ppt-release-delay"
     | "ppt-release-delay-active"
-    | "threshold-threshold";
+    | "threshold-threshold"
+    | "rnnoise";
 
 export type MicrophoneDevice = {
     id: string,
@@ -242,6 +244,10 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
                     value = defaultRecorder.getPushToTalkDelay() > 0;
                     break;
 
+                case "rnnoise":
+                    value = settings.static_global(Settings.KEY_RNNOISE_FILTER);
+                    break;
+
                 default:
                     return;
             }
@@ -294,6 +300,11 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
                 case "ppt-release-delay-active":
                     if (!ensure_type("boolean")) return;
                     defaultRecorder.setPushToTalkDelay(Math.abs(defaultRecorder.getPushToTalkDelay()) * (event.value ? 1 : -1));
+                    break;
+
+                case "rnnoise":
+                    if (!ensure_type("boolean")) return;
+                    settings.changeGlobal(Settings.KEY_RNNOISE_FILTER, event.value);
                     break;
 
                 default:
