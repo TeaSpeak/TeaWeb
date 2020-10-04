@@ -22,10 +22,14 @@ import {TimestampRenderer} from "tc-shared/ui/react-elements/TimestampRenderer";
 import {BBCodeRenderer} from "tc-shared/text/bbcode";
 import {getGlobalAvatarManagerFactory} from "tc-shared/file/Avatars";
 import {ColloquialFormat, date_format, format_date_general, formatDayTime} from "tc-shared/utils/DateUtils";
+import {ClientTag} from "tc-shared/ui/tree/EntryTags";
 
 const cssStyle = require("./ConversationUI.scss");
 
-const CMTextRenderer = React.memo((props: { text: string }) => <BBCodeRenderer settings={{ convertSingleUrls: true }} message={props.text} />);
+const ChatMessageTextRenderer = React.memo((props: { text: string }) => {
+    if(typeof props.text !== "string") { debugger; }
+    return <BBCodeRenderer settings={{ convertSingleUrls: true }} message={props.text || ""} />;
+});
 
 const ChatEventMessageRenderer = React.memo((props: {
     message: ChatMessage,
@@ -57,17 +61,8 @@ const ChatEventMessageRenderer = React.memo((props: {
             <div className={cssStyle.message}>
                 <div className={cssStyle.info}>
                     {deleteButton}
-                    {/*
-                        <a className={cssStyle.sender} dangerouslySetInnerHTML={{ __html: generate_client({
-                            client_database_id: props.message.sender_database_id,
-                            client_id: -1,
-                            client_name: props.message.sender_name,
-                            client_unique_id: props.message.sender_unique_id,
-                            add_braces: false
-                        })}} />
-                    */}
                     <a className={cssStyle.sender}>
-                        <div className={"htmltag-client"}>{props.message.sender_name}</div>
+                        <ClientTag clientName={props.message.sender_name} clientUniqueId={props.message.sender_unique_id} handlerId={props.handlerId} clientDatabaseId={props.message.sender_database_id} />
                     </a>
                     <span> </span> { /* Only for copy purposes */}
                     <a className={cssStyle.timestamp}>
@@ -76,7 +71,7 @@ const ChatEventMessageRenderer = React.memo((props: {
                     <br /> { /* Only for copy purposes */ }
                 </div>
                 <div className={cssStyle.text}>
-                    <CMTextRenderer text={props.message.message} />
+                    <ChatMessageTextRenderer text={props.message.message} />
                 </div>
                 <br style={{ content: " ", display: "none" }} /> { /* Only for copy purposes */ }
             </div>
@@ -481,7 +476,7 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
             case "no-permission":
                 contents.push(<div key={"ol-permission"} className={cssStyle.overlay}><a>
                     <Translatable>You don't have permissions to participate in this conversation!</Translatable><br />
-                    >{this.state.failedPermission}</a>
+                    {this.state.failedPermission}</a>
                 </div>);
                 break;
 

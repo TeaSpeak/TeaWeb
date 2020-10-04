@@ -1,4 +1,7 @@
 # Changelog:
+* **04.10.20**
+    - Fixed invalid channel tree unique id assignment for the initial server entry ([#F2986](https://forum.teaspeak.de/index.php?threads/2986))
+    
 * **27.09.20**
     - Middle clicking on bookmarks now directly connects in a new tab
     

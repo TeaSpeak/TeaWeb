@@ -73,7 +73,7 @@ export class ChannelProperties {
     //Only after request
     channel_description: string = "";
 
-    channel_flag_conversation_private: boolean = true; /* TeamSpeak mode */
+    channel_conversation_mode: number = 0; /* 0 := Private, the default */
     channel_conversation_history_length: number = -1;
 }
 
@@ -594,6 +594,10 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 this._cached_channel_description_promise = undefined;
                 this._cached_channel_description_promise_resolve = undefined;
                 this._cached_channel_description_promise_reject = undefined;
+            } else if(key === "channel_flag_conversation_private") {
+                /* "fix" for older TeaSpeak server versions (pre. 1.4.22) */
+                this.properties.channel_conversation_mode = value === "1" ? 0 : 1;
+                variables.push({ key: "channel_conversation_mode", value: this.properties.channel_conversation_mode + "" });
             }
         }
         /* devel-block(log-channel-property-updates) */

@@ -62,10 +62,11 @@ export abstract class AbstractChat<Events extends ConversationUIEvents> {
                 this.hasHistory = true;
             index -= deleteMessageCount;
 
-            if(event.isOwnMessage)
+            if(event.isOwnMessage) {
                 this.setUnreadTimestamp(undefined);
-            else if(!this.unreadTimestamp)
+            } else if(!this.unreadTimestamp) {
                 this.setUnreadTimestamp(event.message.timestamp);
+            }
 
             /* let all other events run before */
             this.events.fire_async("notify_chat_event", {
@@ -333,10 +334,11 @@ export abstract class AbstractChatManager<Events extends ConversationUIEvents> {
             return;
         }
 
-        if(conversation.currentMode() === "unloaded")
+        if(conversation.currentMode() === "unloaded") {
             conversation.queryCurrentMessages();
-        else
+        } else {
             conversation.reportStateToUI();
+        }
     }
 
     @EventHandler<ConversationUIEvents>("query_conversation_history")
