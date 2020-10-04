@@ -82,15 +82,18 @@ function apply_general(container: JQuery, channel: ChannelEntry) {
     /* chat mode */
     {
         const tag = container.find(".chat-mode .value").empty();
-        if (channel.properties.channel_flag_conversation_private || channel.properties.channel_flag_password) {
+        if(channel.properties.channel_conversation_mode === 0 || channel.properties.channel_flag_password) {
             tag.text(tr("Private"));
-        } else {
-            if (channel.properties.channel_conversation_history_length == -1)
+        } else if(channel.properties.channel_conversation_mode === 1) {
+            if (channel.properties.channel_conversation_history_length == -1) {
                 tag.text(tr("Public; Semi permanent message saving"));
-            else if (channel.properties.channel_conversation_history_length == 0)
+            } else if (channel.properties.channel_conversation_history_length == 0) {
                 tag.text(tr("Public; Permanent message saving"));
-            else
+            } else {
                 tag.append(formatMessage(tr("Public; Saving last {} messages"), channel.properties.channel_conversation_history_length));
+            }
+        } else {
+            tag.text(tr("No chatting"));
         }
     }
 
