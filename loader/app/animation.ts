@@ -4,8 +4,9 @@ import {getUrlParameter} from "./loader/utils";
 
 let overlay: HTMLDivElement;
 let setupContainer: HTMLDivElement;
-let idleContainer: HTMLDivElement;
-let idleSteamContainer: HTMLDivElement;
+let idleNormalContainer: HTMLDivElement;
+let idleNormalSteamContainer: HTMLDivElement;
+let idleHalloweenContainer: HTMLDivElement;
 let loaderStageContainer: HTMLDivElement;
 
 let finalizing = false;
@@ -13,6 +14,9 @@ let initializeTimestamp;
 
 let verbose = false;
 let apngSupport = undefined;
+
+let loopInterval: number;
+let animationType: "normal" | "halloween";
 
 async function detectAPNGSupport() {
     const image = new Image();
@@ -29,10 +33,16 @@ async function detectAPNGSupport() {
 
 function initializeElements() {
     overlay = document.getElementById("loader-overlay") as HTMLDivElement;
-    if(!overlay)
+    if(!overlay) {
         throw "missing loader overlay";
+    }
 
     for(const lazyImage of [...overlay.getElementsByTagName("lazy-img")]) {
+        if(lazyImage.hasAttribute("x-animation-depend") && lazyImage.getAttribute("x-animation-depend") !== animationType) {
+            lazyImage.remove();
+            continue;
+        }
+
         const image = document.createElement("img");
         image.alt = lazyImage.getAttribute("alt");
         image.src = lazyImage.getAttribute(apngSupport ? "src-apng" : "src-gif") || lazyImage.getAttribute("src");
@@ -42,27 +52,51 @@ function initializeElements() {
     }
 
     setupContainer = overlay.getElementsByClassName("setup")[0] as HTMLDivElement;
-    if(!setupContainer)
+    if(!setupContainer) {
         throw "missing setup container";
+    }
 
-    idleContainer = overlay.getElementsByClassName("idle")[0] as HTMLDivElement;
-    if(!idleContainer)
-        throw "missing idle container";
+    idleNormalContainer = overlay.getElementsByClassName("idle animation-normal")[0] as HTMLDivElement;
+    if(!idleNormalContainer) {
+        throw "missing normal idle container";
+    }
 
-    idleSteamContainer = idleContainer.getElementsByClassName("steam")[0] as HTMLDivElement;
-    if(!idleSteamContainer)
-        throw "missing idle steam container";
+    idleHalloweenContainer = overlay.getElementsByClassName("idle animation-halloween")[0] as HTMLDivElement;
+    if(!idleHalloweenContainer) {
+        throw "missing halloween idle container";
+    }
+
+    idleNormalSteamContainer = idleNormalContainer.getElementsByClassName("steam")[0] as HTMLDivElement;
+    if(!idleNormalSteamContainer) {
+        throw "missing normal idle steam container";
+    }
 
     loaderStageContainer = overlay.getElementsByClassName("loader-stage")[0] as HTMLDivElement;
-    if(!loaderStageContainer)
+    if(!loaderStageContainer) {
         throw "missing loader stage container";
+    }
 
     setupContainer.onanimationend = setupAnimationFinished;
-    idleSteamContainer.onanimationiteration = idleSteamAnimationLooped;
+    idleHalloweenContainer.onanimationiteration = idleSteamAnimationLooped;
+    idleNormalSteamContainer.onanimationiteration = idleSteamAnimationLooped;
     overlay.onanimationend = overlayAnimationFinished;
 }
 
-export async function initialize() {
+export async function initialize(customLoadingAnimations: boolean) {
+    if(customLoadingAnimations) {
+        const now = new Date();
+        /* Note, the months start with zero */
+        if(now.getMonth() === 9) {
+            animationType = "halloween";
+        } else if(now.getMonth() === 10 && now.getDay() <= 5) {
+            animationType = "halloween";
+        }
+    }
+
+    if(!animationType) {
+        animationType = "normal";
+    }
+
     await detectAPNGSupport();
     try {
         initializeElements();
@@ -85,7 +119,7 @@ export async function initialize() {
     if(parseInt(getUrlParameter("animation-short")) === 1) {
         setupAnimationFinished();
     } else {
-        setupContainer.classList.add("visible");
+        setupContainer.classList.add("visible", animationType);
     }
 
     initializeTimestamp = Date.now();
@@ -94,6 +128,8 @@ export async function initialize() {
 
 export function abort() {
     overlay?.remove();
+    clearInterval(loopInterval);
+    loopInterval = 0;
 }
 
 export function finalize() {
@@ -102,8 +138,9 @@ export function finalize() {
     } else {
         finalizing = true;
 
-        if(loaderStageContainer)
+        if(loaderStageContainer) {
             loaderStageContainer.innerText = "app loaded successfully (" + (Date.now() - initializeTimestamp) + "ms)";
+        }
     }
 }
 
@@ -117,21 +154,30 @@ function setupAnimationFinished() {
     verbose && console.log("Entering idle animation");
 
     setupContainer.classList.remove("visible");
-    idleContainer.classList.add("visible");
+    if(animationType === "halloween") {
+        loopInterval = setInterval(() => idleSteamAnimationLooped(), 1000);
+        idleHalloweenContainer.classList.add("visible");
+    } else {
+        idleNormalContainer.classList.add("visible");
+    }
 }
 
 function idleSteamAnimationLooped() {
     verbose && console.log("Idle animation looped. Should finalize: %o", finalizing);
-    if(!finalizing)
+    if(!finalizing) {
         return;
+    }
 
+    clearInterval(loopInterval);
+    loopInterval = 0;
     overlay.classList.add("finishing");
 }
 
 function overlayAnimationFinished(event: AnimationEvent) {
     /* the text animation is the last one */
-    if(event.animationName !== "swipe-out-text")
+    if(event.animationName !== "swipe-out-text") {
         return;
+    }
 
     verbose && console.log("Animation finished");
     overlay.remove();

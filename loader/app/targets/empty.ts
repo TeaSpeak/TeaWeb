@@ -24,6 +24,6 @@ export default class implements ApplicationLoader {
             }
         });
 
-        loader.execute_managed();
+        loader.execute_managed(false);
     }
 }

@@ -1,4 +1,6 @@
-$setup-time: 80s / 24; /* 24 frames / sec; the initial sequence is 80 seconds */
+$setup-time-normal: 80s / 24; /* 24 frames / sec; the initial sequence is 80 frames */
+$setup-time-halloween: 323s / 24;
+$loop-time-halloween: 25s / 24;
 
 #loader-overlay {
 	position: absolute;
@@ -56,10 +58,16 @@ $setup-time: 80s / 24; /* 24 frames / sec; the initial sequence is 80 seconds */
 	}
 
 	.setup.visible {
-		animation: loader-initial-sequence 0s cubic-bezier(.81,.01,.65,1.16) $setup-time forwards;
+		&.normal {
+			animation: loader-initial-sequence 0s cubic-bezier(.81,.01,.65,1.16) $setup-time-normal forwards;
+		}
+
+		&.halloween {
+			animation: loader-initial-sequence 0s cubic-bezier(.81,.01,.65,1.16) $setup-time-halloween forwards;
+		}
 	}
 
-	.idle {
+	.idle.animation-normal {
 		img {
 			position: absolute;
 		}
@@ -172,6 +180,12 @@ $setup-time: 80s / 24; /* 24 frames / sec; the initial sequence is 80 seconds */
 	}
 }
 
+@keyframes animation-nothing {
+	to {
+		background-position: 0 -6250px;
+	}
+}
+
 @keyframes overlay-fade {
 	to {
 		opacity: 0;
@@ -183,7 +197,7 @@ $setup-time: 80s / 24; /* 24 frames / sec; the initial sequence is 80 seconds */
 	display: block !important;
 	opacity: 0;
 
-	animation: loader-setup-timeout 0s ease-in $setup-time forwards;
+	animation: loader-setup-timeout 0s ease-in $setup-time-normal forwards;
 
 	.error::before {
 		content: 'Failed to startup loader!';

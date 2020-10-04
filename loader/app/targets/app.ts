@@ -149,6 +149,6 @@ loader.register_task(loader.Stage.SETUP, {
 
 export default class implements ApplicationLoader {
     execute() {
-        loader.execute_managed();
+        loader.execute_managed(true);
     }
 }

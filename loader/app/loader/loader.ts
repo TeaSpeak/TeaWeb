@@ -187,8 +187,8 @@ export function setCurrentTaskName(taskId: number, name: string) {
     Animation.updateState(currentStage, runningTasks.map(e => e.name));
 }
 
-export async function execute() {
-    if(!await Animation.initialize())
+export async function execute(customLoadingAnimations: boolean) {
+    if(!await Animation.initialize(customLoadingAnimations))
         return;
 
     loader_cache_tag();
@@ -301,8 +301,8 @@ export async function execute() {
     Animation.finalize();
 }
 
-export function execute_managed() {
-    execute().then(() => {
+export function execute_managed(customLoadingAnimations: boolean) {
+    execute(customLoadingAnimations).then(() => {
         if(config.verbose) {
             let message;
             if(typeof(window.tr) !== "undefined")

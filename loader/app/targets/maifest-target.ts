@@ -65,6 +65,6 @@ export default class implements ApplicationLoader {
             priority: 10
         });
 
-        loader.execute_managed();
+        loader.execute_managed(false);
     }
 }

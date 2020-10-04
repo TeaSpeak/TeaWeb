@@ -75,12 +75,16 @@ var initial_css;
         <div class="loader" id="loader-overlay">
             <div class="container">
                 <div class="setup">
-                    <lazy-img src="img/loader/initial-sequence.gif" alt="initial loading sequence"></lazy-img>
+                    <lazy-img src="img/loader/initial-sequence.gif" alt="initial loading sequence" x-animation-depend="normal"></lazy-img>
+                    <lazy-img src="img/loader/halloween-initial-sequence.gif" alt="initial loading sequence" x-animation-depend="halloween"></lazy-img>
                 </div>
-                <div class="idle">
-                    <lazy-img class="bowl" src="img/loader/bowl.png" alt="bowl"></lazy-img>
-                    <lazy-img class="text" src="img/loader/text.png" alt="TeaSpeak"></lazy-img>
+                <div class="idle animation-normal">
+                    <lazy-img class="bowl" src="img/loader/bowl.png" alt="bowl" x-animation-depend="normal"></lazy-img>
+                    <lazy-img class="text" src="img/loader/text.png" alt="TeaSpeak" x-animation-depend="normal"></lazy-img>
                     <div class="steam"></div>
+                </div>
+                <div class="idle animation-halloween">
+                    <lazy-img src="img/loader/halloween-loop.gif" alt="halloween loop" x-animation-depend="halloween"></lazy-img>
                 </div>
             </div>
 
