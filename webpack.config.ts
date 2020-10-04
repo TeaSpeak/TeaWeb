@@ -240,7 +240,7 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
         filename: isDevelopment ? "[name].[contenthash].js" : "[contenthash].js",
         chunkFilename: isDevelopment ? "[name].[contenthash].js" : "[contenthash].js",
         path: path.resolve(__dirname, 'dist'),
-        publicPath: "/js/"
+        publicPath: "js/"
     },
     performance: {
         hints: false

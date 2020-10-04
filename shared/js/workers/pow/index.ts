@@ -1,3 +1,6 @@
+// @ts-ignore
+__webpack_public_path__ = './';
+
 declare function postMessage(message: any): void;
 
 const prefix = "[POWWorker] ";
