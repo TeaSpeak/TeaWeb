@@ -1,3 +1,6 @@
+// @ts-ignore
+__webpack_public_path__ = './';
+
 import {WorkerHandler} from "tc-shared/workers/WorkerHandler";
 import {
     AWCommand,
