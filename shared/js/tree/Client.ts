@@ -1233,8 +1233,9 @@ export class MusicClientEntry extends ClientEntry {
                 name: tr("Change remote volume"),
                 callback: () => {
                     let max_volume = this.channelTree.client.permissions.neededPermission(PermissionType.I_CLIENT_MUSIC_CREATE_MODIFY_MAX_VOLUME).value;
-                    if(max_volume < 0)
+                    if(max_volume < 0) {
                         max_volume = 100;
+                    }
 
                     spawnMusicBotVolumeChange(this, max_volume / 100);
                 }

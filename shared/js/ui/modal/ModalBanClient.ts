@@ -75,13 +75,16 @@ export function spawnBanClient(client: ConnectionHandler, entries: BanEntry | Ba
                             input_duration_value.firstParent(".input-boxed").removeClass("is-invalid");
                         }
 
-                        if (max != -1)
+                        if (max != -1) {
                             tooltip_duration_max.html(tr("You're allowed to ban a maximum of ") + "<b>" + max + " " + duration_data[type][max == 1 ? "1-text" : "text"] + "</b>");
-                        else
+                        } else {
                             tooltip_duration_max.html(tr("You're allowed to ban <b>permanent</b>."));
+                        }
                     } else {
-                        if (value && !Number.isNaN(value))
+                        if (value && !Number.isNaN(value)) {
                             input_duration_value.attr("x-saved-value", value);
+                        }
+
                         input_duration_value.attr("placeholder", tr("for ever")).val(null);
                         tooltip_duration_max.html(tr("You're allowed to ban <b>permanent</b>."));
                     }

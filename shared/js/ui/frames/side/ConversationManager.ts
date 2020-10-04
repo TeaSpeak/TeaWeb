@@ -49,14 +49,17 @@ export class Conversation extends AbstractChat<ConversationUIEvents> {
                     cid: this.conversationId
                 } as any;
 
-                if(typeof criteria.begin === "number")
+                if(typeof criteria.begin === "number") {
                     requestObject.timestamp_begin = criteria.begin;
+                }
 
-                if(typeof criteria.end === "number")
+                if(typeof criteria.end === "number") {
                     requestObject.timestamp_end = criteria.end;
+                }
 
-                if(typeof criteria.limit === "number")
+                if(typeof criteria.limit === "number") {
                     requestObject.message_count = criteria.limit;
+                }
 
                 return this.handle.connection.serverConnection.send_command("conversationhistory", requestObject, { flagset: [ "merge" ], process_result: false }).then(() => {
                     resolve({ status: "success", events: this.historyQueryResponse.map(e => {
@@ -198,11 +201,13 @@ export class Conversation extends AbstractChat<ConversationUIEvents> {
         }
 
         const timestamp = parseInt(info["timestamp"]);
-        if(isNaN(timestamp))
+        if(isNaN(timestamp)) {
             return;
+        }
 
-        if(timestamp > this.lastReadMessage)
+        if(timestamp > this.lastReadMessage) {
             this.setUnreadTimestamp(this.lastReadMessage);
+        }
     }
 
     public handleIncomingMessage(message: ChatMessage, isOwnMessage: boolean) {
@@ -277,7 +282,7 @@ export class Conversation extends AbstractChat<ConversationUIEvents> {
     }
 
     sendMessage(text: string) {
-        this.doSendMessage(text, this.conversationId ? 2 : 3, this.conversationId);
+        this.doSendMessage(text, this.conversationId ? 2 : 3, this.conversationId).then(() => {});
     }
 }
 
@@ -344,7 +349,7 @@ export class ConversationManager extends AbstractChatManager<ConversationUIEvent
             this.queryUnreadFlags();
         }));
 
-        this.uiEvents.on("notify_destroy", this.connection.channelTree.events.on("notify_channel_updated", event => {
+        this.uiEvents.on("notify_destroy", this.connection.channelTree.events.on("notify_channel_updated", _event => {
             /* TODO private flag! */
         }));
     }
@@ -403,9 +408,6 @@ export class ConversationManager extends AbstractChatManager<ConversationUIEvent
     }
 
     queryUnreadFlags() {
-        /* FIXME: Test for old TeaSpeak servers which don't support this */
-        return;
-
         const commandData = this.connection.channelTree.channels.map(e => { return { cid: e.channelId, cpw: e.cached_password() }});
         this.connection.serverConnection.send_command("conversationfetch", commandData).catch(error => {
             log.warn(LogCategory.CHAT, tr("Failed to query conversation indexes: %o"), error);
@@ -465,7 +467,7 @@ export class ConversationManager extends AbstractChatManager<ConversationUIEvent
     }
 
     @EventHandler<ConversationUIEvents>("query_selected_chat")
-    private handleQuerySelectedChat(event: ConversationUIEvents["query_selected_chat"]) {
+    private handleQuerySelectedChat() {
         this.uiEvents.fire_async("notify_selected_chat", { chatId: isNaN(this.selectedConversation_) ? "unselected" : this.selectedConversation_ + ""})
     }
 

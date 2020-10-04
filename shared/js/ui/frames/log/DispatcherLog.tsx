@@ -7,6 +7,7 @@ import {BBCodeRenderer} from "tc-shared/text/bbcode";
 import {format_time} from "tc-shared/ui/frames/chat";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {XBBCodeRenderer} from "vendor/xbbcode/react";
+import {ChannelTag, ClientTag} from "tc-shared/ui/tree/EntryTags";
 
 const cssStyle = require("./DispatcherLog.scss");
 const cssStyleRenderer = require("./Renderer.scss");
@@ -26,18 +27,23 @@ export function getRegisteredLogDispatchers() : TypeInfo[] {
     return Object.keys(dispatchers) as any;
 }
 
-/* TODO: Enable context menu */
 const ClientRenderer = (props: { client: EventClient, handlerId: string, braces?: boolean }) => (
-    <div className={cssStyle.clientEntry}>
-        {props.client.client_name}
-    </div>
+    <ClientTag
+        handlerId={props.handlerId}
+        clientName={props.client.client_name}
+        clientId={props.client.client_id}
+        clientUniqueId={props.client.client_unique_id}
+        className={cssStyle.clientEntry}
+    />
 );
 
-/* TODO: Enable context menu */
 const ChannelRenderer = (props: { channel: EventChannelData, handlerId: string, braces?: boolean }) => (
-    <div className={cssStyle.channelEntry}>
-        {props.channel.channel_name}
-    </div>
+    <ChannelTag
+        handlerId={props.handlerId}
+        channelName={props.channel.channel_name}
+        channelId={props.channel.channel_id}
+        className={cssStyle.channelEntry}
+    />
 );
 
 registerDispatcher(EventType.ERROR_CUSTOM, data => <div className={cssStyleRenderer.errorMessage}>{data.message}</div>);

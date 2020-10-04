@@ -72,8 +72,9 @@ const ConversationEntryInfo = React.memo((props: { events: Registry<PrivateConve
     const isTyping = Date.now() - kTypingTimeout < typingTimestamp;
 
     useEffect(() => {
-        if(!isTyping)
+        if(!isTyping) {
             return;
+        }
 
         const timeout = setTimeout(() => {
             setTypingTimestamp(0);
