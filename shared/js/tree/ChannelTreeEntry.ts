@@ -14,7 +14,7 @@ export abstract class ChannelTreeEntry<Events extends ChannelTreeEntryEvents> {
     protected unread_: boolean = false;
 
     protected constructor() {
-        this.uniqueEntryId = treeEntryIdCounter++;
+        this.uniqueEntryId = ++treeEntryIdCounter;
     }
 
     /* called from the channel tree */
