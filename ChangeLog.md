@@ -1,4 +1,8 @@
 # Changelog:
+* **05.10.20**
+    - Reworked the top menu bar (now properly updates)
+    - Recoded the top menu bar renderer for the web client
+    
 * **04.10.20**
     - Fixed invalid channel tree unique id assignment for the initial server entry ([#F2986](https://forum.teaspeak.de/index.php?threads/2986))
     
