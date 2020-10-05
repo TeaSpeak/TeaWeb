@@ -13,7 +13,6 @@ import * as stats from "./stats";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
 import {defaultRecorder, RecorderProfile, setDefaultRecorder} from "tc-shared/voice/RecorderProfile";
 import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
-import * as top_menu from "./ui/frames/MenuBarOld";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {openModalNewcomer} from "tc-shared/ui/modal/ModalNewcomer";

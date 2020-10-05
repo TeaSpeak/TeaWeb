@@ -14,11 +14,11 @@ export type MenuEntryClickable = {
     visible?: boolean;
 
     click?: () => void;
+    icon?: RemoteIcon | ClientIcon;
 }
 
 export type ContextMenuEntryNormal = {
     type: "normal",
-    icon?: RemoteIcon | ClientIcon,
     subMenu?: ContextMenuEntry[],
 } & MenuEntryClickable;
 

@@ -18,7 +18,6 @@ import * as log from "../../log";
 import {LogCategory} from "../../log";
 import * as i18nc from "../../i18n/country";
 import {formatMessage} from "../../ui/frames/chat";
-import * as top_menu from "../frames/MenuBarOld";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 
 export function spawnBookmarkModal() {
@@ -167,7 +166,7 @@ export function spawnBookmarkModal() {
                     );
 
                     container.appendTo(container_bookmarks);
-                    container.on('click', event => {
+                    container.on('click', () => {
                         if (selected_bookmark === entry)
                             return;
 
@@ -213,7 +212,7 @@ export function spawnBookmarkModal() {
 
             /* buttons */
             {
-                button_delete.on('click', event => {
+                button_delete.on('click', () => {
                     if (!selected_bookmark) return;
 
                     if (selected_bookmark.type === BookmarkType.DIRECTORY && (selected_bookmark as DirectoryBookmark).content.length > 0) {
@@ -231,8 +230,8 @@ export function spawnBookmarkModal() {
                     }
                 });
 
-                button_add_folder.on('click', event => {
-                    createInputModal(tr("Enter a folder name"), tr("Enter the folder name"), text => {
+                button_add_folder.on('click', () => {
+                    createInputModal(tr("Enter a folder name"), tr("Enter the folder name"), () => {
                         return true;
                     }, result => {
                         if (result) {
@@ -250,8 +249,8 @@ export function spawnBookmarkModal() {
                     }).open();
                 });
 
-                button_add_bookmark.on('click', event => {
-                    createInputModal(tr("Enter a bookmark name"), tr("Enter the bookmark name"), text => {
+                button_add_bookmark.on('click', () => {
+                    createInputModal(tr("Enter a bookmark name"), tr("Enter the bookmark name"), () => {
                         return true;
                     }, result => {
                         if (result) {
@@ -272,17 +271,17 @@ export function spawnBookmarkModal() {
                     }).open();
                 });
 
-                button_connect_tab.on('click', event => {
+                button_connect_tab.on('click', () => {
                     boorkmak_connect(selected_bookmark as Bookmark, true);
                     modal.close();
                 }).toggle(!settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION));
 
-                button_connect.on('click', event => {
+                button_connect.on('click', () => {
                     boorkmak_connect(selected_bookmark as Bookmark, false);
                     modal.close();
                 });
 
-                button_duplicate.on('click', event => {
+                button_duplicate.on('click', () => {
                     createInputModal(tr("Enter a bookmark name"), tr("Enter the bookmark name for the duplicate"), text => text.length > 0, result => {
                         if (result) {
                             if (!selected_bookmark) return;
@@ -313,7 +312,7 @@ export function spawnBookmarkModal() {
                     }
                 });
 
-                input_server_address.on('change keydown', event => {
+                input_server_address.on('change keydown', () => {
                     const address = input_server_address.val() as string;
                     const valid = !!address.match(Regex.IP_V4) || !!address.match(Regex.IP_V6) || !!address.match(Regex.DOMAIN);
                     input_server_address.firstParent(".input-boxed").toggleClass("is-invalid", !valid);
@@ -336,13 +335,13 @@ export function spawnBookmarkModal() {
                     }
                 });
 
-                input_server_password.on("change keydown", event => {
+                input_server_password.on("change keydown", () => {
                     const password = input_server_password.val() as string;
                     (selected_bookmark as Bookmark).server_properties.server_password = password;
                     save_bookmark(selected_bookmark);
                 });
 
-                input_connect_profile.on('change', event => {
+                input_connect_profile.on('change', () => {
                     const id = input_connect_profile.val() as string;
                     const profile = availableConnectProfiles().find(e => e.id === id);
                     if (profile) {
@@ -394,7 +393,7 @@ export function spawnBookmarkModal() {
             update_bookmark_list(undefined);
             update_buttons();
 
-            template.find(".button-close").on('click', event => modal.close());
+            template.find(".button-close").on('click', () => modal.close());
             return template.children();
         },
         footer: undefined,

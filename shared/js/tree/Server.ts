@@ -11,7 +11,6 @@ import {createServerModal} from "../ui/modal/ModalServerEdit";
 import {spawnIconSelect} from "../ui/modal/ModalIconSelect";
 import {spawnAvatarList} from "../ui/modal/ModalAvatarList";
 import {connection_log} from "../ui/modal/ModalConnect";
-import * as top_menu from "../ui/frames/MenuBarOld";
 import {Registry} from "../events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 
@@ -281,7 +280,7 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
             log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Server update properties", entries);
         }
 
-        let update_bannner = false, update_button = false, update_bookmarks = false;
+        let update_bannner = false, update_bookmarks = false;
         for(let variable of variables) {
             JSON.map_field_to(this.properties, variable.value, variable.key);
 

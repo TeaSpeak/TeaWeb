@@ -1,6 +1,5 @@
 import {ConnectionHandler, DisconnectReason} from "./ConnectionHandler";
 import {Registry} from "./events";
-import * as top_menu from "./ui/frames/MenuBarOld";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 

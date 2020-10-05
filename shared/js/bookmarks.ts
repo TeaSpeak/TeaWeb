@@ -4,7 +4,6 @@ import {guid} from "./crypto/uid";
 import {createErrorModal, createInfoModal, createInputModal} from "./ui/elements/Modal";
 import {defaultConnectProfile, findConnectProfile} from "./profiles/ConnectionProfile";
 import {spawnConnectModal} from "./ui/modal/ModalConnect";
-import * as top_menu from "./ui/frames/MenuBarOld";
 import {ConnectionHandler} from "./ConnectionHandler";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {Registry} from "tc-shared/events";
