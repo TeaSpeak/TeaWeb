@@ -374,7 +374,6 @@ export type DependSource = {
 export type SourcePath = string | DependSource | string[];
 
 export const scripts = script_loader;
-export const style = style_loader;
 export const templates = template_loader;
 
 /* Hello World message */
