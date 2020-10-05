@@ -1,11 +1,13 @@
 import {ConnectionHandler} from "../ConnectionHandler";
 import {Registry} from "../events";
 
+export type PermissionEditorTab = "groups-server" | "groups-channel" | "channel" | "client" | "client-channel";
 export interface ClientGlobalControlEvents {
     /* open a basic window */
     action_open_window: {
         window:
             "settings" | /* use action_open_window_settings! */
+            "about" |
             "settings-registry" |
             "css-variable-editor" |
             "bookmark-manage" |
@@ -29,10 +31,15 @@ export interface ClientGlobalControlEvents {
     /* some more specific window openings */
     action_open_window_connect: {
         newTab: boolean
-    }
+    },
 
     action_open_window_settings: {
         defaultCategory?: string
+    },
+
+    action_open_window_permissions: {
+        connection?: ConnectionHandler,
+        defaultTab: PermissionEditorTab
     }
 }
 

@@ -32,10 +32,10 @@ import {spawnGroupCreate} from "tc-shared/ui/modal/ModalGroupCreate";
 import {spawnModalGroupPermissionCopy} from "tc-shared/ui/modal/ModalGroupPermissionCopy";
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {PermissionEditorTab} from "tc-shared/events/GlobalEvents";
 
 const cssStyle = require("./ModalPermissionEditor.scss");
 
-export type PermissionEditorTab = "groups-server" | "groups-channel" | "channel" | "client" | "client-channel";
 export type PermissionEditorSubject =
     "groups-server"
     | "groups-channel"

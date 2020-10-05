@@ -11,7 +11,7 @@ import {createServerModal} from "../ui/modal/ModalServerEdit";
 import {spawnIconSelect} from "../ui/modal/ModalIconSelect";
 import {spawnAvatarList} from "../ui/modal/ModalAvatarList";
 import {connection_log} from "../ui/modal/ModalConnect";
-import * as top_menu from "../ui/frames/MenuBar";
+import * as top_menu from "../ui/frames/MenuBarOld";
 import {Registry} from "../events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 
@@ -311,7 +311,6 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
                     e.last_icon_server_id = this.properties.virtualserver_unique_identifier;
                 });
                 bookmarks.save_bookmark();
-                top_menu.rebuild_bookmarks();
             }
         }
 

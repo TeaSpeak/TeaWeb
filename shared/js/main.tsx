@@ -13,7 +13,7 @@ import * as stats from "./stats";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
 import {defaultRecorder, RecorderProfile, setDefaultRecorder} from "tc-shared/voice/RecorderProfile";
 import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
-import * as top_menu from "./ui/frames/MenuBar";
+import * as top_menu from "./ui/frames/MenuBarOld";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {openModalNewcomer} from "tc-shared/ui/modal/ModalNewcomer";
@@ -29,6 +29,7 @@ import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMe
 import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import {checkForUpdatedApp} from "tc-shared/update";
 import {setupJSRender} from "tc-shared/ui/jsrender";
+import {ConnectRequestData} from "tc-shared/ipc/ConnectHandler";
 import "svg-sprites/client-icons";
 
 /* required import for init */
@@ -38,11 +39,11 @@ import "./ui/elements/ContextDivider";
 import "./ui/elements/Tab";
 import "./connection/CommandHandler";
 import "./connection/ConnectionBase";
-import {ConnectRequestData} from "tc-shared/ipc/ConnectHandler";
 import "./video-viewer/Controller";
 import "./profiles/ConnectionProfile";
 import "./update/UpdaterWeb";
 import "./file/LocalIcons";
+import "./ui/frames/menu-bar/MainMenu";
 
 import {defaultConnectProfile, findConnectProfile} from "tc-shared/profiles/ConnectionProfile";
 import {server_connections} from "tc-shared/ConnectionManager";
@@ -189,7 +190,7 @@ function main() {
     });
     window.removeLoaderContextMenuHook();
 
-    top_menu.initialize();
+    //top_menu.initialize();
 
     const initial_handler = server_connections.spawn_server_connection();
     initial_handler.acquireInputHardware().then(() => {});

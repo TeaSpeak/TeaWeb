@@ -18,7 +18,7 @@ import * as log from "../../log";
 import {LogCategory} from "../../log";
 import * as i18nc from "../../i18n/country";
 import {formatMessage} from "../../ui/frames/chat";
-import * as top_menu from "../frames/MenuBar";
+import * as top_menu from "../frames/MenuBarOld";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 
 export function spawnBookmarkModal() {
@@ -402,9 +402,5 @@ export function spawnBookmarkModal() {
     });
 
     modal.htmlTag.dividerfy().find(".modal-body").addClass("modal-bookmarks");
-    modal.close_listener.push(() => {
-        top_menu.rebuild_bookmarks();
-    });
-
     modal.open();
 }

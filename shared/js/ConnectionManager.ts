@@ -1,6 +1,6 @@
 import {ConnectionHandler, DisconnectReason} from "./ConnectionHandler";
 import {Registry} from "./events";
-import * as top_menu from "./ui/frames/MenuBar";
+import * as top_menu from "./ui/frames/MenuBarOld";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 
@@ -107,8 +107,6 @@ export class ConnectionManager {
         });
         old_handler?.events().fire("notify_visibility_changed", { visible: false });
         handler?.events().fire("notify_visibility_changed", { visible: true });
-
-        top_menu.update_state(); //FIXME: Top menu should listen to our events!
     }
 
     findConnection(handlerId: string) : ConnectionHandler | undefined {

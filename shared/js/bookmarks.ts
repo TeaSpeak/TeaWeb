@@ -4,7 +4,7 @@ import {guid} from "./crypto/uid";
 import {createErrorModal, createInfoModal, createInputModal} from "./ui/elements/Modal";
 import {defaultConnectProfile, findConnectProfile} from "./profiles/ConnectionProfile";
 import {spawnConnectModal} from "./ui/modal/ModalConnect";
-import * as top_menu from "./ui/frames/MenuBar";
+import * as top_menu from "./ui/frames/MenuBarOld";
 import {ConnectionHandler} from "./ConnectionHandler";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {Registry} from "tc-shared/events";
@@ -257,7 +257,6 @@ export function add_server_to_bookmarks(server: ConnectionHandler) {
                 }, name);
                 save_bookmark(bookmark);
 
-                top_menu.rebuild_bookmarks();
                 createInfoModal(tr("Server added"), tr("Server has been successfully added to your bookmarks.")).open();
             }
         }).open();

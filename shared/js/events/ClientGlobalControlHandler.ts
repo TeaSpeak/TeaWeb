@@ -15,6 +15,7 @@ import {tr} from "../i18n/localize";
 import {spawnGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-editor/Controller";
 import {spawnModalCssVariableEditor} from "tc-shared/ui/modal/css-editor/Controller";
 import {server_connections} from "tc-shared/ConnectionManager";
+import {spawnAbout} from "tc-shared/ui/modal/ModalAbout";
 
 /*
 function initialize_sounds(event_registry: Registry<ClientGlobalControlEvents>) {
@@ -150,6 +151,10 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                 spawnGlobalSettingsEditor();
                 break;
 
+            case "about":
+                spawnAbout();
+                break;
+
             default:
                 console.warn(tr("Received open window event for an unknown window: %s"), event.window);
         }
@@ -163,5 +168,9 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
 
     event_registry.on("action_open_window_settings", event => {
         spawnSettingsModal(event.defaultCategory);
+    });
+
+    event_registry.on("action_open_window_permissions", event => {
+        spawnPermissionEditorModal(event.connection ? event.connection : server_connections.active_connection(), event.defaultTab);
     });
 }
