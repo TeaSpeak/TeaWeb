@@ -132,8 +132,8 @@ export function abort() {
     loopInterval = 0;
 }
 
-export function finalize() {
-    if(getUrlParameter("loader-abort") === "1") {
+export function finalize(abortAnimation: boolean) {
+    if(abortAnimation) {
         abort();
     } else {
         finalizing = true;

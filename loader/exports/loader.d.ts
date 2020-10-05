@@ -1,4 +1,5 @@
 export interface Config {
+    abortAnimationOnFinish: boolean;
     loader_groups: boolean;
     verbose: boolean;
     error: boolean;

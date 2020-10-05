@@ -326,6 +326,7 @@ const task_teaweb_starter: loader.Task = {
                 } else
                     $(document).one('click', () => aplayer.initializeFromGesture());
             }
+            loader.config.abortAnimationOnFinish = settings.static_global(Settings.KEY_LOADER_ANIMATION_ABORT);
         } catch (ex) {
             console.error(ex.stack);
             if(ex instanceof ReferenceError || ex instanceof TypeError)

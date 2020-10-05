@@ -498,6 +498,13 @@ export class Settings extends StaticSettings {
         valueType: "boolean",
     };
 
+    static readonly KEY_LOADER_ANIMATION_ABORT: ValuedSettingsKey<boolean> = {
+        key: 'loader_animation_abort',
+        defaultValue: false,
+        description: 'Abort the loader animation when the app has been finished loading',
+        valueType: "boolean",
+    };
+
     static readonly FN_LOG_ENABLED: (category: string) => SettingsKey<boolean> = category => {
         return {
             key: "log." + category.toLowerCase() + ".enabled",

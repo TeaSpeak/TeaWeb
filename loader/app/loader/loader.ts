@@ -2,6 +2,7 @@ import * as script_loader from "./script_loader";
 import * as style_loader from "./style_loader";
 import * as template_loader from "./template_loader";
 import * as Animation from "../animation";
+import {getUrlParameter} from "./utils";
 
 declare global {
     interface Window {
@@ -27,13 +28,15 @@ export interface Config {
     error: boolean;
 
     baseUrl: string;
+    abortAnimationOnFinish: boolean;
 }
 
 export let config: Config = {
     loader_groups: false,
     verbose: false,
     error: true,
-    baseUrl: "./"
+    baseUrl: "./",
+    abortAnimationOnFinish: getUrlParameter("loader-abort") === "1"
 };
 
 export type Task = {
@@ -298,7 +301,7 @@ export async function execute(customLoadingAnimations: boolean) {
     if(config.verbose)
         console.debug("[loader] finished loader. (Total time: %dms)", Date.now() - load_begin);
 
-    Animation.finalize();
+    Animation.finalize(config.abortAnimationOnFinish);
 }
 
 export function execute_managed(customLoadingAnimations: boolean) {
