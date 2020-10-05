@@ -1,5 +1,4 @@
 import * as script_loader from "./script_loader";
-import * as style_loader from "./style_loader";
 import * as template_loader from "./template_loader";
 import * as Animation from "../animation";
 import {getUrlParameter} from "./utils";
