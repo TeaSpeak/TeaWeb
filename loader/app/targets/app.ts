@@ -97,38 +97,18 @@ loader.register_task(loader.Stage.SETUP, {
     name: "page setup",
     function: async () => {
         const body = document.body;
-        /* top menu */
-        {
-            const container = document.createElement("div");
-            container.setAttribute('id', "top-menu-bar");
-            body.append(container);
-        }
+
         /* template containers */
         {
             const container = document.createElement("div");
             container.setAttribute('id', "templates");
             body.append(container);
         }
+
         /* sounds container */
         {
             const container = document.createElement("div");
             container.setAttribute('id', "sounds");
-            body.append(container);
-        }
-        /* mouse move container */
-        {
-            const container = document.createElement("div");
-            container.setAttribute('id', "mouse-move");
-
-            body.append(container);
-        }
-        /* tooltip container */
-        {
-            const container = document.createElement("div");
-            container.setAttribute('id', "global-tooltip");
-
-            container.append(document.createElement("a"));
-
             body.append(container);
         }
     },

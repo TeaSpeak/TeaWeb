@@ -28,13 +28,6 @@ export default class implements ApplicationLoader {
             function: async () => {
                 const body = document.body;
 
-                /* top menu */
-                {
-                    const container = document.createElement("div");
-                    container.setAttribute('id', "top-menu-bar");
-                    body.append(container);
-                }
-
                 /* template containers */
                 {
                     const container = document.createElement("div");
