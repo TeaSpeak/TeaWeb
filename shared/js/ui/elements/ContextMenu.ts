@@ -130,7 +130,7 @@ class LegacyBridgeContextMenuProvider implements ContextMenuProvider {
 
     spawn_context_menu(x: number, y: number, ...entries: MenuEntry[]) {
         const closeCallbacks = [];
-        spawnContextMenu({ pageX: x, pageY: y }, entries.map(e => LegacyBridgeContextMenuProvider.mapEntry(e, closeCallbacks)).filter(e => !!e), () => closeCallbacks.forEach(callback => callback()));
+        spawnContextMenu({ pageX: x, pageY: y }, entries.map(e => LegacyBridgeContextMenuProvider.mapEntry(e, closeCallbacks)).filter(e => !!e), () => closeCallbacks.filter(e => typeof e === "function").forEach(callback => callback()));
     }
 }
 
