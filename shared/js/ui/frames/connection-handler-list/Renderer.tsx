@@ -23,7 +23,7 @@ const ConnectionHandler = React.memo((props: { handlerId: string, mode: Connecti
     const events = useContext(Events);
 
     const [ status, setStatus ] = useState<HandlerStatus | "loading">(() => {
-        events.fire_async("query_handler_status", { handlerId: props.handlerId });
+        events.fire_react("query_handler_status", { handlerId: props.handlerId });
         return "loading";
     });
 
@@ -140,7 +140,7 @@ const MoveableConnectionHandler = (props: { handlerId: string, mode: ConnectionH
             refContainer.current.removeEventListener("mousedown", mouseDownListener);
             detachListener();
         }
-    });
+    }, []);
 
     return <ConnectionHandler handlerId={props.handlerId} mode={props.mode} refContainer={refContainer} />
 };
@@ -360,10 +360,10 @@ const ScrollMenu = (props: { shown: boolean }) => {
 
     return (
         <div className={cssStyle.containerScroll + " " + (props.shown ? cssStyle.shown : "")}>
-            <div className={cssStyle.buttonScroll + " " + (!scrollLeft ? cssStyle.disabled : "")} onClick={() => scrollLeft && events.fire_async("action_scroll", { direction: "left" })}>
+            <div className={cssStyle.buttonScroll + " " + (!scrollLeft ? cssStyle.disabled : "")} onClick={() => scrollLeft && events.fire_react("action_scroll", { direction: "left" })}>
                 <ClientIconRenderer icon={ClientIcon.ArrowLeft} />
             </div>
-            <div className={cssStyle.buttonScroll + " " + (!scrollRight ? cssStyle.disabled : "")} onClick={() => scrollRight && events.fire_async("action_scroll", { direction: "right" })}>
+            <div className={cssStyle.buttonScroll + " " + (!scrollRight ? cssStyle.disabled : "")} onClick={() => scrollRight && events.fire_react("action_scroll", { direction: "right" })}>
                 <ClientIconRenderer icon={ClientIcon.ArrowRight} />
             </div>
         </div>
@@ -385,7 +385,7 @@ export const ConnectionHandlerList = (props: { events: Registry<ConnectionListUI
         const container = refHandlerContainer.current;
         if(!container) { return; }
 
-        props.events.fire_async("notify_scroll_status", { right: Math.ceil(scrollLeft + container.clientWidth + 2) < container.scrollWidth, left: scrollLeft !== 0 });
+        props.events.fire_react("notify_scroll_status", { right: Math.ceil(scrollLeft + container.clientWidth + 2) < container.scrollWidth, left: scrollLeft !== 0 });
     }
 
     useEffect(() => {
@@ -412,9 +412,9 @@ export const ConnectionHandlerList = (props: { events: Registry<ConnectionListUI
 
             let scrollShown = refScrollShown.current;
             if(scrollShown && !shouldScroll) {
-                props.events.fire_async("notify_scroll_status", { left: false, right: false });
+                props.events.fire_react("notify_scroll_status", { left: false, right: false });
             } else if(!scrollShown && shouldScroll) {
-                props.events.fire_async("notify_scroll_status", { left: false, right: true });
+                props.events.fire_react("notify_scroll_status", { left: false, right: true });
             } else {
                 return;
             }
