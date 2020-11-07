@@ -517,7 +517,7 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
                             /* only load history when we're in an upwards scroll move */
                             if(this.scrollOffset === "bottom" || this.scrollOffset > top) {
                                 this.scrollHistoryAutoLoadThrottle = Date.now() + 500; /* don't spam events */
-                                this.props.events.fire_async("query_conversation_history", { chatId: this.currentChatId, timestamp: firstMessageTimestamp });
+                                this.props.events.fire_react("query_conversation_history", { chatId: this.currentChatId, timestamp: firstMessageTimestamp });
                             }
                         }
 

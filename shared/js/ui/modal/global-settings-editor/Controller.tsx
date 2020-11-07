@@ -3,7 +3,6 @@ import {ModalGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-edit
 import {Registry} from "tc-shared/events";
 import {ModalGlobalSettingsEditorEvents, Setting} from "tc-shared/ui/modal/global-settings-editor/Definitions";
 import {ConfigValueTypes, settings, Settings, SettingsKey} from "tc-shared/settings";
-import {key} from "tc-shared/KeyControl";
 
 export function spawnGlobalSettingsEditor() {
     const events = new Registry<ModalGlobalSettingsEditorEvents>();
@@ -31,7 +30,7 @@ function initializeController(events: Registry<ModalGlobalSettingsEditorEvents>)
             });
         }
 
-        events.fire_async("notify_settings", { settings: settingsList });
+        events.fire_react("notify_settings", { settings: settingsList });
     });
 
     events.on("action_select_setting", event => {
@@ -70,12 +69,12 @@ function initializeController(events: Registry<ModalGlobalSettingsEditorEvents>)
         /* the change will may already trigger a notify_setting_value, but just to ensure we're fiering it later as well */
         settings.changeGlobal(setting, event.value);
 
-        events.fire_async("notify_setting_value", { setting: event.setting, value: event.value });
+        events.fire_react("notify_setting_value", { setting: event.setting, value: event.value });
     });
 
     events.on("notify_destroy", settings.events.on("notify_setting_changed", event => {
         if(event.mode === "global") {
-            events.fire_async("notify_setting_value", { setting: event.setting, value: event.newValue });
+            events.fire_react("notify_setting_value", { setting: event.setting, value: event.newValue });
         }
     }));
 }

@@ -1,8 +1,7 @@
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {MenuEntryType} from "tc-shared/ui/elements/ContextMenu";
 import * as log from "tc-shared/log";
-import {LogCategory, logWarn} from "tc-shared/log";
-import {Settings, settings} from "tc-shared/settings";
+import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {PermissionType} from "tc-shared/permission/PermissionType";
 import {SpecialKey} from "tc-shared/PPTListener";
 import {Sound} from "tc-shared/sound/Sounds";
@@ -384,8 +383,8 @@ export class ChannelTree {
         this.reset();
     }
 
-    tag_tree() : JQuery {
-        return this.tagContainer;
+    tag_tree() : HTMLDivElement {
+        return this.tagContainer[0] as HTMLDivElement;
     }
 
     channelsOrdered() : ChannelEntry[] {
@@ -598,33 +597,50 @@ export class ChannelTree {
             logWarn(LogCategory.CHANNEL, tr("Deleting client %s from channel tree which hasn't a channel."), client.clientId());
         }
 
-        const voice_connection = this.client.serverConnection.getVoiceConnection();
+        const voiceConnection = this.client.serverConnection.getVoiceConnection();
         if(client.getVoiceClient()) {
-            const voiceClient = client.getVoiceClient();
+            voiceConnection.unregisterVoiceClient(client.getVoiceClient());
             client.setVoiceClient(undefined);
+        }
 
-            if(!voice_connection) {
-                log.warn(LogCategory.VOICE, tr("Deleting client with a voice handle, but we haven't a voice connection!"));
-            } else {
-                voice_connection.unregisterVoiceClient(voiceClient);
-            }
+        const videoConnection = this.client.serverConnection.getVideoConnection();
+        if(client.getVideoClient()) {
+            videoConnection.unregisterVideoClient(client.getVideoClient());
+            client.setVideoClient(undefined);
         }
         client.destroy();
     }
 
     registerClient(client: ClientEntry) {
         this.clients.push(client);
-        client.channelTree = this;
 
-        const voiceConnection = this.client.serverConnection.getVoiceConnection();
-        if(voiceConnection) {
-            client.setVoiceClient(voiceConnection.registerVoiceClient(client.clientId()));
+        if(client instanceof LocalClientEntry) {
+            if(client.channelTree !== this) {
+                throw tr("client channel tree missmatch");
+            }
+        } else {
+            client.channelTree = this;
+
+            const voiceConnection = this.client.serverConnection.getVoiceConnection();
+            try {
+                client.setVoiceClient(voiceConnection.registerVoiceClient(client.clientId()));
+            } catch (error) {
+                logError(LogCategory.AUDIO, tr("Failed to register a voice client for %d: %o"), client.clientId(), error);
+            }
+
+            const videoConnection = this.client.serverConnection.getVideoConnection();
+            try {
+                client.setVideoClient(videoConnection.registerVideoClient(client.clientId()));
+            } catch (error) {
+                logError(LogCategory.VIDEO, tr("Failed to register a video client for %d: %o"), client.clientId(), error);
+            }
         }
     }
 
     unregisterClient(client: ClientEntry) {
-        if(!this.clients.remove(client))
+        if(!this.clients.remove(client)) {
             return;
+        }
     }
 
     insertClient(client: ClientEntry, channel: ChannelEntry, reason: { reason: ViewReasonId, isServerJoin: boolean }) : ClientEntry {
@@ -964,12 +980,18 @@ export class ChannelTree {
         try {
             this.selection.reset();
 
-            const voice_connection = this.client.serverConnection ? this.client.serverConnection.getVoiceConnection() : undefined;
+            const voiceConnection = this.client.serverConnection ? this.client.serverConnection.getVoiceConnection() : undefined;
+            const videoConnection = this.client.serverConnection ? this.client.serverConnection.getVideoConnection() : undefined;
             for(const client of this.clients) {
-                if(client.getVoiceClient() && voice_connection) {
-                    voice_connection.unregisterVoiceClient(client.getVoiceClient());
+                if(client.getVoiceClient() && videoConnection) {
+                    voiceConnection.unregisterVoiceClient(client.getVoiceClient());
                     client.setVoiceClient(undefined);
                 }
+                if(client.getVideoClient()) {
+                    videoConnection.unregisterVideoClient(client.getVideoClient());
+                    client.setVideoClient(undefined);
+                }
+
                 client.destroy();
             }
             this.clients = [];

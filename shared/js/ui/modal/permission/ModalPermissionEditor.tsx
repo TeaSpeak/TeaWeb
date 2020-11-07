@@ -410,7 +410,7 @@ const stringifyError = error => {
 function initializePermissionModalController(connection: ConnectionHandler, events: Registry<PermissionModalEvents>) {
     events.on("query_groups", event => {
         const groups = event.target === "server" ? connection.groups.serverGroups : connection.groups.channelGroups;
-        events.fire_async("query_groups_result", {
+        events.fire_react("query_groups_result", {
             target: event.target, groups: groups.map(group => {
                 return {
                     id: group.id,
@@ -706,7 +706,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
     }));
 
     events.on("query_channels", () => {
-        events.fire_async("query_channels_result", {
+        events.fire_react("query_channels_result", {
             channels: connection.channelTree.channelsOrdered().map(e => {
                 return {
                     id: e.channelId,
@@ -888,7 +888,7 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
             };
         };
 
-        events.fire_async("query_permission_list_result", {
+        events.fire_react("query_permission_list_result", {
             hideSenselessPermissions: !settings.static_global(Settings.KEY_PERMISSIONS_SHOW_ALL),
             permissions: (groups || []).map(visitGroup)
         });

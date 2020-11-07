@@ -10,7 +10,7 @@ import {createErrorModal, createInfoModal, createInputModal, Modal} from "./ui/e
 import {hashPassword} from "./utils/helpers";
 import {HandshakeHandler} from "./connection/HandshakeHandler";
 import * as htmltags from "./ui/htmltags";
-import {FilterMode, InputStartResult, InputState} from "./voice/RecorderBase";
+import {FilterMode, InputState, MediaStreamRequestResult} from "./voice/RecorderBase";
 import {CommandResult} from "./connection/ServerConnectionDeclaration";
 import {defaultRecorder, RecorderProfile} from "./voice/RecorderProfile";
 import {Frame} from "./ui/frames/chat_frame";
@@ -37,6 +37,7 @@ import {ServerFeature, ServerFeatures} from "./connection/ServerFeatures";
 import {ChannelTree} from "./tree/ChannelTree";
 import {LocalClientEntry} from "./tree/Client";
 import {ServerAddress} from "./tree/Server";
+import {ChannelVideoFrame} from "tc-shared/ui/frames/video/Controller";
 
 export enum InputHardwareState {
     MISSING,
@@ -142,6 +143,7 @@ export class ConnectionHandler {
     groups: GroupManager;
 
     side_bar: Frame;
+    video_frame: ChannelVideoFrame;
 
     settings: ServerSettings;
     sound: SoundManager;
@@ -153,7 +155,7 @@ export class ConnectionHandler {
     serverFeatures: ServerFeatures;
 
     private _clientId: number = 0;
-    private _local_client: LocalClientEntry;
+    private localClient: LocalClientEntry;
 
     private _reconnect_timer: number;
     private _reconnect_attempt: boolean = false;
@@ -192,7 +194,12 @@ export class ConnectionHandler {
             this.setInputHardwareState(this.getVoiceRecorder() ? InputHardwareState.VALID : InputHardwareState.MISSING);
             this.update_voice_status();
         });
-        this.serverConnection.getVoiceConnection().events.on("notify_connection_status_changed", () => this.update_voice_status());
+        this.serverConnection.getVoiceConnection().events.on("notify_connection_status_changed", event => {
+            this.update_voice_status();
+            if(event.newStatus === VoiceConnectionStatus.Failed) {
+                createErrorModal(tr("Voice connection failed"), tra("Failed to establish a voice connection:\n{}", this.serverConnection.getVoiceConnection().getFailedMessage() || tr("Lookup the console for more detail"))).open();
+            }
+        });
         this.serverConnection.getVoiceConnection().setWhisperSessionInitializer(this.initializeWhisperSession.bind(this));
 
         this.serverFeatures = new ServerFeatures(this);
@@ -203,13 +210,15 @@ export class ConnectionHandler {
         this.permissions = new PermissionManager(this);
 
         this.pluginCmdRegistry = new PluginCmdRegistry(this);
+        this.video_frame = new ChannelVideoFrame(this);
 
         this.log = new ServerEventLog(this);
         this.side_bar = new Frame(this);
         this.sound = new SoundManager(this);
         this.hostbanner = new Hostbanner(this);
 
-        this._local_client = new LocalClientEntry(this);
+        this.localClient = new LocalClientEntry(this);
+        this.localClient.channelTree = this.channelTree;
 
         this.event_registry.register_handler(this);
         this.events().fire("notify_handler_initialized");
@@ -333,15 +342,15 @@ export class ConnectionHandler {
         this.log.log(EventType.DISCONNECTED, {});
     }
 
-    getClient() : LocalClientEntry { return this._local_client; }
+    getClient() : LocalClientEntry { return this.localClient; }
     getClientId() { return this._clientId; }
 
     initializeLocalClient(clientId: number, acceptedName: string) {
         this._clientId = clientId;
-        this._local_client["_clientId"] = clientId;
+        this.localClient["_clientId"] = clientId;
 
-        this.channelTree.registerClient(this._local_client);
-        this._local_client.updateVariables( { key: "client_nickname", value: acceptedName });
+        this.channelTree.registerClient(this.localClient);
+        this.localClient.updateVariables( { key: "client_nickname", value: acceptedName });
     }
 
     getServerConnection() : AbstractServerConnection { return this.serverConnection; }
@@ -631,7 +640,7 @@ export class ConnectionHandler {
                 break;
         }
 
-        this.channelTree.unregisterClient(this._local_client); /* if we dont unregister our client here the client will be destroyed */
+        this.channelTree.unregisterClient(this.localClient); /* if we dont unregister our client here the client will be destroyed */
         this.channelTree.reset();
         if(this.serverConnection)
             this.serverConnection.disconnect();
@@ -679,7 +688,7 @@ export class ConnectionHandler {
     }
 
     private updateVoiceStatus() {
-        if(!this._local_client) {
+        if(!this.localClient) {
             /* we've been destroyed */
             return;
         }
@@ -832,7 +841,7 @@ export class ConnectionHandler {
         if(input.currentState() === InputState.PAUSED && this.connection_state === ConnectionState.CONNECTED) {
             try {
                 const result = await input.start();
-                if(result !== InputStartResult.EOK) {
+                if(result !== true) {
                     throw result;
                 }
 
@@ -844,13 +853,13 @@ export class ConnectionHandler {
                 this.update_voice_status();
 
                 let errorMessage;
-                if(error === InputStartResult.ENOTSUPPORTED) {
+                if(error === MediaStreamRequestResult.ENOTSUPPORTED) {
                     errorMessage = tr("Your browser does not support voice recording");
-                } else if(error === InputStartResult.EBUSY) {
+                } else if(error === MediaStreamRequestResult.EBUSY) {
                     errorMessage = tr("The input device is busy");
-                } else if(error === InputStartResult.EDEVICEUNKNOWN) {
+                } else if(error === MediaStreamRequestResult.EDEVICEUNKNOWN) {
                     errorMessage = tr("Invalid input device");
-                } else if(error === InputStartResult.ENOTALLOWED) {
+                } else if(error === MediaStreamRequestResult.ENOTALLOWED) {
                     errorMessage = tr("No permissions");
                 } else if(error instanceof Error) {
                     errorMessage = error.message;
@@ -993,15 +1002,22 @@ export class ConnectionHandler {
         this.pluginCmdRegistry?.destroy();
         this.pluginCmdRegistry = undefined;
 
-        if(this._local_client) {
-            const voiceHandle = this._local_client.getVoiceClient();
+        if(this.localClient) {
+            const voiceHandle = this.localClient.getVoiceClient();
             if(voiceHandle) {
-                this._local_client.setVoiceClient(undefined);
+                logWarn(LogCategory.GENERAL, tr("Local voice client has received a voice handle. This should never happen!"));
+                this.localClient.setVoiceClient(undefined);
                 this.serverConnection.getVoiceConnection().unregisterVoiceClient(voiceHandle);
             }
-            this._local_client.destroy();
+            const videoHandle = this.localClient.getVideoClient();
+            if(videoHandle) {
+                logWarn(LogCategory.GENERAL, tr("Local voice client has received a video handle. This should never happen!"));
+                this.localClient.setVoiceClient(undefined);
+                this.serverConnection.getVideoConnection().unregisterVideoClient(videoHandle);
+            }
+            this.localClient.destroy();
         }
-        this._local_client = undefined;
+        this.localClient = undefined;
 
         this.channelTree?.destroy();
         this.channelTree = undefined;
@@ -1033,7 +1049,7 @@ export class ConnectionHandler {
         this.serverConnection = undefined;
 
         this.sound = undefined;
-        this._local_client = undefined;
+        this.localClient = undefined;
     }
 
     /* state changing methods */

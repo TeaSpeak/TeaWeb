@@ -10,6 +10,7 @@ import "./hooks/ServerConnection";
 import "./hooks/ExternalModal";
 import "./hooks/AudioRecorder";
 import "./hooks/MenuBar";
+import "./hooks/Video";
 
 import "./UnloadHandler";
 

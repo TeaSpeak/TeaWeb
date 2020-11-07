@@ -85,7 +85,7 @@ function initializeFaviconController(events: Registry<FaviconEvents>) {
             icon = currentHandler.getClient().getStatusIcon();
         }
 
-        events.fire_async("notify_icon", { icon: icon })
+        events.fire_later("notify_icon", { icon: icon })
     };
 
     setCurrentHandler(server_connections.active_connection());

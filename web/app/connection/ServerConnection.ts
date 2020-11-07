@@ -13,13 +13,15 @@ import * as log from "tc-shared/log";
 import {LogCategory, logTrace} from "tc-shared/log";
 import {Regex} from "tc-shared/ui/modal/ModalConnect";
 import {AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
-import {VoiceConnection} from "../voice/VoiceHandler";
 import {EventType} from "tc-shared/ui/frames/log/Definitions";
 import {WrappedWebSocket} from "tc-backend/web/connection/WrappedWebSocket";
 import {AbstractVoiceConnection} from "tc-shared/connection/VoiceConnection";
-import {DummyVoiceConnection} from "tc-shared/connection/DummyVoiceConnection";
 import {parseCommand} from "tc-backend/web/connection/CommandParser";
 import {ServerAddress} from "tc-shared/tree/Server";
+import {RTCConnection} from "tc-backend/web/rtc/Connection";
+import {RtpVoiceConnection} from "tc-backend/web/rtc/voice/Connection";
+import {RtpVideoConnection} from "tc-backend/web/rtc/video/Connection";
+import {VideoConnection} from "tc-shared/connection/VideoConnection";
 
 class ReturnListener<T> {
     resolve: (value?: T | PromiseLike<T>) => void;
@@ -44,8 +46,9 @@ export class ServerConnection extends AbstractServerConnection {
 
     private _connection_state_listener: ConnectionStateListener;
 
-    private dummyVoiceConnection: DummyVoiceConnection;
-    private voiceConnection: VoiceConnection;
+    private rtcConnection: RTCConnection;
+    private voiceConnection: RtpVoiceConnection;
+    private videoConnection: RtpVideoConnection;
 
     private pingStatistics = {
         thread_id: 0,
@@ -71,11 +74,9 @@ export class ServerConnection extends AbstractServerConnection {
         this.commandHandlerBoss.register_handler(this.defaultCommandHandler);
         this.command_helper.initialize();
 
-        if(!settings.static_global(Settings.KEY_DISABLE_VOICE, false)) {
-            this.voiceConnection = new VoiceConnection(this);
-        } else {
-            this.dummyVoiceConnection = new DummyVoiceConnection(this);
-        }
+        this.rtcConnection = new RTCConnection(this);
+        this.voiceConnection = new RtpVoiceConnection(this, this.rtcConnection);
+        this.videoConnection = new RtpVideoConnection(this.rtcConnection);
     }
 
     destroy() {
@@ -97,6 +98,7 @@ export class ServerConnection extends AbstractServerConnection {
             }
             this.returnListeners = undefined;
 
+            this.rtcConnection.destroy();
             this.command_helper.destroy();
 
             this.defaultCommandHandler && this.commandHandlerBoss.unregister_handler(this.defaultCommandHandler);
@@ -263,10 +265,10 @@ export class ServerConnection extends AbstractServerConnection {
         this.sendData(JSON.stringify({
             type: "enable-raw-commands"
         }))
-        this.start_handshake();
+        this.startHandshake();
     }
 
-    private start_handshake() {
+    private startHandshake() {
         this.updateConnectionState(ConnectionState.INITIALISING);
         this.client.log.log(EventType.CONNECTION_LOGIN, {});
         this.handshakeHandler.initialize();
@@ -352,8 +354,6 @@ export class ServerConnection extends AbstractServerConnection {
                     this.doNextPing();
                     this.updateConnectionState(ConnectionState.CONNECTED);
                 }
-            } else if(json["type"] === "WebRTC") {
-                this.voiceConnection?.handleControlPacket(json);
             } else if(json["type"] === "ping") {
                 this.sendData(JSON.stringify({
                     type: 'pong',
@@ -444,7 +444,11 @@ export class ServerConnection extends AbstractServerConnection {
     }
 
     getVoiceConnection(): AbstractVoiceConnection {
-        return this.voiceConnection || this.dummyVoiceConnection;
+        return this.voiceConnection /* || this.dummyVoiceConnection; */
+    }
+
+    getVideoConnection(): VideoConnection {
+        return this.videoConnection;
     }
 
     command_handler_boss(): AbstractCommandHandlerBoss {

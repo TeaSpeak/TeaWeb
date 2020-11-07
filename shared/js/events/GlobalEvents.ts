@@ -1,5 +1,6 @@
 import {ConnectionHandler} from "../ConnectionHandler";
 import {Registry} from "../events";
+import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
 
 export type PermissionEditorTab = "groups-server" | "groups-channel" | "channel" | "client" | "client-channel";
 export interface ClientGlobalControlEvents {
@@ -26,7 +27,8 @@ export interface ClientGlobalControlEvents {
     } | {
         videoUrl: string,
         handlerId: string
-    }
+    },
+    action_toggle_video_broadcasting: { connection: ConnectionHandler, enabled: boolean, broadcastType: VideoBroadcastType }
 
     /* some more specific window openings */
     action_open_window_connect: {

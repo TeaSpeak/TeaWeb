@@ -177,7 +177,7 @@ export function spawnModalCssVariableEditor() {
 
 function cssVariableEditorController(events: Registry<CssEditorEvents>) {
     events.on("query_css_variables", () => {
-        events.fire_async("notify_css_variables", {
+        events.fire_react("notify_css_variables", {
             variables: cssVariableManager.getAllCssVariables()
         })
     });
@@ -191,7 +191,7 @@ function cssVariableEditorController(events: Registry<CssEditorEvents>) {
     });
 
     events.on("action_export", event => {
-        events.fire_async("notify_export_result", {
+        events.fire_react("notify_export_result", {
             config: cssVariableManager.exportConfig(event.allValues)
         });
     });
@@ -199,25 +199,25 @@ function cssVariableEditorController(events: Registry<CssEditorEvents>) {
     events.on("action_import", event => {
         try {
             cssVariableManager.importConfig(event.config);
-            events.fire_async("notify_import_result", {success: true});
-            events.fire_async("action_select_entry", {variable: undefined});
-            events.fire_async("query_css_variables");
+            events.fire_react("notify_import_result", {success: true});
+            events.fire_react("action_select_entry", {variable: undefined});
+            events.fire_react("query_css_variables");
         } catch (error) {
             console.warn("Failed to import CSS variable values: %o", error);
-            events.fire_async("notify_import_result", {success: false});
+            events.fire_react("notify_import_result", {success: false});
         }
     });
 
     events.on("action_reset", () => {
         cssVariableManager.reset();
-        events.fire_async("action_select_entry", {variable: undefined});
-        events.fire_async("query_css_variables");
+        events.fire_react("action_select_entry", {variable: undefined});
+        events.fire_react("query_css_variables");
     });
 
     events.on("action_randomize", () => {
         cssVariableManager.randomize();
-        events.fire_async("action_select_entry", {variable: undefined});
-        events.fire_async("query_css_variables");
+        events.fire_react("action_select_entry", {variable: undefined});
+        events.fire_react("query_css_variables");
     });
 }
 

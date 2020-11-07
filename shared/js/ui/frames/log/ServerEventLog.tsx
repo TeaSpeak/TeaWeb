@@ -29,7 +29,7 @@ export class ServerEventLog {
         this.htmlTag.classList.add(cssStyle.htmlTag);
 
         this.uiEvents.on("query_log", () => {
-            this.uiEvents.fire_async("notify_log", { log: this.eventLog });
+            this.uiEvents.fire_react("notify_log", { log: this.eventLog.slice() });
         });
 
         ReactDOM.render(<ServerLogRenderer events={this.uiEvents} handlerId={this.connection.handlerId} />, this.htmlTag);
@@ -54,7 +54,7 @@ export class ServerEventLog {
             while(this.eventLog.length > this.maxHistoryLength)
                 this.eventLog.pop_front();
 
-            this.uiEvents.fire_async("notify_log_add", { event: event });
+            this.uiEvents.fire_react("notify_log_add", { event: event });
         }
 
         if(isNotificationEnabled(type as any)) {

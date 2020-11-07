@@ -69,7 +69,7 @@ html:root {
         padding-left: 0;
     }
 
-    &.is-invalid {
+    &.isInvalid {
         background-color: var(--boxed-input-field-invalid-background);
         border-color: var(--boxed-input-field-invalid-border);
         color: var(--boxed-input-field-invalid-text);

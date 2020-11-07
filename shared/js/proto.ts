@@ -1,5 +1,6 @@
 /* setup jsrenderer */
 import "jsrender";
+
 if(__build.target === "web") {
     (window as any).$ = require("jquery");
     (window as any).jQuery = $;
@@ -64,6 +65,30 @@ declare global {
         mozGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
         webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
     }
+
+    interface ObjectConstructor {
+        isSimilar(a: any, b: any): boolean;
+    }
+}
+
+if(!Object.isSimilar) {
+    Object.isSimilar = function (a, b) {
+        const aType = typeof a;
+        const bType = typeof b;
+        if (aType !== bType) {
+            return false;
+        }
+
+        if (aType === "object") {
+            const aKeys = Object.keys(a);
+            const bKeys = Object.keys(b);
+            if(aKeys.length != bKeys.length) { return false; }
+            if(aKeys.findIndex(key => bKeys.indexOf(key) !== -1) !== -1) { return false; }
+            return aKeys.findIndex(key => !Object.isSimilar(a[key], b[key])) === -1;
+        } else {
+            return a === b;
+        }
+    };
 }
 
 if(!JSON.map_to) {

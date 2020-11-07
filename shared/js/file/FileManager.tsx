@@ -684,7 +684,7 @@ export class FileManager {
 
                 const cancelListener = () => {
                     unregisterTransfer();
-                    transfer.events.fire_async("notify_transfer_canceled", {}, resolve);
+                    transfer.events.fire_later("notify_transfer_canceled", {}, resolve);
                 };
 
                 transfer.events.on("notify_state_updated", stateListener);

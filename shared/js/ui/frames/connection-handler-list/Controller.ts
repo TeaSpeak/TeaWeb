@@ -25,38 +25,38 @@ function initializeController(events: Registry<ConnectionListUIEvents>) {
     });
 
     events.on("query_handler_list", () => {
-        events.fire_async("notify_handler_list", { handlerIds: server_connections.all_connections().map(e => e.handlerId), activeHandlerId: server_connections.active_connection()?.handlerId });
+        events.fire_react("notify_handler_list", { handlerIds: server_connections.all_connections().map(e => e.handlerId), activeHandlerId: server_connections.active_connection()?.handlerId });
     });
     events.on("notify_destroy", server_connections.events().on("notify_handler_created", event => {
         let listeners = [];
 
         const handlerId = event.handlerId;
-        listeners.push(event.handler.events().on("notify_connection_state_changed", () => events.fire_async("query_handler_status", { handlerId: handlerId })));
+        listeners.push(event.handler.events().on("notify_connection_state_changed", () => events.fire_react("query_handler_status", { handlerId: handlerId })));
 
         /* register to icon and name change updates */
         listeners.push(event.handler.channelTree.server.events.on("notify_properties_updated", event => {
             if("virtualserver_name" in event.updated_properties || "virtualserver_icon_id" in event.updated_properties) {
-                events.fire_async("query_handler_status", { handlerId: handlerId });
+                events.fire_react("query_handler_status", { handlerId: handlerId });
             }
         }));
 
         /* register to voice playback change events */
         listeners.push(event.handler.getServerConnection().getVoiceConnection().events.on("notify_voice_replay_state_change", () => {
-            events.fire_async("query_handler_status", { handlerId: handlerId });
+            events.fire_react("query_handler_status", { handlerId: handlerId });
         }));
 
         registeredHandlerEvents[event.handlerId] = listeners;
 
-        events.fire_async("query_handler_list");
+        events.fire_react("query_handler_list");
     }));
     events.on("notify_destroy", server_connections.events().on("notify_handler_deleted", event => {
         (registeredHandlerEvents[event.handlerId] || []).forEach(callback => callback());
         delete registeredHandlerEvents[event.handlerId];
 
-        events.fire_async("query_handler_list");
+        events.fire_react("query_handler_list");
     }));
 
-    events.on("notify_destroy", server_connections.events().on("notify_handler_order_changed", () => events.fire_async("query_handler_list")));
+    events.on("notify_destroy", server_connections.events().on("notify_handler_order_changed", () => events.fire_react("query_handler_list")));
     events.on("action_swap_handler", event => {
         const handlerA = server_connections.findConnection(event.handlerIdOne);
         const handlerB = server_connections.findConnection(event.handlerIdTwo);
@@ -80,7 +80,7 @@ function initializeController(events: Registry<ConnectionListUIEvents>) {
         server_connections.set_active_connection(handler);
     });
     events.on("notify_destroy", server_connections.events().on("notify_active_handler_changed", event => {
-        events.fire_async("notify_active_handler", { handlerId: event.newHandlerId });
+        events.fire_react("notify_active_handler", { handlerId: event.newHandlerId });
     }));
 
     events.on("action_destroy_handler", event => {
@@ -118,7 +118,7 @@ function initializeController(events: Registry<ConnectionListUIEvents>) {
                 break;
         }
 
-        events.fire_async("notify_handler_status", {
+        events.fire_react("notify_handler_status", {
             handlerId: event.handlerId,
             status: {
                 handlerName: handler.channelTree.server.properties.virtualserver_name,

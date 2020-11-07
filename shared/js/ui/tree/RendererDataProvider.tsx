@@ -267,7 +267,7 @@ export class RDPChannelTree {
     @EventHandler<ChannelTreeUIEvents>("notify_entry_move")
     private handleNotifyEntryMove(event: ChannelTreeUIEvents["notify_entry_move"]) {
         if(!this.refMove.current) {
-            this.events.fire_async("action_move_entries", { treeEntryId: 0 });
+            this.events.fire_react("action_move_entries", { treeEntryId: 0 });
             return;
         }
 

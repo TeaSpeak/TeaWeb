@@ -1000,7 +1000,7 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
         });
 
         /* fire_async because our children have to render first in order to have the row selected! */
-        this.forceUpdate(() => this.props.events.fire_async("action_select_files", {
+        this.forceUpdate(() => this.props.events.fire_react("action_select_files", {
             files: [{
                 name: name,
                 type: FileType.DIRECTORY

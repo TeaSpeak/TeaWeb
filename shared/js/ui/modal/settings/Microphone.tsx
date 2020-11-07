@@ -159,21 +159,21 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
     {
         events.on("query_devices", event => {
             if (!aplayer.initialized()) {
-                events.fire_async("notify_devices", {status: "audio-not-initialized"});
+                events.fire_react("notify_devices", {status: "audio-not-initialized"});
                 return;
             }
 
             const deviceList = recorderBackend.getDeviceList();
             switch (deviceList.getStatus()) {
                 case "no-permissions":
-                    events.fire_async("notify_devices", {
+                    events.fire_react("notify_devices", {
                         status: "no-permissions",
                         shouldAsk: deviceList.getPermissionState() === "denied"
                     });
                     return;
 
                 case "uninitialized":
-                    events.fire_async("notify_devices", {status: "audio-not-initialized"});
+                    events.fire_react("notify_devices", {status: "audio-not-initialized"});
                     return;
             }
 
@@ -184,7 +184,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
             } else {
                 const devices = deviceList.getDevices();
 
-                events.fire_async("notify_devices", {
+                events.fire_react("notify_devices", {
                     status: "success",
                     selectedDevice: defaultRecorder.getDeviceId(),
                     devices: devices.map(e => {
@@ -197,7 +197,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
         events.on("action_set_selected_device", event => {
             const device = recorderBackend.getDeviceList().getDevices().find(e => e.deviceId === event.deviceId);
             if (!device && event.deviceId !== IDevice.NoDeviceId) {
-                events.fire_async("action_set_selected_device_result", {
+                events.fire_react("action_set_selected_device_result", {
                     status: "error",
                     error: tr("Invalid device id"),
                     deviceId: defaultRecorder.getDeviceId()
@@ -207,10 +207,10 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
 
             defaultRecorder.setDevice(device).then(() => {
                 console.debug(tr("Changed default microphone device to %s"), event.deviceId);
-                events.fire_async("action_set_selected_device_result", {status: "success", deviceId: event.deviceId});
+                events.fire_react("action_set_selected_device_result", {status: "success", deviceId: event.deviceId});
             }).catch((error) => {
                 log.warn(LogCategory.AUDIO, tr("Failed to change microphone to device %s: %o"), device ? device.deviceId : IDevice.NoDeviceId, error);
-                events.fire_async("action_set_selected_device_result", {status: "success", deviceId: event.deviceId});
+                events.fire_react("action_set_selected_device_result", {status: "success", deviceId: event.deviceId});
             });
         });
     }
@@ -252,7 +252,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
                     return;
             }
 
-            events.fire_async("notify_setting", {setting: event.setting, value: value});
+            events.fire_react("notify_setting", {setting: event.setting, value: value});
         });
 
         events.on("action_set_setting", event => {
@@ -310,7 +310,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
                 default:
                     return;
             }
-            events.fire_async("notify_setting", {setting: event.setting, value: event.value});
+            events.fire_react("notify_setting", {setting: event.setting, value: event.value});
         });
     }
 
@@ -320,7 +320,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
         if (result === "granted") {
             /* we've nothing to do, the device change event will already update out list */
         } else {
-            events.fire_async("notify_devices", {status: "no-permissions", shouldAsk: result === "denied"});
+            events.fire_react("notify_devices", {status: "no-permissions", shouldAsk: result === "denied"});
             return;
         }
     }));
@@ -335,7 +335,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
 
     if (!aplayer.initialized()) {
         aplayer.on_ready(() => {
-            events.fire_async("query_devices");
+            events.fire_react("query_devices");
         });
     }
 }

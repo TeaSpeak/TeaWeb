@@ -90,7 +90,7 @@ export const initializeTransferInfoController = (connection: ConnectionHandler, 
             } as TransferInfoData;
         }));
 
-        events.fire_async("query_transfer_result", {
+        events.fire_react("query_transfer_result", {
             status: "success",
             transfers: transfers,
             showFinished: settings.global(Settings.KEY_TRANSFERS_SHOW_FINISHED)

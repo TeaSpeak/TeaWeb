@@ -79,13 +79,13 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         try {
             const info = parsePath(event.path, connection);
 
-            events.fire_async("action_navigate_to_result", {
+            events.fire_react("action_navigate_to_result", {
                 path: event.path || "/",
                 status: "success",
                 pathInfo: info
             });
         } catch (error) {
-            events.fire_async("action_navigate_to_result", {
+            events.fire_react("action_navigate_to_result", {
                 path: event.path,
                 status: "error",
                 error: error
@@ -98,7 +98,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         try {
             path = parsePath(event.path, connection);
         } catch (error) {
-            events.fire_async("query_files_result", {
+            events.fire_react("query_files_result", {
                 path: event.path,
                 status: "error",
                 error: error
@@ -213,7 +213,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 } as ListedFileInfo;
             }));
         } else {
-            events.fire_async("query_files_result", {
+            events.fire_react("query_files_result", {
                 path: event.path,
                 status: "error",
                 error: tr("Unknown parsed path type")
@@ -222,7 +222,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         }
 
         request.then(files => {
-            events.fire_async("query_files_result", {
+            events.fire_react("query_files_result", {
                 path: event.path,
                 status: "success",
                 files: files.map(e => {
@@ -235,14 +235,14 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             if (error instanceof CommandResult) {
                 if (error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                     const permission = connection.permissions.resolveInfo(error.json["failed_permid"] as number);
-                    events.fire_async("query_files_result", {
+                    events.fire_react("query_files_result", {
                         path: event.path,
                         status: "no-permissions",
                         error: permission ? permission.name : "unknown"
                     });
                     return;
                 } else if (error.id === 781) { //Invalid password
-                    events.fire_async("query_files_result", {
+                    events.fire_react("query_files_result", {
                         path: event.path,
                         status: "invalid-password"
                     });
@@ -257,7 +257,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 message = tr("lookup the console");
             }
 
-            events.fire_async("query_files_result", {
+            events.fire_react("query_files_result", {
                 path: event.path,
                 status: "error",
                 error: message
@@ -267,7 +267,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
 
     events.on("action_rename_file", event => {
         if (event.newPath === event.oldPath && event.newName === event.oldName) {
-            events.fire_async("action_rename_file_result", {
+            events.fire_react("action_rename_file_result", {
                 oldPath: event.oldPath,
                 oldName: event.oldName,
 
@@ -285,7 +285,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             if (sourcePath.type !== "channel")
                 throw tr("Icon/avatars could not be renamed");
         } catch (error) {
-            events.fire_async("action_rename_file_result", {
+            events.fire_react("action_rename_file_result", {
                 oldPath: event.oldPath,
                 oldName: event.oldName,
                 status: "error",
@@ -298,7 +298,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             if (sourcePath.type !== "channel")
                 throw tr("Target path isn't a channel");
         } catch (error) {
-            events.fire_async("action_rename_file_result", {
+            events.fire_react("action_rename_file_result", {
                 oldPath: event.oldPath,
                 oldName: event.oldName,
                 status: "error",
@@ -335,7 +335,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             if (error instanceof CommandResult) {
                 if (error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                     const permission = connection.permissions.resolveInfo(error.json["failed_permid"] as number);
-                    events.fire_async("action_rename_file_result", {
+                    events.fire_react("action_rename_file_result", {
                         oldPath: event.oldPath,
                         oldName: event.oldName,
                         status: "error",
@@ -343,7 +343,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                     });
                     return;
                 } else if (error.id === 781) { //Invalid password
-                    events.fire_async("action_rename_file_result", {
+                    events.fire_react("action_rename_file_result", {
                         oldPath: event.oldPath,
                         oldName: event.oldName,
                         status: "error",
@@ -359,7 +359,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 log.error(LogCategory.FILE_TRANSFER, tr("Failed to rename/move files: %o"), error);
                 message = tr("lookup the console");
             }
-            events.fire_async("action_rename_file_result", {
+            events.fire_react("action_rename_file_result", {
                 oldPath: event.oldPath,
                 oldName: event.oldName,
                 status: "error",
@@ -532,7 +532,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 let message;
                 if (result instanceof CommandResult) {
                     if (result.bulks.length !== fileInfos.length) {
-                        events.fire_async("action_delete_file_result", {
+                        events.fire_react("action_delete_file_result", {
                             results: fileInfos.map((e) => {
                                 return {
                                     error: result.bulks.length === 1 ? (result.message + (result.extra_message ? " (" + result.extra_message + ")" : "")) : tr("Response contained invalid bulk length"),
@@ -582,7 +582,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                         return;
                     });
 
-                    events.fire_async("action_delete_file_result", {
+                    events.fire_react("action_delete_file_result", {
                         results: results
                     });
                     return;
@@ -593,7 +593,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                     message = tr("lookup the console");
                 }
 
-                events.fire_async("action_delete_file_result", {
+                events.fire_react("action_delete_file_result", {
                     results: files.map((e) => {
                         return {
                             error: message,
@@ -605,7 +605,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 });
             });
         } catch (error) {
-            events.fire_async("action_delete_file_result", {
+            events.fire_react("action_delete_file_result", {
                 results: files.map((e) => {
                     return {
                         error: tr("Failed to parse path for one or more entries ") + " (" + error + ")",
@@ -625,7 +625,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             if (path.type !== "channel")
                 throw tr("Directories could only created for channels");
         } catch (error) {
-            events.fire_async("action_create_directory_result", {
+            events.fire_react("action_create_directory_result", {
                 name: event.name,
                 path: event.path,
                 status: "error",
@@ -646,7 +646,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             if (error instanceof CommandResult) {
                 if (error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                     const permission = connection.permissions.resolveInfo(error.json["failed_permid"] as number);
-                    events.fire_async("action_create_directory_result", {
+                    events.fire_react("action_create_directory_result", {
                         name: event.name,
                         path: event.path,
                         status: "error",
@@ -654,7 +654,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                     });
                     return;
                 } else if (error.id === 781) { //Invalid password
-                    events.fire_async("action_create_directory_result", {
+                    events.fire_react("action_create_directory_result", {
                         name: event.name,
                         path: event.path,
                         status: "error",
@@ -670,7 +670,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 log.error(LogCategory.FILE_TRANSFER, tr("Failed to create directory: %o"), error);
                 message = tr("lookup the console");
             }
-            events.fire_async("action_create_directory_result", {
+            events.fire_react("action_create_directory_result", {
                 name: event.name,
                 path: event.path,
                 status: "error",

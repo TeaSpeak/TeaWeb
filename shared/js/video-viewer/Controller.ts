@@ -67,7 +67,7 @@ class VideoViewer {
             return;
 
         this.plugin.setLocalWatcherStatus(url, { status: "paused" });
-        this.events.fire_async("notify_video", { url: url }); /* notify the new url */
+        this.events.fire_react("notify_video", { url: url }); /* notify the new url */
     }
 
     setFollowing(target: W2GWatcher) {
@@ -75,7 +75,7 @@ class VideoViewer {
             return;
 
         this.plugin.setLocalFollowing(target, { status: "paused" });
-        this.events.fire_async("notify_video", { url: target.getCurrentVideo() }); /* notify the new url */
+        this.events.fire_react("notify_video", { url: target.getCurrentVideo() }); /* notify the new url */
     }
 
     async open() {
@@ -84,7 +84,7 @@ class VideoViewer {
 
     private notifyWatcherList() {
         const watchers = this.plugin.getCurrentWatchers().filter(e => e.getCurrentVideo() === this.currentVideoUrl);
-        this.events.fire_async("notify_watcher_list", {
+        this.events.fire_react("notify_watcher_list", {
             followingWatcher: this.plugin.getLocalFollowingWatcher() ? this.plugin.getLocalFollowingWatcher().clientId + " - " + this.plugin.getLocalFollowingWatcher().clientUniqueId : undefined,
             watcherIds: watchers.map(e => e.clientId + " - " + e.clientUniqueId)
         })
@@ -108,7 +108,7 @@ class VideoViewer {
         }));
 
         this.events.on("notify_destroy", this.plugin.events.on("notify_following_url", event => {
-            this.events.fire_async("notify_video", { url: event.newUrl });
+            this.events.fire_react("notify_video", { url: event.newUrl });
         }));
 
         this.events.on("notify_destroy", this.plugin.events.on("notify_following_watcher_status", event => {
@@ -138,7 +138,7 @@ class VideoViewer {
         }));
 
         watcherUnregisterCallbacks.push(watcher.events.on("notify_watcher_nickname_changed", () => {
-            this.events.fire_async("notify_watcher_info", {
+            this.events.fire_react("notify_watcher_info", {
                 watcherId: watcherId,
 
                 clientId: watcher.clientId,
@@ -150,21 +150,21 @@ class VideoViewer {
         }));
 
         watcherUnregisterCallbacks.push(watcher.events.on("notify_watcher_status_changed", event => {
-            this.events.fire_async("notify_watcher_status", {
+            this.events.fire_react("notify_watcher_status", {
                 watcherId: watcherId,
                 status: event.newStatus
             });
         }));
 
         watcherUnregisterCallbacks.push(watcher.events.on("notify_follower_added", event => {
-            this.events.fire_async("notify_follower_added", {
+            this.events.fire_react("notify_follower_added", {
                 watcherId: watcherId,
                 followerId: followerWatcherId(event.follower)
             });
         }));
 
         watcherUnregisterCallbacks.push(watcher.events.on("notify_follower_nickname_changed", event => {
-            this.events.fire_async("notify_watcher_info", {
+            this.events.fire_react("notify_watcher_info", {
                 watcherId: followerWatcherId(event.follower),
 
                 clientId: event.follower.clientId,
@@ -176,14 +176,14 @@ class VideoViewer {
         }));
 
         watcherUnregisterCallbacks.push(watcher.events.on("notify_follower_status_changed", event => {
-            this.events.fire_async("notify_watcher_status", {
+            this.events.fire_react("notify_watcher_status", {
                 watcherId: followerWatcherId(event.follower),
                 status: event.newStatus
             });
         }));
 
         watcherUnregisterCallbacks.push(watcher.events.on("notify_follower_removed", event => {
-            this.events.fire_async("notify_follower_removed", {
+            this.events.fire_react("notify_follower_removed", {
                 watcherId: watcherId,
                 followerId: followerWatcherId(event.follower)
             });
@@ -200,13 +200,13 @@ class VideoViewer {
         const info = parseWatcherId(event.watcherId);
         for(const watcher of this.plugin.getCurrentWatchers()) {
             if(watcher.clientId === info.clientId && watcher.clientUniqueId === info.clientUniqueId) {
-                this.events.fire_async("notify_watcher_status", { watcherId: event.watcherId, status: watcher.getWatcherStatus() });
+                this.events.fire_react("notify_watcher_status", { watcherId: event.watcherId, status: watcher.getWatcherStatus() });
                 return;
             }
 
             for(const follower of watcher.getFollowers()) {
                 if(follower.clientUniqueId === info.clientUniqueId && follower.clientId === info.clientId) {
-                    this.events.fire_async("notify_watcher_status", { watcherId: event.watcherId, status: follower.status });
+                    this.events.fire_react("notify_watcher_status", { watcherId: event.watcherId, status: follower.status });
                     return;
                 }
             }
@@ -220,7 +220,7 @@ class VideoViewer {
         const info = parseWatcherId(event.watcherId);
         for(const watcher of this.plugin.getCurrentWatchers()) {
             if(watcher.clientId === info.clientId && watcher.clientUniqueId === info.clientUniqueId) {
-                this.events.fire_async("notify_watcher_info", {
+                this.events.fire_react("notify_watcher_info", {
                     watcherId: event.watcherId,
                     clientName: watcher.getWatcherName(),
                     clientUniqueId: watcher.clientUniqueId,
@@ -232,7 +232,7 @@ class VideoViewer {
 
             for(const follower of watcher.getFollowers()) {
                 if(follower.clientUniqueId === info.clientUniqueId && follower.clientId === info.clientId) {
-                    this.events.fire_async("notify_watcher_info", {
+                    this.events.fire_react("notify_watcher_info", {
                         watcherId: event.watcherId,
                         clientName: follower.clientNickname,
                         clientUniqueId: follower.clientUniqueId,
@@ -254,7 +254,7 @@ class VideoViewer {
             if(watcher.clientId !== info.clientId || watcher.clientUniqueId !== info.clientUniqueId)
                 continue;
 
-            this.events.fire_async("notify_follower_list", {
+            this.events.fire_react("notify_follower_list", {
                 followerIds: watcher.getFollowers().map(e => followerWatcherId(e)),
                 watcherId: event.watcherId
             });
@@ -266,7 +266,7 @@ class VideoViewer {
 
     @EventHandler<VideoViewerEvents>("query_video")
     private handleQueryVideo() {
-        this.events.fire_async("notify_video", { url: this.currentVideoUrl });
+        this.events.fire_react("notify_video", { url: this.currentVideoUrl });
     }
 
     @EventHandler<VideoViewerEvents>("notify_local_status")

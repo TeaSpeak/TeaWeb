@@ -368,7 +368,7 @@ export class FileTransfer {
 
     updateProgress(progress: TransferProgress) {
         this.progress_ = progress;
-        this.events.fire_async("notify_progress", { progress: progress });
+        this.events.fire_later("notify_progress", { progress: progress });
     }
 
     awaitFinished() : Promise<void> {

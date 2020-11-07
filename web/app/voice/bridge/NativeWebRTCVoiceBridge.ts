@@ -43,8 +43,8 @@ export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
     }
 
     protected initializeRtpConnection(connection: RTCPeerConnection) {
-        connection.addStream(this.localVoiceDestinationNode.stream);
-        connection.addStream(this.localWhisperDestinationNode.stream);
+        connection.addTrack(this.localVoiceDestinationNode.stream.getAudioTracks()[0]);
+        connection.addTrack(this.localWhisperDestinationNode.stream.getAudioTracks()[0]);
     }
 
     protected handleVoiceDataChannelMessage(message: MessageEvent) {

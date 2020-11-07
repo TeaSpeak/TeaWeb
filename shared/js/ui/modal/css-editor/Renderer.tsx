@@ -63,7 +63,7 @@ const CssVariableRenderer = React.memo((props: { events: Registry<CssEditorEvent
 
 const CssVariableListBodyRenderer = (props: { events: Registry<CssEditorEvents> }) => {
     const [variables, setVariables] = useState<"loading" | CssVariable[]>(() => {
-        props.events.fire_async("query_css_variables");
+        props.events.fire_react("query_css_variables");
         return "loading";
     });
 

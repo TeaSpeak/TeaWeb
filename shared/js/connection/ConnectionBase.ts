@@ -6,6 +6,7 @@ import {ConnectionHandler, ConnectionState} from "../ConnectionHandler";
 import {AbstractCommandHandlerBoss} from "../connection/AbstractCommandHandler";
 import {Registry} from "../events";
 import {AbstractVoiceConnection} from "../connection/VoiceConnection";
+import {VideoConnection} from "tc-shared/connection/VideoConnection";
 
 export interface CommandOptions {
     flagset?: string[]; /* default: [] */
@@ -48,6 +49,7 @@ export abstract class AbstractServerConnection {
     abstract disconnect(reason?: string) : Promise<void>;
 
     abstract getVoiceConnection() : AbstractVoiceConnection;
+    abstract getVideoConnection() : VideoConnection;
 
     abstract command_handler_boss() : AbstractCommandHandlerBoss;
     abstract send_command(command: string, data?: any | any[], options?: CommandOptions) : Promise<CommandResult>;

@@ -4,7 +4,6 @@ import * as aplayer from "../audio/player";
 import {ServerConnection} from "../connection/ServerConnection";
 import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {VoiceClientController} from "./VoiceClient";
-import {settings, ValuedSettingsKey} from "tc-shared/settings";
 import {tr} from "tc-shared/i18n/localize";
 import {
     AbstractVoiceConnection,
@@ -27,24 +26,12 @@ import {VoiceClient} from "tc-shared/voice/VoiceClient";
 import {WebWhisperSession} from "tc-backend/web/voice/VoiceWhisper";
 import {VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 
-export enum VoiceEncodeType {
-    JS_ENCODE,
-    NATIVE_ENCODE
-}
-
-const KEY_VOICE_CONNECTION_TYPE: ValuedSettingsKey<number> = {
-    key: "voice_connection_type",
-    valueType: "number",
-    defaultValue: VoiceEncodeType.NATIVE_ENCODE
-};
-
 type CancelableWhisperTarget = WhisperTarget & { canceled: boolean };
 
 export class VoiceConnection extends AbstractVoiceConnection {
     readonly connection: ServerConnection;
 
     private readonly serverConnectionStateListener;
-    private connectionType: VoiceEncodeType = VoiceEncodeType.NATIVE_ENCODE;
     private connectionState: VoiceConnectionStatus;
     private failedConnectionMessage: string;
 
@@ -81,8 +68,6 @@ export class VoiceConnection extends AbstractVoiceConnection {
         this.connectionState = VoiceConnectionStatus.Disconnected;
 
         this.connection = connection;
-        this.connectionType = settings.static_global(KEY_VOICE_CONNECTION_TYPE, this.connectionType);
-
         this.connection.events.on("notify_connection_state_changed",
             this.serverConnectionStateListener = this.handleServerConnectionStateChanged.bind(this));
 
@@ -172,6 +157,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
     }
 
     private startVoiceBridge() {
+        return; /* We're not doing this currently */
         if(!aplayer.initialized()) {
             logDebug(LogCategory.VOICE, tr("Audio player isn't initialized yet. Waiting for it to initialize."));
             if(!this.awaitingAudioInitialize) {
@@ -420,7 +406,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
 
         if(this.currentlyReplayingVoice !== replaying) {
             this.currentlyReplayingVoice = replaying;
-            this.events.fire_async("notify_voice_replay_state_change", { replaying: replaying });
+            this.events.fire_later("notify_voice_replay_state_change", { replaying: replaying });
         }
     }
 
@@ -543,15 +529,5 @@ export class VoiceConnection extends AbstractVoiceConnection {
             });
         }
         this.voiceBridge?.stopWhispering();
-    }
-}
-
-/* funny fact that typescript dosn't find this */
-declare global {
-    interface RTCPeerConnection {
-        addStream(stream: MediaStream): void;
-        getLocalStreams(): MediaStream[];
-        getStreamById(streamId: string): MediaStream | null;
-        removeStream(stream: MediaStream): void;
     }
 }

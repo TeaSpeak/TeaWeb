@@ -1,6 +1,7 @@
 import * as React from "react";
 import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
 import {DropdownContainer} from "./DropDown";
+import {ClientIcon} from "svg-sprites/client-icons";
 const cssStyle = require("./Button.scss");
 
 export interface ButtonState {
@@ -16,8 +17,8 @@ export interface ButtonProperties {
 
     tooltip?: string;
 
-    iconNormal: string;
-    iconSwitched?: string;
+    iconNormal: string | ClientIcon;
+    iconSwitched?: string | ClientIcon;
 
     onToggle?: (state: boolean) => boolean | void;
 

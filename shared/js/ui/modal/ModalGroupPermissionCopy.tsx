@@ -2,7 +2,7 @@ import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {Registry} from "tc-shared/events";
 import {useRef, useState} from "react";
-import {FlatSelect} from "tc-shared/ui/react-elements/InputField";
+import {Select} from "tc-shared/ui/react-elements/InputField";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import * as React from "react";
 import {Button} from "tc-shared/ui/react-elements/Button";
@@ -51,7 +51,7 @@ const GroupSelector = (props: { events: Registry<GroupPermissionCopyModalEvents>
     const [ permissions, setPermissions ] = useState<"loading" | { createTemplate, createQuery }>("loading");
     const [ exitingGroups, setExitingGroups ] = useState<"loading" | GroupInfo[]>("loading");
 
-    const refSelect = useRef<FlatSelect>();
+    const refSelect = useRef<Select>();
 
     props.events.reactUse("notify_client_permissions", event => setPermissions({
         createQuery: event.createQueryGroup,
@@ -67,12 +67,12 @@ const GroupSelector = (props: { events: Registry<GroupPermissionCopyModalEvents>
 
     const isLoading = exitingGroups === "loading" || permissions === "loading";
     if(!isLoading && selectedGroup === undefined)
-        props.events.fire_async(props.updateEvent, {
+        props.events.fire_react(props.updateEvent, {
             group: (exitingGroups as GroupInfo[]).findIndex(e => e.id === props.defaultGroup) === -1 ? 0 : props.defaultGroup
         });
 
     return (
-        <FlatSelect
+        <Select
             ref={refSelect}
             label={props.label}
             className={props.className}
@@ -103,7 +103,7 @@ const GroupSelector = (props: { events: Registry<GroupPermissionCopyModalEvents>
                     ))
                 }
             </optgroup>
-        </FlatSelect>
+        </Select>
     )
 };
 
@@ -138,8 +138,8 @@ class ModalGroupPermissionCopy extends InternalModal {
     }
 
     protected onInitialize() {
-        this.events.fire_async("query_available_groups");
-        this.events.fire_async("query_client_permissions");
+        this.events.fire_react("query_available_groups");
+        this.events.fire_react("query_client_permissions");
     }
 
     protected onDestroy() {
@@ -191,7 +191,7 @@ function initializeGroupPermissionCopyController(connection: ConnectionHandler, 
     events.on("query_available_groups", event => {
         const groups = target === "server" ? connection.groups.serverGroups : connection.groups.channelGroups;
 
-        events.fire_async("query_available_groups_result", {
+        events.fire_react("query_available_groups_result", {
             groups: groups.map(e => {
                 return {
                     name: e.name,
@@ -202,7 +202,7 @@ function initializeGroupPermissionCopyController(connection: ConnectionHandler, 
         });
     });
 
-    const notifyClientPermissions = () => events.fire_async("notify_client_permissions", {
+    const notifyClientPermissions = () => events.fire_react("notify_client_permissions", {
         createQueryGroup: connection.permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_QUERYGROUP).granted(1),
         createTemplateGroup: connection.permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_TEMPLATES).granted(1)
     });

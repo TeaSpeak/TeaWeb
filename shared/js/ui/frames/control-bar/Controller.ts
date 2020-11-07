@@ -3,7 +3,8 @@ import {
     Bookmark,
     ControlBarEvents,
     ControlBarMode,
-    HostButtonInfo
+    HostButtonInfo,
+    VideoCamaraState
 } from "tc-shared/ui/frames/control-bar/Definitions";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
@@ -11,7 +12,8 @@ import {Settings, settings} from "tc-shared/settings";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {
     add_server_to_bookmarks,
-    Bookmark as ServerBookmark, bookmarkEvents,
+    Bookmark as ServerBookmark,
+    bookmarkEvents,
     bookmarks,
     bookmarks_flat,
     BookmarkType,
@@ -19,7 +21,8 @@ import {
     DirectoryBookmark
 } from "tc-shared/bookmarks";
 import {LogCategory, logWarn} from "tc-shared/log";
-import {createInputModal} from "tc-shared/ui/elements/Modal";
+import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
+import {VideoBroadcastState, VideoConnectionStatus} from "tc-shared/connection/VideoConnection";
 
 class InfoController {
     private readonly mode: ControlBarMode;
@@ -46,11 +49,13 @@ class InfoController {
             this.registerGlobalHandlerEvents(event.handler);
             this.sendConnectionState();
             this.sendAwayState();
+            this.sendCamaraState();
         }));
         events.push(server_connections.events().on("notify_handler_deleted", event => {
             this.unregisterGlobalHandlerEvents(event.handler);
             this.sendConnectionState();
             this.sendAwayState();
+            this.sendCamaraState();
         }));
         events.push(bookmarkEvents.on("notify_bookmarks_updated", () => this.sendBookmarks()));
 
@@ -92,6 +97,7 @@ class InfoController {
         events.push(handler.events().on("notify_connection_state_changed", event => {
             if(event.old_state === ConnectionState.CONNECTED || event.new_state === ConnectionState.CONNECTED) {
                 this.sendHostButton();
+                this.sendCamaraState();
             }
         }));
 
@@ -113,6 +119,11 @@ class InfoController {
             } else if(event.state === "subscribe") {
                 this.sendSubscribeState();
             }
+        }));
+
+        const videoConnection = handler.getServerConnection().getVideoConnection();
+        events.push(videoConnection.getEvents().on(["notify_local_broadcast_state_changed", "notify_status_changed"], () => {
+            this.sendCamaraState();
         }));
     }
 
@@ -138,6 +149,7 @@ class InfoController {
         this.sendSubscribeState();
         this.sendQueryState();
         this.sendHostButton();
+        this.sendCamaraState();
     }
 
     public sendConnectionState() {
@@ -145,7 +157,7 @@ class InfoController {
         const locallyConnected = this.currentHandler?.connected;
         const multisession = !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION);
 
-        this.events.fire_async("notify_connection_state", {
+        this.events.fire_react("notify_connection_state", {
             state: {
                 currentlyConnected: locallyConnected,
                 generallyConnected: globallyConnected,
@@ -171,7 +183,7 @@ class InfoController {
             }
         };
 
-        this.events.fire_async("notify_bookmarks", {
+        this.events.fire_react("notify_bookmarks", {
             marks: bookmarks().content.map(buildInfo)
         });
     }
@@ -180,7 +192,7 @@ class InfoController {
         const globalAwayCount = server_connections.all_connections().filter(handler => handler.isAway()).length;
         const awayLocally = !!this.currentHandler?.isAway();
 
-        this.events.fire_async("notify_away_state", {
+        this.events.fire_react("notify_away_state", {
             state: {
                 globallyAway: globalAwayCount === server_connections.all_connections().length ? "full" : globalAwayCount > 0 ? "partial" : "none",
                 locallyAway: awayLocally
@@ -189,25 +201,25 @@ class InfoController {
     }
 
     public sendMicrophoneState() {
-        this.events.fire_async("notify_microphone_state", {
+        this.events.fire_react("notify_microphone_state", {
             state: this.currentHandler?.isMicrophoneDisabled() ? "disabled" : this.currentHandler?.isMicrophoneMuted() ? "muted" : "enabled"
         });
     }
 
     public sendSpeakerState() {
-        this.events.fire_async("notify_speaker_state", {
+        this.events.fire_react("notify_speaker_state", {
             enabled: !this.currentHandler?.isSpeakerMuted()
         });
     }
 
     public sendSubscribeState() {
-        this.events.fire_async("notify_subscribe_state", {
+        this.events.fire_react("notify_subscribe_state", {
             subscribe: !!this.currentHandler?.isSubscribeToAllChannels()
         });
     }
 
     public sendQueryState() {
-        this.events.fire_async("notify_query_state", {
+        this.events.fire_react("notify_query_state", {
             shown: !!this.currentHandler?.areQueriesShown()
         });
     }
@@ -224,9 +236,31 @@ class InfoController {
             } : undefined;
         }
 
-        this.events.fire_async("notify_host_button", {
+        this.events.fire_react("notify_host_button", {
             button: info
         });
+    }
+
+    public sendCamaraState() {
+        let status: VideoCamaraState;
+        if(this.currentHandler?.connected) {
+            const videoConnection = this.currentHandler.getServerConnection().getVideoConnection();
+            if(videoConnection.getStatus() === VideoConnectionStatus.Connected) {
+                if(videoConnection.getBroadcastingState("camera") === VideoBroadcastState.Running) {
+                    status = "enabled";
+                } else {
+                    status = "disabled";
+                }
+            } else if(videoConnection.getStatus() === VideoConnectionStatus.Unsupported) {
+                status = "unsupported";
+            } else {
+                status = "unavailable";
+            }
+        } else {
+            status = "disconnected";
+        }
+
+        this.events.fire_react("notify_camara_state", { state: status });
     }
 }
 
@@ -245,7 +279,7 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
 
     events.on("notify_destroy", () => infoHandler.destroy());
 
-    events.on("query_mode", () => events.fire_async("notify_mode", { mode: infoHandler.getMode() }));
+    events.on("query_mode", () => events.fire_react("notify_mode", { mode: infoHandler.getMode() }));
     events.on("query_connection_state", () => infoHandler.sendConnectionState());
     events.on("query_bookmarks", () => infoHandler.sendBookmarks());
     events.on("query_away_state", () => infoHandler.sendAwayState());
@@ -253,6 +287,7 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
     events.on("query_speaker_state", () => infoHandler.sendSpeakerState());
     events.on("query_subscribe_state", () => infoHandler.sendSubscribeState());
     events.on("query_host_button", () => infoHandler.sendHostButton());
+    events.on("query_camara_state", () => infoHandler.sendCamaraState());
 
     events.on("action_connection_connect", event => global_client_actions.fire("action_open_window_connect", { newTab: event.newTab }));
     events.on("action_connection_disconnect", event => {
@@ -334,6 +369,13 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
     });
     events.on("action_query_manage", () => {
         global_client_actions.fire("action_open_window", { window: "query-manage" });
+    });
+    events.on("action_toggle_video", event => {
+        if(infoHandler.getCurrentHandler()) {
+            global_client_actions.fire("action_toggle_video_broadcasting", { connection: infoHandler.getCurrentHandler(), broadcastType: event.broadcastType, enabled: event.enable });
+        } else {
+            createErrorModal(tr("Missing connection handler"), tr("Cannot start video broadcasting with a missing connection handler")).open();
+        }
     });
 
     return infoHandler;

@@ -40,12 +40,12 @@ export enum InputState {
     RECORDING
 }
 
-export enum InputStartResult {
-    EOK = "eok",
+export enum MediaStreamRequestResult {
     EUNKNOWN = "eunknown",
     EDEVICEUNKNOWN = "edeviceunknown",
     EBUSY = "ebusy",
     ENOTALLOWED = "enotallowed",
+    ESYSTEMDENIED = "esystemdenied",
     ENOTSUPPORTED = "enotsupported"
 }
 
@@ -77,7 +77,7 @@ export interface AbstractInput {
     currentState() : InputState;
     destroy();
 
-    start() : Promise<InputStartResult>;
+    start() : Promise<MediaStreamRequestResult | true>;
     stop() : Promise<void>;
 
     /*

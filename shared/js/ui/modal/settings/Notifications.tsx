@@ -100,7 +100,7 @@ const EventTableHeader = (props: { focus: boolean }) => {
 
 const EventTableEntry = React.memo((props: { events: Registry<NotificationSettingsEvents>, event: string, depth: number, focusEnabled: boolean }) => {
     const [name, setName] = useState(() => {
-        props.events.fire_async("query_event_info", {key: props.event});
+        props.events.fire_react("query_event_info", {key: props.event});
         return undefined;
     });
     const [notificationState, setNotificationState] = useState<NotificationState>("unavailable");
@@ -306,7 +306,7 @@ const EventFilter = (props: { events: Registry<NotificationSettingsEvents> }) =>
                 className={cssStyle.input}
                 label={<Translatable>Filter Events</Translatable>}
                 labelType={"floating"}
-                onChange={text => props.events.fire_async("action_set_filter", {filter: text})}
+                onChange={text => props.events.fire_react("action_set_filter", {filter: text})}
             />
         </div>
     )
@@ -437,13 +437,13 @@ function initializeController(events: Registry<NotificationSettingsEvents>) {
             return result;
         };
 
-        events.fire_async("notify_events", {
+        events.fire_react("notify_events", {
             groups: knownEventGroups.map(groupMapper).filter(e => !!e),
             focusEnabled: __build.target === "client"
         });
     });
     events.on("query_event_info", event => {
-        events.fire_async("notify_event_info", {
+        events.fire_react("notify_event_info", {
             key: event.key,
             name: groupNames[event.key] || event.key,
             log: settings.global(Settings.FN_EVENTS_LOG_ENABLED(event.key), true) ? "enabled" : "disabled",
@@ -467,7 +467,7 @@ function initializeController(events: Registry<NotificationSettingsEvents>) {
                 break;
         }
 
-        events.fire_async("notify_set_state_result", {
+        events.fire_react("notify_set_state_result", {
             key: event.key,
             state: event.state,
             value: event.value

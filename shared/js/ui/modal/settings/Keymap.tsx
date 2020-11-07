@@ -356,7 +356,7 @@ function initialize_timeouts(event_registry: Registry<KeyMapEvents>) {
 
 function initialize_controller(event_registry: Registry<KeyMapEvents>) {
     event_registry.on("query_keymap", event => {
-        event_registry.fire_async("query_keymap_result", {
+        event_registry.fire_react("query_keymap_result", {
             status: "success",
             action: event.action,
             key: keycontrol.key(event.action)
@@ -366,10 +366,10 @@ function initialize_controller(event_registry: Registry<KeyMapEvents>) {
     event_registry.on("set_keymap", event => {
         try {
             keycontrol.set_key(event.action, event.key);
-            event_registry.fire_async("set_keymap_result", {status: "success", action: event.action, key: event.key});
+            event_registry.fire_react("set_keymap_result", {status: "success", action: event.action, key: event.key});
         } catch (error) {
             console.warn("Failed to change key for action %s: %o", event.action, error);
-            event_registry.fire_async("set_keymap_result", {
+            event_registry.fire_react("set_keymap_result", {
                 status: "error",
                 action: event.action,
                 error: error instanceof Error ? error.message : error?.toString()

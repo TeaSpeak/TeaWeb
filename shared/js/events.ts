@@ -4,7 +4,6 @@ import {guid} from "./crypto/uid";
 import * as React from "react";
 import {useEffect} from "react";
 import {unstable_batchedUpdates} from "react-dom";
-import {ext} from "twemoji";
 
 export interface Event<Events, T = keyof Events> {
     readonly type: T;
@@ -25,7 +24,23 @@ export class SingletonEvent implements Event<SingletonEvents, "singletone-instan
 
 export interface EventReceiver<Events extends { [key: string]: any } = { [key: string]: any }> {
     fire<T extends keyof Events>(event_type: T, data?: Events[T], overrideTypeKey?: boolean);
-    fire_async<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void);
+
+    /**
+     * Fire an event later by using setTimeout(..)
+     * @param event_type The target event to be fired
+     * @param data The payload of the event
+     * @param callback The callback will be called after the event has been successfully dispatched
+     */
+    fire_later<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void);
+
+    /**
+     * Fire an event, which will be delayed until the next animation frame.
+     * This ensures that all react components have been successfully mounted/unmounted.
+     * @param event_type The target event to be fired
+     * @param data The payload of the event
+     * @param callback The callback will be called after the event has been successfully dispatched
+     */
+    fire_react<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void);
 }
 
 const event_annotation_key = guid();
@@ -41,8 +56,11 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
     private debugPrefix = undefined;
     private warnUnhandledEvents = false;
 
-    private pendingCallbacks: { type: any, data: any }[] = [];
-    private pendingCallbacksTimeout: number = 0;
+    private pendingAsyncCallbacks: { type: any, data: any, callback: () => void }[];
+    private pendingAsyncCallbacksTimeout: number = 0;
+
+    private pendingReactCallbacks: { type: any, data: any, callback: () => void }[];
+    private pendingReactCallbacksFrame: number = 0;
 
     constructor() {
         this.registryUuid = "evreg_data_" + guid();
@@ -131,9 +149,12 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
             return;
         }
         const handlers = this.handler[event as any] || (this.handler[event as any] = []);
+
         useEffect(() => {
             handlers.push(handler);
-            return () => handlers.remove(handler);
+            return () => {
+                handlers.remove(handler);
+            };
         }, reactEffectDependencies);
     }
 
@@ -204,25 +225,65 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
         }
     }
 
-    fire_async<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void) {
-        if(!this.pendingCallbacksTimeout) {
-            this.pendingCallbacksTimeout = setTimeout(() => this.invokeAsyncCallbacks());
-            this.pendingCallbacks = [];
+    fire_later<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void) {
+        if(!this.pendingAsyncCallbacksTimeout) {
+            this.pendingAsyncCallbacksTimeout = setTimeout(() => this.invokeAsyncCallbacks());
+            this.pendingAsyncCallbacks = [];
         }
-        this.pendingCallbacks.push({ type: event_type, data: data });
+        this.pendingAsyncCallbacks.push({ type: event_type, data: data, callback: callback });
+    }
+
+    fire_react<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void) {
+        if(!this.pendingReactCallbacks) {
+            this.pendingReactCallbacksFrame = requestAnimationFrame(() => this.invokeReactCallbacks());
+            this.pendingReactCallbacks = [];
+        }
+        this.pendingReactCallbacks.push({ type: event_type, data: data, callback: callback });
     }
 
     private invokeAsyncCallbacks() {
-        const callbacks = this.pendingCallbacks;
-        this.pendingCallbacksTimeout = 0;
-        this.pendingCallbacks = undefined;
+        const callbacks = this.pendingAsyncCallbacks;
+        this.pendingAsyncCallbacksTimeout = 0;
+        this.pendingAsyncCallbacks = undefined;
 
-        unstable_batchedUpdates(() => {
-            let index = 0;
-            while(index < callbacks.length) {
-                this.fire(callbacks[index].type, callbacks[index].data);
-                index++;
+        let index = 0;
+        while(index < callbacks.length) {
+            this.fire(callbacks[index].type, callbacks[index].data);
+            try {
+                if(callbacks[index].callback) {
+                    callbacks[index].callback();
+                }
+            } catch (error) {
+                console.error(error);
+                /* TODO: Improve error logging? */
             }
+            index++;
+        }
+    }
+
+    private invokeReactCallbacks() {
+        const callbacks = this.pendingReactCallbacks;
+        this.pendingReactCallbacksFrame = 0;
+        this.pendingReactCallbacks = undefined;
+
+        /* run this after the requestAnimationFrame has been finished */
+        setTimeout(() => {
+            /* batch all react updates */
+            unstable_batchedUpdates(() => {
+                let index = 0;
+                while(index < callbacks.length) {
+                    this.fire(callbacks[index].type, callbacks[index].data);
+                    try {
+                        if(callbacks[index].callback) {
+                            callbacks[index].callback();
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        /* TODO: Improve error logging? */
+                    }
+                    index++;
+                }
+            })
         });
     }
 

@@ -61,11 +61,11 @@ function initializeController(connection: ConnectionHandler, events: Registry<Ec
     });
 
     events.on("query_test_state", () => {
-        events.fire_async("notify_tests_toggle", {enabled: settings.global(Settings.KEY_VOICE_ECHO_TEST_ENABLED)});
+        events.fire_react("notify_tests_toggle", {enabled: settings.global(Settings.KEY_VOICE_ECHO_TEST_ENABLED)});
     });
 
     events.on("notify_destroy", settings.globalChangeListener(Settings.KEY_VOICE_ECHO_TEST_ENABLED, value => {
-        events.fire_async("notify_tests_toggle", {enabled: value});
+        events.fire_react("notify_tests_toggle", {enabled: value});
     }));
 
     events.on("action_test_result", event => {
@@ -127,7 +127,7 @@ function initializeController(connection: ConnectionHandler, events: Registry<Ec
     events.on("query_voice_connection_state", () => reportVoiceConnectionState(connection.getServerConnection().getVoiceConnection().getConnectionState()));
 
     events.on("query_test_state", () => {
-        events.fire_async("notify_test_state", {state: testState});
+        events.fire_react("notify_test_state", {state: testState});
     });
 
     events.on("action_start_test", () => {

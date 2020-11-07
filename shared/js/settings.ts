@@ -505,6 +505,13 @@ export class Settings extends StaticSettings {
         valueType: "boolean",
     };
 
+    static readonly KEY_STOP_VIDEO_ON_SWITCH: ValuedSettingsKey<boolean> = {
+        key: 'stop_video_on_channel_switch',
+        defaultValue: true,
+        description: 'Stop video broadcasting on channel switch',
+        valueType: "boolean",
+    };
+
     static readonly FN_LOG_ENABLED: (category: string) => SettingsKey<boolean> = category => {
         return {
             key: "log." + category.toLowerCase() + ".enabled",

@@ -231,7 +231,7 @@ export function spawnClientVolumeChange(client: ClientEntry) {
     const events = new Registry<VolumeChangeEvents>();
 
     events.on("query-volume", () => {
-        events.fire_async("query-volume-response", {
+        events.fire_react("query-volume-response", {
             volume: client.getAudioVolume()
         });
     });
@@ -263,7 +263,7 @@ export function spawnMusicBotVolumeChange(client: MusicClientEntry, maxValue: nu
     const events = new Registry<VolumeChangeEvents>();
 
     events.on("query-volume", () => {
-        events.fire_async("query-volume-response", {
+        events.fire_react("query-volume-response", {
             volume: client.properties.player_volume
         });
     });

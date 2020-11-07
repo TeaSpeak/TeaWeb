@@ -468,7 +468,7 @@ export class ConversationManager extends AbstractChatManager<ConversationUIEvent
 
     @EventHandler<ConversationUIEvents>("query_selected_chat")
     private handleQuerySelectedChat() {
-        this.uiEvents.fire_async("notify_selected_chat", { chatId: isNaN(this.selectedConversation_) ? "unselected" : this.selectedConversation_ + ""})
+        this.uiEvents.fire_react("notify_selected_chat", { chatId: isNaN(this.selectedConversation_) ? "unselected" : this.selectedConversation_ + ""})
     }
 
     @EventHandler<ConversationUIEvents>("notify_selected_chat")

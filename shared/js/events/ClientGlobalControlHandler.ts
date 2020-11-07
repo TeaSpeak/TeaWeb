@@ -16,6 +16,8 @@ import {spawnGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-edit
 import {spawnModalCssVariableEditor} from "tc-shared/ui/modal/css-editor/Controller";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {spawnAbout} from "tc-shared/ui/modal/ModalAbout";
+import {spawnVideoSourceSelectModal} from "tc-shared/ui/modal/video-source/Controller";
+import {LogCategory, logError} from "tc-shared/log";
 
 /*
 function initialize_sounds(event_registry: Registry<ClientGlobalControlEvents>) {
@@ -172,5 +174,32 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
 
     event_registry.on("action_open_window_permissions", event => {
         spawnPermissionEditorModal(event.connection ? event.connection : server_connections.active_connection(), event.defaultTab);
+    });
+
+    event_registry.on("action_toggle_video_broadcasting", event => {
+        if(event.enabled) {
+            if(event.broadcastType === "camera") {
+                spawnVideoSourceSelectModal().then(source => {
+                    if(!source) { return; }
+
+                    try {
+                        event.connection.getServerConnection().getVideoConnection().startBroadcasting("camera", source)
+                            .catch(error => {
+                                logError(LogCategory.VIDEO, tr("Failed to start video broadcasting: %o"), error);
+                                if(typeof error !== "string") {
+                                    error = tr("lookup the console for detail");
+                                }
+                                createErrorModal(tr("Failed to start video broadcasting"), tra("Failed to start video broadcasting:\n{}", error)).open();
+                            });
+                    } finally {
+
+                    }
+                });
+            } else {
+                /* TODO! */
+            }
+        } else {
+            event.connection.getServerConnection().getVideoConnection().stopBroadcasting(event.broadcastType);
+        }
     });
 }

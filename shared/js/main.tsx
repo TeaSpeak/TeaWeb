@@ -52,6 +52,8 @@ import {Registry} from "tc-shared/events";
 import {ControlBarEvents} from "tc-shared/ui/frames/control-bar/Definitions";
 import {ControlBar2} from "tc-shared/ui/frames/control-bar/Renderer";
 import {initializeControlBarController} from "tc-shared/ui/frames/control-bar/Controller";
+import {spawnVideoSourceSelectModal} from "tc-shared/ui/modal/video-source/Controller";
+import {getVideoDriver} from "tc-shared/video/VideoSource";
 
 let preventWelcomeUI = false;
 async function initialize() {
@@ -245,7 +247,17 @@ function main() {
 
     /* schedule it a bit later then the main because the main function is still within the loader */
     setTimeout(() => {
+        (window as any).spawnVideo = async () => {
+            const source = await spawnVideoSourceSelectModal();
+            if(!source) { return; }
+
+            await server_connections.active_connection().getServerConnection().getVideoConnection().startBroadcasting("camera", source);
+        };
+
+        (window as any).videoDriver = getVideoDriver();
         const connection = server_connections.active_connection();
+
+        //(window as any).spawnVideo();
         /*
         Modals.createChannelModal(connection, undefined, undefined, connection.permissions, (cb, perms) => {
             

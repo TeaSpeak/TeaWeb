@@ -75,7 +75,7 @@ export function openModalNewcomer(): Modal {
 
     event_registry.fire("show_step", {step: "welcome"});
     modal.open();
-    event_registry.fire_async("modal-shown");
+    event_registry.fire_react("modal-shown");
     return modal;
 }
 
@@ -138,7 +138,7 @@ function initializeStepWelcome(tag: JQuery, event_registry: Registry<EventModalN
     event_registry.on("show_step", e => {
         if (e.step !== "welcome") return;
 
-        event_registry.fire_async("step-status", {allowNextStep: true, allowPreviousStep: true});
+        event_registry.fire_react("step-status", {allowNextStep: true, allowPreviousStep: true});
     });
 }
 
@@ -146,7 +146,7 @@ function initializeStepFinish(tag: JQuery, event_registry: Registry<EventModalNe
     event_registry.on("show_step", e => {
         if (e.step !== "finish") return;
 
-        event_registry.fire_async("step-status", {allowNextStep: true, allowPreviousStep: true});
+        event_registry.fire_react("step-status", {allowNextStep: true, allowPreviousStep: true});
     });
 }
 
@@ -159,7 +159,7 @@ function initializeStepIdentity(tag: JQuery, event_registry: Registry<EventModal
     let stepShown = false;
     let help_animation_done = false;
     const update_step_status = () => {
-        event_registry.fire_async("step-status", {
+        event_registry.fire_react("step-status", {
             allowNextStep: help_animation_done,
             allowPreviousStep: help_animation_done
         });
@@ -344,7 +344,7 @@ function initializeStepMicrophone(tag: JQuery, event_registry: Registry<EventMod
     let stepShown = false;
 
     const settingEvents = new Registry<MicrophoneSettingsEvents>();
-    settingEvents.on("query_help", () => settingEvents.fire_async("notify_highlight", {field: helpStep <= 2 ? ("hs-" + helpStep) as any : undefined}));
+    settingEvents.on("query_help", () => settingEvents.fire_react("notify_highlight", {field: helpStep <= 2 ? ("hs-" + helpStep) as any : undefined}));
     settingEvents.on("action_help_click", () => {
         if (!stepShown) {
             return;
@@ -353,7 +353,7 @@ function initializeStepMicrophone(tag: JQuery, event_registry: Registry<EventMod
         helpStep++;
         settingEvents.fire("query_help");
 
-        event_registry.fire_async("step-status", {allowNextStep: helpStep > 2, allowPreviousStep: helpStep > 2})
+        event_registry.fire_react("step-status", {allowNextStep: helpStep > 2, allowPreviousStep: helpStep > 2})
     });
     event_registry.on("action-next-help", () => settingEvents.fire("action_help_click"));
 
@@ -372,6 +372,6 @@ function initializeStepMicrophone(tag: JQuery, event_registry: Registry<EventMod
             return;
         }
 
-        event_registry.fire_async("step-status", {allowNextStep: helpStep > 2, allowPreviousStep: helpStep > 2});
+        event_registry.fire_react("step-status", {allowNextStep: helpStep > 2, allowPreviousStep: helpStep > 2});
     });
 }

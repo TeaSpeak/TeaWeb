@@ -69,7 +69,7 @@ export abstract class AbstractChat<Events extends ConversationUIEvents> {
             }
 
             /* let all other events run before */
-            this.events.fire_async("notify_chat_event", {
+            this.events.fire_react("notify_chat_event", {
                 chatId: this.chatId,
                 triggerUnread: triggerUnread,
                 event: event
@@ -112,7 +112,7 @@ export abstract class AbstractChat<Events extends ConversationUIEvents> {
         switch (this.mode) {
             case "normal":
                 if(this.conversationPrivate && !this.canClientAccessChat()) {
-                    this.events.fire_async("notify_conversation_state", {
+                    this.events.fire_react("notify_conversation_state", {
                         chatId: this.chatId,
                         state: "private",
                         crossChannelChatSupported: this.crossChannelChatSupported
@@ -120,7 +120,7 @@ export abstract class AbstractChat<Events extends ConversationUIEvents> {
                     return;
                 }
 
-                this.events.fire_async("notify_conversation_state", {
+                this.events.fire_react("notify_conversation_state", {
                     chatId: this.chatId,
                     state: "normal",
 
@@ -140,14 +140,14 @@ export abstract class AbstractChat<Events extends ConversationUIEvents> {
 
             case "loading":
             case "unloaded":
-                this.events.fire_async("notify_conversation_state", {
+                this.events.fire_react("notify_conversation_state", {
                     chatId: this.chatId,
                     state: "loading"
                 });
                 break;
 
             case "error":
-                this.events.fire_async("notify_conversation_state", {
+                this.events.fire_react("notify_conversation_state", {
                     chatId: this.chatId,
                     state: "error",
                     errorMessage: this.errorMessage
@@ -155,7 +155,7 @@ export abstract class AbstractChat<Events extends ConversationUIEvents> {
                 break;
 
             case "no-permissions":
-                this.events.fire_async("notify_conversation_state", {
+                this.events.fire_react("notify_conversation_state", {
                     chatId: this.chatId,
                     state: "no-permissions",
                     failedPermission: this.failedPermission
@@ -225,7 +225,7 @@ export abstract class AbstractChat<Events extends ConversationUIEvents> {
             return;
 
         this.unreadTimestamp = timestamp;
-        this.events.fire_async("notify_unread_timestamp_changed", { chatId: this.chatId, timestamp: timestamp });
+        this.events.fire_react("notify_unread_timestamp_changed", { chatId: this.chatId, timestamp: timestamp });
     }
 
     public jumpToPresent() {
@@ -244,7 +244,7 @@ export abstract class AbstractChat<Events extends ConversationUIEvents> {
 
             switch (result.status) {
                 case "success":
-                    this.events.fire_async("notify_conversation_history", {
+                    this.events.fire_react("notify_conversation_history", {
                         chatId: this.chatId,
                         state: "success",
 
@@ -256,7 +256,7 @@ export abstract class AbstractChat<Events extends ConversationUIEvents> {
                     break;
 
                 case "private":
-                    this.events.fire_async("notify_conversation_history", {
+                    this.events.fire_react("notify_conversation_history", {
                         chatId: this.chatId,
                         state: "error",
                         errorMessage: this.historyErrorMessage = tr("chat is private"),
@@ -265,7 +265,7 @@ export abstract class AbstractChat<Events extends ConversationUIEvents> {
                     break;
 
                 case "no-permission":
-                    this.events.fire_async("notify_conversation_history", {
+                    this.events.fire_react("notify_conversation_history", {
                         chatId: this.chatId,
                         state: "error",
                         errorMessage: this.historyErrorMessage = tra("failed on {}", result.failedPermission || tr("unknown permission")),
@@ -274,7 +274,7 @@ export abstract class AbstractChat<Events extends ConversationUIEvents> {
                     break;
 
                 case "error":
-                    this.events.fire_async("notify_conversation_history", {
+                    this.events.fire_react("notify_conversation_history", {
                         chatId: this.chatId,
                         state: "error",
                         errorMessage: this.historyErrorMessage = result.errorMessage,
@@ -325,7 +325,7 @@ export abstract class AbstractChatManager<Events extends ConversationUIEvents> {
     protected handleQueryConversationState(event: ConversationUIEvents["query_conversation_state"]) {
         const conversation = this.findChat(event.chatId);
         if(!conversation) {
-            this.uiEvents.fire_async("notify_conversation_state", {
+            this.uiEvents.fire_react("notify_conversation_state", {
                 state: "error",
                 errorMessage: tr("Unknown conversation"),
 
@@ -345,7 +345,7 @@ export abstract class AbstractChatManager<Events extends ConversationUIEvents> {
     protected handleQueryHistory(event: ConversationUIEvents["query_conversation_history"]) {
         const conversation = this.findChat(event.chatId);
         if(!conversation) {
-            this.uiEvents.fire_async("notify_conversation_history", {
+            this.uiEvents.fire_react("notify_conversation_history", {
                 state: "error",
                 errorMessage: tr("Unknown conversation"),
                 retryTimestamp: Date.now() + 10 * 1000,

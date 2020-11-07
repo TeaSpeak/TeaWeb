@@ -10,6 +10,7 @@ import {LogCategory, logWarn} from "tc-shared/log";
 import {Registry} from "tc-shared/events";
 import {WebIDevice} from "tc-backend/web/audio/Recorder";
 import * as loader from "tc-loader";
+import {queryMediaPermissions} from "tc-backend/web/media/Stream";
 
 async function requestMicrophonePermissions() : Promise<PermissionState> {
     const begin = Date.now();
@@ -37,24 +38,9 @@ class WebInputDeviceList extends AbstractDeviceList {
     }
 
     async initialize() {
-        if('permissions' in navigator && 'query' in navigator.permissions) {
-            try {
-                const result = await navigator.permissions.query({ name: "microphone" });
-                switch (result.state) {
-                    case "denied":
-                        this.setPermissionState("denied");
-                        break;
-
-                    case "granted":
-                        this.setPermissionState("granted");
-                        break;
-
-                    default:
-                        return "unknown";
-                }
-            } catch (error) {
-                logWarn(LogCategory.GENERAL, tr("Failed to query for microphone permissions: %s"), error);
-            }
+        const result = await queryMediaPermissions("audio");
+        if(typeof result === "boolean") {
+            this.setPermissionState(result ? "granted" : "denied");
         }
     }
 

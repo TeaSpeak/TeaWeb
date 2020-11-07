@@ -1025,7 +1025,7 @@ const ClientSelect = (props: { events: Registry<PermissionModalEvents>, tabTarge
         refInput.current.setValue(typeof event.id === "undefined" ? "" : event.id.toString());
         if (typeof event.id === "number" || typeof event.id === "string") {
             /* first do the state update */
-            props.events.fire_async("query_client_info", {client: event.id});
+            props.events.fire_react("query_client_info", {client: event.id});
         } else {
             refInput.current?.setValue(undefined);
             resetInfoFields(undefined);

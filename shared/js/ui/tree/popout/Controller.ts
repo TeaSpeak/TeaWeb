@@ -114,6 +114,6 @@ export class ChannelTreePopoutController {
                 break;
         }
 
-        this.uiEvents.fire_async("notify_title", { title: title });
+        this.uiEvents.fire_react("notify_title", { title: title });
     }
 }

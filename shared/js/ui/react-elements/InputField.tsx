@@ -1,5 +1,6 @@
 import * as React from "react";
 import {ReactElement} from "react";
+import {AST_Export} from "terser";
 
 const cssStyle = require("./InputField.scss");
 
@@ -223,7 +224,9 @@ export class FlatInputField extends React.Component<FlatInputFieldProperties, Fl
 }
 
 
-export interface FlatSelectProperties {
+export interface SelectProperties {
+    type?: "flat" | "boxed";
+
     defaultValue?: string;
     value?: string;
 
@@ -246,14 +249,14 @@ export interface FlatSelectProperties {
     onChange?: (event?: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 
-export interface FlatSelectFieldState {
+export interface SelectFieldState {
     disabled?: boolean;
 
     isInvalid: boolean;
     invalidMessage: string | React.ReactElement;
 }
 
-export class FlatSelect extends React.Component<FlatSelectProperties, FlatSelectFieldState> {
+export class Select extends React.Component<SelectProperties, SelectFieldState> {
     private refSelect = React.createRef<HTMLSelectElement>();
 
     constructor(props) {
@@ -268,7 +271,7 @@ export class FlatSelect extends React.Component<FlatSelectProperties, FlatSelect
     render() {
         const disabled = typeof this.state.disabled === "boolean" ? this.state.disabled : typeof this.props.disabled === "boolean" ? this.props.disabled : false;
         return (
-            <div className={cssStyle.containerFlat + " " + (this.state.isInvalid ? cssStyle.isInvalid : "") + " " + (this.props.className || "")}>
+            <div className={(this.props.type === "boxed" ? cssStyle.containerBoxed : cssStyle.containerFlat) + " " + (this.state.isInvalid ? cssStyle.isInvalid : "") + " " + (this.props.className || "") + " " + cssStyle.noLeftIcon + " " + cssStyle.noRightIcon}>
                 {this.props.label ?
                     <label className={cssStyle["type-static"] + " " + (this.props.labelClassName || "")}>{this.props.label}</label> : undefined}
                 <select
@@ -298,16 +301,6 @@ export class FlatSelect extends React.Component<FlatSelectProperties, FlatSelect
         this.refSelect.current?.focus();
     }
 }
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -162,7 +162,7 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
                 error: "error",
                 errorMessage: tr("target client is offline/invisible")
             });
-            this.events.fire_async("notify_chat_event", {
+            this.events.fire_react("notify_chat_event", {
                 chatId: this.chatId,
                 triggerUnread: false,
                 event: this.presentEvents.last()
@@ -406,7 +406,7 @@ export class PrivateConversationManager extends AbstractChatManager<PrivateConve
 
         this.activeConversation = conversation;
         /* fire this after all other events have been processed, maybe reportConversationList has been called before */
-        this.uiEvents.fire_async("notify_selected_chat", { chatId: this.activeConversation ? this.activeConversation.clientUniqueId : "unselected" });
+        this.uiEvents.fire_react("notify_selected_chat", { chatId: this.activeConversation ? this.activeConversation.clientUniqueId : "unselected" });
     }
 
     @EventHandler<PrivateConversationUIEvents>("action_select_chat")
@@ -439,7 +439,7 @@ export class PrivateConversationManager extends AbstractChatManager<PrivateConve
     }
 
     private reportConversationList() {
-        this.uiEvents.fire_async("notify_private_conversations", {
+        this.uiEvents.fire_react("notify_private_conversations", {
             conversations: this.conversations.map(conversation => conversation.generateUIInfo()),
             selected: this.activeConversation?.clientUniqueId || "unselected"
         });

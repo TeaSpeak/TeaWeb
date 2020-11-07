@@ -1,4 +1,9 @@
 # Changelog:
+* **07.11.20**
+    - Added video broadcasting to the web client
+    - Added various new user interfaces related to video broadcasting
+    - Reworked the whole media transmission system (now using native audio en/decoding)
+    
 * **05.10.20**
     - Reworked the top menu bar (now properly updates)
     - Recoded the top menu bar renderer for the web client

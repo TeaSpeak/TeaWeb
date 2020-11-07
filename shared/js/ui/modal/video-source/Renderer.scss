@@ -1,0 +1,126 @@
+@import "../../../../css/static/mixin";
+@import "../../../../css/static/properties";
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    padding: 1em;
+
+    @include user-select(none);
+
+    .content {
+        position: relative;
+
+        .overlay {
+            z-index: 10;
+            position: absolute;
+
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+
+            background-color: var(--modal-content-background);
+
+            &.noPermissions {
+
+            }
+        }
+
+        .section {
+            margin-bottom: 1em;
+
+            .head {
+                flex-grow: 1;
+                flex-shrink: 1;
+                align-self: flex-end;
+                font-weight: bold;
+                color: #e0e0e0;
+
+                @include text-dotdotdot();
+            }
+
+            .body {
+                .selectError {
+                    color: #a10000;
+                }
+
+                .videoContainer {
+                    position: relative;
+
+                    width: 37.5em; /* 600px for 16px/em */
+                    height: 25em; /* 400px for 16px/em */
+
+                    border-radius: .2em;
+                    border: 1px solid var(--boxed-input-field-border);
+                    background-color: var(--boxed-input-field-background);
+
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+
+                    video {
+                        max-height: 100%;
+                        max-width: 100%;
+                        align-self: center;
+                    }
+
+                    .overlay {
+                        z-index: 10;
+                        position: absolute;
+
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+
+                        display: none;
+                        flex-direction: column;
+                        justify-content: center;
+
+                        text-align: center;
+
+                        background-color: var(--boxed-input-field-background);
+
+                        &.shown {
+                            display: flex;
+                        }
+
+                        &.permissions {
+                            .text {
+                                font-size: 1.2em;
+                                padding-bottom: 1em;
+                            }
+
+                            .button {
+                                width: min-content;
+                                align-self: center;
+                            }
+                        }
+
+                        .error {
+                            font-size: 1.2em;
+                            color: #a10000;
+                            padding-bottom: 1em;
+                        }
+
+                        .info {
+                            font-size: 1.8em;
+                            padding-bottom: 1em;
+                            font-weight: 600;
+                            color: #4d4d4d;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .buttons {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}

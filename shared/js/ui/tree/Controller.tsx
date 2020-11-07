@@ -345,7 +345,7 @@ class ChannelTreeController {
 
     /* notify state update methods */
     public sendPopoutState() {
-        this.events.fire_async("notify_popout_state", {
+        this.events.fire_react("notify_popout_state", {
             showButton: this.options.popoutButton,
             shown: this.channelTree.popoutController.hasBeenPopedOut()
         });
@@ -378,11 +378,11 @@ class ChannelTreeController {
 
         this.channelTree.rootChannel().forEach(entry => buildSubTree(entry, 1));
 
-        this.events.fire_async("notify_tree_entries", { entries: entries });
+        this.events.fire_react("notify_tree_entries", { entries: entries });
     }
 
     public sendChannelInfo(channel: ChannelEntry) {
-        this.events.fire_async("notify_channel_info", {
+        this.events.fire_react("notify_channel_info", {
             treeEntryId: channel.uniqueEntryId,
             info: {
                 collapsedState: channel.child_channel_head || channel.channelClientsOrdered().length > 0 ? channel.collapsed ? "collapsed" : "expended" : "unset",
@@ -393,7 +393,7 @@ class ChannelTreeController {
     }
 
     public sendChannelStatusIcon(channel: ChannelEntry) {
-        this.events.fire_async("notify_channel_icon", { icon: channel.getStatusIcon(), treeEntryId: channel.uniqueEntryId });
+        this.events.fire_react("notify_channel_icon", { icon: channel.getStatusIcon(), treeEntryId: channel.uniqueEntryId });
     }
 
     public sendChannelIcons(channel: ChannelEntry) {
@@ -421,7 +421,7 @@ class ChannelTreeController {
                 icons.codecUnsupported = true;
         }
 
-        this.events.fire_async("notify_channel_icons", { icons: icons, treeEntryId: channel.uniqueEntryId });
+        this.events.fire_react("notify_channel_icons", { icons: icons, treeEntryId: channel.uniqueEntryId });
     }
 
     public sendClientNameInfo(client: ClientEntry) {
@@ -450,7 +450,7 @@ class ChannelTreeController {
         }
 
         const afkMessage = client.properties.client_away ? client.properties.client_away_message : undefined;
-        this.events.fire_async("notify_client_name", {
+        this.events.fire_react("notify_client_name", {
             info: {
                 name: client.clientNickName(),
                 awayMessage: afkMessage,
@@ -476,7 +476,7 @@ class ChannelTreeController {
             .map(group => { return { iconId: group.properties.iconid, groupName: group.name, groupId: group.id, serverUniqueId: uniqueServerId }; });
 
         const clientIcon = client.properties.client_icon_id === 0 ? [] : [client.properties.client_icon_id];
-        this.events.fire_async("notify_client_icons", {
+        this.events.fire_react("notify_client_icons", {
             icons: {
                 serverGroupIcons: serverGroupIcons,
                 channelGroupIcon: channelGroupIcon[0],
@@ -499,7 +499,7 @@ class ChannelTreeController {
             }
         }
 
-        this.events.fire_async("notify_client_talk_status", { treeEntryId: client.uniqueEntryId, requestMessage: client.properties.client_talk_request_msg, status: status });
+        this.events.fire_react("notify_client_talk_status", { treeEntryId: client.uniqueEntryId, requestMessage: client.properties.client_talk_request_msg, status: status });
     }
 
     public sendServerStatus(serverEntry: ServerEntry) {
@@ -529,7 +529,7 @@ class ChannelTreeController {
                 break;
         }
 
-        this.events.fire_async("notify_server_state", { treeEntryId: serverEntry.uniqueEntryId, state: status });
+        this.events.fire_react("notify_server_state", { treeEntryId: serverEntry.uniqueEntryId, state: status });
     }
 }
 
@@ -549,7 +549,7 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
             return;
         }
 
-        events.fire_async("notify_unread_state", { treeEntryId: event.treeEntryId, unread: entry.isUnread() });
+        events.fire_react("notify_unread_state", { treeEntryId: event.treeEntryId, unread: entry.isUnread() });
     });
 
     events.on("query_select_state", event => {
@@ -559,7 +559,7 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
             return;
         }
 
-        events.fire_async("notify_select_state", { treeEntryId: event.treeEntryId, selected: entry.isSelected() });
+        events.fire_react("notify_select_state", { treeEntryId: event.treeEntryId, selected: entry.isSelected() });
     });
 
     events.on("notify_destroy", channelTree.client.events().on("notify_visibility_changed", event => events.fire("notify_visibility_changed", event)));
@@ -599,7 +599,7 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
             return;
         }
 
-        events.fire_async("notify_client_status", { treeEntryId: entry.uniqueEntryId, status: entry.getStatusIcon() });
+        events.fire_react("notify_client_status", { treeEntryId: entry.uniqueEntryId, status: entry.getStatusIcon() });
     });
     events.on("query_client_name", event => {
         const entry = channelTree.findEntryId(event.treeEntryId);
@@ -785,7 +785,7 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
         if(selection.findIndex(element => !(element instanceof ClientEntry)) !== -1) { return; }
 
         moveSelection = selection as any;
-        events.fire_async("notify_entry_move", { entries: selection.map(client => (client as ClientEntry).clientNickName()).join(", "), begin: event.start, current: event.current });
+        events.fire_react("notify_entry_move", { entries: selection.map(client => (client as ClientEntry).clientNickName()).join(", "), begin: event.start, current: event.current });
     });
 
     events.on("action_move_entries", event => {

@@ -295,7 +295,7 @@ const PlayerController = React.memo((props: { events: Registry<VideoViewerEvents
 
     const [ mode, setMode ] = useState<"watcher" | "follower">("watcher");
     const [ videoUrl, setVideoUrl ] = useState<"querying" | string>(() => {
-        props.events.fire_async("query_video");
+        props.events.fire_react("query_video");
         return "querying";
     });
 

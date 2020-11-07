@@ -29,6 +29,7 @@ import {ClientIcon} from "svg-sprites/client-icons";
 import {VoiceClient} from "../voice/VoiceClient";
 import {VoicePlayerEvents, VoicePlayerState} from "../voice/VoicePlayer";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
+import {VideoClient} from "tc-shared/connection/VideoConnection";
 
 export enum ClientType {
     CLIENT_VOICE,
@@ -151,6 +152,8 @@ export interface ClientEvents extends ChannelTreeEntryEvents {
     notify_audio_level_changed: { newValue: number },
     notify_status_icon_changed: { newIcon: ClientIcon },
 
+    notify_video_handle_changed: { oldHandle: VideoClient | undefined, newHandle: VideoClient | undefined },
+
     music_status_update: {
         player_buffered_index: number,
         player_replay_index: number
@@ -193,6 +196,8 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
     protected voiceMuted: boolean;
     private readonly voiceCallbackStateChanged;
 
+    protected videoHandle: VideoClient;
+
     private promiseClientInfo: Promise<void>;
     private promiseClientInfoTimestamp: number;
 
@@ -213,11 +218,11 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
 
         this.voiceCallbackStateChanged = this.handleVoiceStateChange.bind(this);
 
-        this.events.on(["notify_speak_state_change", "notify_mute_state_change"], () => this.events.fire_async("notify_status_icon_changed", { newIcon: this.getStatusIcon() }));
+        this.events.on(["notify_speak_state_change", "notify_mute_state_change"], () => this.events.fire_later("notify_status_icon_changed", { newIcon: this.getStatusIcon() }));
         this.events.on("notify_properties_updated", event => {
             for (const key of StatusIconUpdateKeys) {
                 if (key in event.updated_properties) {
-                    this.events.fire_async("notify_status_icon_changed", { newIcon: this.getStatusIcon() })
+                    this.events.fire_later("notify_status_icon_changed", { newIcon: this.getStatusIcon() })
                     return;
                 }
             }
@@ -228,6 +233,10 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
         if(this.voiceHandle) {
             log.error(LogCategory.AUDIO, tr("Destroying client with an active audio handle. This could cause memory leaks!"));
             this.setVoiceClient(undefined);
+        }
+        if(this.videoHandle) {
+            log.error(LogCategory.AUDIO, tr("Destroying client with an active video handle. This could cause memory leaks!"));
+            this.setVideoClient(undefined);
         }
 
         this._channel = undefined;
@@ -247,6 +256,16 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
             this.voiceHandle.events.on("notify_state_changed", this.voiceCallbackStateChanged);
             this.handleVoiceStateChange({ oldState: VoicePlayerState.STOPPED, newState: handle.getState() });
         }
+    }
+
+    setVideoClient(handle: VideoClient) {
+        if(this.videoHandle === handle) {
+            return;
+        }
+
+        const oldHandle = this.videoHandle;
+        this.videoHandle = handle;
+        this.events.fire("notify_video_handle_changed", { oldHandle: oldHandle, newHandle: handle });
     }
 
     private handleVoiceStateChange(event: VoicePlayerEvents["notify_state_changed"]) {
@@ -272,6 +291,10 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
 
     getVoiceClient() : VoiceClient {
         return this.voiceHandle;
+    }
+
+    getVideoClient() : VideoClient {
+        return this.videoHandle;
     }
 
     get properties() : ClientProperties {

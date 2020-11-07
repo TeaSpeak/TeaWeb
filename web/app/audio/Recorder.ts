@@ -6,7 +6,7 @@ import {
     InputConsumer,
     InputConsumerType,
     InputEvents,
-    InputStartResult,
+    MediaStreamRequestResult,
     InputState,
     LevelMeter,
     NodeInputConsumer
@@ -17,6 +17,7 @@ import * as aplayer from "./player";
 import {JAbstractFilter, JStateFilter, JThresholdFilter} from "./RecorderFilter";
 import {Filter, FilterType, FilterTypeClass} from "tc-shared/voice/Filter";
 import {inputDeviceList} from "tc-backend/web/audio/RecorderDeviceList";
+import {requestMediaStream} from "tc-backend/web/media/Stream";
 
 declare global {
     interface MediaStream {
@@ -26,66 +27,6 @@ declare global {
 
 export interface WebIDevice extends IDevice {
     groupId: string;
-}
-
-async function requestMicrophoneMediaStream(constraints: MediaTrackConstraints, updateDeviceList: boolean) : Promise<InputStartResult | MediaStream> {
-    try {
-        log.info(LogCategory.AUDIO, tr("Requesting a microphone stream for device %s in group %s"), constraints.deviceId, constraints.groupId);
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: constraints });
-
-        if(updateDeviceList && inputDeviceList.getStatus() === "no-permissions") {
-            inputDeviceList.refresh().then(() => {}); /* added the then body to avoid a inspection warning... */
-        }
-
-        return stream;
-    } catch(error) {
-        if('name' in error) {
-            if(error.name === "NotAllowedError") {
-                log.warn(LogCategory.AUDIO, tr("Microphone request failed (No permissions). Browser message: %o"), error.message);
-                return InputStartResult.ENOTALLOWED;
-            } else {
-                log.warn(LogCategory.AUDIO, tr("Microphone request failed. Request resulted in error: %o: %o"), error.name, error);
-            }
-        } else {
-            log.warn(LogCategory.AUDIO, tr("Failed to initialize recording stream (%o)"), error);
-        }
-
-        return InputStartResult.EUNKNOWN;
-    }
-}
-
-/* request permission for devices only one per time! */
-let currentMediaStreamRequest: Promise<MediaStream | InputStartResult>;
-async function requestMediaStream(deviceId: string, groupId: string) : Promise<MediaStream | InputStartResult> {
-    /* wait for the current media stream requests to finish */
-    while(currentMediaStreamRequest) {
-        try {
-            await currentMediaStreamRequest;
-        } catch(error) { }
-    }
-
-    const audioConstrains: MediaTrackConstraints = {};
-    if(window.detectedBrowser?.name === "firefox") {
-        /*
-         * Firefox only allows to open one mic as well deciding whats the input device it.
-         * It does not respect the deviceId nor the groupId
-         */
-    } else {
-        audioConstrains.deviceId = deviceId;
-        audioConstrains.groupId = groupId;
-    }
-
-    audioConstrains.echoCancellation = true;
-    audioConstrains.autoGainControl = true;
-    audioConstrains.noiseSuppression = true;
-
-    const promise = (currentMediaStreamRequest = requestMicrophoneMediaStream(audioConstrains, true));
-    try {
-        return await currentMediaStreamRequest;
-    } finally {
-        if(currentMediaStreamRequest === promise)
-            currentMediaStreamRequest = undefined;
-    }
 }
 
 export class WebAudioRecorder implements AudioRecorderBacked {
@@ -133,7 +74,7 @@ class JavascriptInput implements AbstractInput {
     private inputFiltered: boolean = false;
     private filterMode: FilterMode = FilterMode.Block;
 
-    private startPromise: Promise<InputStartResult>;
+    private startPromise: Promise<MediaStreamRequestResult | true>;
 
     private volumeModifier: number = 1;
 
@@ -211,7 +152,7 @@ class JavascriptInput implements AbstractInput {
         }
     }
 
-    async start() : Promise<InputStartResult> {
+    async start() : Promise<MediaStreamRequestResult | true> {
         while(this.startPromise) {
             try {
                 await this.startPromise;
@@ -225,7 +166,7 @@ class JavascriptInput implements AbstractInput {
         return await (this.startPromise = Promise.resolve().then(() => this.doStart()));
     }
 
-    private async doStart() : Promise<InputStartResult> {
+    private async doStart() : Promise<MediaStreamRequestResult | true> {
         try {
             if(this.state != InputState.PAUSED) {
                 throw tr("recorder already started");
@@ -244,7 +185,7 @@ class JavascriptInput implements AbstractInput {
                 return;
             }
 
-            const requestResult = await requestMediaStream(deviceId, undefined);
+            const requestResult = await requestMediaStream(deviceId, undefined, "audio");
             if(!(requestResult instanceof MediaStream)) {
                 this.state = InputState.PAUSED;
                 return requestResult;
@@ -265,7 +206,7 @@ class JavascriptInput implements AbstractInput {
             this.state = InputState.RECORDING;
             this.updateFilterStatus(true);
 
-            return InputStartResult.EOK;
+            return true;
         } catch(error) {
             if(this.state == InputState.INITIALIZING) {
                 this.state = InputState.PAUSED;
@@ -563,15 +504,15 @@ class JavascriptLevelMeter implements LevelMeter {
             this._analyse_buffer = new Uint8Array(this._analyser_node.fftSize);
 
         /* starting stream */
-        const _result = await requestMediaStream(this._device.deviceId, this._device.groupId);
+        const _result = await requestMediaStream(this._device.deviceId, this._device.groupId, "audio");
         if(!(_result instanceof MediaStream)){
-            if(_result === InputStartResult.ENOTALLOWED)
+            if(_result === MediaStreamRequestResult.ENOTALLOWED)
                 throw tr("No permissions");
-            if(_result === InputStartResult.ENOTSUPPORTED)
+            if(_result === MediaStreamRequestResult.ENOTSUPPORTED)
                 throw tr("Not supported");
-            if(_result === InputStartResult.EBUSY)
+            if(_result === MediaStreamRequestResult.EBUSY)
                 throw tr("Device busy");
-            if(_result === InputStartResult.EUNKNOWN)
+            if(_result === MediaStreamRequestResult.EUNKNOWN)
                 throw tr("an error occurred");
             throw _result;
         }

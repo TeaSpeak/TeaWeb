@@ -1,7 +1,7 @@
 import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {Registry} from "tc-shared/events";
-import {FlatInputField, FlatSelect} from "tc-shared/ui/react-elements/InputField";
+import {FlatInputField, Select} from "tc-shared/ui/react-elements/InputField";
 import * as React from "react";
 import {useEffect, useRef, useState} from "react";
 import {GroupType} from "tc-shared/permission/GroupManager";
@@ -118,7 +118,7 @@ const GroupNameInput = (props: { events: Registry<GroupCreateModalEvents>, defau
 const GroupTypeSelector = (props: { events: Registry<GroupCreateModalEvents> }) => {
     const [ selectedType, setSelectedType ] = useState<"query" | "template" | "normal" | "loading">("loading");
     const [ permissions, setPermissions ] = useState<"loading" | { createTemplate, createQuery }>("loading");
-    const refSelect = useRef<FlatSelect>();
+    const refSelect = useRef<Select>();
 
     props.events.reactUse("notify_client_permissions", event => {
         setPermissions({
@@ -133,7 +133,7 @@ const GroupTypeSelector = (props: { events: Registry<GroupCreateModalEvents> }) 
     props.events.reactUse("action_set_type", event => setSelectedType(event.target));
 
     return (
-        <FlatSelect
+        <Select
             ref={refSelect}
             label={<Translatable>Target group type</Translatable>}
             className={cssStyle.groupType}
@@ -153,7 +153,7 @@ const GroupTypeSelector = (props: { events: Registry<GroupCreateModalEvents> }) 
             <option
                 value={"normal"}
             >{tr("Regular group")}</option>
-        </FlatSelect>
+        </Select>
     )
 };
 
@@ -162,7 +162,7 @@ const SourceGroupSelector = (props: { events: Registry<GroupCreateModalEvents>, 
     const [ permissions, setPermissions ] = useState<"loading" | { createTemplate, createQuery }>("loading");
     const [ exitingGroups, setExitingGroups ] = useState<"loading" | GroupInfo[]>("loading");
 
-    const refSelect = useRef<FlatSelect>();
+    const refSelect = useRef<Select>();
 
     props.events.reactUse("notify_client_permissions", event => setPermissions({
         createQuery: event.createQueryGroup,
@@ -178,12 +178,12 @@ const SourceGroupSelector = (props: { events: Registry<GroupCreateModalEvents>, 
 
     const isLoading = exitingGroups === "loading" || permissions === "loading";
     if(!isLoading && selectedGroup === undefined)
-        props.events.fire_async("action_set_source", {
+        props.events.fire_react("action_set_source", {
             group: (exitingGroups as GroupInfo[]).findIndex(e => e.id === props.defaultSource) === -1 ? 0 : props.defaultSource
         });
 
     return (
-        <FlatSelect
+        <Select
             ref={refSelect}
             label={<Translatable>Create group using this template</Translatable>}
             className={cssStyle.groupSource}
@@ -214,7 +214,7 @@ const SourceGroupSelector = (props: { events: Registry<GroupCreateModalEvents>, 
                     ))
                 }
             </optgroup>
-        </FlatSelect>
+        </Select>
     )
 };
 
@@ -249,8 +249,8 @@ class ModalGroupCreate extends InternalModal {
     }
 
     protected onInitialize() {
-        this.events.fire_async("query_available_groups");
-        this.events.fire_async("query_client_permissions");
+        this.events.fire_react("query_available_groups");
+        this.events.fire_react("query_client_permissions");
     }
 
     protected onDestroy() {
@@ -305,7 +305,7 @@ function initializeGroupCreateController(connection: ConnectionHandler, events: 
     events.on("query_available_groups", event => {
         const groups = target === "server" ? connection.groups.serverGroups : connection.groups.channelGroups;
 
-        events.fire_async("query_available_groups_result", {
+        events.fire_react("query_available_groups_result", {
             groups: groups.map(e => {
                 return {
                     name: e.name,
@@ -316,7 +316,7 @@ function initializeGroupCreateController(connection: ConnectionHandler, events: 
         });
     });
 
-    const notifyClientPermissions = () => events.fire_async("notify_client_permissions", {
+    const notifyClientPermissions = () => events.fire_react("notify_client_permissions", {
         createQueryGroup: connection.permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_QUERYGROUP).granted(1),
         createTemplateGroup: connection.permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_TEMPLATES).granted(1)
     });

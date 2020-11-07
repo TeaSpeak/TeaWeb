@@ -6,7 +6,8 @@ export interface PopoutIPCMessage {
     "hello-controller": { accepted: boolean, message?: string, userData?: any, registries?: string[] },
 
     "fire-event": {
-        type: string;
+        type: "sync" | "react" | "later";
+        eventType: string;
         payload: any;
         callbackId: string;
         registry: string;
@@ -62,6 +63,23 @@ export abstract class EventControllerBase<Type extends "controller" | "popout"> 
 
     private createEventReceiver(key: string) : EventReceiver {
         let refThis = this;
+
+        const fireEvent = (type: "react" | "later", eventType: any, data?: any[], callback?: () => void) => {
+            const callbackId = callback ? (++callbackIdIndex) + "-ev-cb" : undefined;
+            refThis.sendIPCMessage("fire-event", { type: type, eventType: eventType, payload: data, callbackId: callbackId, registry: key });
+            if(callbackId) {
+                const timeout = setTimeout(() => {
+                    delete refThis.eventFiredListeners[callbackId];
+                    callback();
+                }, 2500);
+
+                refThis.eventFiredListeners[callbackId] = {
+                    callback: callback,
+                    timeout: timeout
+                }
+            }
+        };
+
         return new class implements EventReceiver {
             fire<T extends keyof {}>(eventType: T, data?: any[T], overrideTypeKey?: boolean) {
                 if(refThis.omitEventType === eventType && refThis.omitEventData === data) {
@@ -69,23 +87,15 @@ export abstract class EventControllerBase<Type extends "controller" | "popout"> 
                     return;
                 }
 
-                refThis.sendIPCMessage("fire-event", { type: eventType, payload: data, callbackId: undefined, registry: key });
+                refThis.sendIPCMessage("fire-event", { type: "sync", eventType: eventType, payload: data, callbackId: undefined, registry: key });
             }
 
-            fire_async<T extends keyof {}>(eventType: T, data?: any[T], callback?: () => void) {
-                const callbackId = callback ? (++callbackIdIndex) + "-ev-cb" : undefined;
-                refThis.sendIPCMessage("fire-event", { type: eventType, payload: data, callbackId: callbackId, registry: key });
-                if(callbackId) {
-                    const timeout = setTimeout(() => {
-                        delete refThis.eventFiredListeners[callbackId];
-                        callback();
-                    }, 2500);
+            fire_later<T extends keyof { [p: string]: any }>(eventType: T, data?: { [p: string]: any }[T], callback?: () => void) {
+                fireEvent("later", eventType, data, callback);
+            }
 
-                    refThis.eventFiredListeners[callbackId] = {
-                        callback: callback,
-                        timeout: timeout
-                    }
-                }
+            fire_react<T extends keyof {}>(eventType: T, data?: any[T], callback?: () => void) {
+                fireEvent("react", eventType, data, callback);
             }
         };
     }
@@ -107,9 +117,11 @@ export abstract class EventControllerBase<Type extends "controller" | "popout"> 
         switch (type) {
             case "fire-event": {
                 const tpayload = payload as PopoutIPCMessage["fire-event"];
+
+                /* FIXME: Pay respect to the different event types and may bundle react updates! */
                 this.omitEventData = tpayload.payload;
-                this.omitEventType = tpayload.type;
-                this.localRegistries[tpayload.registry].fire(tpayload.type as any, tpayload.payload);
+                this.omitEventType = tpayload.eventType;
+                this.localRegistries[tpayload.registry].fire(tpayload.eventType, tpayload.payload);
                 if(tpayload.callbackId)
                     this.sendIPCMessage("fire-event-callback", { callbackId: tpayload.callbackId });
                 break;

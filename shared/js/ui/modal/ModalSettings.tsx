@@ -694,7 +694,7 @@ export namespace modal_settings {
     }
 
     export function initialize_identity_profiles_controller(event_registry: Registry<events.modal.settings.profiles>) {
-        const send_error = (event, profile, text) => event_registry.fire_async(event, {
+        const send_error = (event, profile, text) => event_registry.fire_react(event, {
             status: "error",
             profile_id: profile,
             error: text
@@ -702,7 +702,7 @@ export namespace modal_settings {
         event_registry.on("create-profile", event => {
             const profile = profiles.createConnectProfile(event.name);
             profiles.mark_need_save();
-            event_registry.fire_async("create-profile-result", {
+            event_registry.fire_react("create-profile-result", {
                 status: "success",
                 name: event.name,
                 profile_id: profile.id
@@ -718,7 +718,7 @@ export namespace modal_settings {
             }
 
             profiles.delete_profile(profile);
-            event_registry.fire_async("delete-profile-result", {status: "success", profile_id: event.profile_id});
+            event_registry.fire_react("delete-profile-result", {status: "success", profile_id: event.profile_id});
         });
 
         const build_profile_info = (profile: ConnectionProfile) => {
@@ -746,7 +746,7 @@ export namespace modal_settings {
             }
         };
         event_registry.on("query-profile-list", event => {
-            event_registry.fire_async("query-profile-list-result", {
+            event_registry.fire_react("query-profile-list-result", {
                 status: "success",
                 profiles: profiles.availableConnectProfiles().map(e => build_profile_info(e))
             });
@@ -760,7 +760,7 @@ export namespace modal_settings {
                 return;
             }
 
-            event_registry.fire_async("query-profile-result", {
+            event_registry.fire_react("query-profile-result", {
                 status: "success",
                 profile_id: event.profile_id,
                 info: build_profile_info(profile)
@@ -776,7 +776,7 @@ export namespace modal_settings {
             }
 
             const old = profiles.set_default_profile(profile);
-            event_registry.fire_async("set-default-profile-result", {
+            event_registry.fire_react("set-default-profile-result", {
                 status: "success",
                 old_profile_id: event.profile_id,
                 new_profile_id: old.id
@@ -793,7 +793,7 @@ export namespace modal_settings {
 
             profile.profileName = event.name;
             profiles.mark_need_save();
-            event_registry.fire_async("set-profile-name-result", {
+            event_registry.fire_react("set-profile-name-result", {
                 name: event.name,
                 profile_id: event.profile_id,
                 status: "success"
@@ -810,7 +810,7 @@ export namespace modal_settings {
 
             profile.defaultUsername = event.name;
             profiles.mark_need_save();
-            event_registry.fire_async("set-default-name-result", {
+            event_registry.fire_react("set-default-name-result", {
                 name: event.name,
                 profile_id: event.profile_id,
                 status: "success"
@@ -831,7 +831,7 @@ export namespace modal_settings {
             identity.set_name(event.name);
             profiles.mark_need_save();
 
-            event_registry.fire_async("set-identity-name-name-result", {
+            event_registry.fire_react("set-identity-name-name-result", {
                 name: event.name,
                 profile_id: event.profile_id,
                 status: "success"
@@ -846,7 +846,7 @@ export namespace modal_settings {
                 return;
             }
 
-            event_registry.fire_async("query-profile-validity-result", {
+            event_registry.fire_react("query-profile-validity-result", {
                 status: "success",
                 profile_id: event.profile_id,
                 valid: profile.valid()
@@ -863,7 +863,7 @@ export namespace modal_settings {
 
             const ts = profile.selectedIdentity(IdentitifyType.TEAMSPEAK) as TeaSpeakIdentity;
             if (!ts) {
-                event_registry.fire_async("query-identity-teamspeak-result", {
+                event_registry.fire_react("query-identity-teamspeak-result", {
                     status: "error",
                     profile_id: event.profile_id,
                     error: tr("Missing identity")
@@ -872,7 +872,7 @@ export namespace modal_settings {
             }
 
             ts.level().then(level => {
-                event_registry.fire_async("query-identity-teamspeak-result", {
+                event_registry.fire_react("query-identity-teamspeak-result", {
                     status: "success",
                     level: level,
                     profile_id: event.profile_id
@@ -911,7 +911,7 @@ export namespace modal_settings {
                 profiles.mark_need_save();
 
                 identity.level().then(level => {
-                    event_registry.fire_async("generate-identity-teamspeak-result", {
+                    event_registry.fire_react("generate-identity-teamspeak-result", {
                         status: "success",
                         profile_id: event.profile_id,
                         unique_id: identity.uid(),
@@ -942,7 +942,7 @@ export namespace modal_settings {
                     console.error(tr("Failed to calculate level for a new imported identity. Error object: %o"), error);
                     return Promise.resolve(undefined);
                 }).then(level => {
-                    event_registry.fire_async("import-identity-teamspeak-result", {
+                    event_registry.fire_react("import-identity-teamspeak-result", {
                         profile_id: event.profile_id,
                         unique_id: identity.uid(),
                         level: level
@@ -965,7 +965,7 @@ export namespace modal_settings {
                 profiles.mark_need_save();
 
                 identity.level().then(level => {
-                    event_registry.fire_async("improve-identity-teamspeak-level-update", {
+                    event_registry.fire_react("improve-identity-teamspeak-level-update", {
                         profile_id: event.profile_id,
                         new_level: level
                     });
@@ -1533,7 +1533,7 @@ export namespace modal_settings {
                     event_registry.on("import-identity-teamspeak-result", event => {
                         if (event.profile_id !== current_profile) return;
 
-                        event_registry.fire_async("query-profile", {profile_id: event.profile_id}); /* we do it like this so the default nickname changes as well */
+                        event_registry.fire_react("query-profile", {profile_id: event.profile_id}); /* we do it like this so the default nickname changes as well */
                         createInfoModal(tr("Identity imported"), tr("Your identity had been successfully imported generated")).open();
                     });
                 }
@@ -1582,7 +1582,7 @@ export namespace modal_settings {
                     container_invalid.toggle(!valid);
                 });
 
-                button_setup.on('click', event => event_registry.fire_async("setup-forum-connection"));
+                button_setup.on('click', event => event_registry.fire_react("setup-forum-connection"));
                 button_setup.toggle(settings.forum_setuppable);
             }
 

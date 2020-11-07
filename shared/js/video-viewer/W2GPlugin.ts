@@ -432,7 +432,7 @@ export class W2GPluginCmdHandler extends PluginCmdHandler {
             case "notify_destroyed":
                 const oldWatcher = this.localFollowing;
                 this.localFollowing = undefined;
-                this.events.fire_async("notify_following_changed", { newWatcher: undefined, oldWatcher: oldWatcher });
+                this.events.fire_react("notify_following_changed", { newWatcher: undefined, oldWatcher: oldWatcher });
                 this.notifyLocalStatus();
                 break;
         }

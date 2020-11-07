@@ -324,6 +324,6 @@ export class ChatBox extends React.Component<ChatBoxProperties, ChatBoxState> {
 
     componentDidUpdate(prevProps: Readonly<ChatBoxProperties>, prevState: Readonly<ChatBoxState>, snapshot?: any): void {
         if(prevState.enabled !== this.state.enabled)
-            this.events.fire_async("action_set_enabled", { enabled: this.state.enabled });
+            this.events.fire_react("action_set_enabled", { enabled: this.state.enabled });
     }
 }

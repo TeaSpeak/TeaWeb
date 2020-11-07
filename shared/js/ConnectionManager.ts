@@ -5,6 +5,22 @@ import {Stage} from "tc-loader";
 
 export let server_connections: ConnectionManager;
 
+class ReplaceableContainer {
+    placeholder: HTMLDivElement;
+    container: HTMLDivElement;
+
+    constructor(container: HTMLDivElement, placeholder?: HTMLDivElement) {
+        this.container = container;
+        this.placeholder = placeholder || document.createElement("div");
+    }
+
+    replaceWith(target: HTMLDivElement | undefined) {
+        target = target || this.placeholder;
+        this.container.replaceWith(target);
+        this.container = target;
+    }
+}
+
 export class ConnectionManager {
     private readonly event_registry: Registry<ConnectionManagerEvents>;
     private connection_handlers: ConnectionHandler[] = [];
@@ -14,11 +30,13 @@ export class ConnectionManager {
     private _container_channel_tree: JQuery;
     private _container_hostbanner: JQuery;
     private _container_chat: JQuery;
+    private containerChannelVideo: ReplaceableContainer;
 
     constructor() {
         this.event_registry = new Registry<ConnectionManagerEvents>();
         this.event_registry.enableDebug("connection-manager");
 
+        this.containerChannelVideo = new ReplaceableContainer(document.getElementById("channel-video") as HTMLDivElement);
         this._container_log_server = $("#server-log");
         this._container_channel_tree = $("#channelTree");
         this._container_hostbanner = $("#hostbanner");
@@ -88,6 +106,7 @@ export class ConnectionManager {
         this._container_chat.children().detach();
         this._container_log_server.children().detach();
         this._container_hostbanner.children().detach();
+        this.containerChannelVideo.replaceWith(handler?.video_frame.getContainer());
 
         if(handler) {
             this._container_hostbanner.append(handler.hostbanner.html_tag);

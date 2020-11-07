@@ -203,7 +203,7 @@ export class RendererClient extends React.Component<{ client: RDPClient }, {}> {
                 <ClientStatus client={client} ref={client.refStatus} />
                 {...(client.rename ? [
                     <ClientNameEdit initialName={client.renameDefault} editFinished={value => {
-                        events.fire_async("action_client_name_submit", { treeEntryId: client.entryId, name: value });
+                        events.fire_react("action_client_name_submit", { treeEntryId: client.entryId, name: value });
                     }} key={"rename"} />
                 ] : [
                     <ClientName client={client} ref={client.refName} key={"name"} />,

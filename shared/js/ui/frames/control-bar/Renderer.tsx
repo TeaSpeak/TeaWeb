@@ -2,9 +2,12 @@ import {Registry} from "tc-shared/events";
 import {
     AwayState,
     Bookmark,
-    ControlBarEvents,
     ConnectionState,
-    ControlBarMode, HostButtonInfo, MicrophoneState
+    ControlBarEvents,
+    ControlBarMode,
+    HostButtonInfo,
+    MicrophoneState,
+    VideoCamaraState
 } from "tc-shared/ui/frames/control-bar/Definitions";
 import * as React from "react";
 import {useContext, useRef, useState} from "react";
@@ -13,6 +16,7 @@ import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {Button} from "tc-shared/ui/frames/control-bar/Button";
 import {spawnContextMenu} from "tc-shared/ui/ContextMenu";
 import {ClientIcon} from "svg-sprites/client-icons";
+import {createErrorModal} from "tc-shared/ui/elements/Modal";
 
 const cssStyle = require("./Renderer.scss");
 const cssButtonStyle = require("./Button.scss");
@@ -200,6 +204,39 @@ const AwayButton = () => {
     );
 };
 
+const VideoButton = () => {
+    const events = useContext(Events);
+
+    const [ state, setState ] = useState<VideoCamaraState>(() => {
+        events.fire("query_camara_state");
+        return "unsupported";
+    });
+
+    events.on("notify_camara_state", event => setState(event.state));
+
+    switch (state) {
+        case "unsupported":
+            return <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={ClientIcon.VideoMuted} tooltip={tr("Video broadcasting not supported")} key={"unsupported"}
+                    onToggle={() => createErrorModal(tr("Video broadcasting unsupported"), tr("Video broadcasting isn't supported by the target server.")).open()}
+            />;
+
+        case "unavailable":
+            return <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={ClientIcon.VideoMuted} tooltip={tr("Video broadcasting not available")} key={"unavailable"}
+                           onToggle={() => createErrorModal(tr("Video broadcasting unavailable"), tr("Video broadcasting isn't available right now.")).open()} />;
+
+        case "disconnected":
+        case "disabled":
+            return <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={ClientIcon.VideoMuted}
+                           onToggle={() => events.fire("action_toggle_video", { enable: true, broadcastType: "camera" })}
+                           tooltip={tr("Start video broadcasting")} key={"enable"}/>;
+
+        case "enabled":
+            return <Button switched={false} colorTheme={"red"} autoSwitch={false} iconNormal={ClientIcon.VideoMuted}
+                           onToggle={() => events.fire("action_toggle_video", { enable: false, broadcastType: "camera" })}
+                           tooltip={tr("Stop video broadcasting")} key={"disable"}/>;
+    }
+}
+
 const MicrophoneButton = () => {
     const events = useContext(Events);
 
@@ -211,13 +248,13 @@ const MicrophoneButton = () => {
     events.on("notify_microphone_state", event => setState(event.state));
 
     if(state === "muted") {
-        return <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={"client-input_muted"} tooltip={tr("Unmute microphone")}
+        return <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={ClientIcon.InputMuted} tooltip={tr("Unmute microphone")}
                        onToggle={() => events.fire("action_toggle_microphone", { enabled: true })} key={"muted"} />;
     } else if(state === "enabled") {
-        return <Button colorTheme={"red"} autoSwitch={false} iconNormal={"client-input_muted"} tooltip={tr("Mute microphone")}
+        return <Button colorTheme={"red"} autoSwitch={false} iconNormal={ClientIcon.InputMuted} tooltip={tr("Mute microphone")}
                        onToggle={() => events.fire("action_toggle_microphone", { enabled: false })} key={"enabled"} />;
     } else {
-        return <Button autoSwitch={false} iconNormal={"client-activate_microphone"} tooltip={tr("Enable your microphone on this server")}
+        return <Button autoSwitch={false} iconNormal={ClientIcon.ActivateMicrophone} tooltip={tr("Enable your microphone on this server")}
                        onToggle={() => events.fire("action_toggle_microphone", { enabled: true })} key={"disabled"} />;
     }
 }
@@ -351,6 +388,7 @@ export const ControlBar2 = (props: { events: Registry<ControlBarEvents>, classNa
         items.push(<div className={cssStyle.divider + " "  + cssStyle.hideSmallPopout} key={"divider-1"} />);
     }
     items.push(<AwayButton key={"away"} />);
+    items.push(<VideoButton key={"video"} />);
     items.push(<MicrophoneButton key={"microphone"} />);
     items.push(<SpeakerButton key={"speaker"} />);
     items.push(<div className={cssStyle.divider + " "  + cssStyle.hideSmallPopout} key={"divider-2"} />);
