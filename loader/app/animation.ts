@@ -88,7 +88,7 @@ export async function initialize(customLoadingAnimations: boolean) {
         /* Note, the months start with zero */
         if(now.getMonth() === 9) {
             animationType = "halloween";
-        } else if(now.getMonth() === 10 && now.getDay() <= 5) {
+        } else if(now.getMonth() === 10 && now.getDate() <= 5) {
             animationType = "halloween";
         }
     }
