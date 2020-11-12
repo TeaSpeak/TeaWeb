@@ -20,11 +20,13 @@ export type ChannelVideo ={
 export interface ChannelVideoEvents {
     action_toggle_expended: { expended: boolean },
     action_video_scroll: { direction: "left" | "right" },
+    action_set_spotlight: { videoId: string | undefined },
 
     query_expended: {},
     query_videos: {},
     query_video: { videoId: string },
     query_video_info: { videoId: string },
+    query_spotlight: {},
 
     notify_expended: { expended: boolean },
     notify_videos: {
@@ -45,5 +47,8 @@ export interface ChannelVideoEvents {
     notify_video_arrows: {
         left: boolean,
         right: boolean
+    },
+    notify_spotlight: {
+        videoId: string | undefined
     }
 }

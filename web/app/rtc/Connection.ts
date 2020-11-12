@@ -364,6 +364,13 @@ export class RTCConnection {
                 });
             }
 
+            for(let key in this.peer) {
+                if(!key.startsWith("on")) {
+                    continue;
+                }
+
+                delete this.peer[key];
+            }
             this.peer.close();
             this.peer = undefined;
         }
@@ -448,7 +455,6 @@ export class RTCConnection {
     }
 
     private handleFatalError(error: string, retryThreshold: number) {
-        /* TODO: Reset for the server as well! */
         this.reset(false);
         this.failedReason = error;
         this.updateConnectionState(RTPConnectionState.FAILED);
@@ -480,6 +486,11 @@ export class RTCConnection {
     private enableDtx(_sender: RTCRtpSender) { }
 
     private doInitialSetup() {
+        if(!('RTCPeerConnection' in window)) {
+            this.handleFatalError(tr("WebRTC has been disabled (RTCPeerConnection is not defined)"), 0);
+            return;
+        }
+
         this.peer = new RTCPeerConnection({
             bundlePolicy: "max-bundle",
             rtcpMuxPolicy: "require",
@@ -597,7 +608,7 @@ export class RTCConnection {
         } else {
             if(this.localCandidateCount === 0) {
                 logError(LogCategory.WEBRTC, tr("Received local ICE candidate finish, without having any candidates."));
-                this.handleFatalError(tr("Failed to gather any ICE candidates"), 5000);
+                this.handleFatalError(tr("Failed to gather any ICE candidates"), 0);
                 return;
             } else {
                 logTrace(LogCategory.WEBRTC, tr("Received ICE candidate finish"));

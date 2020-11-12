@@ -151,12 +151,21 @@ const VideoPlayer = React.memo((props: { videoId: string }) => {
     return null;
 });
 
-const VideoContainer = React.memo((props: { videoId: string }) => (
-    <div className={cssStyle.videoContainer}>
-        <VideoPlayer videoId={props.videoId} />
-        <VideoInfo videoId={props.videoId} />
-    </div>
-));
+const VideoContainer = React.memo((props: { videoId: string }) => {
+    const events = useContext(EventContext);
+    return (
+        <div
+            className={cssStyle.videoContainer}
+            onDoubleClick={() => events.fire("action_set_spotlight", { videoId: props.videoId })}
+            onContextMenu={event => {
+                event.preventDefault()
+            }}
+        >
+            <VideoPlayer videoId={props.videoId} />
+            <VideoInfo videoId={props.videoId} />
+        </div>
+    );
+});
 
 const VideoBarArrow = React.memo((props: { direction: "left" | "right", containerRef: React.RefObject<HTMLDivElement> }) => {
     const events = useContext(EventContext);
@@ -170,7 +179,7 @@ const VideoBarArrow = React.memo((props: { direction: "left" | "right", containe
             </div>
         </div>
     );
-})
+});
 
 const VideoBar = () => {
     const events = useContext(EventContext);
@@ -250,6 +259,31 @@ const VideoBar = () => {
     )
 };
 
+const Spotlight = () => {
+    const events = useContext(EventContext);
+    const [ videoId, setVideoId ] = useState<string>(() => {
+        events.fire("query_spotlight");
+        return undefined;
+    });
+    events.reactUse("notify_spotlight", event => setVideoId(event.videoId));
+
+    let body;
+    if(videoId) {
+        body = <VideoContainer videoId={videoId} key={"video-" + videoId} />;
+    } else {
+        body = (
+            <div className={cssStyle.videoContainer} key={"no-video"}>
+                <div className={cssStyle.text}><Translatable>No spotlight selected</Translatable></div>
+            </div>
+        );
+    }
+    return (
+        <div className={cssStyle.spotlight}>
+            {body}
+        </div>
+    )
+};
+
 export const ChannelVideoRenderer = (props: { handlerId: string, events: Registry<ChannelVideoEvents> }) => {
     return (
         <EventContext.Provider value={props.events}>
@@ -257,6 +291,7 @@ export const ChannelVideoRenderer = (props: { handlerId: string, events: Registr
                 <div className={cssStyle.panel}>
                     <VideoBar />
                     <ExpendArrow />
+                    <Spotlight />
                 </div>
             </HandlerIdContext.Provider>
         </EventContext.Provider>

@@ -204,8 +204,12 @@ class ChannelVideoController {
     private localVideoController: LocalVideoController;
     private clientVideos: {[key: number]: RemoteClientVideoController} = {};
 
+    private currentSpotlight: string;
+
     constructor(events: Registry<ChannelVideoEvents>, connection: ConnectionHandler) {
         this.events = events;
+        this.events.enableDebug("vc-panel");
+
         this.connection = connection;
         this.videoConnection = this.connection.serverConnection.getVideoConnection();
         this.connection.events().one("notify_handler_initialized", () => {
@@ -235,12 +239,17 @@ class ChannelVideoController {
         const events = this.eventListener = [];
         this.events.on("action_toggle_expended", event => {
             if(event.expended === this.expended) { return; }
+
             this.expended = event.expended;
+            this.notifyVideoList();
             this.events.fire_react("notify_expended", { expended: this.expended });
         });
 
+        this.events.on("action_set_spotlight", event => this.setSpotlight(event.videoId));
+
         this.events.on("query_expended", () => this.events.fire_react("notify_expended", { expended: this.expended }));
         this.events.on("query_videos", () => this.notifyVideoList());
+        this.events.on("query_spotlight", () => this.notifySpotlight());
 
         this.events.on("query_video_info", event => {
             const controller = this.findVideoById(event.videoId);
@@ -323,6 +332,16 @@ class ChannelVideoController {
         }));
     }
 
+    setSpotlight(videoId: string | undefined) {
+        if(this.currentSpotlight === videoId) { return; }
+
+        /* TODO: test if the video event exists? */
+
+        this.currentSpotlight = videoId;
+        this.notifySpotlight()
+        this.notifyVideoList();
+    }
+
     private static shouldIgnoreClient(client: ClientEntry) {
         return (client instanceof MusicClientEntry || client.properties.client_type_exact === ClientType.CLIENT_QUERY);
     }
@@ -352,11 +371,13 @@ class ChannelVideoController {
     }
 
     private resetClientVideos() {
+        this.currentSpotlight = undefined;
         for(const clientId of Object.keys(this.clientVideos)) {
             this.destroyClientVideo(parseInt(clientId));
         }
 
         this.notifyVideoList();
+        this.notifySpotlight();
     }
 
     private destroyClientVideo(clientId: number) : boolean {
@@ -365,6 +386,11 @@ class ChannelVideoController {
             video.callbackBroadcastStateChanged = undefined;
             video.destroy();
             delete this.clientVideos[clientId];
+
+            if(video.videoId === this.currentSpotlight) {
+                this.currentSpotlight = undefined;
+                this.notifySpotlight();
+            }
             return true;
         } else {
             return false;
@@ -378,6 +404,10 @@ class ChannelVideoController {
         /* update our video list and the visibility */
         controller.callbackBroadcastStateChanged = () => this.notifyVideoList();
         this.clientVideos[client.clientId()] = controller;
+    }
+
+    private notifySpotlight() {
+        this.events.fire_react("notify_spotlight", { videoId: this.currentSpotlight });
     }
 
     private notifyVideoList() {
@@ -409,6 +439,9 @@ class ChannelVideoController {
         }
 
         this.updateVisibility(videoCount !== 0);
+        if(this.expended) {
+            videoIds.remove(this.currentSpotlight);
+        }
 
         this.events.fire_react("notify_videos", {
             videoIds: videoIds
