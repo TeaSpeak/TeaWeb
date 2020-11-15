@@ -588,7 +588,7 @@ export class ChannelTree {
     deleteClient(client: ClientEntry, reason: { reason: ViewReasonId, message?: string, serverLeave: boolean }) {
         const oldChannel = client.currentChannel();
         oldChannel?.unregisterClient(client);
-        this.clients.remove(client);
+        this.unregisterClient(client);
 
         if(oldChannel) {
             this.events.fire("notify_client_leave_view", { client: client, message: reason.message, reason: reason.reason, isServerLeave: reason.serverLeave, sourceChannel: oldChannel });
@@ -597,30 +597,23 @@ export class ChannelTree {
             logWarn(LogCategory.CHANNEL, tr("Deleting client %s from channel tree which hasn't a channel."), client.clientId());
         }
 
-        const voiceConnection = this.client.serverConnection.getVoiceConnection();
-        if(client.getVoiceClient()) {
-            voiceConnection.unregisterVoiceClient(client.getVoiceClient());
-            client.setVoiceClient(undefined);
-        }
-
-        const videoConnection = this.client.serverConnection.getVideoConnection();
-        if(client.getVideoClient()) {
-            videoConnection.unregisterVideoClient(client.getVideoClient());
-            client.setVideoClient(undefined);
-        }
         client.destroy();
     }
 
     registerClient(client: ClientEntry) {
         this.clients.push(client);
 
-        if(client instanceof LocalClientEntry) {
+        const isLocalClient = client instanceof LocalClientEntry;
+        if(isLocalClient) {
             if(client.channelTree !== this) {
                 throw tr("client channel tree missmatch");
             }
         } else {
             client.channelTree = this;
+        }
 
+        /* for debug purposes, the server might send back the own audio/video stream */
+        if(!isLocalClient || __build.mode === "debug") {
             const voiceConnection = this.client.serverConnection.getVoiceConnection();
             try {
                 client.setVoiceClient(voiceConnection.registerVoiceClient(client.clientId()));
@@ -640,6 +633,18 @@ export class ChannelTree {
     unregisterClient(client: ClientEntry) {
         if(!this.clients.remove(client)) {
             return;
+        }
+
+        const voiceConnection = this.client.serverConnection.getVoiceConnection();
+        if(client.getVoiceClient()) {
+            voiceConnection.unregisterVoiceClient(client.getVoiceClient());
+            client.setVoiceClient(undefined);
+        }
+
+        const videoConnection = this.client.serverConnection.getVideoConnection();
+        if(client.getVideoClient()) {
+            videoConnection.unregisterVideoClient(client.getVideoClient());
+            client.setVideoClient(undefined);
         }
     }
 

@@ -13,6 +13,7 @@ import {LogCategory, logDebug, logError, logWarn} from "tc-shared/log";
 import {Settings, settings} from "tc-shared/settings";
 import {RtpVideoClient} from "tc-backend/web/rtc/video/VideoClient";
 import {tr} from "tc-shared/i18n/localize";
+import {ConnectionState} from "tc-shared/ConnectionHandler";
 
 type VideoBroadcast = {
     readonly source: VideoSource;
@@ -26,6 +27,7 @@ export class RtpVideoConnection implements VideoConnection {
     private readonly events: Registry<VideoConnectionEvent>;
     private readonly listenerClientMoved;
     private readonly listenerRtcStateChanged;
+    private readonly listenerConnectionStateChanged;
     private connectionState: VideoConnectionStatus;
 
     private broadcasts: {[T in VideoBroadcastType]: VideoBroadcast} = {
@@ -52,6 +54,12 @@ export class RtpVideoConnection implements VideoConnection {
                         this.restartBroadcast("camera");
                     }
                 }
+            }
+        });
+        this.listenerConnectionStateChanged = this.rtcConnection.getConnection().events.on("notify_connection_state_changed", event => {
+            if(event.newState !== ConnectionState.CONNECTED) {
+                this.stopBroadcasting("camera");
+                this.stopBroadcasting("screen");
             }
         });
 
@@ -95,6 +103,7 @@ export class RtpVideoConnection implements VideoConnection {
     destroy() {
         this.listenerClientMoved();
         this.listenerRtcStateChanged();
+        this.listenerConnectionStateChanged();
     }
 
     getEvents(): Registry<VideoConnectionEvent> {
@@ -163,20 +172,22 @@ export class RtpVideoConnection implements VideoConnection {
     }
 
     stopBroadcasting(type: VideoBroadcastType, skipRtcStop?: boolean) {
+        const broadcast = this.broadcasts[type];
+        if(!broadcast) {
+            return;
+        }
+
         if(!skipRtcStop) {
             this.rtcConnection.stopTrackBroadcast(type === "camera" ? "video" : "video-screen");
         }
 
         this.rtcConnection.setTrackSource(type === "camera" ? "video" : "video-screen", null).then(undefined);
-        if(this.broadcasts[type]) {
-            const broadcast = this.broadcasts[type];
-            const oldState = this.broadcasts[type].state;
-            this.broadcasts[type].active = false;
-            this.broadcasts[type] = undefined;
-            broadcast.source.deref();
+        const oldState = this.broadcasts[type].state;
+        this.broadcasts[type].active = false;
+        this.broadcasts[type] = undefined;
+        broadcast.source.deref();
 
-            this.events.fire("notify_local_broadcast_state_changed", { oldState: oldState, newState: VideoBroadcastState.Stopped, broadcastType: type });
-        }
+        this.events.fire("notify_local_broadcast_state_changed", { oldState: oldState, newState: VideoBroadcastState.Stopped, broadcastType: type });
     }
 
     registerVideoClient(clientId: number) {

@@ -1,6 +1,5 @@
 import * as sdpTransform from "sdp-transform";
 import {MediaDescription} from "sdp-transform";
-import {guid} from "tc-shared/crypto/uid";
 
 interface SdpCodec {
     payload: number;
@@ -14,7 +13,7 @@ interface SdpCodec {
 /* These MUST be the payloads used by the remote as well */
 const OPUS_VOICE_PAYLOAD_TYPE = 111;
 const OPUS_MUSIC_PAYLOAD_TYPE = 112;
-const VP8_PAYLOAD_TYPE = 96;
+const VP8_PAYLOAD_TYPE = 122; /* Using 122 for testing purposes */ //96;
 
 type SdpMedia = {
     type: string;
@@ -31,7 +30,7 @@ export class SdpProcessor {
             codec: "opus",
             rate: 48000,
             encoding: 2,
-            fmtp: { minptime: 1, maxptime: 20, useinbandfec: 1, stereo: 1 },
+            fmtp: { minptime: 1, maxptime: 20, useinbandfec: 1, stereo: 0 },
             rtcpFb: [ "transport-cc" ]
         },
         {

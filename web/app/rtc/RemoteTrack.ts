@@ -101,6 +101,12 @@ export class RemoteRTPVideoTrack extends RemoteRTPTrack {
 
         this.mediaStream = new MediaStream();
         this.mediaStream.addTrack(transceiver.receiver.track);
+
+        const track = transceiver.receiver.track;
+        track.onended = () => console.error("TRACK %d ended", ssrc);
+        track.onmute = () => console.error("TRACK %d muted", ssrc);
+        track.onunmute = () => console.error("TRACK %d unmuted", ssrc);
+        track.onisolationchange = () => console.error("TRACK %d onisolationchange", ssrc);
     }
 
     getMediaStream() : MediaStream {

@@ -77,16 +77,19 @@ const VideoStreamReplay = React.memo((props: { stream: MediaStream | undefined, 
     const refVideo = useRef<HTMLVideoElement>();
 
     useEffect(() => {
+        const video = refVideo.current;
         if(props.stream) {
-            refVideo.current.style.opacity = "1";
-            refVideo.current.srcObject = props.stream;
+            video.style.opacity = "1";
+            video.srcObject = props.stream;
+            video.autoplay = true;
+            video.play().then(undefined);
         } else {
-            refVideo.current.style.opacity = "0";
+            video.style.opacity = "0";
         }
     }, [ props.stream ]);
 
     return (
-        <video ref={refVideo} autoPlay={true} className={cssStyle.video + " " + props.className} />
+        <video ref={refVideo} className={cssStyle.video + " " + props.className} />
     )
 });
 

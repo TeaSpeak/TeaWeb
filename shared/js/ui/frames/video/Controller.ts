@@ -351,7 +351,12 @@ class ChannelVideoController {
         if(localClient.currentChannel()) {
             this.currentChannelId = localClient.currentChannel().channelId;
             localClient.currentChannel().channelClientsOrdered().forEach(client => {
-                if(client instanceof LocalClientEntry || ChannelVideoController.shouldIgnoreClient(client)) {
+                /* in some instances the server might return our own stream for debug purposes */
+                if(client instanceof LocalClientEntry && __build.mode !== "debug") {
+                    return;
+                }
+
+                if(ChannelVideoController.shouldIgnoreClient(client)) {
                     return;
                 }
 

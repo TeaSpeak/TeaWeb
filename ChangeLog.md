@@ -1,4 +1,7 @@
 # Changelog:
+** 14.11.20**
+    - Fixed bug where the microphone has been requested when muting it.
+    
 * **07.11.20**
     - Added video broadcasting to the web client
     - Added various new user interfaces related to video broadcasting

@@ -826,11 +826,7 @@ export class ConnectionHandler {
             return;
         }
 
-        if(this.connection_state === ConnectionState.CONNECTED) {
-            await this.startVoiceRecorder(true);
-        } else {
-            this.setInputHardwareState(InputHardwareState.VALID);
-        }
+        /* our voice status will be updated automatically due to the notify_recorder_changed event which should be fired when the acquired recorder changed */
     }
 
     async startVoiceRecorder(notifyError: boolean) : Promise<{ state: "success" | "no-input" } | { state: "error", message: string }> {

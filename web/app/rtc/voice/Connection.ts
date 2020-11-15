@@ -49,6 +49,8 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
         this.rtcConnection.getEvents().on("notify_state_changed",
             this.listenerRtcStateChanged = event => this.handleRtcConnectionStateChanged(event));
 
+        /* FIXME: Listener for audio! */
+
         this.listenerClientMoved = this.rtcConnection.getConnection().command_handler_boss().register_explicit_handler("notifyclientmoved", event => {
             const localClientId = this.rtcConnection.getConnection().client.getClientId();
             for(const data of event.arguments) {

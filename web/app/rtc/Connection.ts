@@ -14,8 +14,52 @@ import {
     TrackClientInfo
 } from "tc-backend/web/rtc/RemoteTrack";
 import {SdpCompressor, SdpProcessor} from "tc-backend/web/rtc/SdpUtils";
+import {context} from "tc-backend/web/audio/player";
 
 const kSdpCompressionMode = 1;
+
+declare global {
+    interface RTCIceCandidate {
+        /* Firefox has this */
+        address: string | undefined;
+    }
+
+    interface HTMLCanvasElement {
+        captureStream(framed: number) : MediaStream;
+    }
+}
+
+let dummyVideoTrack: MediaStreamTrack | undefined;
+let dummyAudioTrack: MediaStreamTrack | undefined;
+
+/*
+ * For Firefox as soon we stop a sender we're never able to get the sender starting again...
+ * (This only applies after the initial negotiation. Before values of null are allowed)
+ * So we've to keep it alive with a dummy track.
+ */
+function getIdleTrack(kind: "video" | "audio") : MediaStreamTrack | null {
+    if(window.detectedBrowser?.name === "firefox" || true) {
+        if(kind === "video") {
+            if(!dummyVideoTrack) {
+                const canvas = document.createElement("canvas");
+                canvas.getContext("2d");
+                const stream = canvas.captureStream(1);
+                dummyVideoTrack = stream.getVideoTracks()[0];
+            }
+
+            return dummyVideoTrack;
+        } else if(kind === "audio") {
+            if(!dummyAudioTrack) {
+                const dest = context().createMediaStreamDestination();
+                dummyAudioTrack = dest.stream.getAudioTracks()[0];
+            }
+
+            return dummyAudioTrack;
+        }
+    }
+
+    return null;
+}
 
 class CommandHandler extends AbstractCommandHandler {
     private readonly handle: RTCConnection;
@@ -71,9 +115,20 @@ class CommandHandler extends AbstractCommandHandler {
                     sdp: sdp,
                     type: "offer"
                 }).then(() => this.handle["peer"].createAnswer())
+                .then(async answer => {
+                    await this.handle["peer"].setLocalDescription(answer);
+                    return answer;
+                })
                 .then(answer => {
+                    if(RTCConnection.kEnableSdpTrace) {
+                        logTrace(LogCategory.WEBRTC, tr("Sending answer to remote %s:\n%s"), data.mode, answer.sdp);
+                    }
                     answer.sdp = this.sdpProcessor.processOutgoingSdp(answer.sdp, "answer");
+
                     answer.sdp = SdpCompressor.compressSdp(answer.sdp, kSdpCompressionMode);
+                    if(RTCConnection.kEnableSdpTrace) {
+                        logTrace(LogCategory.WEBRTC, tr("Patched answer to remote %s:\n%s"), data.mode, answer.sdp);
+                    }
 
                     return this.connection.send_command("rtcsessiondescribe", {
                         mode: "answer",
@@ -295,7 +350,7 @@ export interface RTCConnectionEvents {
 }
 
 export class RTCConnection {
-    public static readonly kEnableSdpTrace = false;
+    public static readonly kEnableSdpTrace = true;
     private readonly events: Registry<RTCConnectionEvents>;
     private readonly connection: ServerConnection;
     private readonly commandHandler: CommandHandler;
@@ -303,6 +358,8 @@ export class RTCConnection {
 
     private connectionState: RTPConnectionState;
     private failedReason: string;
+
+    private retryTimeout: number;
 
     private peer: RTCPeerConnection;
     private localCandidateCount: number;
@@ -392,6 +449,9 @@ export class RTCConnection {
         this.temporaryStreams = {};
         this.localCandidateCount = 0;
 
+        clearTimeout(this.retryTimeout);
+        this.retryTimeout = 0;
+
         if(updateConnectionState) {
             this.updateConnectionState(RTPConnectionState.DISCONNECTED);
         }
@@ -461,7 +521,7 @@ export class RTCConnection {
 
         /* FIXME: Generate a log message! */
         if(retryThreshold > 0) {
-            setTimeout(() => {
+            this.retryTimeout = setTimeout(() => {
                 console.error("XXXX Retry");
                 this.doInitialSetup();
             }, 5000);
@@ -497,7 +557,7 @@ export class RTCConnection {
             iceServers: [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }]
         });
 
-        this.currentTransceiver["audio"] = this.peer.addTransceiver("audio", { sendEncodings: [{ }] });
+        this.currentTransceiver["audio"] = this.peer.addTransceiver("audio");
         this.enableDtx(this.currentTransceiver["audio"].sender);
 
         this.currentTransceiver["audio-whisper"] = this.peer.addTransceiver("audio");
@@ -537,7 +597,19 @@ export class RTCConnection {
 
     private async updateTracks() {
         for(const type of kRtcSourceTrackTypes) {
-            await this.currentTransceiver[type]?.sender.replaceTrack(this.currentTracks[type]);
+            let fallback;
+            switch (type) {
+                case "audio":
+                case "audio-whisper":
+                    fallback = getIdleTrack("audio");
+                    break;
+
+                case "video":
+                case "video-screen":
+                    fallback = getIdleTrack("video");
+                    break;
+            }
+            await this.currentTransceiver[type]?.sender.replaceTrack(this.currentTracks[type] || fallback);
         }
     }
 
@@ -546,6 +618,7 @@ export class RTCConnection {
 
         const peer = this.peer;
         await this.updateTracks();
+
         const offer = await peer.createOffer({ iceRestart: false, offerToReceiveAudio: true, offerToReceiveVideo: true });
         if(offer.type !== "offer") { throw tr("created ofer isn't of type offer"); }
         if(this.peer !== peer) { return; }
@@ -595,10 +668,14 @@ export class RTCConnection {
 
     private handleIceCandidate(candidate: RTCIceCandidate | undefined) {
         if(candidate) {
+            if(candidate.address?.endsWith(".local")) {
+                logTrace(LogCategory.WEBRTC, tr("Skipping local fqdn ICE candidate %s"), candidate.toJSON().candidate);
+                return;
+            }
             this.localCandidateCount++;
 
             const json = candidate.toJSON();
-            logTrace(LogCategory.WEBRTC, tr("Received ICE candidate %s"), json.candidate);
+            logTrace(LogCategory.WEBRTC, tr("Received local ICE candidate %s"), json.candidate);
             this.connection.send_command("rtcicecandidate", {
                 media_line: json.sdpMLineIndex,
                 candidate: json.candidate
@@ -611,7 +688,7 @@ export class RTCConnection {
                 this.handleFatalError(tr("Failed to gather any ICE candidates"), 0);
                 return;
             } else {
-                logTrace(LogCategory.WEBRTC, tr("Received ICE candidate finish"));
+                logTrace(LogCategory.WEBRTC, tr("Received local ICE candidate finish"));
             }
             this.connection.send_command("rtcicecandidate", { }).catch(error => {
                 logWarn(LogCategory.WEBRTC, tr("Failed to transmit local ICE candidate finish to server: %o"), error);
@@ -644,7 +721,8 @@ export class RTCConnection {
         logTrace(LogCategory.WEBRTC, tr("Peer connection state changed to %s"), this.peer.connectionState);
         switch (this.peer.connectionState) {
             case "connecting":
-                this.updateConnectionState(RTPConnectionState.CONNECTING);
+                //this.updateConnectionState(RTPConnectionState.CONNECTING);
+                this.updateConnectionState(RTPConnectionState.CONNECTED);
                 break;
 
             case "connected":
