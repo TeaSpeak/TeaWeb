@@ -13,7 +13,7 @@ interface SdpCodec {
 /* These MUST be the payloads used by the remote as well */
 const OPUS_VOICE_PAYLOAD_TYPE = 111;
 const OPUS_MUSIC_PAYLOAD_TYPE = 112;
-const VP8_PAYLOAD_TYPE = 122; /* Using 122 for testing purposes */ //96;
+const VP8_PAYLOAD_TYPE = 101;
 
 type SdpMedia = {
     type: string;
