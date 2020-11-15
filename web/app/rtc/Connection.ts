@@ -116,15 +116,15 @@ class CommandHandler extends AbstractCommandHandler {
                     type: "offer"
                 }).then(() => this.handle["peer"].createAnswer())
                 .then(async answer => {
+                    if(RTCConnection.kEnableSdpTrace) {
+                        logTrace(LogCategory.WEBRTC, tr("Applying local description from remote %s:\n%s"), data.mode, answer.sdp);
+                    }
+                    answer.sdp = this.sdpProcessor.processOutgoingSdp(answer.sdp, "answer");
+
                     await this.handle["peer"].setLocalDescription(answer);
                     return answer;
                 })
                 .then(answer => {
-                    if(RTCConnection.kEnableSdpTrace) {
-                        logTrace(LogCategory.WEBRTC, tr("Sending answer to remote %s:\n%s"), data.mode, answer.sdp);
-                    }
-                    answer.sdp = this.sdpProcessor.processOutgoingSdp(answer.sdp, "answer");
-
                     answer.sdp = SdpCompressor.compressSdp(answer.sdp, kSdpCompressionMode);
                     if(RTCConnection.kEnableSdpTrace) {
                         logTrace(LogCategory.WEBRTC, tr("Patched answer to remote %s:\n%s"), data.mode, answer.sdp);
