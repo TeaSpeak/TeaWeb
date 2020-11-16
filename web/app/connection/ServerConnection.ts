@@ -1,7 +1,7 @@
 import {
     AbstractServerConnection,
     CommandOptionDefaults,
-    CommandOptions,
+    CommandOptions, ConnectionStatistics,
     ConnectionStateListener,
 } from "tc-shared/connection/ConnectionBase";
 import {ConnectionHandler, ConnectionState, DisconnectReason} from "tc-shared/ConnectionHandler";
@@ -383,7 +383,7 @@ export class ServerConnection extends AbstractServerConnection {
             return;
         }
 
-        this.socket.socket.send(data);
+        this.socket.sendMessage(data);
     }
 
     private static commandDataToJson(input: any) : string {
@@ -494,5 +494,9 @@ export class ServerConnection extends AbstractServerConnection {
             javascript: this.pingStatistics.currentJsValue,
             native: this.pingStatistics.currentNativeValue
         };
+    }
+
+    getControlStatistics(): ConnectionStatistics {
+        return this.socket?.getControlStatistics() || { bytesSend: 0, bytesReceived: 0 };
     }
 }

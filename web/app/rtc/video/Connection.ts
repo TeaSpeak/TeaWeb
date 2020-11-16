@@ -14,6 +14,7 @@ import {Settings, settings} from "tc-shared/settings";
 import {RtpVideoClient} from "tc-backend/web/rtc/video/VideoClient";
 import {tr} from "tc-shared/i18n/localize";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
+import {ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
 
 type VideoBroadcast = {
     readonly source: VideoSource;
@@ -248,5 +249,14 @@ export class RtpVideoConnection implements VideoConnection {
                 logWarn(LogCategory.VIDEO, tr("Received video track assignment for unknown video client (%o)."), event.info);
             }
         }
+    }
+
+    async getConnectionStats(): Promise<ConnectionStatistics> {
+        const stats = await this.rtcConnection.getConnectionStatistics();
+
+        return {
+            bytesReceived: stats.videoBytesReceived,
+            bytesSend: stats.videoBytesSent
+        };
     }
 }

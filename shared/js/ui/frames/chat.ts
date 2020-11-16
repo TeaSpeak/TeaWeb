@@ -159,6 +159,27 @@ export namespace network {
     export const GB = 1024 * MB;
     export const TB = 1024 * GB;
 
+    export function byteSizeToString(value: number) {
+        let v: number, unit;
+        if(value > 5 * TB) {
+            unit = "tb";
+            v = value / TB;
+        } else if(value > 5 * GB) {
+            unit = "gb";
+            v = value / GB;
+        } else if(value > 5 * MB) {
+            unit = "mb";
+            v = value / MB;
+        } else if(value > 5 * KB) {
+            unit = "kb";
+            v = value / KB;
+        } else {
+            return value + "b";
+        }
+
+        return v.toFixed(2) + unit;
+    }
+
     export function format_bytes(value: number, options?: {
         time?: string,
         unit?: string,

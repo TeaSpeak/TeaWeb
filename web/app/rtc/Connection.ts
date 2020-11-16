@@ -38,7 +38,7 @@ let dummyAudioTrack: MediaStreamTrack | undefined;
  * So we've to keep it alive with a dummy track.
  */
 function getIdleTrack(kind: "video" | "audio") : MediaStreamTrack | null {
-    if(window.detectedBrowser?.name === "firefox" || true) {
+    if(window.detectedBrowser?.name === "firefox") {
         if(kind === "video") {
             if(!dummyVideoTrack) {
                 const canvas = document.createElement("canvas");
@@ -341,6 +341,14 @@ type TemporaryRtpStream = {
     ssrc: number,
     status: number | undefined,
     info: TrackClientInfo | undefined
+}
+
+export type RTCConnectionStatistics = {
+    videoBytesReceived: number,
+    videoBytesSent: number,
+
+    voiceBytesReceived: number,
+    voiceBytesSent
 }
 
 export interface RTCConnectionEvents {
@@ -730,6 +738,11 @@ export class RTCConnection {
                 break;
 
             case "failed":
+                if(this.connectionState !== RTPConnectionState.FAILED) {
+                    this.handleFatalError(tr("peer connection failed"), 5000);
+                }
+                break;
+
             case "closed":
             case "disconnected":
             case "new":
@@ -849,6 +862,36 @@ export class RTCConnection {
             let tempStream = this.getOrCreateTempStream(ssrc);
             tempStream.info = info;
             tempStream.status = state;
+        }
+    }
+
+    async getConnectionStatistics() : Promise<RTCConnectionStatistics> {
+        try {
+            if(!this.peer) {
+                throw "missing peer";
+            }
+
+            const statisticsInfo = await this.peer.getStats();
+            const statistics = [...statisticsInfo.entries()].map(e => e[1]) as RTCStats[];
+            const inboundStreams = statistics.filter(e => e.type.replace(/-/, "") === "inboundrtp" && 'bytesReceived' in e) as any[];
+            const outboundStreams = statistics.filter(e => e.type.replace(/-/, "") === "outboundrtp" && 'bytesSent' in e) as any[];
+
+            return {
+                voiceBytesSent: outboundStreams.filter(e => e.mediaType === "audio").reduce((a, b) => a + b.bytesSent, 0),
+                voiceBytesReceived: inboundStreams.filter(e => e.mediaType === "audio").reduce((a, b) => a + b.bytesReceived, 0),
+
+                videoBytesSent: outboundStreams.filter(e => e.mediaType === "video").reduce((a, b) => a + b.bytesSent, 0),
+                videoBytesReceived: inboundStreams.filter(e => e.mediaType === "video").reduce((a, b) => a + b.bytesReceived, 0)
+            }
+        } catch (error) {
+            logWarn(LogCategory.WEBRTC, tr("Failed to calculate connection statistics: %o"), error);
+            return {
+                videoBytesReceived: 0,
+                videoBytesSent: 0,
+
+                voiceBytesReceived: 0,
+                voiceBytesSent: 0
+            };
         }
     }
 }

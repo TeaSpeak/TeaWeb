@@ -2,6 +2,9 @@ import {ConnectionHandler, DisconnectReason} from "./ConnectionHandler";
 import {Registry} from "./events";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
+import {FooterRenderer} from "tc-shared/ui/frames/footer/Renderer";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 
 export let server_connections: ConnectionManager;
 
@@ -31,6 +34,7 @@ export class ConnectionManager {
     private _container_hostbanner: JQuery;
     private _container_chat: JQuery;
     private containerChannelVideo: ReplaceableContainer;
+    private containerFooter: HTMLDivElement;
 
     constructor() {
         this.event_registry = new Registry<ConnectionManagerEvents>();
@@ -41,8 +45,13 @@ export class ConnectionManager {
         this._container_channel_tree = $("#channelTree");
         this._container_hostbanner = $("#hostbanner");
         this._container_chat = $("#chat");
+        this.containerFooter = document.getElementById("container-footer") as HTMLDivElement;
 
         this.set_active_connection(undefined);
+    }
+
+    initializeFooter() {
+        ReactDOM.render(React.createElement(FooterRenderer), this.containerFooter);
     }
 
     events() : Registry<ConnectionManagerEvents> {
@@ -169,6 +178,7 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     name: "server manager init",
     function: async () => {
         server_connections = new ConnectionManager();
+        server_connections.initializeFooter();
     },
     priority: 80
 });

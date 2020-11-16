@@ -28,6 +28,8 @@ export interface ServerConnectionEvents {
 }
 
 export type ConnectionStateListener = (old_state: ConnectionState, new_state: ConnectionState) => any;
+export type ConnectionStatistics = { bytesReceived: number, bytesSend: number };
+
 export abstract class AbstractServerConnection {
     readonly events: Registry<ServerConnectionEvents>;
 
@@ -58,6 +60,7 @@ export abstract class AbstractServerConnection {
     connectionProxyAddress() : ServerAddress | undefined { return undefined; };
 
     abstract handshake_handler() : HandshakeHandler; /* only valid when connected */
+    abstract getControlStatistics() : ConnectionStatistics;
 
     //FIXME: Remove this this is currently only some kind of hack
     updateConnectionState(state: ConnectionState) {

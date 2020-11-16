@@ -1,5 +1,7 @@
 import {VideoSource} from "tc-shared/video/VideoSource";
 import {Registry} from "tc-shared/events";
+import {ConnectionStatus} from "tc-shared/ui/frames/footer/StatusDefinitions";
+import {ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
 
 export type VideoBroadcastType = "camera" | "screen";
 
@@ -43,6 +45,7 @@ export interface VideoConnection {
     getEvents() : Registry<VideoConnectionEvent>;
 
     getStatus() : VideoConnectionStatus;
+    getConnectionStats() : Promise<ConnectionStatistics>;
 
     isBroadcasting(type: VideoBroadcastType);
     getBroadcastingSource(type: VideoBroadcastType) : VideoSource | undefined;

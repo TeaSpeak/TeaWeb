@@ -1,5 +1,5 @@
 import {RecorderProfile} from "../voice/RecorderProfile";
-import {AbstractServerConnection} from "../connection/ConnectionBase";
+import {AbstractServerConnection, ConnectionStatistics} from "../connection/ConnectionBase";
 import {Registry} from "../events";
 import {VoiceClient} from "../voice/VoiceClient";
 import {WhisperSession, WhisperTarget} from "../voice/VoiceWhisper";
@@ -62,6 +62,7 @@ export abstract class AbstractVoiceConnection {
 
     abstract getConnectionState() : VoiceConnectionStatus;
     abstract getFailedMessage() : string;
+    abstract getConnectionStats() : Promise<ConnectionStatistics>;
 
     abstract encodingSupported(codec: number) : boolean;
     abstract decodingSupported(codec: number) : boolean;

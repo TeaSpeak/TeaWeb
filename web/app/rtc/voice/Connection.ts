@@ -7,7 +7,7 @@ import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {VoiceClient} from "tc-shared/voice/VoiceClient";
 import {WhisperSession, WhisperSessionState, WhisperTarget} from "tc-shared/voice/VoiceWhisper";
 import {RTCConnection, RTCConnectionEvents, RTPConnectionState} from "tc-backend/web/rtc/Connection";
-import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
+import {AbstractServerConnection, ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
 import {VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 import * as log from "tc-shared/log";
 import {LogCategory, logError, logTrace, logWarn} from "tc-shared/log";
@@ -360,5 +360,14 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
                 logWarn(LogCategory.AUDIO, tr("Received audio track assignment for unknown voice client (%o)."), event.info);
             }
         }
+    }
+
+    async getConnectionStats(): Promise<ConnectionStatistics> {
+        const stats = await this.rtcConnection.getConnectionStatistics();
+
+        return {
+            bytesReceived: stats.voiceBytesReceived,
+            bytesSend: stats.voiceBytesSent
+        };
     }
 }

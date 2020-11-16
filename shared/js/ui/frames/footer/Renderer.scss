@@ -1,0 +1,127 @@
+@import "../../../../css/static/mixin";
+@import "../../../../css/static/properties";
+
+.container {
+    position: relative;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+
+    @include user-select(none);
+    width: 100%;
+
+    .version {
+        margin-right: .5em;
+    }
+
+    .source {
+        display: inline-block;
+    }
+}
+
+.rtcStatus {
+    margin-left: auto;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: right;
+
+    .status {
+        cursor: pointer;
+    }
+}
+
+.status {
+    min-width: 7.5em;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+
+    flex-grow: 1;
+    margin-left: .5em;
+
+    &.healthy {
+        color: #247524;
+    }
+
+    &.unhealthy {
+        color: #a63030;
+    }
+
+    &.connecting {
+        color: #406d96;
+    }
+
+    &.disconnected {}
+}
+
+.rtcStatusDetail {
+    position: absolute;
+
+    bottom: 100%;
+    right: -.4em;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    width: 14em;
+    padding-bottom: .5em;
+
+    border-radius: .1em;
+
+    background: #19191b;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.24);
+
+    color: #999;
+    text-align: center;
+
+    pointer-events: none;
+    opacity: 0;
+
+    @include transition(all $button_hover_animation_time ease-in-out);
+
+    &.shown {
+        pointer-events: all;
+        opacity: 1;
+    }
+
+    .header {
+        padding: .25em;
+        background-color: #222224;
+    }
+
+    .row {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        padding-left: .5em;
+        padding-right: .5em;
+
+        height: 1.4em;
+
+        .key { }
+        .value { }
+
+        .text {
+            font-size: .8em;
+            text-align: left;
+            line-height: 1.2em;
+        }
+
+        &.title {
+            margin-top: .5em;
+
+            .key {
+                color: #557edc;
+            }
+        }
+
+        &.doubleSize {
+            height: 2.8em;
+        }
+    }
+}

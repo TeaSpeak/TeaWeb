@@ -1,5 +1,6 @@
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
+import {ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
 
 const kPreventOpeningWebSocketClosing = false;
 
@@ -13,8 +14,9 @@ export type WebSocketUrl = {
 };
 export class WrappedWebSocket {
     public readonly address: WebSocketUrl;
-    public socket: WebSocket;
     public state: "unconnected" | "connecting" | "connected" | "errored";
+
+    private socket: WebSocket;
 
     /* callbacks for events after the socket has successfully connected! */
     public callbackMessage: (message) => void;
@@ -24,9 +26,19 @@ export class WrappedWebSocket {
     private errorQueue = [];
     private connectResultListener = [];
 
+    private bytesReceived;
+    private bytesSend;
+
     constructor(addr: WebSocketUrl) {
         this.address = addr;
         this.state = "unconnected";
+    }
+
+    getControlStatistics() : ConnectionStatistics {
+        return {
+            bytesReceived: this.bytesReceived,
+            bytesSend: this.bytesSend
+        };
     }
 
     socketUrl() : string {
@@ -64,17 +76,24 @@ export class WrappedWebSocket {
             };
 
             this.socket.onmessage = event => {
-                if(this.callbackMessage)
+                if(typeof event.data === "string") {
+                    this.bytesReceived += event.data.length;
+                } else if(event.data instanceof ArrayBuffer) {
+                    this.bytesReceived += event.data.byteLength;
+                }
+
+                if(this.callbackMessage) {
                     this.callbackMessage(event.data);
+                }
             };
 
             this.socket.onerror = () => {
                 if(this.state === "connected") {
                     this.state = "errored";
 
-                    if(this.callbackErrored)
+                    if(this.callbackErrored) {
                         this.callbackErrored();
-
+                    }
                 } else if(this.state === "connecting") {
                     this.state = "errored";
                     this.fireConnectResult();
@@ -88,8 +107,9 @@ export class WrappedWebSocket {
     }
 
     async awaitConnectResult() {
-        while (this.state === "connecting")
+        while (this.state === "connecting") {
             await new Promise<void>(resolve => this.connectResultListener.push(resolve));
+        }
     }
 
     closeConnection() {
@@ -134,6 +154,9 @@ export class WrappedWebSocket {
             this.socket = undefined;
         }
 
+        this.bytesReceived = 0;
+        this.bytesSend = 0;
+
         this.errorQueue = [];
         this.fireConnectResult();
     }
@@ -149,5 +172,15 @@ export class WrappedWebSocket {
 
     popError() {
         return this.errorQueue.pop_front();
+    }
+
+    sendMessage(message: string | ArrayBufferLike | Blob | ArrayBufferView) {
+        if(typeof message === "string") {
+            this.bytesSend += message.length;
+        } else if(message instanceof ArrayBuffer) {
+            this.bytesSend += message.byteLength;
+        }
+
+        this.socket.send(message);
     }
 }
