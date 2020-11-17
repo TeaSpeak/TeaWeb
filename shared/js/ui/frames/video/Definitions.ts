@@ -20,7 +20,7 @@ export type ChannelVideo ={
 export interface ChannelVideoEvents {
     action_toggle_expended: { expended: boolean },
     action_video_scroll: { direction: "left" | "right" },
-    action_set_spotlight: { videoId: string | undefined },
+    action_set_spotlight: { videoId: string | undefined, expend: boolean },
 
     query_expended: {},
     query_videos: {},

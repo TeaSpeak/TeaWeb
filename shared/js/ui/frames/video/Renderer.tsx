@@ -159,7 +159,7 @@ const VideoContainer = React.memo((props: { videoId: string }) => {
     return (
         <div
             className={cssStyle.videoContainer}
-            onDoubleClick={() => events.fire("action_set_spotlight", { videoId: props.videoId })}
+            onDoubleClick={() => events.fire("action_set_spotlight", { videoId: props.videoId, expend: true })}
             onContextMenu={event => {
                 event.preventDefault()
             }}

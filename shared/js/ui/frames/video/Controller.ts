@@ -245,7 +245,12 @@ class ChannelVideoController {
             this.events.fire_react("notify_expended", { expended: this.expended });
         });
 
-        this.events.on("action_set_spotlight", event => this.setSpotlight(event.videoId));
+        this.events.on("action_set_spotlight", event => {
+            this.setSpotlight(event.videoId);
+            if(!this.isExpended()) {
+                this.events.fire("action_toggle_expended", { expended: true });
+            }
+        });
 
         this.events.on("query_expended", () => this.events.fire_react("notify_expended", { expended: this.expended }));
         this.events.on("query_videos", () => this.notifyVideoList());
