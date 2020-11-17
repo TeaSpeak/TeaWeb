@@ -105,7 +105,7 @@ export function spawnBookmarkModal() {
                 if (selected_bookmark && selected_bookmark.type === BookmarkType.ENTRY) {
                     const entry = selected_bookmark as Bookmark;
 
-                    const address = entry.server_properties.server_address + (entry.server_properties.server_port == 9987 ? "" : (" " + entry.server_properties.server_port));
+                    const address = entry.server_properties.server_address + (entry.server_properties.server_port == 9987 ? "" : (":" + entry.server_properties.server_port));
                     label_server_address.text(address);
                     input_server_address.val(address);
 
@@ -312,7 +312,7 @@ export function spawnBookmarkModal() {
                     }
                 });
 
-                input_server_address.on('change keydown', () => {
+                input_server_address.on('change keyup', () => {
                     const address = input_server_address.val() as string;
                     const valid = !!address.match(Regex.IP_V4) || !!address.match(Regex.IP_V6) || !!address.match(Regex.DOMAIN);
                     input_server_address.firstParent(".input-boxed").toggleClass("is-invalid", !valid);
@@ -330,7 +330,7 @@ export function spawnBookmarkModal() {
                         }
                         save_bookmark(selected_bookmark);
 
-                        label_server_address.text(entry.server_properties.server_address + (entry.server_properties.server_port == 9987 ? "" : (" " + entry.server_properties.server_port)));
+                        label_server_address.text(entry.server_properties.server_address + (entry.server_properties.server_port == 9987 ? "" : (":" + entry.server_properties.server_port)));
                         update_connect_info();
                     }
                 });
