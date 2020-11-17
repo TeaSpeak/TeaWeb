@@ -50,6 +50,7 @@ export class Translatable extends React.Component<{
     }
 }
 
+let renderBrElementIndex = 0;
 export type VariadicTranslatableChild = React.ReactElement | string;
 export const VariadicTranslatable = (props: { text: string, __cacheKey?: string, children?: VariadicTranslatableChild[] | VariadicTranslatableChild }) => {
     const args = Array.isArray(props.children) ? props.children : [props.children];
@@ -60,8 +61,15 @@ export const VariadicTranslatable = (props: { text: string, __cacheKey?: string,
     return (<>
         {
             parseMessageWithArguments(translated, args.length).map(e => {
-                if(typeof e === "string")
-                    return e;
+                if(typeof e === "string") {
+                    return e.split("\n").reduce((result, element) => {
+                        if(result.length > 0) {
+                            result.push(<br key={++this.renderBrElementIndex}/>);
+                        }
+                        result.push(element);
+                        return result;
+                    }, []);
+                }
 
                 let element = args[e];
                 if(argsUseCount[e]) {

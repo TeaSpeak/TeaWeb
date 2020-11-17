@@ -194,12 +194,7 @@ export class ConnectionHandler {
             this.setInputHardwareState(this.getVoiceRecorder() ? InputHardwareState.VALID : InputHardwareState.MISSING);
             this.update_voice_status();
         });
-        this.serverConnection.getVoiceConnection().events.on("notify_connection_status_changed", event => {
-            this.update_voice_status();
-            if(event.newStatus === VoiceConnectionStatus.Failed) {
-                createErrorModal(tr("Voice connection failed"), tra("Failed to establish a voice connection:\n{}", this.serverConnection.getVoiceConnection().getFailedMessage() || tr("Lookup the console for more detail"))).open();
-            }
-        });
+        this.serverConnection.getVoiceConnection().events.on("notify_connection_status_changed", () => this.update_voice_status());
         this.serverConnection.getVoiceConnection().setWhisperSessionInitializer(this.initializeWhisperSession.bind(this));
 
         this.serverFeatures = new ServerFeatures(this);

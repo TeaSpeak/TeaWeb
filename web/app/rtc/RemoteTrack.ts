@@ -157,6 +157,11 @@ export class RemoteRTPAudioTrack extends RemoteRTPTrack {
         */
 
         aplayer.on_ready(() => {
+            if(!this.mediaStream) {
+                /* we've already been destroyed */
+                return;
+            }
+
             const audioContext = aplayer.context();
             this.audioNode = audioContext.createMediaStreamSource(this.mediaStream);
             this.gainNode = audioContext.createGain();

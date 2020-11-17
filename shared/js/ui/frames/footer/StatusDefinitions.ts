@@ -6,7 +6,7 @@ export type ConnectionStatus = {
 } | {
     type: "unhealthy",
     reason: string,
-    /* try reconnect attribute */
+    retryTimestamp: number
 } | {
     type: "connecting-signalling",
     state: "initializing" | "connecting" | "authentication"

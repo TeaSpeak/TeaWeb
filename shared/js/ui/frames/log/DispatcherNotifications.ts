@@ -480,6 +480,22 @@ registerDispatcher(EventType.PRIVATE_MESSAGE_RECEIVED, (data, handlerId) => {
     });
 });
 
+registerDispatcher(EventType.WEBRTC_FATAL_ERROR, (data, handlerId) => {
+   if(data.retryTimeout) {
+       let time = Math.ceil(data.retryTimeout / 1000);
+       let minutes = Math.floor(time / 60);
+       let seconds = time % 60;
+
+       spawnServerNotification(handlerId, {
+           body: tra("WebRTC connection closed due to a fatal error:\n{}\nRetry scheduled in {}.", data.message, (minutes > 0 ? minutes + "m" : "") + seconds + "s")
+       });
+   } else {
+       spawnServerNotification(handlerId, {
+           body: tra("WebRTC connection closed due to a fatal error:\n{}\nNo retry scheduled.", data.message)
+       });
+   }
+});
+
 /* snipped PRIVATE_MESSAGE_SEND */
 
 loader.register_task(Stage.LOADED, {

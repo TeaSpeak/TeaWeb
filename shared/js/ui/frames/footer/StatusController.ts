@@ -97,8 +97,7 @@ export class StatusController {
                 const videoConnection = this.currentConnectionHandler.getServerConnection().getVideoConnection();
                 switch (videoConnection.getStatus()) {
                     case VideoConnectionStatus.Failed:
-                        /* FIXME: Reason! */
-                        return { type: "unhealthy", reason: tr("Unknown") };
+                        return { type: "unhealthy", reason: videoConnection.getFailedMessage(), retryTimestamp: videoConnection.getRetryTimestamp() };
                     case VideoConnectionStatus.Connected:
                         if(detailed) {
                             const statistics = await videoConnection.getConnectionStats();
@@ -130,7 +129,7 @@ export class StatusController {
                 const voiceConnection = this.currentConnectionHandler.getServerConnection().getVoiceConnection();
                 switch (voiceConnection.getConnectionState()) {
                     case VoiceConnectionStatus.Failed:
-                        return { type: "unhealthy", reason: voiceConnection.getFailedMessage() };
+                        return { type: "unhealthy", reason: voiceConnection.getFailedMessage(), retryTimestamp: voiceConnection.getRetryTimestamp() };
 
                     case VoiceConnectionStatus.Connected:
                         if(detailed) {
@@ -205,11 +204,11 @@ export class StatusController {
             } else if(componentState.type === "disconnected" && component !== "signaling") {
                 switch (component) {
                     case "voice":
-                        componentState = { type: "unhealthy", reason: tr("No voice connection") };
+                        componentState = { type: "unhealthy", reason: tr("No voice connection"), retryTimestamp: 0 };
                         break;
 
                     case "video":
-                        componentState = { type: "unhealthy", reason: tr("No video connection") };
+                        componentState = { type: "unhealthy", reason: tr("No video connection"), retryTimestamp: 0 };
                         break;
                 }
             }

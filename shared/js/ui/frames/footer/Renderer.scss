@@ -110,6 +110,10 @@
             font-size: .8em;
             text-align: left;
             line-height: 1.2em;
+
+            &.error {
+                color: #a63030;
+            }
         }
 
         &.title {
@@ -120,8 +124,20 @@
             }
         }
 
-        &.doubleSize {
-            height: 2.8em;
+        &.error {
+            justify-content: flex-start;
+            flex-direction: column;
+
+            min-height: 2.8em;
+            height: min-content;
         }
+    }
+
+    .errorRow {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        width: 100%;
     }
 }

@@ -115,6 +115,14 @@ export class RtpVideoConnection implements VideoConnection {
         return this.connectionState;
     }
 
+    getRetryTimestamp(): number | 0 {
+        return this.rtcConnection.getRetryTimestamp();
+    }
+
+    getFailedMessage(): string {
+        return this.rtcConnection.getFailReason();
+    }
+
     getBroadcastingState(type: VideoBroadcastType): VideoBroadcastState {
         return this.broadcasts[type] ? this.broadcasts[type].state : VideoBroadcastState.Stopped;
     }

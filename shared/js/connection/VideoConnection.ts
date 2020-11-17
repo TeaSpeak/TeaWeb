@@ -45,6 +45,9 @@ export interface VideoConnection {
     getEvents() : Registry<VideoConnectionEvent>;
 
     getStatus() : VideoConnectionStatus;
+    getRetryTimestamp() : number | 0;
+    getFailedMessage() : string;
+
     getConnectionStats() : Promise<ConnectionStatistics>;
 
     isBroadcasting(type: VideoBroadcastType);

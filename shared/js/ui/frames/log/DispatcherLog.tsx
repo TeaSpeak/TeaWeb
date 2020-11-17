@@ -629,3 +629,28 @@ registerDispatcher(EventType.CLIENT_POKE_RECEIVED,(data, handlerId) => {
 
 registerDispatcher(EventType.PRIVATE_MESSAGE_RECEIVED, () => undefined);
 registerDispatcher(EventType.PRIVATE_MESSAGE_SEND, () => undefined);
+
+registerDispatcher(EventType.WEBRTC_FATAL_ERROR, (data) => {
+    if(data.retryTimeout) {
+        let time = Math.ceil(data.retryTimeout / 1000);
+        let minutes = Math.floor(time / 60);
+        let seconds = time % 60;
+
+        return (
+            <div className={cssStyleRenderer.errorMessage}>
+                <VariadicTranslatable text={"WebRTC connection closed due to a fatal error:\n{}\nRetry scheduled in {}."}>
+                    <>{data.message}</>
+                    <>{(minutes > 0 ? minutes + "m" : "") + seconds + "s"}</>
+                </VariadicTranslatable>
+            </div>
+        );
+    } else {
+        return (
+            <div className={cssStyleRenderer.errorMessage}>
+                <VariadicTranslatable text={"WebRTC connection closed due to a fatal error:\n{}\nNo retry scheduled."}>
+                    <>{data.message}</>
+                </VariadicTranslatable>
+            </div>
+        );
+    }
+});

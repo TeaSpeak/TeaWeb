@@ -29,6 +29,40 @@ declare global {
     }
 }
 
+class RetryTimeCalculator {
+    private readonly minTime: number;
+    private readonly maxTime: number;
+    private readonly increment: number;
+
+    private retryCount: number;
+    private currentTime: number;
+
+    constructor(minTime: number, maxTime: number, increment: number) {
+        this.minTime = minTime;
+        this.maxTime = maxTime;
+        this.increment = increment;
+
+        this.reset();
+    }
+
+    calculateRetryTime() {
+        if(this.retryCount >= 5) {
+            /* no more retries */
+            return 0;
+        }
+        this.retryCount++;
+        const time = this.currentTime;
+        this.currentTime = Math.min(this.currentTime + this.increment, this.maxTime);
+        console.error(time + " - " + this.retryCount);
+        return time;
+    }
+
+    reset() {
+        this.currentTime = this.minTime;
+        this.retryCount = 0;
+    }
+}
+
 let dummyVideoTrack: MediaStreamTrack | undefined;
 let dummyAudioTrack: MediaStreamTrack | undefined;
 
@@ -86,7 +120,7 @@ class CommandHandler extends AbstractCommandHandler {
                 sdp = SdpCompressor.decompressSdp(sdp, 1);
             } catch (error) {
                 logError(LogCategory.WEBRTC, tr("Failed to decompress remote SDP: %o"), error);
-                this.handle["handleFatalError"](tr("Failed to decompress remote SDP"), 5000);
+                this.handle["handleFatalError"](tr("Failed to decompress remote SDP"), true);
                 return;
             }
             if(RTCConnection.kEnableSdpTrace) {
@@ -96,7 +130,7 @@ class CommandHandler extends AbstractCommandHandler {
                 sdp = this.sdpProcessor.processIncomingSdp(sdp, data.mode);
             } catch (error) {
                 logError(LogCategory.WEBRTC, tr("Failed to reprocess SDP %s: %o"), data.mode, error);
-                this.handle["handleFatalError"](tra("Failed to preprocess SDP {}", data.mode as string), 5000);
+                this.handle["handleFatalError"](tra("Failed to preprocess SDP {}", data.mode as string), true);
                 return;
             }
             if(RTCConnection.kEnableSdpTrace) {
@@ -108,7 +142,7 @@ class CommandHandler extends AbstractCommandHandler {
                     type: "answer"
                 }).catch(error => {
                     logError(LogCategory.WEBRTC, tr("Failed to set the remote description: %o"), error);
-                    this.handle["handleFatalError"](tr("Failed to set the remote description (answer)"), 5000);
+                    this.handle["handleFatalError"](tr("Failed to set the remote description (answer)"), true);
                 })
             } else if(data.mode === "offer") {
                 this.handle["peer"].setRemoteDescription({
@@ -137,7 +171,7 @@ class CommandHandler extends AbstractCommandHandler {
                     });
                 }).catch(error => {
                     logError(LogCategory.WEBRTC, tr("Failed to set the remote description and execute the renegotiation: %o"), error);
-                    this.handle["handleFatalError"](tr("Failed to set the remote description (offer/renegotiation)"), 5000);
+                    this.handle["handleFatalError"](tr("Failed to set the remote description (offer/renegotiation)"), true);
                 });
             } else {
                 logWarn(LogCategory.NETWORKING, tr("Received invalid mode for rtc session description (%s)."), data.mode);
@@ -366,7 +400,8 @@ export class RTCConnection {
 
     private connectionState: RTPConnectionState;
     private failedReason: string;
-
+    private retryCalculator: RetryTimeCalculator;
+    private retryTimestamp: number;
     private retryTimeout: number;
 
     private peer: RTCPeerConnection;
@@ -394,6 +429,7 @@ export class RTCConnection {
         this.connection = connection;
         this.sdpProcessor = new SdpProcessor();
         this.commandHandler = new CommandHandler(connection, this, this.sdpProcessor);
+        this.retryCalculator = new RetryTimeCalculator(5000, 30000, 10000);
 
         this.connection.command_handler_boss().register_handler(this.commandHandler);
         this.reset(true);
@@ -419,6 +455,10 @@ export class RTCConnection {
 
     getFailReason() : string {
         return this.failedReason;
+    }
+
+    getRetryTimestamp() : number | 0 {
+        return this.retryTimestamp;
     }
 
     reset(updateConnectionState: boolean) {
@@ -459,6 +499,12 @@ export class RTCConnection {
 
         clearTimeout(this.retryTimeout);
         this.retryTimeout = 0;
+        this.retryTimestamp = 0;
+        /*
+         * We do not reset the retry timer here since we might get called when a fatal error occurs.
+         * Instead we're resetting it every time we've changed the server connection state.
+         */
+        /* this.retryCalculator.reset(); */
 
         if(updateConnectionState) {
             this.updateConnectionState(RTPConnectionState.DISCONNECTED);
@@ -522,18 +568,34 @@ export class RTCConnection {
         this.events.fire("notify_state_changed", { oldState: oldState, newState: newState });
     }
 
-    private handleFatalError(error: string, retryThreshold: number) {
+    private handleFatalError(error: string, allowRetry: boolean) {
         this.reset(false);
         this.failedReason = error;
         this.updateConnectionState(RTPConnectionState.FAILED);
 
-        /* FIXME: Generate a log message! */
-        if(retryThreshold > 0) {
-            this.retryTimeout = setTimeout(() => {
-                console.error("XXXX Retry");
-                this.doInitialSetup();
-            }, 5000);
-            /* TODO: Schedule a retry? */
+        const log = this.connection.client.log;
+        if(allowRetry) {
+            const time = this.retryCalculator.calculateRetryTime();
+            if(time > 0) {
+                this.retryTimestamp = Date.now() + time;
+                this.retryTimeout = setTimeout(() => {
+                    this.doInitialSetup();
+                }, time);
+
+                log.log("webrtc.fatal.error", {
+                    message: error,
+                    retryTimeout: time
+                });
+            } else {
+                allowRetry = false;
+            }
+        }
+
+        if(!allowRetry) {
+            log.log("webrtc.fatal.error", {
+                message: error,
+                retryTimeout: 0
+            });
         }
     }
 
@@ -555,7 +617,7 @@ export class RTCConnection {
 
     private doInitialSetup() {
         if(!('RTCPeerConnection' in window)) {
-            this.handleFatalError(tr("WebRTC has been disabled (RTCPeerConnection is not defined)"), 0);
+            this.handleFatalError(tr("WebRTC has been disabled (RTCPeerConnection is not defined)"), false);
             return;
         }
 
@@ -598,7 +660,7 @@ export class RTCConnection {
 
         this.updateConnectionState(RTPConnectionState.CONNECTING);
         this.doInitialSetup0().catch(error => {
-            this.handleFatalError(tr("initial setup failed"), 5000);
+            this.handleFatalError(tr("initial setup failed"), true);
             logError(LogCategory.WEBRTC, tr("Connection setup failed: %o"), error);
         });
     }
@@ -639,7 +701,7 @@ export class RTCConnection {
             logTrace(LogCategory.WEBRTC, tr("Patched initial local offer:\n%s"), offer.sdp);
         } catch (error) {
             logError(LogCategory.WEBRTC, tr("Failed to preprocess outgoing initial offer: %o"), error);
-            this.handleFatalError(tr("Failed to preprocess outgoing initial offer"), 10000);
+            this.handleFatalError(tr("Failed to preprocess outgoing initial offer"), true);
             return;
         }
 
@@ -668,6 +730,7 @@ export class RTCConnection {
     private handleConnectionStateChanged(event: ServerConnectionEvents["notify_connection_state_changed"]) {
         if(event.newState === ConnectionState.CONNECTED) {
             /* initialize rtc connection */
+            this.retryCalculator.reset();
             this.doInitialSetup();
         } else {
             this.reset(true);
@@ -680,7 +743,7 @@ export class RTCConnection {
                 logTrace(LogCategory.WEBRTC, tr("Skipping local fqdn ICE candidate %s"), candidate.toJSON().candidate);
                 return;
             }
-            this.localCandidateCount++;
+            //sthis.localCandidateCount++;
 
             const json = candidate.toJSON();
             logTrace(LogCategory.WEBRTC, tr("Received local ICE candidate %s"), json.candidate);
@@ -692,8 +755,8 @@ export class RTCConnection {
             });
         } else {
             if(this.localCandidateCount === 0) {
-                logError(LogCategory.WEBRTC, tr("Received local ICE candidate finish, without having any candidates."));
-                this.handleFatalError(tr("Failed to gather any ICE candidates"), 0);
+                logError(LogCategory.WEBRTC, tr("Received local ICE candidate finish, without having any candidates"));
+                this.handleFatalError(tr("Failed to gather any local ICE candidates."), false);
                 return;
             } else {
                 logTrace(LogCategory.WEBRTC, tr("Received local ICE candidate finish"));
@@ -729,17 +792,17 @@ export class RTCConnection {
         logTrace(LogCategory.WEBRTC, tr("Peer connection state changed to %s"), this.peer.connectionState);
         switch (this.peer.connectionState) {
             case "connecting":
-                //this.updateConnectionState(RTPConnectionState.CONNECTING);
-                this.updateConnectionState(RTPConnectionState.CONNECTED);
+                this.updateConnectionState(RTPConnectionState.CONNECTING);
                 break;
 
             case "connected":
+                this.retryCalculator.reset();
                 this.updateConnectionState(RTPConnectionState.CONNECTED);
                 break;
 
             case "failed":
                 if(this.connectionState !== RTPConnectionState.FAILED) {
-                    this.handleFatalError(tr("peer connection failed"), 5000);
+                    this.handleFatalError(tr("peer connection failed"), true);
                 }
                 break;
 

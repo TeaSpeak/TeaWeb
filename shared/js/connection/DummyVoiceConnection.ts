@@ -154,4 +154,8 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
             bytesSend: 0
         }
     }
+
+    getRetryTimestamp(): number | 0 {
+        return 0;
+    }
 }

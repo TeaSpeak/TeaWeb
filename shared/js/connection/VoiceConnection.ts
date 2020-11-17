@@ -62,6 +62,8 @@ export abstract class AbstractVoiceConnection {
 
     abstract getConnectionState() : VoiceConnectionStatus;
     abstract getFailedMessage() : string;
+    abstract getRetryTimestamp() : number | 0;
+    
     abstract getConnectionStats() : Promise<ConnectionStatistics>;
 
     abstract encodingSupported(codec: number) : boolean;

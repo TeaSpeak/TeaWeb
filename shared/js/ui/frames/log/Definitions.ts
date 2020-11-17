@@ -66,7 +66,9 @@ export enum EventType {
 
     RECONNECT_SCHEDULED = "reconnect.scheduled",
     RECONNECT_EXECUTE = "reconnect.execute",
-    RECONNECT_CANCELED = "reconnect.canceled"
+    RECONNECT_CANCELED = "reconnect.canceled",
+
+    WEBRTC_FATAL_ERROR = "webrtc.fatal.error"
 }
 
 export type EventClient = {
@@ -249,6 +251,11 @@ export namespace event {
         sender: EventClient,
         message: string
     }
+
+    export type EventWebrtcFatalError = {
+        message: string,
+        retryTimeout: number | 0
+    }
 }
 
 export type LogMessage = {
@@ -301,7 +308,7 @@ export interface TypeInfo {
 
     "client.nickname.change.failed": event.EventClientNicknameChangeFailed,
     "client.nickname.changed": event.EventClientNicknameChanged,
-    "client.nickname.changed.own": event.EventClientNicknameChanged
+    "client.nickname.changed.own": event.EventClientNicknameChanged,
 
     "channel.create": event.EventChannelCreate;
     "channel.delete": event.EventChannelDelete;
@@ -312,9 +319,10 @@ export interface TypeInfo {
     "client.poke.received": event.EventClientPokeReceived,
     "client.poke.send": event.EventClientPokeSend,
 
-
     "private.message.received": event.EventPrivateMessageReceived,
     "private.message.send": event.EventPrivateMessageSend,
+
+    "webrtc.fatal.error": event.EventWebrtcFatalError
 
     "disconnected": any;
 }

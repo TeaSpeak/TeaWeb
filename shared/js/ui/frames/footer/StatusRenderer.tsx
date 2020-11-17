@@ -6,8 +6,9 @@ import {
 } from "tc-shared/ui/frames/footer/StatusDefinitions";
 import * as React from "react";
 import {useContext, useEffect, useRef, useState} from "react";
-import {Translatable} from "tc-shared/ui/react-elements/i18n";
+import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {network} from "tc-shared/ui/frames/chat";
+import {date_format} from "tc-shared/utils/DateUtils";
 
 const cssStyle = require("./Renderer.scss");
 export const StatusEvents = React.createContext<Registry<ConnectionStatusEvents>>(undefined);
@@ -162,16 +163,26 @@ const ComponentStatusRenderer = React.memo((props: { component: ConnectionCompon
                     break;
             }
             body = (
-                <div className={cssStyle.row + " " + cssStyle.doubleSize} key={"description"}>
+                <div className={cssStyle.row + " " + cssStyle.error} key={"description"}>
                     <div className={cssStyle.text}>{text}</div>
                 </div>
             );
             break;
 
         case "unhealthy":
+            let errorText;
+            if(status.retryTimestamp) {
+                let time = Math.ceil((status.retryTimestamp - Date.now()) / 1000);
+                let minutes = Math.floor(time / 60);
+                let seconds = time % 60;
+                errorText = <VariadicTranslatable key={"retry"} text={"Error occurred. Retry in {}."}>{(minutes > 0 ? minutes + "m" : "") + seconds + "s"}</VariadicTranslatable>;
+            } else {
+                errorText = <Translatable key={"no-retry"}>Error occurred. No retry.</Translatable>;
+            }
             body = (
-                <div className={cssStyle.row + " " + cssStyle.doubleSize} key={"error"}>
-                    <div className={cssStyle.text}><Translatable>Some error occured</Translatable></div>
+                <div className={cssStyle.row + " " + cssStyle.error} key={"error"}>
+                    <div className={cssStyle.text + " " + cssStyle.errorRow}>{errorText}</div>
+                    <div className={cssStyle.text + " " + cssStyle.error} title={status.reason}>{status.reason}</div>
                 </div>
             );
             break;

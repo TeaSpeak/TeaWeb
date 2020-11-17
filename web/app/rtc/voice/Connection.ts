@@ -392,4 +392,8 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
         this.speakerMuted = newState;
         this.voiceClients.forEach(client => client.setGloballyMuted(this.speakerMuted));
     }
+
+    getRetryTimestamp(): number | 0 {
+        return this.rtcConnection.getRetryTimestamp();
+    }
 }
