@@ -11,7 +11,7 @@ import {
     WhisperSessionInitializer
 } from "tc-shared/connection/VoiceConnection";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
-import {ServerConnectionEvents} from "tc-shared/connection/ConnectionBase";
+import {ConnectionStatistics, ServerConnectionEvents} from "tc-shared/connection/ConnectionBase";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
 import {VoiceBridge, VoicePacket, VoiceWhisperPacket} from "./bridge/VoiceBridge";
 import {NativeWebRTCVoiceBridge} from "./bridge/NativeWebRTCVoiceBridge";
@@ -529,5 +529,12 @@ export class VoiceConnection extends AbstractVoiceConnection {
             });
         }
         this.voiceBridge?.stopWhispering();
+    }
+
+    async getConnectionStats(): Promise<ConnectionStatistics> {
+        return {
+            bytesSend: 0,
+            bytesReceived: 0
+        };
     }
 }

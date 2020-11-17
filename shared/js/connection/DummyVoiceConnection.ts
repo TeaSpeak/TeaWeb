@@ -3,7 +3,7 @@ import {
     VoiceConnectionStatus, WhisperSessionInitializer
 } from "../connection/VoiceConnection";
 import {RecorderProfile} from "../voice/RecorderProfile";
-import {AbstractServerConnection} from "../connection/ConnectionBase";
+import {AbstractServerConnection, ConnectionStatistics} from "../connection/ConnectionBase";
 import {VoiceClient} from "../voice/VoiceClient";
 import {VoicePlayerEvents, VoicePlayerLatencySettings, VoicePlayerState} from "../voice/VoicePlayer";
 import {WhisperSession, WhisperTarget} from "../voice/VoiceWhisper";
@@ -147,4 +147,11 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
     }
 
     stopAllVoiceReplays() { }
+
+    async getConnectionStats(): Promise<ConnectionStatistics> {
+        return {
+            bytesReceived: 0,
+            bytesSend: 0
+        }
+    }
 }
