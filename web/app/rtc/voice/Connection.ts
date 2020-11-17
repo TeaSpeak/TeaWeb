@@ -22,6 +22,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
     private readonly listenerRtcAudioAssignment;
     private readonly listenerRtcStateChanged;
     private listenerClientMoved;
+    private listenerSpeakerStateChanged;
 
     private connectionState: VoiceConnectionStatus;
     private localFailedReason: string;
@@ -30,6 +31,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
     private currentAudioSourceNode: AudioNode;
     private currentAudioSource: RecorderProfile;
 
+    private speakerMuted: boolean;
     private voiceClients: RtpVoiceClient[] = [];
 
     private currentlyReplayingVoice: boolean = false;
@@ -49,6 +51,12 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
         this.rtcConnection.getEvents().on("notify_state_changed",
             this.listenerRtcStateChanged = event => this.handleRtcConnectionStateChanged(event));
 
+        this.listenerSpeakerStateChanged = connection.client.events().on("notify_state_updated", event => {
+            if(event.state === "speaker") {
+                this.updateSpeakerState();
+            }
+        });
+
         /* FIXME: Listener for audio! */
 
         this.listenerClientMoved = this.rtcConnection.getConnection().command_handler_boss().register_explicit_handler("notifyclientmoved", event => {
@@ -61,6 +69,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
             }
         });
 
+        this.speakerMuted = connection.client.isSpeakerMuted() || connection.client.isSpeakerDisabled();
 
         this.setConnectionState(VoiceConnectionStatus.Disconnected);
         aplayer.on_ready(() => {
@@ -75,6 +84,11 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
         if(this.listenerClientMoved) {
             this.listenerClientMoved();
             this.listenerClientMoved = undefined;
+        }
+
+        if(this.listenerSpeakerStateChanged) {
+            this.listenerSpeakerStateChanged();
+            this.listenerSpeakerStateChanged = undefined;
         }
 
         this.rtcConnection.getEvents().off("notify_audio_assignment_changed", this.listenerRtcAudioAssignment);
@@ -195,7 +209,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
         log.info(LogCategory.VOICE, tr("Local voice started"));
 
         const ch = chandler.getClient();
-        if(ch) ch.speaking = true;
+        if(ch) { ch.speaking = true; }
         this.rtcConnection.setTrackSource("audio", this.localAudioDestination.stream.getAudioTracks()[0])
             .catch(error => {
                 logError(LogCategory.AUDIO, tr("Failed to set current audio track: %o"), error);
@@ -369,5 +383,13 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
             bytesReceived: stats.voiceBytesReceived,
             bytesSend: stats.voiceBytesSent
         };
+    }
+
+    private updateSpeakerState() {
+        const newState = this.connection.client.isSpeakerMuted() || this.connection.client.isSpeakerDisabled();
+        if(this.speakerMuted === newState) { return; }
+
+        this.speakerMuted = newState;
+        this.voiceClients.forEach(client => client.setGloballyMuted(this.speakerMuted));
     }
 }

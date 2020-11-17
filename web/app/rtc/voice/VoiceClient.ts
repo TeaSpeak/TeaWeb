@@ -9,6 +9,8 @@ export class RtpVoiceClient implements VoiceClient {
     private readonly listenerTrackStateChanged;
     private readonly clientId: number;
 
+    private globallyMuted: boolean;
+
     private volume: number;
     private currentState: VoicePlayerState;
     private currentRtpTrack: RemoteRTPAudioTrack;
@@ -22,6 +24,13 @@ export class RtpVoiceClient implements VoiceClient {
 
     destroy() {
         this.events.destroy();
+    }
+
+    setGloballyMuted(muted: boolean) {
+        if(this.globallyMuted === muted) { return; }
+
+        this.globallyMuted = muted;
+        this.updateVolume();
     }
 
     getClientId(): number {
@@ -52,7 +61,7 @@ export class RtpVoiceClient implements VoiceClient {
 
     setVolume(volume: number) {
         this.volume = volume;
-        this.currentRtpTrack?.setGain(volume);
+        this.updateVolume();
     }
 
     getLatencySettings(): Readonly<VoicePlayerLatencySettings> {
@@ -94,5 +103,9 @@ export class RtpVoiceClient implements VoiceClient {
                 this.setState(VoicePlayerState.STOPPED);
                 break;
         }
+    }
+
+    private updateVolume() {
+        this.currentRtpTrack?.setGain(this.globallyMuted ? 0 : this.volume);
     }
 }
