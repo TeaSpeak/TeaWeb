@@ -100,7 +100,7 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
         return 0;
     }
 
-    async registerVoiceClient(clientId: number): Promise<VoiceClient> {
+    registerVoiceClient(clientId: number): VoiceClient {
         const client = new DummyVoiceClient(clientId);
         this.voiceClients.push(client);
         return client;
