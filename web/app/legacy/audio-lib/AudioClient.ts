@@ -1,4 +1,4 @@
-import {AudioLibrary} from "tc-backend/web/audio-lib/index";
+import {AudioLibrary} from "./index";
 import {LogCategory, logWarn} from "tc-shared/log";
 
 export class AudioClient {

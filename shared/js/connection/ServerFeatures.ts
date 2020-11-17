@@ -11,7 +11,8 @@ export enum ServerFeature {
     ERROR_BULKS= "error-bulks", /* Current version is 1 */
     ADVANCED_CHANNEL_CHAT= "advanced-channel-chat", /* Current version is 1 */
     LOG_QUERY= "log-query", /* Current version is 1 */
-    WHISPER_ECHO = "whisper-echo" /* Current version is 1 */
+    WHISPER_ECHO = "whisper-echo", /* Current version is 1 */
+    VIDEO = "video"
 }
 
 export interface ServerFeatureEvents {

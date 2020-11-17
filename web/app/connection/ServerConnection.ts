@@ -1,8 +1,9 @@
 import {
     AbstractServerConnection,
     CommandOptionDefaults,
-    CommandOptions, ConnectionStatistics,
+    CommandOptions,
     ConnectionStateListener,
+    ConnectionStatistics,
 } from "tc-shared/connection/ConnectionBase";
 import {ConnectionHandler, ConnectionState, DisconnectReason} from "tc-shared/ConnectionHandler";
 import {HandshakeHandler} from "tc-shared/connection/HandshakeHandler";
@@ -10,7 +11,7 @@ import {ConnectionCommandHandler, ServerConnectionCommandBoss} from "tc-shared/c
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {settings, Settings} from "tc-shared/settings";
 import * as log from "tc-shared/log";
-import {LogCategory, logTrace} from "tc-shared/log";
+import {LogCategory, logDebug, logError, logTrace} from "tc-shared/log";
 import {Regex} from "tc-shared/ui/modal/ModalConnect";
 import {AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
 import {EventType} from "tc-shared/ui/frames/log/Definitions";
@@ -22,6 +23,9 @@ import {RTCConnection} from "tc-backend/web/rtc/Connection";
 import {RtpVoiceConnection} from "tc-backend/web/rtc/voice/Connection";
 import {RtpVideoConnection} from "tc-backend/web/rtc/video/Connection";
 import {VideoConnection} from "tc-shared/connection/VideoConnection";
+import {VoiceConnection} from "tc-backend/web/legacy/voice/VoiceHandler";
+import {LegacySupportVoiceBridge} from "tc-backend/web/connection/LegacySupportVoiceBridge";
+import {ServerFeature} from "tc-shared/connection/ServerFeatures";
 
 class ReturnListener<T> {
     resolve: (value?: T | PromiseLike<T>) => void;
@@ -50,6 +54,10 @@ export class ServerConnection extends AbstractServerConnection {
     private voiceConnection: RtpVoiceConnection;
     private videoConnection: RtpVideoConnection;
 
+    /* legacy */
+    private oldVoiceConnection: VoiceConnection;
+    private legacyVoiceConnection: LegacySupportVoiceBridge;
+
     private pingStatistics = {
         thread_id: 0,
 
@@ -77,6 +85,9 @@ export class ServerConnection extends AbstractServerConnection {
         this.rtcConnection = new RTCConnection(this);
         this.voiceConnection = new RtpVoiceConnection(this, this.rtcConnection);
         this.videoConnection = new RtpVideoConnection(this.rtcConnection);
+
+        this.oldVoiceConnection = new VoiceConnection(this);
+        this.legacyVoiceConnection = new LegacySupportVoiceBridge(this, this.oldVoiceConnection, this.voiceConnection);
     }
 
     destroy() {
@@ -106,6 +117,11 @@ export class ServerConnection extends AbstractServerConnection {
 
             this.voiceConnection && this.voiceConnection.destroy();
             this.voiceConnection = undefined;
+
+            this.oldVoiceConnection?.destroy();
+            this.oldVoiceConnection = undefined;
+
+            this.legacyVoiceConnection = undefined;
 
             this.commandHandlerBoss && this.commandHandlerBoss.destroy();
             this.commandHandlerBoss = undefined;
@@ -334,9 +350,7 @@ export class ServerConnection extends AbstractServerConnection {
                 });
 
                 if(json["command"] === "initserver") {
-                    this.pingStatistics.thread_id = setInterval(() => this.doNextPing(), this.pingStatistics.interval) as any;
-                    this.doNextPing();
-                    this.updateConnectionState(ConnectionState.CONNECTED);
+                    this.handleServerInit();
                 }
                 /* devel-block(log-networking-commands) */
                 group.end();
@@ -350,9 +364,7 @@ export class ServerConnection extends AbstractServerConnection {
                 });
 
                 if(command.command === "initserver") {
-                    this.pingStatistics.thread_id = setInterval(() => this.doNextPing(), this.pingStatistics.interval) as any;
-                    this.doNextPing();
-                    this.updateConnectionState(ConnectionState.CONNECTED);
+                    this.handleServerInit();
                 }
             } else if(json["type"] === "ping") {
                 this.sendData(JSON.stringify({
@@ -369,6 +381,8 @@ export class ServerConnection extends AbstractServerConnection {
                     this.pingStatistics.currentNativeValue = parseInt(json["ping_native"]) / 1000; /* we're getting it in microseconds and not milliseconds */
                     //log.debug(LogCategory.NETWORKING, tr("Received new pong. Updating ping to: JS: %o Native: %o"), this._ping.value.toFixed(3), this._ping.value_native.toFixed(3));
                 }
+            } else if(json["type"] === "WebRTC") {
+                this.oldVoiceConnection?.handleControlPacket(json);
             } else {
                 log.warn(LogCategory.NETWORKING, tr("Unknown command type %o"), json["type"]);
             }
@@ -384,6 +398,37 @@ export class ServerConnection extends AbstractServerConnection {
         }
 
         this.socket.sendMessage(data);
+    }
+
+    private handleServerInit() {
+        this.pingStatistics.thread_id = setInterval(() => this.doNextPing(), this.pingStatistics.interval) as any;
+        this.doNextPing();
+        this.updateConnectionState(ConnectionState.CONNECTED);
+        this.client.serverFeatures.awaitFeatures().then(succeeded => {
+            if(!succeeded) {
+                /* something like a disconnect happened or so */
+                return;
+            }
+
+            if(this.client.serverFeatures.supportsFeature(ServerFeature.VIDEO, 1)) {
+                this.legacyVoiceConnection.setVoiceBridge("new").then(() => {
+                    this.rtcConnection.doInitialSetup();
+                }).catch(error => {
+                    logError(LogCategory.VOICE, tr("Failed to setup the voice bridge: %o"), error);
+                    /* FIXME: Some kind of error modal? */
+                });
+            } else{
+                /* old voice connection */
+                logDebug(LogCategory.NETWORKING, tr("Using legacy voice connection for TeaSpeak server bellow 1.4.5"));
+                this.legacyVoiceConnection.setVoiceBridge("old").then(() => {
+                    this.oldVoiceConnection.startVoiceBridge();
+                    this.rtcConnection.setNotSupported();
+                }).catch(error => {
+                    logError(LogCategory.VOICE, tr("Failed to setup the old voice bridge: %o"), error);
+                    /* FIXME: Some kind of error modal? */
+                });
+            }
+        });
     }
 
     private static commandDataToJson(input: any) : string {
@@ -444,7 +489,7 @@ export class ServerConnection extends AbstractServerConnection {
     }
 
     getVoiceConnection(): AbstractVoiceConnection {
-        return this.voiceConnection /* || this.dummyVoiceConnection; */
+        return this.legacyVoiceConnection;
     }
 
     getVideoConnection(): VideoConnection {

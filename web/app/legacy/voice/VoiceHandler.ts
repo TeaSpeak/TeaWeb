@@ -1,7 +1,7 @@
 import * as log from "tc-shared/log";
 import {LogCategory, logDebug, logError, logInfo, logTrace, logWarn} from "tc-shared/log";
-import * as aplayer from "../audio/player";
-import {ServerConnection} from "../connection/ServerConnection";
+import * as aplayer from "../../audio/player";
+import {ServerConnection} from "../../connection/ServerConnection";
 import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {VoiceClientController} from "./VoiceClient";
 import {tr} from "tc-shared/i18n/localize";
@@ -23,7 +23,7 @@ import {
     WhisperTarget
 } from "tc-shared/voice/VoiceWhisper";
 import {VoiceClient} from "tc-shared/voice/VoiceClient";
-import {WebWhisperSession} from "tc-backend/web/voice/VoiceWhisper";
+import {WebWhisperSession} from "./VoiceWhisper";
 import {VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 
 type CancelableWhisperTarget = WhisperTarget & { canceled: boolean };
@@ -81,6 +81,10 @@ export class VoiceConnection extends AbstractVoiceConnection {
 
     getFailedMessage(): string {
         return this.failedConnectionMessage;
+    }
+
+    getRetryTimestamp(): number | 0 {
+        return 0;
     }
 
     destroy() {
@@ -156,8 +160,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         this.events.fire("notify_recorder_changed");
     }
 
-    private startVoiceBridge() {
-        return; /* We're not doing this currently */
+    public startVoiceBridge() {
         if(!aplayer.initialized()) {
             logDebug(LogCategory.VOICE, tr("Audio player isn't initialized yet. Waiting for it to initialize."));
             if(!this.awaitingAudioInitialize) {
@@ -319,7 +322,8 @@ export class VoiceConnection extends AbstractVoiceConnection {
 
     private handleServerConnectionStateChanged(event: ServerConnectionEvents["notify_connection_state_changed"]) {
         if(event.newState === ConnectionState.CONNECTED) {
-            this.startVoiceBridge();
+            /* startVoiceBridge() will be called by the server connection if we're using this old voice bridge */
+            /* this.startVoiceBridge(); */
         } else {
             this.connectAttemptCounter = 0;
             this.lastConnectAttempt = 0;

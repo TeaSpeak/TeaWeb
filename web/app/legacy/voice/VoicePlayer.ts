@@ -4,11 +4,11 @@ import {
     VoicePlayerLatencySettings,
     VoicePlayerState
 } from "tc-shared/voice/VoicePlayer";
-import {AudioClient} from "tc-backend/web/audio-lib/AudioClient";
+import {AudioClient} from "../audio-lib/AudioClient";
 import {AudioResampler} from "./AudioResampler";
 import {Registry} from "tc-shared/events";
 import * as aplayer from "tc-backend/web/audio/player";
-import {getAudioLibrary} from "tc-backend/web/audio-lib";
+import {getAudioLibrary} from "../audio-lib";
 import {LogCategory, logDebug, logError, logWarn} from "tc-shared/log";
 
 const kDefaultLatencySettings = {

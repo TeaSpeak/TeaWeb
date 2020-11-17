@@ -2,8 +2,8 @@ import {WhisperSession, WhisperSessionEvents, WhisperSessionState} from "tc-shar
 import {Registry} from "tc-shared/events";
 import {VoicePlayer, VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 import {WhisperSessionInitializeData} from "tc-shared/connection/VoiceConnection";
-import {VoiceWhisperPacket} from "tc-backend/web/voice/bridge/VoiceBridge";
-import {WebVoicePlayer} from "tc-backend/web/voice/VoicePlayer";
+import {VoiceWhisperPacket} from "./bridge/VoiceBridge";
+import {WebVoicePlayer} from "./VoicePlayer";
 
 const kMaxUninitializedBuffers = 10;
 export class WebWhisperSession implements WhisperSession {

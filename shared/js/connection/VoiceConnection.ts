@@ -69,7 +69,7 @@ export abstract class AbstractVoiceConnection {
     abstract encodingSupported(codec: number) : boolean;
     abstract decodingSupported(codec: number) : boolean;
 
-    abstract registerVoiceClient(clientId: number);
+    abstract registerVoiceClient(clientId: number) : VoiceClient;
     abstract availableVoiceClients() : VoiceClient[];
     abstract unregisterVoiceClient(client: VoiceClient);
 

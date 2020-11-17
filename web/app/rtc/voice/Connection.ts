@@ -256,8 +256,9 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
     }
 
     unregisterVoiceClient(client: VoiceClient) {
-        if(!(client instanceof RtpVoiceClient))
+        if(!(client instanceof RtpVoiceClient)) {
             throw "Invalid client type";
+        }
 
         console.error("Destroy voice client %d", client.getClientId());
         client.events.off("notify_state_changed", this.voiceClientStateChangedEventListener);
@@ -356,6 +357,10 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
             case RTPConnectionState.FAILED:
                 this.localFailedReason = undefined;
                 this.setConnectionState(VoiceConnectionStatus.Failed);
+                break;
+
+            case RTPConnectionState.NOT_SUPPORTED:
+                this.setConnectionState(VoiceConnectionStatus.ServerUnsupported);
                 break;
         }
     }

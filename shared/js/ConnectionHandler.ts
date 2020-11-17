@@ -175,6 +175,7 @@ export class ConnectionHandler {
 
         lastChannelCodecWarned: -1
     };
+    private clientStatusUnsync = false;
 
     private inputHardwareState: InputHardwareState = InputHardwareState.MISSING;
 
@@ -746,14 +747,17 @@ export class ConnectionHandler {
             {
                 const currentClientProperties = this.getClient().properties;
                 for(const key of Object.keys(localClientUpdates)) {
-                    if(currentClientProperties[key] === localClientUpdates[key])
+                    if(currentClientProperties[key] === localClientUpdates[key] && !this.clientStatusUnsync)
                         delete localClientUpdates[key];
                 }
 
                 if(Object.keys(localClientUpdates).length > 0) {
-                    this.serverConnection.send_command("clientupdate", localClientUpdates).catch(error => {
+                    this.serverConnection.send_command("clientupdate", localClientUpdates).then(() => {
+                        this.clientStatusUnsync = false;
+                    }).catch(error => {
                         log.warn(LogCategory.GENERAL, tr("Failed to update client audio hardware properties. Error: %o"), error);
                         this.log.log(EventType.ERROR_CUSTOM, { message: tr("Failed to update audio hardware properties.") });
+                        this.clientStatusUnsync = true;
 
                         /* Update these properties anyways (for case the server fails to handle the command) */
                         const updates = [];

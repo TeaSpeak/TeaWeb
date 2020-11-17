@@ -15,6 +15,7 @@ import {RtpVideoClient} from "tc-backend/web/rtc/video/VideoClient";
 import {tr} from "tc-shared/i18n/localize";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
 import {ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
+import {VoiceConnectionStatus} from "tc-shared/connection/VoiceConnection";
 
 type VideoBroadcast = {
     readonly source: VideoSource;
@@ -239,6 +240,10 @@ export class RtpVideoConnection implements VideoConnection {
 
             case RTPConnectionState.FAILED:
                 this.setConnectionState(VideoConnectionStatus.Failed);
+                break;
+
+            case RTPConnectionState.NOT_SUPPORTED:
+                this.setConnectionState(VideoConnectionStatus.Unsupported);
                 break;
         }
     }

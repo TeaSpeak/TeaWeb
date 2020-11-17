@@ -15,6 +15,7 @@ import {
 } from "tc-backend/web/rtc/RemoteTrack";
 import {SdpCompressor, SdpProcessor} from "tc-backend/web/rtc/SdpUtils";
 import {context} from "tc-backend/web/audio/player";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 const kSdpCompressionMode = 1;
 
@@ -218,7 +219,8 @@ export enum RTPConnectionState {
     DISCONNECTED,
     CONNECTING,
     CONNECTED,
-    FAILED
+    FAILED,
+    NOT_SUPPORTED
 }
 
 class InternalRemoteRTPAudioTrack extends RemoteRTPAudioTrack {
@@ -560,6 +562,11 @@ export class RTCConnection {
         });
     }
 
+    public setNotSupported() {
+        this.reset(false);
+        this.updateConnectionState(RTPConnectionState.NOT_SUPPORTED);
+    }
+
     private updateConnectionState(newState: RTPConnectionState) {
         if(this.connectionState === newState) { return; }
 
@@ -615,7 +622,10 @@ export class RTCConnection {
 
     private enableDtx(_sender: RTCRtpSender) { }
 
-    private doInitialSetup() {
+    public doInitialSetup() {
+        /* initialize rtc connection */
+        this.retryCalculator.reset();
+
         if(!('RTCPeerConnection' in window)) {
             this.handleFatalError(tr("WebRTC has been disabled (RTCPeerConnection is not defined)"), false);
             return;
@@ -716,6 +726,10 @@ export class RTCConnection {
         } catch (error) {
             if(this.peer !== peer) { return; }
             if(error instanceof CommandResult) {
+                if(error.id === ErrorCode.COMMAND_NOT_FOUND) {
+                    this.setNotSupported();
+                    return;
+                }
                 error = error.formattedMessage();
             }
             logWarn(LogCategory.VOICE, tr("Failed to initialize RTP connection: %o"), error);
@@ -729,9 +743,7 @@ export class RTCConnection {
 
     private handleConnectionStateChanged(event: ServerConnectionEvents["notify_connection_state_changed"]) {
         if(event.newState === ConnectionState.CONNECTED) {
-            /* initialize rtc connection */
-            this.retryCalculator.reset();
-            this.doInitialSetup();
+            /* will be called by the server connection handler */
         } else {
             this.reset(true);
         }

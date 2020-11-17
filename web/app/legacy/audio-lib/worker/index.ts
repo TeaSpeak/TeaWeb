@@ -8,7 +8,7 @@ import {
     AWMessageRelations,
     AWNotifies,
     AWNotifiesWorker
-} from "tc-backend/web/audio-lib/WorkerMessages";
+} from "../WorkerMessages";
 
 import {AudioLibrary, getAudioLibraryInstance} from "./async_require";
 

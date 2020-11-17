@@ -4,7 +4,7 @@ import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
 import {WebRTCVoiceBridge} from "./WebRTCVoiceBridge";
-import {VoiceWhisperPacket} from "tc-backend/web/voice/bridge/VoiceBridge";
+import {VoiceWhisperPacket} from "./VoiceBridge";
 import {CryptoHelper} from "tc-shared/profiles/identities/TeamSpeakIdentity";
 import arraybuffer_to_string = CryptoHelper.arraybuffer_to_string;
 

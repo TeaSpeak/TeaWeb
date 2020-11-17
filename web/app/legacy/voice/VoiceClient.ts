@@ -1,5 +1,5 @@
 import {VoiceClient} from "tc-shared/voice/VoiceClient";
-import {WebVoicePlayer} from "tc-backend/web/voice/VoicePlayer";
+import {WebVoicePlayer} from "./VoicePlayer";
 
 export class VoiceClientController extends WebVoicePlayer implements VoiceClient {
     private readonly clientId: number;

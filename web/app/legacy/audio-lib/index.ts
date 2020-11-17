@@ -5,8 +5,8 @@ import {
     AWMessageRelations,
     AWNotifies,
     AWNotifiesWorker
-} from "tc-backend/web/audio-lib/WorkerMessages";
-import {AudioClient} from "tc-backend/web/audio-lib/AudioClient";
+} from "./WorkerMessages";
+import {AudioClient} from "./AudioClient";
 import {LogCategory, logWarn} from "tc-shared/log";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
