@@ -743,7 +743,7 @@ export class RTCConnection {
                 logTrace(LogCategory.WEBRTC, tr("Skipping local fqdn ICE candidate %s"), candidate.toJSON().candidate);
                 return;
             }
-            //sthis.localCandidateCount++;
+            this.localCandidateCount++;
 
             const json = candidate.toJSON();
             logTrace(LogCategory.WEBRTC, tr("Received local ICE candidate %s"), json.candidate);

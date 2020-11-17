@@ -1,12 +1,18 @@
 import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
-import {
-    ConnectionComponent,
-    ConnectionStatus,
-    ConnectionStatusEvents
-} from "./StatusDefinitions";
+import {ConnectionComponent, ConnectionStatus, ConnectionStatusEvents} from "./StatusDefinitions";
 import {Registry} from "tc-shared/events";
 import {VoiceConnectionStatus} from "tc-shared/connection/VoiceConnection";
 import {VideoConnectionStatus} from "tc-shared/connection/VideoConnection";
+import {LogCategory, logError} from "tc-shared/log";
+
+enum StatusNotifyState {
+    /* no notify has been scheduled */
+    UNSET,
+    /* a notify is executing right now */
+    EXECUTING,
+    /* a notify has been scheduled after the currently notify has been completed */
+    PENDING
+}
 
 export class StatusController {
     private readonly events: Registry<ConnectionStatusEvents>;
@@ -16,6 +22,13 @@ export class StatusController {
 
     private detailedInfoOpen = false;
     private detailUpdateTimer: number;
+
+    private componentStatusNotifyState: {[T in ConnectionComponent]: StatusNotifyState} = {
+        voice: StatusNotifyState.UNSET,
+        signaling: StatusNotifyState.UNSET,
+        video: StatusNotifyState.UNSET
+    };
+    private connectionStatusNotifyState: StatusNotifyState = StatusNotifyState.UNSET;
 
     constructor(events: Registry<ConnectionStatusEvents>) {
         this.events = events;
@@ -92,6 +105,7 @@ export class StatusController {
         if(!this.currentConnectionHandler) {
             return { type: "disconnected" };
         }
+
         switch (component) {
             case "video":
                 const videoConnection = this.currentConnectionHandler.getServerConnection().getVideoConnection();
@@ -189,12 +203,58 @@ export class StatusController {
         }
     }
 
-
     async notifyComponentStatus(component: ConnectionComponent) {
+        switch (this.componentStatusNotifyState[component]) {
+            case StatusNotifyState.EXECUTING:
+                this.componentStatusNotifyState[component] = StatusNotifyState.PENDING;
+                break;
+            case StatusNotifyState.PENDING:
+                break;
+            case StatusNotifyState.UNSET:
+                do {
+                    try {
+                        this.componentStatusNotifyState[component] = StatusNotifyState.EXECUTING;
+                        await this.doNotifyComponentStatus(component);
+                    } catch (error) {
+                        logError(LogCategory.GENERAL, tr("Failed to notify the connection status: %o"), error);
+                    }
+                } /* @ts-ignore */ while(this.componentStatusNotifyState[component] === StatusNotifyState.PENDING);
+                this.componentStatusNotifyState[component] = StatusNotifyState.UNSET;
+                break;
+        }
+    }
+
+    private async doNotifyComponentStatus(component: ConnectionComponent) {
         this.events.fire_react("notify_component_status", { component: component, status: await this.getComponentStatus(component, true) });
     }
 
     async notifyConnectionStatus() {
+        switch (this.connectionStatusNotifyState) {
+            case StatusNotifyState.EXECUTING:
+                this.connectionStatusNotifyState = StatusNotifyState.PENDING;
+                break;
+            case StatusNotifyState.PENDING:
+                break;
+
+            case StatusNotifyState.UNSET:
+                do {
+                    try {
+                        /* This is a workaround since typescript does not know that while awaiting the connectionStatusNotifyState might change */
+                        const kFalse = false;
+                        if(kFalse) { this.connectionStatusNotifyState = StatusNotifyState.PENDING; }
+
+                        this.connectionStatusNotifyState = StatusNotifyState.EXECUTING;
+                        await this.doNotifyConnectionStatus();
+                    } catch (error) {
+                        logError(LogCategory.GENERAL, tr("Failed to notify the connection status: %o"), error);
+                    }
+                } while(this.connectionStatusNotifyState === StatusNotifyState.PENDING);
+                this.connectionStatusNotifyState = StatusNotifyState.UNSET;
+                break;
+        }
+    }
+
+    private async doNotifyConnectionStatus() {
         let status: ConnectionStatus = { type: "healthy" };
 
         for(const component of ["signaling", "voice", "video"] as ConnectionComponent[]) {
