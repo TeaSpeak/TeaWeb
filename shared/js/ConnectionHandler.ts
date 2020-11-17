@@ -175,7 +175,7 @@ export class ConnectionHandler {
 
         lastChannelCodecWarned: -1
     };
-    private clientStatusUnsync = false;
+    private clientStatusSync = false;
 
     private inputHardwareState: InputHardwareState = InputHardwareState.MISSING;
 
@@ -368,8 +368,11 @@ export class ConnectionHandler {
             this.sound.play(Sound.CONNECTION_CONNECTED);
 
             this.permissions.requestPermissionList();
+            /*
+            There is no need to request the server groups since they must be send by the server
             if(this.groups.serverGroups.length == 0)
                 this.groups.requestGroups();
+            */
 
             this.settings.setServer(this.channelTree.server.properties.virtualserver_unique_identifier);
 
@@ -746,24 +749,25 @@ export class ConnectionHandler {
             /* update our owns client properties */
             {
                 const currentClientProperties = this.getClient().properties;
-                for(const key of Object.keys(localClientUpdates)) {
-                    if(currentClientProperties[key] === localClientUpdates[key] && !this.clientStatusUnsync)
-                        delete localClientUpdates[key];
+                if(this.clientStatusSync) {
+                    for(const key of Object.keys(localClientUpdates)) {
+                        if(currentClientProperties[key] === localClientUpdates[key])
+                            delete localClientUpdates[key];
+                    }
                 }
 
                 if(Object.keys(localClientUpdates).length > 0) {
-                    this.serverConnection.send_command("clientupdate", localClientUpdates).then(() => {
-                        this.clientStatusUnsync = false;
-                    }).catch(error => {
+                    /* directly update all update locally so we don't send updates twice */
+                    const updates = [];
+                    for(const key of Object.keys(localClientUpdates))
+                        updates.push({ key: key, value: localClientUpdates[key] ? "1" : "0" });
+                    this.getClient().updateVariables(...updates);
+
+                    this.clientStatusSync = true;
+                    this.serverConnection.send_command("clientupdate", localClientUpdates).catch(error => {
                         log.warn(LogCategory.GENERAL, tr("Failed to update client audio hardware properties. Error: %o"), error);
                         this.log.log(EventType.ERROR_CUSTOM, { message: tr("Failed to update audio hardware properties.") });
-                        this.clientStatusUnsync = true;
-
-                        /* Update these properties anyways (for case the server fails to handle the command) */
-                        const updates = [];
-                        for(const key of Object.keys(localClientUpdates))
-                            updates.push({ key: key, value: localClientUpdates[key] ? "1" : "0" });
-                        this.getClient().updateVariables(...updates);
+                        this.clientStatusSync = false;
                     });
                 }
             }
