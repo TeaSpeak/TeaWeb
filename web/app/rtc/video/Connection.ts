@@ -127,8 +127,9 @@ export class RtpVideoConnection implements VideoConnection {
         return this.broadcasts[type] ? this.broadcasts[type].state : VideoBroadcastState.Stopped;
     }
 
-    getBroadcastStatistics(type: VideoBroadcastType): Promise<VideoBroadcastStatistics | undefined> {
-        return this.rtcConnection.getVideoBroadcastStatistics(type === "camera" ? "video" : "video-screen");
+    async getBroadcastStatistics(type: VideoBroadcastType): Promise<VideoBroadcastStatistics | undefined> {
+        /* TODO! */
+        return undefined;
     }
 
     getBroadcastingSource(type: VideoBroadcastType): VideoSource | undefined {
