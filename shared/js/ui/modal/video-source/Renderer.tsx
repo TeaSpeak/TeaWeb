@@ -583,6 +583,11 @@ const BpsInfo = () => {
 }
 
 const Settings = () => {
+    if(window.detectedBrowser.name === "firefox") {
+        /* Firefox does not seem to give a fuck about any of our settings */
+        return null;
+    }
+
     const [ advanced, setAdvanced ] = useState(false);
 
     return (

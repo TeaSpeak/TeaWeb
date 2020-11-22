@@ -1,4 +1,9 @@
 # Changelog:
+** 22.11.20**
+    - Added a ton of video settings
+    - Added screen sharing (Currently via the camera channel)
+    - Using codec H264 instead of VP8
+    
 ** 14.11.20**
     - Fixed bug where the microphone has been requested when muting it.
     

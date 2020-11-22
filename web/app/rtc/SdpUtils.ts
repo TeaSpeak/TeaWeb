@@ -53,9 +53,9 @@ export class SdpProcessor {
             rtcpFb: [ "nack", "nack pli", "ccm fir", "transport-cc" ],
             //42001f | Original: 42e01f
             fmtp: {
-                "level-asymmetry-allowed": 1, "packetization-mode": 1, "profile-level-id": "42e01f", "max-br": 25000, "max-fr": 60,
+                "level-asymmetry-allowed": 1, "packetization-mode": 1, "profile-level-id": "42e01f", "max-br": 25000, "max-fr": 30,
                 "x-google-max-bitrate": 22 * 1000,
-                "x-google-start-bitrate": 22 * 1000, /* Fun fact: This actually controls the max bitrate for google chrome */
+                "x-google-start-bitrate": 22 * 1000,
             }
         }
     ];
@@ -87,8 +87,22 @@ export class SdpProcessor {
         const sdp = sdpTransform.parse(sdpString);
         this.rtpRemoteChannelMapping = SdpProcessor.generateRtpSSrcMapping(sdp);
 
-        /* FIXME! */
-        SdpProcessor.patchLocalCodecs(sdp);
+        /* Fix for Firefox to acknowledge the max bandwidth */
+        for(const media of sdp.media) {
+            if(media.type !== "video") { continue; }
+            if(media.bandwidth?.length > 0) { continue; }
+
+            const config = media.fmtp.find(e => e.config.indexOf("x-google-start-bitrate") !== -1);
+            if(!config) { continue; }
+
+            const bitrate = config.config.split(";").find(e => e.startsWith("x-google-start-bitrate="))?.substr(23);
+            if(!bitrate) { continue; }
+
+            media.bandwidth = [{
+                type: "AS",
+                limit: bitrate
+            }];
+        }
 
         return sdpTransform.write(sdp);
     }

@@ -182,8 +182,6 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
             spawnVideoSourceSelectModal(event.broadcastType, true).then(async source => {
                 if(!source) { return; }
 
-                const videoTrack = source.getStream().getVideoTracks()[0];
-
                 try {
                     event.connection.getServerConnection().getVideoConnection().startBroadcasting("camera", source)
                         .catch(error => {

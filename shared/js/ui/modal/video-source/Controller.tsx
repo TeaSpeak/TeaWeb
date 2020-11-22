@@ -131,15 +131,15 @@ function initializeController(events: Registry<ModalVideoSourceEvents>, currentS
         if(typeof currentSource === "object") {
             const videoTrack = currentSource.getStream().getVideoTracks()[0];
             const settings = videoTrack.getSettings();
-            const capabilities = videoTrack.getCapabilities();
+            const capabilities = "getCapabilities" in videoTrack ? videoTrack.getCapabilities() : undefined;
 
             events.fire_react("notify_setting_dimension", {
                 setting: {
-                    minWidth: capabilities.width ? capabilities.width.min : settings.width,
-                    maxWidth: capabilities.width ? capabilities.width.max : settings.width,
+                    minWidth: capabilities?.width ? capabilities.width.min : 1,
+                    maxWidth: capabilities?.width ? capabilities.width.max : settings.width,
 
-                    minHeight: capabilities.height ? capabilities.height.min : settings.height,
-                    maxHeight: capabilities.height ? capabilities.height.max : settings.height,
+                    minHeight: capabilities?.height ? capabilities.height.min : 1,
+                    maxHeight: capabilities?.height ? capabilities.height.max : settings.height,
 
                     originalWidth: settings.width,
                     originalHeight: settings.height,
@@ -157,13 +157,13 @@ function initializeController(events: Registry<ModalVideoSourceEvents>, currentS
         if(typeof currentSource === "object") {
             const videoTrack = currentSource.getStream().getVideoTracks()[0];
             const settings = videoTrack.getSettings();
-            const capabilities = videoTrack.getCapabilities();
+            const capabilities = "getCapabilities" in videoTrack ? videoTrack.getCapabilities() : undefined;
 
             const round = (value: number) => Math.round(value * 100) / 100;
             events.fire_react("notify_settings_framerate", {
                 frameRate: {
-                    min: round(capabilities.frameRate ? capabilities.frameRate.min : settings.frameRate),
-                    max: round(capabilities.frameRate ? capabilities.frameRate.max : settings.frameRate),
+                    min: round(capabilities?.frameRate ? capabilities.frameRate.min : 1),
+                    max: round(capabilities?.frameRate ? capabilities.frameRate.max : settings.frameRate),
                     original: round(settings.frameRate)
                 }
             });
