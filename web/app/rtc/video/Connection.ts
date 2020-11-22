@@ -1,5 +1,6 @@
 import {
-    VideoBroadcastState, VideoBroadcastStatistics,
+    VideoBroadcastState,
+    VideoBroadcastStatistics,
     VideoBroadcastType,
     VideoClient,
     VideoConnection,
@@ -65,9 +66,27 @@ export class RtpVideoConnection implements VideoConnection {
         });
 
         this.listenerRtcStateChanged = this.rtcConnection.getEvents().on("notify_state_changed", event => this.handleRtcConnectionStateChanged(event));
+        this.rtcConnection.getEvents().on("notify_video_assignment_changed", event => {
+            if(event.info) {
+                switch (event.info.media) {
+                    case 2:
+                        this.handleVideoAssignmentChanged("camera", event);
+                        break;
 
-        /* TODO: Screen share?! */
-        this.rtcConnection.getEvents().on("notify_video_assignment_changed", event => this.handleVideoAssignmentChanged("camera", event));
+                    case 3:
+                        this.handleVideoAssignmentChanged("screen", event);
+                        break;
+
+                    default:
+                        logWarn(LogCategory.WEBRTC, tr("Received video track %o assignment for invalid media: %o"), event.track.getSsrc(), event.info);
+                        return;
+                }
+            } else {
+                /* track has been removed */
+                this.handleVideoAssignmentChanged("screen", event);
+                this.handleVideoAssignmentChanged("camera", event);
+            }
+        });
     }
 
     private setConnectionState(state: VideoConnectionStatus) {

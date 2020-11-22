@@ -251,12 +251,13 @@ class CommandHandler extends AbstractCommandHandler {
                     client_id: parseInt(data["sclid"]),
                     client_database_id: parseInt(data["scldbid"]),
                     client_name: data["sclname"],
-                    client_unique_id: data["scluid"]
+                    client_unique_id: data["scluid"],
+                    media: parseInt(data["media"])
                 });
             } else {
                 this.handle["doMapStream"](ssrc, undefined);
             }
-        } else if(command.command === "notifyrtcstateaudio") {
+        } else if(command.command === "notifyrtcstreamstate") {
             const data = command.arguments[0];
             const state = parseInt(data["state"]);
             const ssrc = parseInt(data["streamid"]) >>> 0;
@@ -269,7 +270,7 @@ class CommandHandler extends AbstractCommandHandler {
                     client_id: parseInt(data["sclid"]),
                     client_database_id: parseInt(data["scldbid"]),
                     client_name: data["sclname"],
-                    client_unique_id: data["scluid"]
+                    client_unique_id: data["scluid"],
                 });
             } else {
                 logWarn(LogCategory.WEBRTC, tr("Received unknown/invalid rtc track state: %d"), state);
@@ -1001,6 +1002,10 @@ export class RTCConnection {
             track.handleStateNotify(state, info);
         } else {
             let tempStream = this.getOrCreateTempStream(ssrc);
+            if(typeof info.media === "undefined") {
+                /* the media will only be send on stream assignments, not on stream state changes */
+                info.media = tempStream.info?.media;
+            }
             tempStream.info = info;
             tempStream.status = state;
         }

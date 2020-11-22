@@ -13,8 +13,11 @@ const cssStyle = require("./Renderer.scss");
 let videoIdIndex = 0;
 interface ClientVideoController {
     destroy();
+    toggleMuteState(type: VideoBroadcastType, state: boolean);
+
     notifyVideoInfo();
     notifyVideo();
+    notifyMuteState();
 }
 
 class RemoteClientVideoController implements ClientVideoController {
@@ -25,6 +28,11 @@ class RemoteClientVideoController implements ClientVideoController {
     protected readonly events: Registry<ChannelVideoEvents>;
     protected eventListener: (() => void)[];
     protected eventListenerVideoClient: (() => void)[];
+
+    protected mutedState: {[T in VideoBroadcastType]: boolean} = {
+        screen: false,
+        camera: false
+    };
 
     private currentBroadcastState: boolean;
 
@@ -56,7 +64,10 @@ class RemoteClientVideoController implements ClientVideoController {
 
         const videoClient = this.client.getVideoClient();
         if(videoClient) {
-            events.push(videoClient.getEvents().on("notify_broadcast_state_changed", () => this.notifyVideo()));
+            events.push(videoClient.getEvents().on("notify_broadcast_state_changed", () => {
+                this.notifyVideo();
+                this.notifyMuteState();
+            }));
         }
     }
 
@@ -71,6 +82,14 @@ class RemoteClientVideoController implements ClientVideoController {
     isBroadcasting() {
         const videoClient = this.client.getVideoClient();
         return videoClient && (videoClient.getVideoState("camera") !== VideoBroadcastState.Stopped || videoClient.getVideoState("screen") !== VideoBroadcastState.Stopped);
+    }
+
+    toggleMuteState(type: VideoBroadcastType, state: boolean) {
+        if(this.mutedState[type] === state) { return; }
+
+        this.mutedState[type] = state;
+        this.notifyVideo();
+        this.notifyMuteState();
     }
 
     notifyVideoInfo() {
@@ -88,31 +107,39 @@ class RemoteClientVideoController implements ClientVideoController {
     notifyVideo() {
         let broadcasting = false;
         if(this.isVideoActive()) {
-            let streams = [];
             let initializing = false;
+
+            let cameraStream, desktopStream;
 
             const stateCamera = this.getBroadcastState("camera");
             if(stateCamera === VideoBroadcastState.Running) {
-                streams.push(this.getBroadcastStream("camera"));
+                cameraStream = this.getBroadcastStream("camera")
+                if(cameraStream && this.mutedState["camera"]) {
+                    cameraStream = "muted";
+                }
             } else if(stateCamera === VideoBroadcastState.Initializing) {
                 initializing = true;
             }
 
             const stateScreen = this.getBroadcastState("screen");
             if(stateScreen === VideoBroadcastState.Running) {
-                streams.push(this.getBroadcastStream("screen"));
+                desktopStream = this.getBroadcastStream("screen");
+                if(desktopStream && this.mutedState["screen"]) {
+                    desktopStream = "muted";
+                }
             } else if(stateScreen === VideoBroadcastState.Initializing) {
                 initializing = true;
             }
 
-            if(streams.length > 0) {
+            if(cameraStream || desktopStream) {
                 broadcasting = true;
                 this.events.fire_react("notify_video", {
                     videoId: this.videoId,
                     status: {
                         status: "connected",
-                        desktopStream: streams[1],
-                        cameraStream: streams[0]
+
+                        desktopStream: desktopStream,
+                        cameraStream: cameraStream,
                     }
                 });
             } else if(initializing) {
@@ -126,6 +153,7 @@ class RemoteClientVideoController implements ClientVideoController {
                     videoId: this.videoId,
                     status: {
                         status: "connected",
+
                         cameraStream: undefined,
                         desktopStream: undefined
                     }
@@ -144,6 +172,16 @@ class RemoteClientVideoController implements ClientVideoController {
                 this.callbackBroadcastStateChanged(broadcasting);
             }
         }
+    }
+
+    notifyMuteState() {
+        this.events.fire_react("notify_video_mute_status", {
+            videoId: this.videoId,
+            status: {
+                camera: this.getBroadcastStream("camera") ? this.mutedState["camera"] ? "muted" : "available" : "unset",
+                screen: this.getBroadcastStream("screen") ? this.mutedState["screen"] ? "muted" : "available" : "unset",
+            }
+        });
     }
 
     protected isVideoActive() : boolean {
@@ -256,6 +294,16 @@ class ChannelVideoController {
             }
         });
 
+        this.events.on("action_toggle_mute", event => {
+            const controller = this.findVideoById(event.videoId);
+            if(!controller) {
+                logWarn(LogCategory.VIDEO, tr("Tried to toggle video mute state for a non existing video id (%s)."), event.videoId);
+                return;
+            }
+
+            controller.toggleMuteState(event.broadcastType, event.muted);
+        });
+
         this.events.on("query_expended", () => this.events.fire_react("notify_expended", { expended: this.expended }));
         this.events.on("query_videos", () => this.notifyVideoList());
         this.events.on("query_spotlight", () => this.notifySpotlight());
@@ -278,6 +326,16 @@ class ChannelVideoController {
             }
 
             controller.notifyVideo();
+        });
+
+        this.events.on("query_video_mute_status", event => {
+            const controller = this.findVideoById(event.videoId);
+            if(!controller) {
+                logWarn(LogCategory.VIDEO, tr("Tried to query mute state for a non existing video id (%s)."), event.videoId);
+                return;
+            }
+
+            controller.notifyMuteState();
         });
 
         const channelTree = this.connection.channelTree;

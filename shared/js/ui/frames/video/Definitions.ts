@@ -9,8 +9,9 @@ export type ChannelVideo ={
     status: "initializing",
 } | {
     status: "connected",
-    cameraStream: MediaStream | undefined,
-    desktopStream: MediaStream | undefined,
+
+    cameraStream: "muted" | MediaStream | undefined,
+    desktopStream: "muted" | MediaStream | undefined
 } | {
     status: "error",
     message: string
@@ -46,10 +47,19 @@ export type VideoStatistics = {
     codec: { name: string, payloadType: number }
 };
 
+/**
+ * "muted": The video has been muted locally
+ * "unset": The video will be normally played
+ * "empty": No video available
+ */
+export type LocalVideoState = "muted" | "unset" | "empty";
+
 export interface ChannelVideoEvents {
     action_toggle_expended: { expended: boolean },
     action_video_scroll: { direction: "left" | "right" },
     action_set_spotlight: { videoId: string | undefined, expend: boolean },
+    action_set_fullscreen: { videoId: string | undefined },
+    action_toggle_mute: { videoId: string, broadcastType: VideoBroadcastType, muted: boolean },
 
     query_expended: {},
     query_videos: {},
@@ -57,6 +67,7 @@ export interface ChannelVideoEvents {
     query_video_info: { videoId: string },
     query_video_statistics: { videoId: string, broadcastType: VideoBroadcastType },
     query_spotlight: {},
+    query_video_mute_status: { videoId: string }
 
     notify_expended: { expended: boolean },
     notify_videos: {
@@ -85,5 +96,9 @@ export interface ChannelVideoEvents {
         videoId: string | undefined,
         broadcastType: VideoBroadcastType,
         statistics: VideoStatistics
+    },
+    notify_video_mute_status: {
+        videoId: string,
+        status: {[T in VideoBroadcastType] : "muted" | "available" | "unset"}
     }
 }

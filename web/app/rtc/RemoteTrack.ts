@@ -5,6 +5,8 @@ import * as aplayer from "tc-backend/web/audio/player";
 
 
 export interface TrackClientInfo {
+    media?: number,
+
     client_id: number,
     client_database_id: number,
     client_unique_id: string,

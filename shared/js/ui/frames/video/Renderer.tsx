@@ -9,6 +9,8 @@ import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {ClientTag} from "tc-shared/ui/tree/EntryTags";
 import ResizeObserver from "resize-observer-polyfill";
 import {LogCategory, logWarn} from "tc-shared/log";
+import {spawnContextMenu} from "tc-shared/ui/ContextMenu";
+import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
 
 const EventContext = React.createContext<Registry<ChannelVideoEvents>>(undefined);
 const HandlerIdContext = React.createContext<string>(undefined);
@@ -74,7 +76,7 @@ const VideoInfo = React.memo((props: { videoId: string }) => {
     );
 });
 
-const VideoStreamReplay = React.memo((props: { stream: MediaStream | undefined, className: string }) => {
+const VideoStreamReplay = React.memo((props: { stream: MediaStream | undefined, className: string, title: string }) => {
     const refVideo = useRef<HTMLVideoElement>();
 
     useEffect(() => {
@@ -83,14 +85,15 @@ const VideoStreamReplay = React.memo((props: { stream: MediaStream | undefined, 
             video.style.opacity = "1";
             video.srcObject = props.stream;
             video.autoplay = true;
-            video.play().then(undefined);
+            video.muted = true;
+            video.play().then(undefined).catch(undefined);
         } else {
             video.style.opacity = "0";
         }
     }, [ props.stream ]);
 
     return (
-        <video ref={refVideo} className={cssStyle.video + " " + props.className} />
+        <video ref={refVideo} className={cssStyle.video + " " + props.className} title={props.title} />
     )
 });
 
@@ -125,16 +128,27 @@ const VideoPlayer = React.memo((props: { videoId: string }) => {
             </div>
         );
     } else if(state.status === "connected") {
-        if(state.desktopStream && state.cameraStream) {
-            /* TODO: Select primary and secondary and display them */
+        const desktopStream = state.desktopStream === "muted" ? undefined : state.desktopStream;
+        const cameraStream = state.cameraStream === "muted" ? undefined : state.cameraStream;
+
+        if(desktopStream && cameraStream) {
             return (
-                <VideoStreamReplay stream={state.desktopStream} key={"replay-multi"} className={cssStyle.videoPrimary} />
+                <React.Fragment key={"replay-multi"}>
+                    <VideoStreamReplay stream={desktopStream} className={cssStyle.videoPrimary} title={tr("Screen")} />
+                    <VideoStreamReplay stream={cameraStream} className={cssStyle.videoSecondary} title={tr("Camera")} />
+                </React.Fragment>
             );
         } else {
-            const stream = state.desktopStream || state.cameraStream;
+            const stream = desktopStream || cameraStream;
             if(stream) {
                 return (
-                    <VideoStreamReplay stream={stream} key={"replay-single"} className={cssStyle.videoPrimary} />
+                    <VideoStreamReplay stream={stream} key={"replay-single"} className={cssStyle.videoPrimary} title={desktopStream ? tr("Screen") : tr("Camera")} />
+                );
+            } else if(state.desktopStream || state.cameraStream) {
+                return (
+                    <div className={cssStyle.text} key={"video-muted"}>
+                        <div><Translatable>Video muted</Translatable></div>
+                    </div>
                 );
             } else {
                 return (
@@ -157,10 +171,20 @@ const VideoPlayer = React.memo((props: { videoId: string }) => {
 
 const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolean }) => {
     const events = useContext(EventContext);
-
     const refContainer = useRef<HTMLDivElement>();
-    const [ isFullscreen, setFullscreen ] = useState(false);
     const fullscreenCapable = "requestFullscreen" in HTMLElement.prototype;
+
+    const [ isFullscreen, setFullscreen ] = useState(false);
+    const [ muteState, setMuteState ] = useState<{[T in VideoBroadcastType]: "muted" | "available" | "unset"}>(() => {
+        events.fire("query_video_mute_status", { videoId: props.videoId });
+        return { camera: "unset", screen: "unset" };
+    });
+
+    events.reactUse("notify_video_mute_status", event => {
+        if(event.videoId === props.videoId) {
+            setMuteState(event.status);
+        }
+    });
 
     useEffect(() => {
         if(!isFullscreen) { return; }
@@ -180,35 +204,96 @@ const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolea
         return () => document.removeEventListener("fullscreenchange", listener);
     }, [ isFullscreen ]);
 
+    events.reactUse("action_set_fullscreen", event => {
+        if(event.videoId === props.videoId) {
+            if(!refContainer.current) { return; }
+
+            refContainer.current.requestFullscreen().then(() => {
+                setFullscreen(true);
+            }).catch(error => {
+                logWarn(LogCategory.GENERAL, tr("Failed to request fullscreen: %o"), error);
+            });
+        } else {
+            if(document.fullscreenElement === refContainer.current) {
+                document.exitFullscreen().then(undefined);
+            }
+
+            setFullscreen(false);
+        }
+    });
+
+    const toggleClass = (type: VideoBroadcastType) => {
+        if(props.videoId === kLocalVideoId || muteState[type] === "unset") {
+            return cssStyle.hidden;
+        }
+
+        return muteState[type] === "muted" ? cssStyle.disabled : "";
+    }
+
     return (
         <div
             className={cssStyle.videoContainer}
             onDoubleClick={() => {
-                if(props.isSpotlight) { return; }
-                events.fire("action_set_spotlight", { videoId: props.videoId, expend: true });
+                if(isFullscreen) {
+                    events.fire("action_set_fullscreen", { videoId: undefined });
+                } else if(props.isSpotlight) {
+                    events.fire("action_set_fullscreen", { videoId: props.videoId });
+                } else {
+                    events.fire("action_set_spotlight", { videoId: props.videoId, expend: true });
+                }
             }}
             onContextMenu={event => {
-                event.preventDefault()
+                event.preventDefault();
+                spawnContextMenu({
+                    pageY: event.pageY,
+                    pageX: event.pageX
+                }, [
+                    {
+                        type: "normal",
+                        label: isFullscreen ? tr("Release fullscreen") : tr("Show in fullscreen"),
+                        icon: ClientIcon.Fullscreen,
+                        click: () => {
+                            events.fire("action_set_fullscreen", { videoId: isFullscreen ? undefined : props.videoId });
+                        }
+                    },
+                    {
+                        type: "normal",
+                        label: props.isSpotlight ? tr("Release spotlight") : tr("Put client in spotlight"),
+                        icon: ClientIcon.Fullscreen,
+                        click: () => {
+                            events.fire("action_set_spotlight", { videoId: props.isSpotlight ? undefined : props.videoId, expend: true });
+                        }
+                    }
+                ]);
             }}
             ref={refContainer}
         >
             <VideoPlayer videoId={props.videoId} />
             <VideoInfo videoId={props.videoId} />
-            <div className={cssStyle.requestFullscreen + " " + (isFullscreen || !fullscreenCapable ? cssStyle.hidden : "")}>
-                <div className={cssStyle.iconContainer} onClick={() => {
-                    if(props.isSpotlight) {
-                        if(!refContainer.current) { return; }
-
-                        refContainer.current.requestFullscreen().then(() => {
-                            setFullscreen(true);
-                        }).catch(error => {
-                            logWarn(LogCategory.GENERAL, tr("Failed to request fullscreen: %o"), error);
-                        });
-                    } else {
-                        events.fire("action_set_spotlight", { videoId: props.videoId, expend: true });
-                    }
-                }}>
+            <div className={cssStyle.actionIcons}>
+                <div className={cssStyle.iconContainer + " " + (!fullscreenCapable ? cssStyle.hidden : "")}
+                     onClick={() => {
+                        if(props.isSpotlight) {
+                            events.fire("action_set_fullscreen", { videoId: isFullscreen ? undefined : props.videoId });
+                        } else {
+                            events.fire("action_set_spotlight", { videoId: props.videoId, expend: true });
+                        }
+                     }}
+                     title={props.isSpotlight ? tr("Toggle fullscreen") : tr("Toggle spotlight")}
+                >
                     <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.Fullscreen} />
+                </div>
+                <div className={cssStyle.iconContainer + " " + cssStyle.toggle + " " + toggleClass("camera")}
+                     onClick={() => events.fire("action_toggle_mute", { videoId: props.videoId, broadcastType: "camera", muted: muteState.camera === "available" })}
+                     title={muteState["camera"] === "muted" ? tr("Unmute camera video") : tr("Mute camera video")}
+                >
+                    <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.VideoMuted} />
+                </div>
+                <div className={cssStyle.iconContainer + " " + cssStyle.toggle + " " + toggleClass("screen")}
+                     onClick={() => events.fire("action_toggle_mute", { videoId: props.videoId, broadcastType: "screen", muted: muteState.screen === "available" })}
+                     title={muteState["screen"] === "muted" ? tr("Unmute screen video") : tr("Mute screen video")}
+                >
+                    <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.ShareScreen} />
                 </div>
             </div>
         </div>

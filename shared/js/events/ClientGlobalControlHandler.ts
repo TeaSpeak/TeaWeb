@@ -183,7 +183,7 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                 if(!source) { return; }
 
                 try {
-                    event.connection.getServerConnection().getVideoConnection().startBroadcasting("camera", source)
+                    event.connection.getServerConnection().getVideoConnection().startBroadcasting(event.broadcastType, source)
                         .catch(error => {
                             logError(LogCategory.VIDEO, tr("Failed to start %s broadcasting: %o"), event.broadcastType, error);
                             if(typeof error !== "string") {
