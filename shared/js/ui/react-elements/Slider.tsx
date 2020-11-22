@@ -17,7 +17,7 @@ export interface SliderProperties {
     inverseFiller?: boolean;
 
     unit?: string;
-    tooltip?: (value: number) => ReactElement | string;
+    tooltip?: (value: number) => ReactElement | string | null;
 
     onInput?: (value: number) => void;
     onChange?: (value: number) => void;
@@ -67,7 +67,7 @@ export class Slider extends React.Component<SliderProperties, SliderState> {
             else if(offset > range)
                 offset = range;
 
-            this.refTooltip.current.setState({
+            this.refTooltip.current?.setState({
                 pageX: bounds.left + offset * bounds.width / range,
             });
 
@@ -133,9 +133,11 @@ export class Slider extends React.Component<SliderProperties, SliderState> {
                     right: this.props.inverseFiller ? 0 : (100 - offset) + "%",
                     left: this.props.inverseFiller ? offset + "%" : 0
                 }} />
-                <Tooltip ref={this.refTooltip} tooltip={() => this.props.tooltip ? this.props.tooltip(this.state.value) : this.renderTooltip()}>
-                    <div className={cssStyle.thumb} style={{left: offset + "%"}} />
-                </Tooltip>
+                {this.props.tooltip === null ? <div className={cssStyle.thumb} style={{left: offset + "%"}} key={"thumb"} /> :
+                    <Tooltip ref={this.refTooltip} tooltip={() => this.props.tooltip ? this.props.tooltip(this.state.value) : this.renderTooltip()} key={"tooltip"}>
+                        <div className={cssStyle.thumb} style={{left: offset + "%"}} />
+                    </Tooltip>
+                }
             </div>
         );
     }

@@ -1,4 +1,5 @@
 import {ClientIcon} from "svg-sprites/client-icons";
+import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
 
 export const kLocalVideoId = "__local__video__";
 
@@ -17,6 +18,34 @@ export type ChannelVideo ={
     status: "no-video"
 };
 
+export type VideoStatistics = {
+    type: "sender",
+    mode: "camara" | "screen",
+
+    dimensions: { width: number, height: number },
+    frameRate: number,
+
+    codec: { name: string, payloadType: number }
+
+    maxBandwidth: number,
+    bandwidth: number,
+
+    qualityLimitation: "cpu" | "bandwidth",
+
+    source: {
+        frameRate: number,
+        dimensions: { width: number, height: number },
+    }
+} | {
+    type: "receiver",
+    mode: "camara" | "screen",
+
+    dimensions: { width: number, height: number },
+    frameRate: number,
+
+    codec: { name: string, payloadType: number }
+};
+
 export interface ChannelVideoEvents {
     action_toggle_expended: { expended: boolean },
     action_video_scroll: { direction: "left" | "right" },
@@ -26,6 +55,7 @@ export interface ChannelVideoEvents {
     query_videos: {},
     query_video: { videoId: string },
     query_video_info: { videoId: string },
+    query_video_statistics: { videoId: string, broadcastType: VideoBroadcastType },
     query_spotlight: {},
 
     notify_expended: { expended: boolean },
@@ -50,5 +80,10 @@ export interface ChannelVideoEvents {
     },
     notify_spotlight: {
         videoId: string | undefined
+    },
+    notify_video_statistics: {
+        videoId: string | undefined,
+        broadcastType: VideoBroadcastType,
+        statistics: VideoStatistics
     }
 }

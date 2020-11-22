@@ -8,6 +8,7 @@ import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {ClientTag} from "tc-shared/ui/tree/EntryTags";
 import ResizeObserver from "resize-observer-polyfill";
+import {LogCategory, logWarn} from "tc-shared/log";
 
 const EventContext = React.createContext<Registry<ChannelVideoEvents>>(undefined);
 const HandlerIdContext = React.createContext<string>(undefined);
@@ -154,18 +155,62 @@ const VideoPlayer = React.memo((props: { videoId: string }) => {
     return null;
 });
 
-const VideoContainer = React.memo((props: { videoId: string }) => {
+const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolean }) => {
     const events = useContext(EventContext);
+
+    const refContainer = useRef<HTMLDivElement>();
+    const [ isFullscreen, setFullscreen ] = useState(false);
+    const fullscreenCapable = "requestFullscreen" in HTMLElement.prototype;
+
+    useEffect(() => {
+        if(!isFullscreen) { return; }
+
+        if(document.fullscreenElement !== refContainer.current) {
+            setFullscreen(false);
+            return;
+        }
+
+        const listener = () => {
+            if(document.fullscreenElement !== refContainer.current) {
+                setFullscreen(false);
+            }
+        };
+
+        document.addEventListener("fullscreenchange", listener);
+        return () => document.removeEventListener("fullscreenchange", listener);
+    }, [ isFullscreen ]);
+
     return (
         <div
             className={cssStyle.videoContainer}
-            onDoubleClick={() => events.fire("action_set_spotlight", { videoId: props.videoId, expend: true })}
+            onDoubleClick={() => {
+                if(props.isSpotlight) { return; }
+                events.fire("action_set_spotlight", { videoId: props.videoId, expend: true });
+            }}
             onContextMenu={event => {
                 event.preventDefault()
             }}
+            ref={refContainer}
         >
             <VideoPlayer videoId={props.videoId} />
             <VideoInfo videoId={props.videoId} />
+            <div className={cssStyle.requestFullscreen + " " + (isFullscreen || !fullscreenCapable ? cssStyle.hidden : "")}>
+                <div className={cssStyle.iconContainer} onClick={() => {
+                    if(props.isSpotlight) {
+                        if(!refContainer.current) { return; }
+
+                        refContainer.current.requestFullscreen().then(() => {
+                            setFullscreen(true);
+                        }).catch(error => {
+                            logWarn(LogCategory.GENERAL, tr("Failed to request fullscreen: %o"), error);
+                        });
+                    } else {
+                        events.fire("action_set_spotlight", { videoId: props.videoId, expend: true });
+                    }
+                }}>
+                    <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.Fullscreen} />
+                </div>
+            </div>
         </div>
     );
 });
@@ -253,7 +298,7 @@ const VideoBar = () => {
         <div className={cssStyle.videoBar}>
             <div className={cssStyle.videos} ref={refVideos}>
                 {videos === "loading" ? undefined :
-                    videos.map(videoId => <VideoContainer videoId={videoId} key={videoId} />)
+                    videos.map(videoId => <VideoContainer videoId={videoId} key={videoId} isSpotlight={false} />)
                 }
             </div>
             <VideoBarArrow direction={"left"} containerRef={refArrowLeft} />
@@ -272,7 +317,7 @@ const Spotlight = () => {
 
     let body;
     if(videoId) {
-        body = <VideoContainer videoId={videoId} key={"video-" + videoId} />;
+        body = <VideoContainer videoId={videoId} key={"video-" + videoId} isSpotlight={true} />;
     } else {
         body = (
             <div className={cssStyle.videoContainer} key={"no-video"}>
@@ -280,6 +325,7 @@ const Spotlight = () => {
             </div>
         );
     }
+
     return (
         <div className={cssStyle.spotlight}>
             {body}

@@ -8,7 +8,13 @@ import {
 import {Registry} from "tc-shared/events";
 import {queryMediaPermissions, requestMediaStream, stopMediaStream} from "tc-backend/web/media/Stream";
 import {MediaStreamRequestResult} from "tc-shared/voice/RecorderBase";
-import {LogCategory, logError, logWarn} from "tc-shared/log";
+import {LogCategory, logDebug, logError, logWarn} from "tc-shared/log";
+
+declare global {
+    interface MediaDevices {
+        getDisplayMedia(options?: any) : Promise<MediaStream>;
+    }
+}
 
 function getStreamVideoDeviceId(stream: MediaStream) : string | undefined {
     const track = stream.getVideoTracks()[0];
@@ -161,8 +167,8 @@ export class WebVideoDriver implements VideoDriver {
         return this.currentPermissionStatus;
     }
 
-    async createVideoSource(id: string): Promise<VideoSource> {
-        const result = await requestMediaStream(id, undefined, "video");
+    async createVideoSource(id: string | undefined): Promise<VideoSource> {
+        const result = await requestMediaStream(id ? id : "default", undefined, "video");
 
         /*
          * If we've got denied of requesting a stream reset the state to not allowed.
@@ -184,8 +190,12 @@ export class WebVideoDriver implements VideoDriver {
 
         if(result instanceof MediaStream) {
             const deviceId = getStreamVideoDeviceId(result);
-            if(deviceId === undefined) {
+            if(id === undefined && deviceId === undefined) {
+                logWarn(LogCategory.GENERAL, tr("Requested default video source, but returned source is nothing."));
+            } else if(deviceId === undefined) {
                 /* Do nothing. We've to trust that the given track origins from the requested id. */
+            } else if(id === undefined) {
+                /* We requested the default id and received something */
             } else if(deviceId !== id) {
                 logWarn(LogCategory.GENERAL, tr("Requested video source %s but received %s"), id, deviceId);
             } else {
@@ -201,8 +211,19 @@ export class WebVideoDriver implements VideoDriver {
         }
     }
 
-    createScreenSource(): Promise<VideoSource> {
-        return Promise.resolve(undefined);
+    async createScreenSource(): Promise<VideoSource> {
+        try {
+            const source = await navigator.mediaDevices.getDisplayMedia({ audio: false, video: true });
+            const videoTrack = source.getVideoTracks()[0];
+            if(!videoTrack) { throw tr("missing video track"); }
+
+            logDebug(LogCategory.VIDEO, tr("Display media received with settings: %o"), videoTrack.getSettings());
+            return new WebVideoSource(videoTrack.getSettings().deviceId, tr("Screen"), source);
+        } catch (error) {
+            logWarn(LogCategory.VIDEO, tr("Failed to create a screen source: %o"), error);
+        }
+
+        return undefined;
     }
 }
 

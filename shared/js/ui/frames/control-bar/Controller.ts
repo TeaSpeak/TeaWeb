@@ -4,7 +4,7 @@ import {
     ControlBarEvents,
     ControlBarMode,
     HostButtonInfo,
-    VideoCamaraState
+    VideoState
 } from "tc-shared/ui/frames/control-bar/Definitions";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
@@ -22,7 +22,7 @@ import {
 } from "tc-shared/bookmarks";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
-import {VideoBroadcastState, VideoConnectionStatus} from "tc-shared/connection/VideoConnection";
+import {VideoBroadcastState, VideoBroadcastType, VideoConnectionStatus} from "tc-shared/connection/VideoConnection";
 
 class InfoController {
     private readonly mode: ControlBarMode;
@@ -49,13 +49,15 @@ class InfoController {
             this.registerGlobalHandlerEvents(event.handler);
             this.sendConnectionState();
             this.sendAwayState();
-            this.sendCamaraState();
+            this.sendVideoState("screen");
+            this.sendVideoState("camera");
         }));
         events.push(server_connections.events().on("notify_handler_deleted", event => {
             this.unregisterGlobalHandlerEvents(event.handler);
             this.sendConnectionState();
             this.sendAwayState();
-            this.sendCamaraState();
+            this.sendVideoState("screen");
+            this.sendVideoState("camera");
         }));
         events.push(bookmarkEvents.on("notify_bookmarks_updated", () => this.sendBookmarks()));
 
@@ -97,7 +99,8 @@ class InfoController {
         events.push(handler.events().on("notify_connection_state_changed", event => {
             if(event.old_state === ConnectionState.CONNECTED || event.new_state === ConnectionState.CONNECTED) {
                 this.sendHostButton();
-                this.sendCamaraState();
+                this.sendVideoState("screen");
+                this.sendVideoState("camera");
             }
         }));
 
@@ -123,7 +126,8 @@ class InfoController {
 
         const videoConnection = handler.getServerConnection().getVideoConnection();
         events.push(videoConnection.getEvents().on(["notify_local_broadcast_state_changed", "notify_status_changed"], () => {
-            this.sendCamaraState();
+            this.sendVideoState("screen");
+            this.sendVideoState("camera");
         }));
     }
 
@@ -149,7 +153,8 @@ class InfoController {
         this.sendSubscribeState();
         this.sendQueryState();
         this.sendHostButton();
-        this.sendCamaraState();
+        this.sendVideoState("screen");
+        this.sendVideoState("camera");
     }
 
     public sendConnectionState() {
@@ -241,26 +246,26 @@ class InfoController {
         });
     }
 
-    public sendCamaraState() {
-        let status: VideoCamaraState;
+    public sendVideoState(type: VideoBroadcastType) {
+        let state: VideoState;
         if(this.currentHandler?.connected) {
             const videoConnection = this.currentHandler.getServerConnection().getVideoConnection();
             if(videoConnection.getStatus() === VideoConnectionStatus.Connected) {
-                if(videoConnection.getBroadcastingState("camera") === VideoBroadcastState.Running) {
-                    status = "enabled";
+                if(videoConnection.getBroadcastingState(type) === VideoBroadcastState.Running) {
+                    state = "enabled";
                 } else {
-                    status = "disabled";
+                    state = "disabled";
                 }
             } else if(videoConnection.getStatus() === VideoConnectionStatus.Unsupported) {
-                status = "unsupported";
+                state = "unsupported";
             } else {
-                status = "unavailable";
+                state = "unavailable";
             }
         } else {
-            status = "disconnected";
+            state = "disconnected";
         }
 
-        this.events.fire_react("notify_camara_state", { state: status });
+        this.events.fire_react("notify_video_state", { state: state, broadcastType: type });
     }
 }
 
@@ -287,7 +292,7 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
     events.on("query_speaker_state", () => infoHandler.sendSpeakerState());
     events.on("query_subscribe_state", () => infoHandler.sendSubscribeState());
     events.on("query_host_button", () => infoHandler.sendHostButton());
-    events.on("query_camara_state", () => infoHandler.sendCamaraState());
+    events.on("query_video_state", event => infoHandler.sendVideoState(event.broadcastType));
 
     events.on("action_connection_connect", event => global_client_actions.fire("action_open_window_connect", { newTab: event.newTab }));
     events.on("action_connection_disconnect", event => {

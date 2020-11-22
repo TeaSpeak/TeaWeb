@@ -5,6 +5,23 @@ import {ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
 
 export type VideoBroadcastType = "camera" | "screen";
 
+export type VideoBroadcastStatistics = {
+    dimensions: { width: number, height: number },
+    frameRate: number,
+
+    codec: { name: string, payloadType: number }
+
+    maxBandwidth: number,
+    bandwidth: number,
+
+    qualityLimitation: "cpu" | "bandwidth",
+
+    source: {
+        frameRate: number,
+        dimensions: { width: number, height: number },
+    }
+};
+
 export interface VideoConnectionEvent {
     notify_status_changed: { oldState: VideoConnectionStatus, newState: VideoConnectionStatus },
     notify_local_broadcast_state_changed: { broadcastType: VideoBroadcastType, oldState: VideoBroadcastState, newState: VideoBroadcastState },
@@ -53,6 +70,7 @@ export interface VideoConnection {
     isBroadcasting(type: VideoBroadcastType);
     getBroadcastingSource(type: VideoBroadcastType) : VideoSource | undefined;
     getBroadcastingState(type: VideoBroadcastType) : VideoBroadcastState;
+    getBroadcastStatistics(type: VideoBroadcastType) : Promise<VideoBroadcastStatistics | undefined>;
 
     /**
      * @param type

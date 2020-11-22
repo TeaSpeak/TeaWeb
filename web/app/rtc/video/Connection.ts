@@ -1,5 +1,5 @@
 import {
-    VideoBroadcastState,
+    VideoBroadcastState, VideoBroadcastStatistics,
     VideoBroadcastType,
     VideoClient,
     VideoConnection,
@@ -15,7 +15,6 @@ import {RtpVideoClient} from "tc-backend/web/rtc/video/VideoClient";
 import {tr} from "tc-shared/i18n/localize";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
 import {ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
-import {VoiceConnectionStatus} from "tc-shared/connection/VoiceConnection";
 
 type VideoBroadcast = {
     readonly source: VideoSource;
@@ -126,6 +125,10 @@ export class RtpVideoConnection implements VideoConnection {
 
     getBroadcastingState(type: VideoBroadcastType): VideoBroadcastState {
         return this.broadcasts[type] ? this.broadcasts[type].state : VideoBroadcastState.Stopped;
+    }
+
+    getBroadcastStatistics(type: VideoBroadcastType): Promise<VideoBroadcastStatistics | undefined> {
+        return this.rtcConnection.getVideoBroadcastStatistics(type);
     }
 
     getBroadcastingSource(type: VideoBroadcastType): VideoSource | undefined {

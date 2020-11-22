@@ -18,6 +18,7 @@ import {server_connections} from "tc-shared/ConnectionManager";
 import {spawnAbout} from "tc-shared/ui/modal/ModalAbout";
 import {spawnVideoSourceSelectModal} from "tc-shared/ui/modal/video-source/Controller";
 import {LogCategory, logError} from "tc-shared/log";
+import {getVideoDriver} from "tc-shared/video/VideoSource";
 
 /*
 function initialize_sounds(event_registry: Registry<ClientGlobalControlEvents>) {
@@ -178,26 +179,29 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
 
     event_registry.on("action_toggle_video_broadcasting", event => {
         if(event.enabled) {
-            if(event.broadcastType === "camera") {
-                spawnVideoSourceSelectModal().then(source => {
-                    if(!source) { return; }
+            spawnVideoSourceSelectModal(event.broadcastType, true).then(async source => {
+                if(!source) { return; }
 
-                    try {
-                        event.connection.getServerConnection().getVideoConnection().startBroadcasting("camera", source)
-                            .catch(error => {
-                                logError(LogCategory.VIDEO, tr("Failed to start video broadcasting: %o"), error);
-                                if(typeof error !== "string") {
-                                    error = tr("lookup the console for detail");
-                                }
+                const videoTrack = source.getStream().getVideoTracks()[0];
+
+                try {
+                    event.connection.getServerConnection().getVideoConnection().startBroadcasting("camera", source)
+                        .catch(error => {
+                            logError(LogCategory.VIDEO, tr("Failed to start %s broadcasting: %o"), event.broadcastType, error);
+                            if(typeof error !== "string") {
+                                error = tr("lookup the console for detail");
+                            }
+
+                            if(event.broadcastType === "camera") {
                                 createErrorModal(tr("Failed to start video broadcasting"), tra("Failed to start video broadcasting:\n{}", error)).open();
-                            });
-                    } finally {
-
-                    }
-                });
-            } else {
-                /* TODO! */
-            }
+                            } else {
+                                createErrorModal(tr("Failed to start screen sharing"), tra("Failed to start screen sharing:\n{}", error)).open();
+                            }
+                        });
+                } finally {
+                    source.deref();
+                }
+            });
         } else {
             event.connection.getServerConnection().getVideoConnection().stopBroadcasting(event.broadcastType);
         }

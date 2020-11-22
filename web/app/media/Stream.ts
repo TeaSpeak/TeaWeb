@@ -52,7 +52,7 @@ async function requestMediaStream0(constraints: MediaTrackConstraints, type: Med
 
 /* request permission for devices only one per time! */
 let currentMediaStreamRequest: Promise<MediaStream | MediaStreamRequestResult>;
-export async function requestMediaStream(deviceId: string, groupId: string | undefined, type: MediaStreamType) : Promise<MediaStream | MediaStreamRequestResult> {
+export async function requestMediaStream(deviceId: string | undefined, groupId: string | undefined, type: MediaStreamType) : Promise<MediaStream | MediaStreamRequestResult> {
     /* wait for the current media stream requests to finish */
     while(currentMediaStreamRequest) {
         try {
@@ -66,9 +66,11 @@ export async function requestMediaStream(deviceId: string, groupId: string | und
          * Firefox only allows to open one mic/video as well deciding whats the input device it.
          * It does not respect the deviceId nor the groupId
          */
-    } else {
+    } else if(deviceId !== undefined) {
         constrains.deviceId = deviceId;
         constrains.groupId = groupId;
+    } else {
+        /* Nothing to select. Let the browser select the right device */
     }
 
     constrains.echoCancellation = true;

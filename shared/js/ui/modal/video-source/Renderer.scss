@@ -11,6 +11,9 @@
     @include user-select(none);
 
     .content {
+        display: flex;
+        flex-direction: row;
+
         position: relative;
 
         .overlay {
@@ -29,20 +32,67 @@
             }
         }
 
+        .columnSource {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .columnSettings {
+            margin-left: 1em;
+            width: 20em;
+
+            .body .title {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+
+                font-weight: bold;
+                color: #e0e0e0;
+            }
+        }
+
         .section {
             margin-bottom: 1em;
 
             .head {
+                display: flex;
+                flex-direction: row;
+                justify-content: flex-start;
+
                 flex-grow: 1;
                 flex-shrink: 1;
-                align-self: flex-end;
-                font-weight: bold;
-                color: #e0e0e0;
 
-                @include text-dotdotdot();
+                width: 100%;
+
+                align-self: flex-end;
+
+                &.title, .title {
+                    font-size: 1.2em;
+                    color: #557edc;
+                    text-transform: uppercase;
+
+                    align-self: center;
+
+                    @include text-dotdotdot();
+                }
+
+                .advanced {
+                    margin-left: auto;
+                    align-self: center;
+
+                    label {
+                        display: flex;
+                        flex-direction: revert;
+                    }
+                }
             }
 
             .body {
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+
                 .selectError {
                     color: #a10000;
                 }
@@ -64,6 +114,10 @@
                     video {
                         max-height: 100%;
                         max-width: 100%;
+
+                        min-height: 100%;
+                        min-width: 100%;
+
                         align-self: center;
                     }
 
@@ -111,7 +165,27 @@
                             padding-bottom: 1em;
                             font-weight: 600;
                             color: #4d4d4d;
+
+                            &.selected {}
+                            &.none {}
+                            &.error {
+                                color: #a10000;
+                            }
                         }
+                    }
+                }
+
+                .sourcePrompt {
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: flex-start;
+
+                    button {
+                        margin-right: .5em;
+                    }
+
+                    > * {
+                        align-self: center;
                     }
                 }
             }
@@ -122,5 +196,57 @@
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+    }
+}
+
+.columnSettings {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    .setting:not(:last-of-type) {
+        margin-bottom: .5em;
+    }
+
+    .head {
+        flex-grow: 0!important;
+    }
+
+    .body {
+        flex-grow: 1;
+    }
+
+    .dimensions {
+        .aspectRatio {
+            margin-top: .5em;
+        }
+
+        .sliderTitle {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .slider:not(:first-of-type) {
+            margin-top: .75em;
+        }
+
+        .advanced {
+            display: none;
+            flex-direction: column;
+            justify-content: flex-start;
+
+            &.shown {
+                display: flex;
+            }
+        }
+    }
+
+    .bpsInfo {
+        margin-top: auto;
+
+        .body {
+            font-size: .8em;
+        }
     }
 }

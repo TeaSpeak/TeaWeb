@@ -30,6 +30,27 @@ declare global {
     }
 }
 
+export type RtcVideoBroadcastStatistics = {
+    dimensions: { width: number, height: number },
+    frameRate: number,
+
+    codec?: { name: string, payloadType: number }
+
+    bandwidth?: {
+        /* bits per second */
+        currentBps: number,
+        /* bits per second */
+        maxBps: number
+    },
+
+    qualityLimitation: "cpu" | "bandwidth" | "none",
+
+    source: {
+        frameRate: number,
+        dimensions: { width: number, height: number },
+    },
+};
+
 class RetryTimeCalculator {
     private readonly minTime: number;
     private readonly maxTime: number;
@@ -61,6 +82,49 @@ class RetryTimeCalculator {
     reset() {
         this.currentTime = this.minTime;
         this.retryCount = 0;
+    }
+}
+
+class RTCStatsWrapper {
+    private readonly supplier: () => Promise<RTCStatsReport>;
+    private readonly statistics;
+
+    constructor(supplier: () => Promise<RTCStatsReport>) {
+        this.supplier = supplier;
+        this.statistics = {};
+    }
+
+    async initialize() {
+        for(const [key, value] of await this.supplier()) {
+            if(typeof this.statistics[key] !== "undefined") {
+                logWarn(LogCategory.WEBRTC, tr("Duplicated statistics entry for key %s. Dropping duplicate."), key);
+                continue;
+            }
+            this.statistics[key] = value;
+        }
+    }
+
+    getValues() : (RTCStats & {[T: string]: string | number})[] {
+        return Object.values(this.statistics);
+    }
+
+    getStatistic(key: string) : RTCStats & {[T: string]: string | number} {
+        return this.statistics[key];
+    }
+
+    getStatisticsByType(type: string) : (RTCStats & {[T: string]: string | number})[] {
+        return Object.values(this.statistics).filter((e: any) => e.type?.replace(/-/g, "") === type) as any;
+    }
+
+    getStatisticByType(type: string): RTCStats & {[T: string]: string | number} {
+        const entries = this.getStatisticsByType(type);
+        if(entries.length === 0) {
+            throw tra("missing statistic entry {}", type);
+        } else if(entries.length === 1) {
+            return entries[0];
+        } else {
+            throw tra("duplicated statistics entry of type {}", type);
+        }
     }
 }
 
@@ -135,7 +199,7 @@ class CommandHandler extends AbstractCommandHandler {
                 return;
             }
             if(RTCConnection.kEnableSdpTrace) {
-                logTrace(LogCategory.WEBRTC, tr("Patched remote %s:\n%s"), data.mode, data.sdp);
+                logTrace(LogCategory.WEBRTC, tr("Patched remote %s:\n%s"), data.mode, sdp);
             }
             if(data.mode === "answer") {
                 this.handle["peer"].setRemoteDescription({
@@ -647,12 +711,14 @@ export class RTCConnection {
         this.currentTransceiver["video-screen"] = this.peer.addTransceiver("video");
 
         /* add some other transceivers for later use */
+        /*
         for(let i = 0; i < 8; i++) {
             this.peer.addTransceiver("audio");
         }
         for(let i = 0; i < 4; i++) {
             this.peer.addTransceiver("video");
         }
+        */
 
         this.peer.onicecandidate = event => this.handleIceCandidate(event.candidate);
         this.peer.onicecandidateerror = event => this.handleIceCandidateError(event);
@@ -968,5 +1034,105 @@ export class RTCConnection {
                 voiceBytesSent: 0
             };
         }
+    }
+
+    async getVideoBroadcastStatistics(type: RTCBroadcastableTrackType) : Promise<RtcVideoBroadcastStatistics | undefined> {
+        if(!this.currentTransceiver[type]?.sender) { return undefined; }
+
+        const senderStatistics = new RTCStatsWrapper(() => this.currentTransceiver[type].sender.getStats());
+        await senderStatistics.initialize();
+        if(senderStatistics.getValues().length === 0) { return undefined; }
+
+        const trackSettings = this.currentTransceiver[type].sender.track?.getSettings() || {};
+
+        const result = {} as RtcVideoBroadcastStatistics;
+
+        const outboundStream = senderStatistics.getStatisticByType("outboundrtp");
+        /* only available in chrome */
+        if("codecId" in outboundStream) {
+            if(typeof outboundStream.codecId !== "string") { throw tr("invalid codec id type"); }
+            if(senderStatistics[outboundStream.codecId]?.type !== "codec") { throw tra("invalid/missing codec statistic for codec {}", outboundStream.codecId); }
+
+            const codecInfo = senderStatistics[outboundStream.codecId];
+            if(typeof codecInfo.mimeType !== "string") { throw tr("codec statistic missing mine type"); }
+            if(typeof codecInfo.payloadType !== "number") { throw tr("codec statistic has invalid payloadType type"); }
+
+            result.codec = {
+                name: codecInfo.mimeType.startsWith("video/") ? codecInfo.mimeType.substr(6) : codecInfo.mimeType || tr("unknown"),
+                payloadType: codecInfo.payloadType
+            };
+        } else {
+            /* TODO: Get the only one video type from the sdp */
+        }
+
+        if("frameWidth" in outboundStream && "frameHeight" in outboundStream) {
+            if(typeof outboundStream.frameWidth !== "number") { throw tr("invalid frameWidth attribute of outboundrtp statistic"); }
+            if(typeof outboundStream.frameHeight !== "number") { throw tr("invalid frameHeight attribute of outboundrtp statistic"); }
+
+            result.dimensions = {
+                width: outboundStream.frameWidth,
+                height: outboundStream.frameHeight
+            };
+        } else if("height" in trackSettings && "width" in trackSettings) {
+            result.dimensions = {
+                height: trackSettings.height,
+                width: trackSettings.width
+            };
+        } else {
+            result.dimensions = {
+                width: 0,
+                height: 0
+            };
+        }
+
+        if("framesPerSecond" in outboundStream) {
+            if(typeof outboundStream.framesPerSecond !== "number") { throw tr("invalid framesPerSecond attribute of outboundrtp statistic"); }
+            result.frameRate = outboundStream.framesPerSecond;
+        } else if("frameRate" in trackSettings) {
+            result.frameRate = trackSettings.frameRate;
+        } else {
+            result.frameRate = 0;
+        }
+
+        if("qualityLimitationReason" in outboundStream) {
+            /* TODO: verify the value? */
+            if(typeof outboundStream.qualityLimitationReason !== "string") { throw tr("invalid qualityLimitationReason attribute of outboundrtp statistic"); }
+            result.qualityLimitation = outboundStream.qualityLimitationReason as any;
+        } else {
+            result.qualityLimitation = "none";
+        }
+
+        if("mediaSourceId" in outboundStream) {
+            if(typeof outboundStream.mediaSourceId !== "string") { throw tr("invalid media source type"); }
+            if(senderStatistics[outboundStream.mediaSourceId]?.type !== "media-source") { throw tra("invalid/missing media source statistic for source {}", outboundStream.mediaSourceId); }
+
+            const source = senderStatistics[outboundStream.mediaSourceId];
+            if(typeof source.width !== "number") { throw tr("invalid width attribute of media-source statistic"); }
+            if(typeof source.height !== "number") { throw tr("invalid height attribute of media-source statistic"); }
+            if(typeof source.framesPerSecond !== "number") { throw tr("invalid framesPerSecond attribute of media-source statistic"); }
+
+            result.source = {
+                dimensions: { height: source.height, width: source.width },
+                frameRate: source.framesPerSecond
+            };
+        } else {
+            result.source = {
+                dimensions: { width: 0, height: 0 },
+                frameRate: 0
+            };
+
+            if("height" in trackSettings && "width" in trackSettings) {
+                result.source.dimensions = {
+                    height: trackSettings.height,
+                    width: trackSettings.width
+                };
+            }
+
+            if("frameRate" in trackSettings) {
+                result.source.frameRate = trackSettings.frameRate;
+            }
+        }
+
+        return result;
     }
 }

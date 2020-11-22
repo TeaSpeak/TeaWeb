@@ -13,7 +13,7 @@ interface SdpCodec {
 /* These MUST be the payloads used by the remote as well */
 const OPUS_VOICE_PAYLOAD_TYPE = 111;
 const OPUS_MUSIC_PAYLOAD_TYPE = 112;
-const VP8_PAYLOAD_TYPE = 120;
+const H264_PAYLOAD_TYPE = 126;
 
 type SdpMedia = {
     type: string;
@@ -45,11 +45,18 @@ export class SdpProcessor {
     ];
 
     private static readonly kVideoCodecs: SdpCodec[] = [
+        /* TODO: Set AS as well! */
         {
-            payload: VP8_PAYLOAD_TYPE,
-            codec: "VP8",
+            payload: H264_PAYLOAD_TYPE,
+            codec: "H264",
             rate: 90000,
-            rtcpFb: [ "nack", "nack pli", "ccm fir", "transport-cc" ]
+            rtcpFb: [ "nack", "nack pli", "ccm fir", "transport-cc" ],
+            //42001f | Original: 42e01f
+            fmtp: {
+                "level-asymmetry-allowed": 1, "packetization-mode": 1, "profile-level-id": "42e01f", "max-br": 25000, "max-fr": 60,
+                "x-google-max-bitrate": 22 * 1000,
+                "x-google-start-bitrate": 22 * 1000, /* Fun fact: This actually controls the max bitrate for google chrome */
+            }
         }
     ];
 
@@ -74,8 +81,15 @@ export class SdpProcessor {
     }
 
     processIncomingSdp(sdpString: string, _mode: "offer" | "answer") : string {
+        /* The server somehow does not encode the level id in hex */
+        sdpString = sdpString.replace(/profile-level-id=4325407/g, "profile-level-id=42e01f");
+
         const sdp = sdpTransform.parse(sdpString);
         this.rtpRemoteChannelMapping = SdpProcessor.generateRtpSSrcMapping(sdp);
+
+        /* FIXME! */
+        SdpProcessor.patchLocalCodecs(sdp);
+
         return sdpTransform.write(sdp);
     }
 
@@ -154,11 +168,17 @@ export class SdpProcessor {
                         payload: codec.payload,
                         config: Object.keys(codec.fmtp).map(e => e + "=" + codec.fmtp[e]).join(";")
                     });
-                    media.maxptime = media.fmtp["maxptime"];
+                    if(media.type === "audio") {
+                        media.maxptime = media.fmtp["maxptime"];
+                    }
                 }
             }
 
             media.payloads = media.rtp.map(e => e.payload).join(" ");
+            media.bandwidth = [{
+                type: "AS",
+                limit: 12000
+            }]
         }
     }
 }

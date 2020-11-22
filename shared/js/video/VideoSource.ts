@@ -43,8 +43,11 @@ export interface VideoDriver {
      * @returns A VideoSource on success with an initial ref count of one
      * Will throw a string on error
      */
-    createVideoSource(id: string) : Promise<VideoSource>;
+    createVideoSource(id: string | undefined) : Promise<VideoSource>;
 
+    /**
+     * Create a source from the screen
+     */
     createScreenSource() : Promise<VideoSource>;
 }
 

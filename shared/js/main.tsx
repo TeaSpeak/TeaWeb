@@ -247,16 +247,6 @@ function main() {
 
     /* schedule it a bit later then the main because the main function is still within the loader */
     setTimeout(() => {
-        (window as any).spawnVideo = async () => {
-            const source = await spawnVideoSourceSelectModal();
-            if(!source) { return; }
-
-            await server_connections.active_connection().getServerConnection().getVideoConnection().startBroadcasting("camera", source);
-        };
-
-        (window as any).videoDriver = getVideoDriver();
-        const connection = server_connections.active_connection();
-
         //(window as any).spawnVideo();
         /*
         Modals.createChannelModal(connection, undefined, undefined, connection.permissions, (cb, perms) => {

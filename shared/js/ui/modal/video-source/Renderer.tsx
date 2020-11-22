@@ -2,20 +2,24 @@ import {Registry} from "tc-shared/events";
 import * as React from "react";
 import {
     DeviceListResult,
-    ModalVideoSourceEvents,
-    VideoPreviewStatus
+    ModalVideoSourceEvents, SettingFrameRate,
+    VideoPreviewStatus, VideoSourceState
 } from "tc-shared/ui/modal/video-source/Definitions";
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
-import {Translatable} from "tc-shared/ui/react-elements/i18n";
+import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {Select} from "tc-shared/ui/react-elements/InputField";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {useContext, useEffect, useRef, useState} from "react";
+import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
+import {Slider} from "tc-shared/ui/react-elements/Slider";
+import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
 
 const cssStyle = require("./Renderer.scss");
 const ModalEvents = React.createContext<Registry<ModalVideoSourceEvents>>(undefined);
+const AdvancedSettings = React.createContext<boolean>(false);
 const kNoDeviceId = "__no__device";
 
-const VideoSourceBody = () => {
+const VideoSourceSelector = () => {
     const events = useContext(ModalEvents);
     const [ deviceList, setDeviceList ] = useState<DeviceListResult | "loading">(() => {
         events.fire("query_device_list");
@@ -74,6 +78,54 @@ const VideoSourceBody = () => {
             </div>
         );
     }
+};
+
+const VideoSourceRequester = () => {
+    const events = useContext(ModalEvents);
+    const [ source, setSource ] = useState<VideoSourceState>(() => {
+        events.fire("query_source");
+        return { type: "none" };
+    });
+    events.reactUse("notify_source", event => setSource(event.state), undefined, []);
+
+    let info;
+    switch (source.type) {
+        case "selected":
+            let name = source.name === "Screen" ? source.deviceId : source.name;
+            info = (
+                <div className={cssStyle.info + " " + cssStyle.selected} key={"selected"}>
+                    <VariadicTranslatable text={"Selected source: {}"}>{name || source.deviceId}</VariadicTranslatable>
+                </div>
+            );
+            break;
+
+        case "errored":
+            info = (
+                <div className={cssStyle.info + " " + cssStyle.error} key={"errored"}>
+                    {source.error}
+                </div>
+            );
+            break;
+
+        case "none":
+            info = (
+                <div className={cssStyle.info + " " + cssStyle.none} key={"none"}>
+                    <Translatable>No source has been selected</Translatable>
+                </div>
+            );
+            break;
+    }
+
+    return (
+        <div className={cssStyle.body} key={"normal"}>
+            <div className={cssStyle.sourcePrompt}>
+                <Button type={"small"} onClick={() => events.fire("action_select_source", { id: undefined })}>
+                    <Translatable>Select source</Translatable>
+                </Button>
+                {info}
+            </div>
+        </div>
+    );
 };
 
 const VideoPreviewMessage = (props: { message: any, kind: "info" | "error" }) => {
@@ -198,12 +250,368 @@ const ButtonStart = () => {
     );
 }
 
+type DimensionPresetId = "480p" | "720p" | "1080p" | "2160p";
+const DimensionPresets: {[T in DimensionPresetId]: {
+    name: string,
+    width: number,
+    height: number
+}} = {
+    "480p": {
+        name: "480p",
+        width: 640,
+        height: 480
+    },
+    "720p": {
+        name: "720p",
+        width: 1280,
+        height: 720
+    },
+    "1080p": {
+        name: "Full HD",
+        width: 1920,
+        height: 1080
+    },
+    "2160p": {
+        name: "4k UHD",
+        width: 3840,
+        height: 2160
+    }
+};
+
+type SettingDimensionValues = {
+    minWidth: number,
+    maxWidth: number,
+
+    minHeight: number,
+    maxHeight: number,
+
+    originalHeight: number,
+    originalWidth: number
+}
+
+const SettingDimension = () => {
+    const events = useContext(ModalEvents);
+    const advanced = useContext(AdvancedSettings);
+
+    const [ settings, setSettings ] = useState<SettingDimensionValues | undefined>(() => {
+        events.fire("query_setting_dimension");
+        return undefined;
+    });
+    events.reactUse("notify_setting_dimension", event => {
+        if(event.setting) {
+            setSettings({
+                minWidth: event.setting.minWidth,
+                minHeight: event.setting.minHeight,
+
+                maxWidth: event.setting.maxWidth,
+                maxHeight: event.setting.maxHeight,
+
+                originalHeight: event.setting.originalHeight,
+                originalWidth: event.setting.originalWidth
+            });
+
+            setWidth(event.setting.currentWidth);
+            setHeight(event.setting.currentHeight);
+            refSliderWidth.current?.setState({ value: event.setting.currentWidth });
+            refSliderHeight.current?.setState({ value: event.setting.currentHeight });
+            setSelectValue("original");
+        } else {
+            setSettings(undefined);
+            setSelectValue("no-source");
+        }
+    }, undefined, []);
+
+    const [ width, setWidth ] = useState(1);
+    const [ height, setHeight ] = useState(1);
+    const [ selectValue, setSelectValue ] = useState("no-source");
+
+    const [ aspectRatio, setAspectRatio ] = useState(true);
+
+    const refSliderWidth = useRef<Slider>();
+    const refSliderHeight = useRef<Slider>();
+
+    const bounds = (id: DimensionPresetId) => {
+        const dimension = DimensionPresets[id];
+        let scale = Math.min(dimension.height / settings.maxHeight, dimension.width / settings.maxWidth);
+        return [Math.ceil(settings.maxWidth * scale), Math.ceil(settings.maxHeight * scale)];
+    }
+
+    const boundsString = (id: DimensionPresetId) => {
+        const value = bounds(id);
+        return value[0] + "x" + value[1];
+    }
+
+    const updateHeight = (newHeight: number, triggerUpdate: boolean) => {
+        let newWidth = width;
+
+        setHeight(newHeight);
+        if(aspectRatio) {
+            newWidth = Math.ceil(settings.originalWidth * (newHeight / settings.originalHeight));
+            setWidth(newWidth);
+            refSliderWidth.current?.setState({ value: newWidth });
+        }
+
+        if(triggerUpdate) {
+            events.fire("action_setting_dimension", { height: newHeight, width: newWidth });
+        }
+    }
+
+    const updateWidth = (newWidth: number, triggerUpdate: boolean) => {
+        let newHeight = height;
+
+        setWidth(newWidth);
+        if(aspectRatio) {
+            newHeight = Math.ceil(settings.originalHeight * (newWidth / settings.originalWidth));
+            setHeight(newHeight);
+            refSliderHeight.current?.setState({ value: newHeight });
+        }
+
+        if(triggerUpdate) {
+            events.fire("action_setting_dimension", { height: newHeight, width: newWidth });
+        }
+    }
+
+    return (
+        <div className={cssStyle.setting + " " + cssStyle.dimensions}>
+            <div className={cssStyle.title}>
+                <div><Translatable>Dimension</Translatable></div>
+                <div>{settings ? width + "x" + height : ""}</div>
+            </div>
+            <div className={cssStyle.body}>
+                <Select
+                    type={"boxed"}
+                    onChange={event => {
+                        const value = event.target.value;
+
+                        setSelectValue(value);
+
+                        let newWidth, newHeight;
+                        if(value === "original") {
+                            newWidth = settings.originalWidth;
+                            newHeight = settings.originalHeight;
+                        } else if(value === "custom") {
+                            /* nothing to do; no need to trigger an update as well */
+                            return;
+                        } else if(DimensionPresets[value]) {
+                            const val = bounds(value as any);
+                            newWidth = val[0];
+                            newHeight = val[1];
+                        }
+
+                        setWidth(newWidth);
+                        setHeight(newHeight);
+                        refSliderWidth.current?.setState({ value: newWidth });
+                        refSliderHeight.current?.setState({ value: newHeight });
+
+                        events.fire("action_setting_dimension", { height: newHeight, width: newWidth });
+                    }}
+                    value={selectValue}
+                    disabled={!settings}
+                >
+                    {Object.keys(DimensionPresets).filter(e => {
+                        if(!settings) { return false; }
+                        if(DimensionPresets[e].height < settings.minHeight || DimensionPresets[e].height > settings.maxHeight) { return false; }
+                        return !(DimensionPresets[e].width < settings.minWidth || DimensionPresets[e].width > settings.maxWidth);
+                    }).map(dimensionId =>
+                        <option value={dimensionId} key={dimensionId}>{DimensionPresets[dimensionId].name + " (" + boundsString(dimensionId as any) + ")"}</option>
+                    )}
+                    <option value={"original"} key={"original"}>{tr("Default")} ({(settings ? settings.originalWidth + "x" + settings.originalHeight : "0x0")})</option>
+                    <option value={"custom"} key={"custom"} style={{ display: advanced ? undefined : "none" }}>{tr("Custom")}</option>
+                    <option value={"no-source"} key={"no-source"} style={{ display: "none" }}>{tr("No source selected")}</option>
+                </Select>
+                <div className={cssStyle.advanced + " " + (advanced ? cssStyle.shown : "")}>
+                    <div className={cssStyle.aspectRatio}>
+                        <Checkbox
+                            label={<Translatable>Aspect ratio</Translatable>}
+                            disabled={selectValue !== "custom" || !settings}
+                            value={aspectRatio}
+                            onChange={value => setAspectRatio(value)}
+                        />
+                    </div>
+                    <div className={cssStyle.sliderTitle}>
+                        <div><Translatable>Width</Translatable></div>
+                        <div>{settings ? width + "px" : ""}</div>
+                    </div>
+                    <Slider tooltip={null} minValue={settings ? settings.minWidth : 0} maxValue={settings ? settings.maxWidth : 1}
+                            stepSize={1} value={width} className={cssStyle.slider}
+                            onInput={value => updateWidth(value, false)}
+                            disabled={selectValue !== "custom" || !settings}
+                            onChange={value => updateWidth(value, true)}
+                            ref={refSliderWidth}
+                    />
+                    <div className={cssStyle.sliderTitle}>
+                        <div><Translatable>Height</Translatable></div>
+                        <div>{settings ? height + "px" : ""}</div>
+                    </div>
+                    <Slider tooltip={null} minValue={settings ? settings.minHeight : 0} maxValue={settings ? settings.maxHeight : 1}
+                            stepSize={1} value={height} className={cssStyle.slider}
+                            onInput={value => updateHeight(value, false)}
+                            onChange={value => updateHeight(value, true)}
+                            disabled={selectValue !== "custom" || !settings}
+                            ref={refSliderHeight}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+const FrameRatePresents = {
+    "10": 10,
+    "20": 20,
+    "24 NTSC": 24,
+    "25 PAL": 25,
+    "29.97": 29.97,
+    "30": 30,
+    "48": 48,
+    "50 PAL": 50,
+    "59.94": 59.94,
+    "60": 60
+}
+
+const SettingFramerate = () => {
+    const events = useContext(ModalEvents);
+
+    const [ frameRate, setFrameRate ] = useState<SettingFrameRate | undefined>(() => {
+        events.fire("query_setting_framerate");
+        return undefined;
+    });
+    const [ currentRate, setCurrentRate ] = useState(0);
+    const [ selectedValue, setSelectedValue ] = useState("original");
+
+    events.reactUse("notify_settings_framerate", event => {
+        setFrameRate(event.frameRate);
+        setCurrentRate(event.frameRate ? event.frameRate.original : 1);
+        if(event.frameRate) {
+            setSelectedValue(event.frameRate.original.toString());
+        } else {
+            setSelectedValue("no-source");
+        }
+    });
+
+    const FrameRates = Object.assign({}, FrameRatePresents);
+    if(frameRate) {
+        if(Object.keys(FrameRates).findIndex(key => FrameRates[key] === frameRate.original) === -1) {
+            FrameRates[frameRate.original.toString()] = frameRate.original;
+        }
+    }
+
+    return (
+        <div className={cssStyle.setting + " " + cssStyle.dimensions}>
+            <div className={cssStyle.title}>
+                <div><Translatable>Framerate</Translatable></div>
+                <div>{frameRate ? currentRate : ""}</div>
+            </div>
+            <div className={cssStyle.body}>
+                <Select
+                    type={"boxed"}
+                    disabled={!frameRate}
+                    value={selectedValue}
+                    onChange={event => {
+                        const value = parseFloat(event.target.value);
+                        if(!isNaN(value)) {
+                            setSelectedValue(event.target.value);
+                            setCurrentRate(value);
+
+                            events.fire("action_setting_framerate", { frameRate: value });
+                        }
+                    }}
+                >
+                    {Object.keys(FrameRates).sort((a, b) => FrameRates[a] - FrameRates[b]).filter(key => {
+                        if(!frameRate) { return false; }
+
+                        const value = FrameRates[key];
+                        if(frameRate.min > value) { return false; }
+                        return frameRate.max >= value;
+                    }).map(key => (
+                        <option value={FrameRates[key]} key={key}>{key}</option>
+                    ))}
+                    <option value={"1"} key={"no-source"} style={{ display: "none" }}>{tr("No source selected")}</option>
+                </Select>
+            </div>
+        </div>
+    );
+}
+
+const calculateBps = (width: number, height: number, frameRate: number) => {
+    /* Based on the tables showed here: http://www.lighterra.com/papers/videoencodingh264/ */
+    const estimatedBitsPerPixed = 3.9;
+    return estimatedBitsPerPixed * width * height * (frameRate / 30);
+}
+
+const BpsInfo = () => {
+    const events = useContext(ModalEvents);
+
+    const [ dimensions, setDimensions ] = useState<{ width: number, height: number } | undefined>(undefined);
+    const [ frameRate, setFrameRate ] = useState<number | undefined>(undefined);
+
+    events.reactUse("notify_setting_dimension", event => setDimensions(event.setting ? {
+        height: event.setting.currentHeight,
+        width: event.setting.currentWidth
+    } : undefined));
+
+    events.reactUse("notify_settings_framerate", event => setFrameRate(event.frameRate ? event.frameRate.original : undefined))
+
+    events.reactUse("action_setting_dimension", event => setDimensions({ width: event.width, height: event.height }));
+    events.reactUse("action_setting_framerate", event => setFrameRate(event.frameRate));
+
+    let bpsText;
+    if(dimensions && frameRate) {
+        const bps = calculateBps(dimensions.width, dimensions.height, frameRate);
+        if(bps > 1000 * 1000) {
+            bpsText = (bps / 1000 / 1000).toFixed(2) + " MBits/Second";
+        } else {
+            bpsText = (bps / 1000).toFixed(2) + " KBits/Second";
+        }
+    }
+
+    return (
+        <div className={cssStyle.setting + " " + cssStyle.bpsInfo}>
+            <div className={cssStyle.title}>
+                <div><Translatable>Estimated Bitrate</Translatable></div>
+                <div>{bpsText}</div>
+            </div>
+            <div className={cssStyle.body}>
+                <Translatable>
+                    This is a rough estimate of the bitrate used to transfer video of that quality.
+                    The real bitrate might have higher peaks but averages below the estimate.
+                    Influential factors are the video size as well as the frame rate.
+                </Translatable>
+            </div>
+        </div>
+    );
+}
+
+const Settings = () => {
+    const [ advanced, setAdvanced ] = useState(false);
+
+    return (
+        <AdvancedSettings.Provider value={advanced}>
+            <div className={cssStyle.section + " " + cssStyle.columnSettings}>
+                <div className={cssStyle.head}>
+                    <div className={cssStyle.title}><Translatable>Settings</Translatable></div>
+                    <div className={cssStyle.advanced}>
+                        <Checkbox label={<Translatable>Advanced</Translatable>} onChange={value => setAdvanced(value)} />
+                    </div>
+                </div>
+                <div className={cssStyle.body}>
+                    <SettingDimension />
+                    <SettingFramerate />
+                    <BpsInfo />
+                </div>
+            </div>
+        </AdvancedSettings.Provider>
+    );
+}
+
 export class ModalVideoSource extends InternalModal {
     protected readonly events: Registry<ModalVideoSourceEvents>;
+    private readonly sourceType: VideoBroadcastType;
 
-    constructor(events: Registry<ModalVideoSourceEvents>) {
+    constructor(events: Registry<ModalVideoSourceEvents>, type: VideoBroadcastType) {
         super();
 
+        this.sourceType = type;
         this.events = events;
     }
 
@@ -212,21 +620,23 @@ export class ModalVideoSource extends InternalModal {
             <ModalEvents.Provider value={this.events}>
                 <div className={cssStyle.container}>
                     <div className={cssStyle.content}>
-                        <div className={cssStyle.section}>
-                            <div className={cssStyle.head}>
-                                <Translatable>Select your source</Translatable>
+                        <div className={cssStyle.columnSource}>
+                            <div className={cssStyle.section}>
+                                <div className={cssStyle.head + " " + cssStyle.title}>
+                                    <Translatable>Select your source</Translatable>
+                                </div>
+                                {this.sourceType === "camera" ? <VideoSourceSelector key={"source-selector"} /> : <VideoSourceRequester key={"source-requester"} />}
                             </div>
-                            <VideoSourceBody />
+                            <div className={cssStyle.section}>
+                                <div className={cssStyle.head + " " + cssStyle.title}>
+                                    <Translatable>Video preview</Translatable>
+                                </div>
+                                <div className={cssStyle.body}>
+                                    <VideoPreview />
+                                </div>
+                            </div>
                         </div>
-                        <div className={cssStyle.section}>
-                            <div className={cssStyle.head}>
-                                <Translatable>Video preview</Translatable>
-                            </div>
-                            <div className={cssStyle.body}>
-                                <VideoPreview />
-                            </div>
-                        </div>
-                        { /* TODO: All the overlays */ }
+                        <Settings />
                     </div>
                     <div className={cssStyle.buttons}>
                         <Button type={"small"} color={"red"} onClick={() => this.events.fire("action_cancel")}>

@@ -174,6 +174,10 @@ class LocalVideoController extends RemoteClientVideoController {
         return videoConnection.isBroadcasting("camera") || videoConnection.isBroadcasting("screen");
     }
 
+    async getStatistics(target: VideoBroadcastType) {
+
+    }
+
     protected isVideoActive(): boolean {
         return true;
     }

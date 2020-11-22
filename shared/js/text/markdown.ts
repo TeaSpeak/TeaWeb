@@ -20,6 +20,7 @@ export class MD2BBCodeRenderer {
         "hardbreak": () => "\n",
 
         "paragraph_open": (renderer: MD2BBCodeRenderer, token: ParagraphOpenToken) => {
+            debugger;
             const last_line = !renderer.last_paragraph || !renderer.last_paragraph.lines ? 0 : renderer.last_paragraph.lines[1];
             const lines = token.lines[0] - last_line;
             return [...new Array(lines)].map(() => "[br]").join("");
