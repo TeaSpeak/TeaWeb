@@ -81,6 +81,8 @@
     pointer-events: none;
     opacity: 0;
 
+    z-index: 10;
+
     @include transition(all $button_hover_animation_time ease-in-out);
 
     &.shown {
