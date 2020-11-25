@@ -10,8 +10,8 @@ interface SdpCodec {
     rtcpFb?: string[]
 }
 
-/* These MUST be the payloads used by the remote as well */
-const OPUS_VOICE_PAYLOAD_TYPE = 111;
+/* For optimal performance these payload formats should match the servers one */
+const OPUS_VOICE_PAYLOAD_TYPE = 111
 const OPUS_MUSIC_PAYLOAD_TYPE = 112;
 const H264_PAYLOAD_TYPE = 126;
 
@@ -24,6 +24,7 @@ type SdpMedia = {
 
 export class SdpProcessor {
     private static readonly kAudioCodecs: SdpCodec[] = [
+        /* Primary audio format */
         {
             /* Opus Mono/Opus Voice */
             payload: OPUS_VOICE_PAYLOAD_TYPE,
@@ -45,7 +46,6 @@ export class SdpProcessor {
     ];
 
     private static readonly kVideoCodecs: SdpCodec[] = [
-        /* TODO: Set AS as well! */
         {
             payload: H264_PAYLOAD_TYPE,
             codec: "H264",
@@ -185,6 +185,15 @@ export class SdpProcessor {
                     if(media.type === "audio") {
                         media.maxptime = media.fmtp["maxptime"];
                     }
+                }
+
+                if(window.detectedBrowser.name === "firefox") {
+                    /*
+                     * Firefox does not support multiple payload formats not switching between them.
+                     * This causes us only to add one, the primary, codec and hope for the best
+                     * (Opus Stereo and Mono mixing seem to work right now 11.2020)
+                     */
+                    break;
                 }
             }
 

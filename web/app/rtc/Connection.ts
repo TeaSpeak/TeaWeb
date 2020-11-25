@@ -528,6 +528,16 @@ export class RTCConnection {
         return this.retryTimestamp;
     }
 
+    restartConnection() {
+        if(this.connectionState === RTPConnectionState.DISCONNECTED) {
+            /* We've been disconnected on purpose */
+            return;
+        }
+
+        this.reset(true);
+        this.doInitialSetup();
+    }
+
     reset(updateConnectionState: boolean) {
         if(this.peer) {
             if(this.getConnection().connected()) {
@@ -691,8 +701,13 @@ export class RTCConnection {
         /* initialize rtc connection */
         this.retryCalculator.reset();
 
-        if(!('RTCPeerConnection' in window)) {
+        if(!("RTCPeerConnection" in window)) {
             this.handleFatalError(tr("WebRTC has been disabled (RTCPeerConnection is not defined)"), false);
+            return;
+        }
+
+        if(!("addTransceiver" in RTCPeerConnection.prototype)) {
+            this.handleFatalError(tr("WebRTC api incompatible (RTCPeerConnection.addTransceiver missing)"), false);
             return;
         }
 
