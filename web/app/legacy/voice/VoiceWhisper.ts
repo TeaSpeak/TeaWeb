@@ -81,6 +81,7 @@ export class WebWhisperSession implements WhisperSession {
         this.sessionTimeout = data.sessionTimeout;
 
         this.voicePlayer = new WebVoicePlayer();
+        this.voicePlayer.setVolume(data.volume);
         this.voicePlayer.events.on("notify_state_changed", event => {
             if(event.newState === VoicePlayerState.BUFFERING) {
                 return;

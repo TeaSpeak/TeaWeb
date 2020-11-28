@@ -5,17 +5,24 @@ import {
 } from "tc-shared/connection/VoiceConnection";
 import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {VoiceClient} from "tc-shared/voice/VoiceClient";
-import {WhisperSession, WhisperSessionState, WhisperTarget} from "tc-shared/voice/VoiceWhisper";
+import {
+    kUnknownWhisperClientUniqueId,
+    WhisperSession,
+    WhisperSessionState,
+    WhisperTarget
+} from "tc-shared/voice/VoiceWhisper";
 import {RTCConnection, RTCConnectionEvents, RTPConnectionState} from "tc-backend/web/rtc/Connection";
 import {AbstractServerConnection, ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
 import {VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 import * as log from "tc-shared/log";
-import {LogCategory, logError, logTrace, logWarn} from "tc-shared/log";
+import {LogCategory, logDebug, logError, logTrace, logWarn} from "tc-shared/log";
 import * as aplayer from "../../audio/player";
 import {tr} from "tc-shared/i18n/localize";
 import {RtpVoiceClient} from "tc-backend/web/rtc/voice/VoiceClient";
 import {InputConsumerType} from "tc-shared/voice/RecorderBase";
+import {RtpWhisperSession} from "tc-backend/web/rtc/voice/WhisperClient";
 
+type CancelableWhisperTarget = WhisperTarget & { canceled: boolean };
 export class RtpVoiceConnection extends AbstractVoiceConnection {
     private readonly rtcConnection: RTCConnection;
 
@@ -34,16 +41,21 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
     private speakerMuted: boolean;
     private voiceClients: RtpVoiceClient[] = [];
 
+    private whisperSessionInitializer: WhisperSessionInitializer | undefined;
+    private whisperSessions: RtpWhisperSession[] = [];
+    private whisperTarget: CancelableWhisperTarget | undefined;
+    private whisperTargetInitialize: Promise<void> | undefined;
+
     private currentlyReplayingVoice: boolean = false;
     private readonly voiceClientStateChangedEventListener;
     private readonly whisperSessionStateChangedEventListener;
-
 
     constructor(connection: AbstractServerConnection, rtcConnection: RTCConnection) {
         super(connection);
 
         this.rtcConnection = rtcConnection;
         this.voiceClientStateChangedEventListener = this.handleVoiceClientStateChange.bind(this);
+        this.whisperSessionStateChangedEventListener = this.handleWhisperSessionStateChange.bind(this);
 
         this.rtcConnection.getEvents().on("notify_audio_assignment_changed",
             this.listenerRtcAudioAssignment = event => this.handleAudioAssignmentChanged(event));
@@ -78,6 +90,8 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
                 this.currentAudioSourceNode.connect(this.localAudioDestination);
             }
         });
+
+        this.setWhisperSessionInitializer(undefined);
     }
 
     destroy() {
@@ -186,15 +200,21 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
         const ch = chandler.getClient();
         if(ch) ch.speaking = false;
 
-        if(!chandler.connected)
+        if(!chandler.connected) {
             return false;
+        }
 
-        if(chandler.isMicrophoneMuted())
+        if(chandler.isMicrophoneMuted()) {
             return false;
+        }
 
         log.info(LogCategory.VOICE, tr("Local voice ended"));
 
         this.rtcConnection.setTrackSource("audio", null).catch(error => {
+            logError(LogCategory.AUDIO, tr("Failed to set current audio track: %o"), error);
+        });
+
+        this.rtcConnection.setTrackSource("audio-whisper", null).catch(error => {
             logError(LogCategory.AUDIO, tr("Failed to set current audio track: %o"), error);
         });
     }
@@ -210,7 +230,8 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
 
         const ch = chandler.getClient();
         if(ch) { ch.speaking = true; }
-        this.rtcConnection.setTrackSource("audio", this.localAudioDestination.stream.getAudioTracks()[0])
+
+        this.rtcConnection.setTrackSource(this.whisperTarget ? "audio-whisper" : "audio", this.localAudioDestination.stream.getAudioTracks()[0])
             .catch(error => {
                 logError(LogCategory.AUDIO, tr("Failed to set current audio track: %o"), error);
             });
@@ -235,10 +256,12 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
     }
 
     getEncoderCodec(): number {
-        return 5;
+        return 4;
     }
-    setEncoderCodec(codec: number) { }
 
+    setEncoderCodec(codec: number) {
+        /* TODO: If possible change the payload format? */
+    }
 
     availableVoiceClients(): VoiceClient[] {
         return Object.values(this.voiceClients);
@@ -266,33 +289,93 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
         client.destroy();
     }
 
-    stopAllVoiceReplays() {
-    }
-
+    stopAllVoiceReplays() { }
 
     getWhisperSessionInitializer(): WhisperSessionInitializer | undefined {
-        return undefined;
+        return this.whisperSessionInitializer;
     }
 
     setWhisperSessionInitializer(initializer: WhisperSessionInitializer | undefined) {
+        this.whisperSessionInitializer = initializer;
+        if(!this.whisperSessionInitializer) {
+            this.whisperSessionInitializer = async session => {
+                logWarn(LogCategory.VOICE, tr("Missing whisper session initializer. Blocking whisper from %d (%s)"), session.getClientId(), session.getClientUniqueId());
+                return {
+                    clientName: session.getClientName() || tr("Unknown client"),
+                    clientUniqueId: session.getClientUniqueId() || kUnknownWhisperClientUniqueId,
+
+                    blocked: true,
+                    volume: 1,
+
+                    sessionTimeout: 60 * 1000
+                }
+            }
+        }
     }
 
     getWhisperSessions(): WhisperSession[] {
-        return [];
-    }
-
-    getWhisperTarget(): WhisperTarget | undefined {
-        return undefined;
+        return this.whisperSessions;
     }
 
     dropWhisperSession(session: WhisperSession) {
+        if(!(session instanceof RtpWhisperSession)) {
+            throw tr("Invalid session type");
+        }
+
+        session.events.off("notify_state_changed", this.whisperSessionStateChangedEventListener);
+        this.whisperSessions.remove(session);
+        session.destroy();
     }
 
-    startWhisper(target: WhisperTarget): Promise<void> {
-        return Promise.resolve(undefined);
+    async startWhisper(target: WhisperTarget): Promise<void> {
+        while(this.whisperTargetInitialize) {
+            this.whisperTarget.canceled = true;
+            await this.whisperTargetInitialize;
+        }
+
+        this.whisperTarget = Object.assign({ canceled: false }, target);
+        try {
+            await (this.whisperTargetInitialize = this.doStartWhisper(this.whisperTarget));
+        } finally {
+            this.whisperTargetInitialize = undefined;
+        }
     }
 
-    stopWhisper() { }
+    private async doStartWhisper(target: CancelableWhisperTarget) {
+        if(this.rtcConnection.getConnectionState() !== RTPConnectionState.CONNECTED) {
+            return;
+        }
+
+        await this.rtcConnection.startWhisper(target);
+
+        if(target.canceled) {
+            return;
+        }
+
+        this.handleRecorderStop();
+        if(this.currentAudioSource?.input && !this.currentAudioSource.input.isFiltered()) {
+            this.handleRecorderStart();
+        }
+    }
+
+    getWhisperTarget(): WhisperTarget | undefined {
+        return this.whisperTarget;
+    }
+
+    stopWhisper() {
+        if(this.whisperTarget) {
+            this.whisperTarget.canceled = true;
+            this.whisperTargetInitialize = undefined;
+            this.connection.send_command("whispersessionreset").catch(error => {
+                logWarn(LogCategory.CLIENT, tr("Failed to clear the whisper target: %o"), error);
+            });
+        }
+
+        this.handleRecorderStop();
+        if(this.currentAudioSource?.input && !this.currentAudioSource.input.isFiltered()) {
+            this.handleRecorderStart();
+        }
+    }
 
     private handleVoiceClientStateChange(/* event: VoicePlayerEvents["notify_state_changed"] */) {
         this.updateVoiceReplaying();
@@ -303,9 +386,9 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
     }
 
     private updateVoiceReplaying() {
-        let replaying = false;
+        let replaying;
 
-        /* if(this.connectionState === VoiceConnectionStatus.Connected) */ {
+        {
             let index = this.availableVoiceClients().findIndex(client => client.getState() === VoicePlayerState.PLAYING || client.getState() === VoicePlayerState.BUFFERING);
             replaying = index !== -1;
 
@@ -321,8 +404,6 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
             this.events.fire_later("notify_voice_replay_state_change", { replaying: replaying });
         }
     }
-
-
 
     private setConnectionState(state: VoiceConnectionStatus) {
         if(this.connectionState === state)
@@ -344,6 +425,12 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
                     this.localFailedReason = tr("Failed to start audio broadcasting");
                     this.setConnectionState(VoiceConnectionStatus.Failed);
                 });
+                if(this.whisperTarget) {
+                    this.startWhisper(this.whisperTarget).catch(error => {
+                        logError(LogCategory.VOICE, tr("Failed to start voice whisper on connected rtc connection: &o"), error);
+                        /* TODO: Somehow abort the whisper and give the user a feedback? */
+                    });
+                }
                 break;
 
             case RTPConnectionState.CONNECTING:
@@ -366,17 +453,62 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
     }
 
     private handleAudioAssignmentChanged(event: RTCConnectionEvents["notify_audio_assignment_changed"]) {
-        const oldClient = Object.values(this.voiceClients).find(client => client.getRtpTrack() === event.track);
-        if(oldClient) {
-            oldClient.setRtpTrack(undefined);
+        {
+            let oldClient = Object.values(this.voiceClients).find(client => client.getRtpTrack() === event.track);
+            oldClient?.setRtpTrack(undefined);
+
+            let oldSession = this.whisperSessions.find(e => e.getRtpTrack() === event.track);
+            oldSession?.setRtpTrack(undefined);
         }
 
         if(event.info) {
-            const newClient = this.voiceClients[event.info.client_id];
-            if(newClient) {
-                newClient.setRtpTrack(event.track);
-            } else {
-                logWarn(LogCategory.AUDIO, tr("Received audio track assignment for unknown voice client (%o)."), event.info);
+            if(typeof event.info.media === "undefined") {
+                logWarn(LogCategory.VOICE, tr("Received audio assignment event with missing media type"));
+                return;
+            }
+
+            switch (event.info.media) {
+                case 0: {
+                    const newClient = this.voiceClients[event.info.client_id];
+                    if(newClient) {
+                        newClient.setRtpTrack(event.track);
+                    } else {
+                        logWarn(LogCategory.AUDIO, tr("Received audio track assignment for unknown voice client (%o)."), event.info);
+                    }
+                    break;
+                }
+                case 1: {
+                    let session = this.whisperSessions.find(e => e.getClientId() === event.info.client_id);
+                    if(typeof session === "undefined") {
+                        logDebug(LogCategory.VOICE, tr("Received new whisper from %d (%s)"), event.info.client_id, event.info.client_name);
+                        session = new RtpWhisperSession(event.track, event.info);
+                        session.setGloballyMuted(this.speakerMuted);
+                        this.whisperSessions.push(session);
+                        session.events.on("notify_state_changed", this.whisperSessionStateChangedEventListener);
+                        this.whisperSessionInitializer(session).then(result => {
+                            try {
+                                session.initializeFromData(result);
+                                this.events.fire("notify_whisper_initialized", { session });
+                            } catch (error) {
+                                logError(LogCategory.VOICE, tr("Failed to internally initialize a voice whisper session: %o"), error);
+                                session.setSessionState(WhisperSessionState.INITIALIZE_FAILED);
+                            }
+                        }).catch(error => {
+                            logError(LogCategory.VOICE, tr("Failed to initialize whisper session: %o."), error);
+                            session.initializeFailed();
+                        });
+
+                        session.events.on("notify_timed_out", () => {
+                            logTrace(LogCategory.VOICE, tr("Whisper session %d timed out. Dropping session."), session.getClientId());
+                            this.dropWhisperSession(session);
+                        });
+                        this.events.fire("notify_whisper_created", { session: session });
+                    }
+                    break;
+                }
+                default:
+                    logWarn(LogCategory.VOICE, tr("Received audio assignment event with invalid media type (%o)"), event.info.media);
+                    break;
             }
         }
     }
@@ -396,6 +528,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
 
         this.speakerMuted = newState;
         this.voiceClients.forEach(client => client.setGloballyMuted(this.speakerMuted));
+        this.whisperSessions.forEach(session => session.setGloballyMuted(this.speakerMuted));
     }
 
     getRetryTimestamp(): number | 0 {

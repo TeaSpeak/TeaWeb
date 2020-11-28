@@ -403,8 +403,7 @@ export class ConnectionHandler {
                         return;
                     }
                     if(this.serverFeatures.supportsFeature(ServerFeature.WHISPER_ECHO)) {
-                        /* FIXME: Reenable */
-                        //spawnEchoTestModal(this);
+                        spawnEchoTestModal(this);
                     }
                 });
             }

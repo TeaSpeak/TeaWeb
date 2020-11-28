@@ -16,6 +16,7 @@ import {
 import {SdpCompressor, SdpProcessor} from "tc-backend/web/rtc/SdpUtils";
 import {context} from "tc-backend/web/audio/player";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {WhisperTarget} from "tc-shared/voice/VoiceWhisper";
 
 const kSdpCompressionMode = 1;
 
@@ -625,6 +626,28 @@ export class RTCConnection {
         } catch (error) {
             logError(LogCategory.WEBRTC, tr("failed to start %s broadcast: %o"), type, error);
             throw tr("failed to signal broadcast start");
+        }
+    }
+
+    public async startWhisper(target: WhisperTarget) : Promise<void> {
+        const transceiver = this.currentTransceiver["audio-whisper"];
+        if(typeof transceiver === "undefined") {
+            throw tr("missing transceiver");
+        }
+
+        if(target.target === "echo") {
+            await this.connection.send_command("whispersessioninitialize", {
+                ssrc: this.sdpProcessor.getLocalSsrcFromFromMediaId(transceiver.mid),
+                type: 0x10, /* self */
+                target: 0,
+                id: 0
+            }, { flagset: ["new"] });
+        } else if(target.target === "channel-clients") {
+            throw "target not yet supported";
+        } else if(target.target === "groups") {
+            throw "target not yet supported";
+        } else {
+            throw "target not yet supported";
         }
     }
 
