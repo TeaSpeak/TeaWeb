@@ -172,6 +172,14 @@ function renderToolItems() : MenuBarEntry[] {
     const currentConnectionConnected = !!server_connections.active_connection()?.connected;
     items.push({
         type: "normal",
+        label: tr("Echo Test"),
+        icon: ClientIcon.ActivateMicrophone,
+        click: () => global_client_actions.fire("action_open_window", { window: "server-echo-test" }),
+        disabled: !currentConnectionConnected
+    });
+
+    items.push({
+        type: "normal",
         label: tr("Ban List"),
         icon: ClientIcon.BanList,
         click: () => global_client_actions.fire("action_open_window", { window: "ban-list" }),
