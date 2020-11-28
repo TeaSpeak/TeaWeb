@@ -1,18 +1,17 @@
 import {
-    VoicePlayer,
     VoicePlayerEvents,
     VoicePlayerLatencySettings,
     VoicePlayerState
 } from "tc-shared/voice/VoicePlayer";
 import {Registry} from "tc-shared/events";
 import {LogCategory, logWarn} from "tc-shared/log";
-import {RemoteRTPAudioTrack, RemoteRTPTrackState} from "tc-backend/web/rtc/RemoteTrack";
+import {RemoteRTPAudioTrack, RemoteRTPTrackState} from "tc-shared/connection/rtc/RemoteTrack";
 
 export interface RtpVoicePlayerEvents {
     notify_state_changed: { oldState: VoicePlayerState, newState: VoicePlayerState }
 }
 
-export class RtpVoicePlayer implements VoicePlayer {
+export class VoicePlayer implements VoicePlayer {
     readonly events: Registry<VoicePlayerEvents>;
     private readonly listenerTrackStateChanged;
 
@@ -111,5 +110,5 @@ export class RtpVoicePlayer implements VoicePlayer {
         return { minBufferTime: 0, maxBufferTime: 0 };
     }
     resetLatencySettings() { }
-    setLatencySettings(settings: VoicePlayerLatencySettings) { }
+    setLatencySettings(_settings: VoicePlayerLatencySettings) { }
 }

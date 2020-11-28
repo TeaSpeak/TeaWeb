@@ -1,4 +1,4 @@
-import {MediaDescription, SessionDescription} from "sdp-transform";
+import {SessionDescription} from "sdp-transform";
 import * as sdpTransform from "sdp-transform";
 
 export interface RTCNegotiationMediaMapping {

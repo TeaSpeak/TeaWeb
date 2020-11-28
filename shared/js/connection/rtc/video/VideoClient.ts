@@ -5,7 +5,7 @@ import {
     VideoClientEvents
 } from "tc-shared/connection/VideoConnection";
 import {Registry} from "tc-shared/events";
-import {RemoteRTPTrackState, RemoteRTPVideoTrack} from "tc-backend/web/rtc/RemoteTrack";
+import {RemoteRTPTrackState, RemoteRTPVideoTrack} from "../RemoteTrack";
 import {LogCategory, logWarn} from "tc-shared/log";
 
 export class RtpVideoClient implements VideoClient {

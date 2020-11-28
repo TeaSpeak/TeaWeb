@@ -1,9 +1,9 @@
 import {WhisperSession, WhisperSessionEvents, WhisperSessionState} from "tc-shared/voice/VoiceWhisper";
 import {Registry} from "tc-shared/events";
-import {VoicePlayer, VoicePlayerState} from "tc-shared/voice/VoicePlayer";
+import {VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 import {WhisperSessionInitializeData} from "tc-shared/connection/VoiceConnection";
-import {RtpVoicePlayer} from "./RtpVoicePlayer";
-import {RemoteRTPAudioTrack, TrackClientInfo} from "tc-backend/web/rtc/RemoteTrack";
+import {VoicePlayer} from "./VoicePlayer";
+import {RemoteRTPAudioTrack, TrackClientInfo} from "tc-shared/connection/rtc/RemoteTrack";
 
 export class RtpWhisperSession implements WhisperSession {
     readonly events: Registry<WhisperSessionEvents>;
@@ -19,7 +19,7 @@ export class RtpWhisperSession implements WhisperSession {
     private sessionTimeoutId: number;
 
     private lastWhisperTimestamp: number;
-    private voicePlayer: RtpVoicePlayer;
+    private voicePlayer: VoicePlayer;
 
     constructor(track: RemoteRTPAudioTrack, info: TrackClientInfo) {
         this.events = new Registry<WhisperSessionEvents>();
@@ -78,7 +78,7 @@ export class RtpWhisperSession implements WhisperSession {
         this.sessionBlocked = data.blocked;
         this.sessionTimeout = data.sessionTimeout;
 
-        this.voicePlayer = new RtpVoicePlayer();
+        this.voicePlayer = new VoicePlayer();
         this.voicePlayer.setRtpTrack(this.track);
         this.voicePlayer.setGloballyMuted(this.globallyMuted);
         this.voicePlayer.setVolume(data.volume);

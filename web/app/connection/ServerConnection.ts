@@ -19,13 +19,13 @@ import {WrappedWebSocket} from "tc-backend/web/connection/WrappedWebSocket";
 import {AbstractVoiceConnection} from "tc-shared/connection/VoiceConnection";
 import {parseCommand} from "tc-backend/web/connection/CommandParser";
 import {ServerAddress} from "tc-shared/tree/Server";
-import {RTCConnection} from "tc-backend/web/rtc/Connection";
-import {RtpVoiceConnection} from "tc-backend/web/rtc/voice/Connection";
-import {RtpVideoConnection} from "tc-backend/web/rtc/video/Connection";
+import {RtpVoiceConnection} from "tc-backend/web/voice/Connection";
 import {VideoConnection} from "tc-shared/connection/VideoConnection";
 import {VoiceConnection} from "tc-backend/web/legacy/voice/VoiceHandler";
 import {LegacySupportVoiceBridge} from "tc-backend/web/connection/LegacySupportVoiceBridge";
 import {ServerFeature} from "tc-shared/connection/ServerFeatures";
+import {RTCConnection} from "tc-shared/connection/rtc/Connection";
+import {RtpVideoConnection} from "tc-shared/connection/rtc/video/Connection";
 
 class ReturnListener<T> {
     resolve: (value?: T | PromiseLike<T>) => void;
@@ -82,7 +82,7 @@ export class ServerConnection extends AbstractServerConnection {
         this.commandHandlerBoss.register_handler(this.defaultCommandHandler);
         this.command_helper.initialize();
 
-        this.rtcConnection = new RTCConnection(this);
+        this.rtcConnection = new RTCConnection(this, true);
         this.voiceConnection = new RtpVoiceConnection(this, this.rtcConnection);
         this.videoConnection = new RtpVideoConnection(this.rtcConnection);
 

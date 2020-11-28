@@ -11,16 +11,16 @@ import {
     WhisperSessionState,
     WhisperTarget
 } from "tc-shared/voice/VoiceWhisper";
-import {RTCConnection, RTCConnectionEvents, RTPConnectionState} from "tc-backend/web/rtc/Connection";
+import {RTCConnection, RTCConnectionEvents, RTPConnectionState} from "tc-shared/connection/rtc/Connection";
 import {AbstractServerConnection, ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
 import {VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 import * as log from "tc-shared/log";
 import {LogCategory, logDebug, logError, logTrace, logWarn} from "tc-shared/log";
-import * as aplayer from "../../audio/player";
+import * as aplayer from "../audio/player";
 import {tr} from "tc-shared/i18n/localize";
-import {RtpVoiceClient} from "tc-backend/web/rtc/voice/VoiceClient";
+import {RtpVoiceClient} from "tc-backend/web/voice/VoiceClient";
 import {InputConsumerType} from "tc-shared/voice/RecorderBase";
-import {RtpWhisperSession} from "tc-backend/web/rtc/voice/WhisperClient";
+import {RtpWhisperSession} from "tc-backend/web/voice/WhisperClient";
 
 type CancelableWhisperTarget = WhisperTarget & { canceled: boolean };
 export class RtpVoiceConnection extends AbstractVoiceConnection {
@@ -504,6 +504,8 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
                             this.dropWhisperSession(session);
                         });
                         this.events.fire("notify_whisper_created", { session: session });
+                    } else {
+                        session.setRtpTrack(event.track);
                     }
                     break;
                 }

@@ -15,13 +15,6 @@ const OPUS_VOICE_PAYLOAD_TYPE = 111;
 const OPUS_MUSIC_PAYLOAD_TYPE = 112;
 const H264_PAYLOAD_TYPE = 126;
 
-type SdpMedia = {
-    type: string;
-    port: number;
-    protocol: string;
-    payloads?: string;
-} & MediaDescription;
-
 export class SdpProcessor {
     private static readonly kAudioCodecs: SdpCodec[] = [
         // Primary audio format

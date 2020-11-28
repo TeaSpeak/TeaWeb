@@ -10,7 +10,7 @@ import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {VoiceConnectionStatus} from "tc-shared/connection/VoiceConnection";
 import {Settings, settings} from "tc-shared/settings";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {LogCategory, logError} from "tc-shared/log";
+import {LogCategory, logError, logTrace, logWarn} from "tc-shared/log";
 import {ServerFeature} from "tc-shared/connection/ServerFeatures";
 
 export function spawnEchoTestModal(connection: ConnectionHandler) {
@@ -40,7 +40,7 @@ export function spawnEchoTestModal(connection: ConnectionHandler) {
         modal.destroy();
     });
 
-    modal.events.on("close", () => events.fire("notify_close"));
+    modal.events.on("close", () => events.fire_react("notify_close"));
     modal.events.on("destroy", () => {
         events.fire("notify_destroy");
         events.destroy();
@@ -72,8 +72,8 @@ function initializeController(connection: ConnectionHandler, events: Registry<Ec
         if (event.status === "success") {
             events.fire("action_close");
         } else {
-            events.fire("action_stop_test");
-            events.fire("notify_test_phase", {phase: "troubleshooting"});
+            events.fire_react("action_stop_test");
+            events.fire_react("notify_test_phase", {phase: "troubleshooting"});
         }
     });
 
@@ -81,7 +81,7 @@ function initializeController(connection: ConnectionHandler, events: Registry<Ec
         if (event.status === "aborted") {
             events.fire("action_close");
         } else {
-            events.fire("notify_test_phase", {phase: "testing"});
+            events.fire_react("notify_test_phase", {phase: "testing"});
             events.fire("action_start_test");
         }
     });
@@ -94,28 +94,28 @@ function initializeController(connection: ConnectionHandler, events: Registry<Ec
         }
         switch (state) {
             case VoiceConnectionStatus.Connected:
-                events.fire("notify_voice_connection_state", {state: "connected"});
+                events.fire_react("notify_voice_connection_state", {state: "connected"});
                 break;
 
             case VoiceConnectionStatus.Disconnected:
             case VoiceConnectionStatus.Disconnecting:
-                events.fire("notify_voice_connection_state", {state: "disconnected"});
+                events.fire_react("notify_voice_connection_state", {state: "disconnected"});
                 break;
 
             case VoiceConnectionStatus.Connecting:
-                events.fire("notify_voice_connection_state", {state: "connecting"});
+                events.fire_react("notify_voice_connection_state", {state: "connecting"});
                 break;
 
             case VoiceConnectionStatus.ClientUnsupported:
-                events.fire("notify_voice_connection_state", {state: "unsupported-client"});
+                events.fire_react("notify_voice_connection_state", {state: "unsupported-client"});
                 break;
 
             case VoiceConnectionStatus.ServerUnsupported:
-                events.fire("notify_voice_connection_state", {state: "unsupported-server"});
+                events.fire_react("notify_voice_connection_state", {state: "unsupported-server"});
                 break;
 
             case VoiceConnectionStatus.Failed:
-                events.fire("notify_voice_connection_state", {state: "failed", message: connection.getServerConnection().getVoiceConnection().getFailedMessage() });
+                events.fire_react("notify_voice_connection_state", {state: "failed", message: connection.getServerConnection().getVoiceConnection().getFailedMessage() });
                 break;
         }
     };
@@ -142,7 +142,7 @@ function initializeController(connection: ConnectionHandler, events: Registry<Ec
 
     const setTestState = (state: TestState) => {
         testState = state;
-        events.fire("notify_test_state", {state: state});
+        events.fire_react("notify_test_state", {state: state});
     }
 
     let testId = 0;
@@ -170,8 +170,10 @@ function initializeController(connection: ConnectionHandler, events: Registry<Ec
                 return;
             }
 
+            logTrace(LogCategory.VOICE, tr("Echo test started."));
             setTestState({state: "running"});
         }).catch(error => {
+            logWarn(LogCategory.VOICE, tr("Failed to start echo test: %o"), error);
             if (currentTestId !== testId) {
                 return;
             }

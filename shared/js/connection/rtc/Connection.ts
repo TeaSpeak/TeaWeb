@@ -7,13 +7,8 @@ import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandle
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {tr} from "tc-shared/i18n/localize";
 import {Registry} from "tc-shared/events";
-import {
-    RemoteRTPAudioTrack,
-    RemoteRTPTrackState,
-    RemoteRTPVideoTrack,
-    TrackClientInfo
-} from "tc-backend/web/rtc/RemoteTrack";
-import {SdpCompressor, SdpProcessor} from "tc-backend/web/rtc/SdpUtils";
+import {RemoteRTPAudioTrack, RemoteRTPTrackState, RemoteRTPVideoTrack, TrackClientInfo} from "./RemoteTrack";
+import {SdpCompressor, SdpProcessor} from "./SdpUtils";
 import {context} from "tc-backend/web/audio/player";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {WhisperTarget} from "tc-shared/voice/VoiceWhisper";
@@ -461,6 +456,8 @@ export interface RTCConnectionEvents {
 
 export class RTCConnection {
     public static readonly kEnableSdpTrace = true;
+
+    private readonly audioSupport: boolean;
     private readonly events: Registry<RTCConnectionEvents>;
     private readonly connection: ServerConnection;
     private readonly commandHandler: CommandHandler;
@@ -492,12 +489,13 @@ export class RTCConnection {
     private remoteVideoTracks: {[key: number]: InternalRemoteRTPVideoTrack};
     private temporaryStreams: {[key: number]: TemporaryRtpStream} = {};
 
-    constructor(connection: ServerConnection) {
+    constructor(connection: ServerConnection, audioSupport: boolean) {
         this.events = new Registry<RTCConnectionEvents>();
         this.connection = connection;
         this.sdpProcessor = new SdpProcessor();
         this.commandHandler = new CommandHandler(connection, this, this.sdpProcessor);
         this.retryCalculator = new RetryTimeCalculator(5000, 30000, 10000);
+        this.audioSupport = audioSupport;
 
         this.connection.command_handler_boss().register_handler(this.commandHandler);
         this.reset(true);
@@ -507,6 +505,10 @@ export class RTCConnection {
 
     destroy() {
         this.connection.command_handler_boss().unregister_handler(this.commandHandler);
+    }
+
+    isAudioEnabled() : boolean {
+        return this.audioSupport;
     }
 
     getConnection() : ServerConnection {
@@ -593,6 +595,7 @@ export class RTCConnection {
         switch (type) {
             case "audio":
             case "audio-whisper":
+                if(!this.audioSupport) { throw tr("audio support isn't enabled"); }
                 if(source && source.kind !== "audio") { throw tr("invalid track type"); }
                 break;
             case "video":
@@ -618,6 +621,21 @@ export class RTCConnection {
             throw tr("missing transceiver");
         }
 
+        switch (type) {
+            case "audio":
+                if(!this.audioSupport) {
+                    throw tr("audio support isn't enabled");
+                }
+                break;
+
+            case "video":
+            case "video-screen":
+                break;
+
+            default:
+                throw tr("invalid broadcast type");
+        }
+
         try {
             await this.connection.send_command("rtcbroadcast", {
                 type: broadcastableTrackTypeToNumber(type),
@@ -630,6 +648,10 @@ export class RTCConnection {
     }
 
     public async startWhisper(target: WhisperTarget) : Promise<void> {
+        if(!this.audioSupport) {
+            throw tr("audio support isn't enabled");
+        }
+
         const transceiver = this.currentTransceiver["audio-whisper"];
         if(typeof transceiver === "undefined") {
             throw tr("missing transceiver");
@@ -718,8 +740,6 @@ export class RTCConnection {
         }
     }
 
-    private enableDtx(_sender: RTCRtpSender) { }
-
     public doInitialSetup() {
         /* initialize rtc connection */
         this.retryCalculator.reset();
@@ -740,24 +760,23 @@ export class RTCConnection {
             iceServers: [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }]
         });
 
-        this.currentTransceiver["audio"] = this.peer.addTransceiver("audio");
-        this.enableDtx(this.currentTransceiver["audio"].sender);
+        if(this.audioSupport) {
+            this.currentTransceiver["audio"] = this.peer.addTransceiver("audio");
+            this.currentTransceiver["audio-whisper"] = this.peer.addTransceiver("audio");
 
-        this.currentTransceiver["audio-whisper"] = this.peer.addTransceiver("audio");
-        this.enableDtx(this.currentTransceiver["audio-whisper"].sender);
+            /* add some other transceivers for later use */
+            for(let i = 0; i < 8; i++) {
+                this.peer.addTransceiver("audio");
+            }
+        }
 
         this.currentTransceiver["video"] = this.peer.addTransceiver("video");
         this.currentTransceiver["video-screen"] = this.peer.addTransceiver("video");
 
         /* add some other transceivers for later use */
-        /*
-        for(let i = 0; i < 8; i++) {
-            this.peer.addTransceiver("audio");
-        }
         for(let i = 0; i < 4; i++) {
             this.peer.addTransceiver("video");
         }
-        */
 
         this.peer.onicecandidate = event => this.handleIceCandidate(event.candidate);
         this.peer.onicecandidateerror = event => this.handleIceCandidateError(event);
@@ -805,8 +824,7 @@ export class RTCConnection {
             }
 
             await this.currentTransceiver[type].sender.replaceTrack(target);
-            target.enabled = true;
-            console.error("Replaced track for %o (Fallback: %o)", type, target === fallback);
+            logTrace(LogCategory.WEBRTC, "Replaced track for %o (Fallback: %o)", type, target === fallback);
         }
     }
 
@@ -816,7 +834,7 @@ export class RTCConnection {
         const peer = this.peer;
         await this.updateTracks();
 
-        const offer = await peer.createOffer({ iceRestart: false, offerToReceiveAudio: true, offerToReceiveVideo: true });
+        const offer = await peer.createOffer({ iceRestart: false, offerToReceiveAudio: this.audioSupport, offerToReceiveVideo: true });
         if(offer.type !== "offer") { throw tr("created ofer isn't of type offer"); }
         if(this.peer !== peer) { return; }
 
@@ -970,6 +988,10 @@ export class RTCConnection {
 
         const tempInfo = this.releaseTemporaryStream(ssrc);
         if(event.track.kind === "audio") {
+            if(!this.audioSupport) {
+                logWarn(LogCategory.WEBRTC, tr("Received remote audio track %d but audio has been disabled. Dropping track."), ssrc);
+                return;
+            }
             const track = new InternalRemoteRTPAudioTrack(ssrc, event.transceiver);
             logDebug(LogCategory.WEBRTC, tr("Received remote audio track on ssrc %d"), ssrc);
             if(tempInfo?.info !== undefined) {

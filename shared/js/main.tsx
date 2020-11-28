@@ -125,6 +125,17 @@ export function handle_connect_request(properties: ConnectRequestData, connectio
 
     if(profile && profile.valid()) {
         settings.changeGlobal(Settings.KEY_USER_IS_NEW, false);
+
+        if(!aplayer.initialized()) {
+            spawnYesNo(tra("Connect to {}", properties.address), tra("Would you like to connect to {}?", properties.address), result => {
+                if(result) {
+                    aplayer.on_ready(() => handle_connect_request(properties, connection));
+                } else {
+                    /* Well... the client don't want to... */
+                }
+            }).open();
+            return;
+        }
         connection.startConnection(properties.address, profile, true, {
             nickname: username,
             password: password.length > 0 ? {
@@ -359,7 +370,7 @@ const task_connect_handler: loader.Task = {
 
             if(chandler && !settings.static(Settings.KEY_CONNECT_NO_SINGLE_INSTANCE)) {
                 try {
-                    await chandler.post_connect_request(connect_data, () => new Promise<boolean>((resolve, reject) => {
+                    await chandler.post_connect_request(connect_data, () => new Promise<boolean>(resolve => {
                         spawnYesNo(tr("Another TeaWeb instance is already running"), tra("Another TeaWeb instance is already running.{:br:}Would you like to connect there?"), response => {
                             resolve(response);
                         }, {
@@ -412,50 +423,6 @@ const task_connect_handler: loader.Task = {
 const task_certificate_callback: loader.Task = {
     name: "certificate accept tester",
     function: async () => {
-        /*
-            This is not needed any more. If we would use the certificate accept stuff, we would have an extra loader target.
-            I'm just keeping this, so later I've not to to any work, writing this, again.
-        const certificate_accept = settings.static_global(Settings.KEY_CERTIFICATE_CALLBACK, undefined);
-        if(certificate_accept) {
-            log.info(LogCategory.IPC, tr("Using this instance as certificate callback. ID: %s"), certificate_accept);
-            try {
-                try {
-                    await bipc.getInstance().post_certificate_accpected(certificate_accept);
-                } catch(e) {} //FIXME remove!
-                log.info(LogCategory.IPC, tr("Other instance has acknowledged out work. Closing this window."));
-
-                const seconds_tag = $.spawn("a");
-
-                let seconds = 5;
-                let interval_id;
-                interval_id = setInterval(() => {
-                    seconds--;
-                    seconds_tag.text(seconds.toString());
-
-                    if(seconds <= 0) {
-                        clearTimeout(interval_id);
-                        log.info(LogCategory.GENERAL, tr("Closing window"));
-                        window.close();
-                        return;
-                    }
-                }, 1000);
-
-                createInfoModal(
-                    tr("Certificate acccepted successfully"),
-                    formatMessage(tr("You've successfully accepted the certificate.{:br:}This page will close in {0} seconds."), seconds_tag),
-                    {
-                        closeable: false,
-                        footer: undefined
-                    }
-                ).open();
-                return;
-            } catch(error) {
-                log.warn(LogCategory.IPC, tr("Failed to successfully post certificate accept status: %o"), error);
-            }
-        } else {
-            log.info(LogCategory.IPC, tr("We're not used to accept certificated. Booting app."));
-        }
-         */
         loader.register_task(loader.Stage.LOADED, task_connect_handler);
     },
     priority: 10

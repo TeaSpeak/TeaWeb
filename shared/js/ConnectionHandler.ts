@@ -32,7 +32,6 @@ import {W2GPluginCmdHandler} from "./video-viewer/W2GPlugin";
 import {VoiceConnectionStatus, WhisperSessionInitializeData} from "./connection/VoiceConnection";
 import {getServerConnectionFactory} from "./connection/ConnectionFactory";
 import {WhisperSession} from "./voice/VoiceWhisper";
-import {spawnEchoTestModal} from "./ui/modal/echo-test/Controller";
 import {ServerFeature, ServerFeatures} from "./connection/ServerFeatures";
 import {ChannelTree} from "./tree/ChannelTree";
 import {LocalClientEntry} from "./tree/Client";
@@ -371,17 +370,19 @@ export class ConnectionHandler {
             this.permissions.requestPermissionList();
             /*
             There is no need to request the server groups since they must be send by the server
-            if(this.groups.serverGroups.length == 0)
+            if(this.groups.serverGroups.length == 0) {
                 this.groups.requestGroups();
+            }
             */
 
             this.settings.setServer(this.channelTree.server.properties.virtualserver_unique_identifier);
 
             /* apply the server settings */
-            if(this.client_status.channel_subscribe_all)
+            if(this.client_status.channel_subscribe_all) {
                 this.channelTree.subscribe_all_channels();
-            else
+            } else {
                 this.channelTree.unsubscribe_all_channels();
+            }
             this.channelTree.toggle_server_queries(this.client_status.queries_visible);
 
             this.sync_status_with_server();
@@ -398,6 +399,7 @@ export class ConnectionHandler {
                     if(!result) {
                         return;
                     }
+
                     if(this.serverFeatures.supportsFeature(ServerFeature.WHISPER_ECHO)) {
                         global_client_actions.fire("action_open_window", { window: "server-echo-test", connection: this });
                     }

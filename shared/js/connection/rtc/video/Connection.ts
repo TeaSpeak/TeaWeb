@@ -9,10 +9,10 @@ import {
 } from "tc-shared/connection/VideoConnection";
 import {Registry} from "tc-shared/events";
 import {VideoSource} from "tc-shared/video/VideoSource";
-import {RTCConnection, RTCConnectionEvents, RTPConnectionState} from "tc-backend/web/rtc/Connection";
+import {RTCConnection, RTCConnectionEvents, RTPConnectionState} from "../Connection";
 import {LogCategory, logDebug, logError, logWarn} from "tc-shared/log";
 import {Settings, settings} from "tc-shared/settings";
-import {RtpVideoClient} from "tc-backend/web/rtc/video/VideoClient";
+import {RtpVideoClient} from "./VideoClient";
 import {tr} from "tc-shared/i18n/localize";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
 import {ConnectionStatistics} from "tc-shared/connection/ConnectionBase";

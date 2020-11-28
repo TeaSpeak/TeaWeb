@@ -3,7 +3,6 @@ import {LogCategory, logWarn} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
 import * as aplayer from "tc-backend/web/audio/player";
 
-
 export interface TrackClientInfo {
     media?: number,
 
