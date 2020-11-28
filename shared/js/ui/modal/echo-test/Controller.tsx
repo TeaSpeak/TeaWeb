@@ -134,6 +134,12 @@ function initializeController(connection: ConnectionHandler, events: Registry<Ec
         beginTest();
     });
 
+    events.on("action_unmute", () => {
+        connection.setSpeakerMuted(false, true);
+        connection.setMicrophoneMuted(false, true);
+        beginTest();
+    });
+
     const setTestState = (state: TestState) => {
         testState = state;
         events.fire("notify_test_state", {state: state});
@@ -145,6 +151,13 @@ function initializeController(connection: ConnectionHandler, events: Registry<Ec
             return;
         } else if (!connection.serverFeatures.supportsFeature(ServerFeature.WHISPER_ECHO)) {
             setTestState({state: "unsupported"});
+            return;
+        } else if (connection.isSpeakerMuted() || connection.isMicrophoneMuted()) {
+            setTestState({
+                state: "muted",
+                speaker: connection.isSpeakerMuted(),
+                microphone: connection.isMicrophoneMuted()
+            });
             return;
         }
 

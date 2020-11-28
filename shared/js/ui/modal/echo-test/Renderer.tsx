@@ -109,8 +109,38 @@ const TestStateOverlay = () => {
             break;
 
         case "unsupported":
-            inner = <a key={"initializing"}><Translatable>Echo testing hasn't been supported by the
-                server.</Translatable></a>;
+            inner = <a key={"initializing"}>
+                <Translatable>Echo testing hasn't been supported by the
+                server.</Translatable>
+            </a>;
+            break;
+
+        case "muted":
+            if(state.microphone && state.speaker) {
+                inner = <a key={"muted-microphone-speaker"}>
+                    <Translatable>Your speaker and microphone have been muted.</Translatable>
+                    <br/>
+                    <Button type={"small"} color={"green"} onClick={() => events.fire("action_unmute")} transparency={false}>
+                        <Translatable>Unmute speaker and microphone</Translatable>
+                    </Button>
+                </a>;
+            } else if(state.microphone) {
+                inner = <a key={"muted-microphone"}>
+                    <Translatable>Your microphone has been muted.</Translatable>
+                    <br/>
+                    <Button type={"small"} color={"green"} onClick={() => events.fire("action_unmute")} transparency={false}>
+                        <Translatable>Unmute microphone</Translatable>
+                    </Button>
+                </a>;
+            } else {
+                inner = <a key={"muted-speaker"}>
+                    <Translatable>Your speaker has been muted.</Translatable>
+                    <br/>
+                    <Button type={"small"} color={"green"} onClick={() => events.fire("action_unmute")} transparency={false}>
+                        <Translatable>Unmute speaker</Translatable>
+                    </Button>
+                </a>;
+            }
             break;
     }
 

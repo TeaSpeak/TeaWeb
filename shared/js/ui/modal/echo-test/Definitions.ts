@@ -5,9 +5,11 @@ export type VoiceConnectionState =
     | "unsupported-client"
     | "unsupported-server"
     | "failed";
+
 export type TestState =
     { state: "initializing" | "running" | "stopped" | "microphone-invalid" | "unsupported" }
-    | { state: "start-failed", error: string };
+    | { state: "start-failed", error: string }
+    | { state: "muted", microphone: boolean, speaker: boolean };
 
 export interface EchoTestEvents {
     action_troubleshooting_finished: { status: "test-again" | "aborted" }
@@ -18,6 +20,7 @@ export interface EchoTestEvents {
     action_toggle_tests: { enabled: boolean },
     action_start_test: {},
     action_stop_test: {},
+    action_unmute: {},
 
     query_voice_connection_state: {},
     query_test_state: {},

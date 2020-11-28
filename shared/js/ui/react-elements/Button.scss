@@ -3,8 +3,13 @@
 
 html:root {
     --button-background: rgba(0, 0, 0, 0.5);
+    --button-background-solid: rgba(0, 0, 0, 1); /* TODO! */
+
     --button-hover-background: rgba(0, 0, 0, 0.7);
+    --button-hover-background-solid: #121212;
+
     --button-disabled-background: rgba(0, 0, 0, 0.27);
+    --button-disabled-background-solid: rgba(0, 0, 0, 1); /* TODO! */
 
     --button-color: #7c7c7c;
 
@@ -41,9 +46,17 @@ html:root {
     &:disabled {
         box-shadow: none;
         background-color: var(--button-disabled-background);
+    }
+
+    &.nonTransparent {
+        background-color: var(--button-background-solid);
 
         &:hover {
-            background-color: var(--button-disabled-background);
+            background-color: var(--button-hover-background-solid);
+        }
+
+        &:disabled {
+            background-color: var(--button-disabled-background-solid);
         }
     }
 

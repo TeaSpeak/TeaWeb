@@ -1052,10 +1052,12 @@ export class ConnectionHandler {
     }
 
     /* state changing methods */
-    setMicrophoneMuted(muted: boolean) {
+    setMicrophoneMuted(muted: boolean, dontPlaySound?: boolean) {
         if(this.client_status.input_muted === muted) return;
         this.client_status.input_muted = muted;
-        this.sound.play(muted ? Sound.MICROPHONE_MUTED : Sound.MICROPHONE_ACTIVATED);
+        if(!dontPlaySound) {
+            this.sound.play(muted ? Sound.MICROPHONE_MUTED : Sound.MICROPHONE_ACTIVATED);
+        }
         this.update_voice_status();
         this.event_registry.fire("notify_state_updated", { state: "microphone" });
     }
@@ -1064,12 +1066,12 @@ export class ConnectionHandler {
     isMicrophoneMuted() { return this.client_status.input_muted; }
     isMicrophoneDisabled() { return this.inputHardwareState !== InputHardwareState.VALID; }
 
-    setSpeakerMuted(muted: boolean) {
+    setSpeakerMuted(muted: boolean, dontPlaySound?: boolean) {
         if(this.client_status.output_muted === muted) return;
-        if(muted) this.sound.play(Sound.SOUND_MUTED); /* play the sound *before* we're setting the muted state */
+        if(muted && !dontPlaySound) this.sound.play(Sound.SOUND_MUTED); /* play the sound *before* we're setting the muted state */
         this.client_status.output_muted = muted;
         this.event_registry.fire("notify_state_updated", { state: "speaker" });
-        if(!muted) this.sound.play(Sound.SOUND_ACTIVATED); /* play the sound *after* we're setting we've unmuted the sound */
+        if(!muted && !dontPlaySound) this.sound.play(Sound.SOUND_ACTIVATED); /* play the sound *after* we're setting we've unmuted the sound */
         this.update_voice_status();
         this.serverConnection.getVoiceConnection().stopAllVoiceReplays();
     }

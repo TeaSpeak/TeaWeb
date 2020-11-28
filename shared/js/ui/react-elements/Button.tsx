@@ -13,6 +13,7 @@ export interface ButtonProperties {
     disabled?: boolean;
 
     title?: string;
+    transparency?: boolean;
 }
 
 export interface ButtonState {
@@ -36,6 +37,7 @@ export class Button extends ReactComponentBase<ButtonProperties, ButtonState> {
                     cssStyle.button,
                     cssStyle["color-" + this.props.color] || cssStyle["color-default"],
                     cssStyle["type-" + this.props.type] || cssStyle["type-normal"],
+                    typeof this.props.transparency === "boolean" && !this.props.transparency ? cssStyle.nonTransparent : undefined,
                     this.props.className
                 )}
                 title={this.props.title}
