@@ -68,7 +68,7 @@ export abstract class AbstractExternalModalController extends EventControllerBas
                 const timeout = setTimeout(() => {
                     this.callbackWindowInitialized = undefined;
                     reject("window haven't called back");
-                }, 5000);
+                }, 15000);
 
                 this.callbackWindowInitialized = error => {
                     this.callbackWindowInitialized = undefined;
