@@ -500,7 +500,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
 
     private async doStartWhisper(target: CancelableWhisperTarget) {
         if(target.target === "echo") {
-            await this.connection.send_command("setwhispersession", {
+            await this.connection.send_command("setwhispertarget", {
                 type: 0x10, /* self */
                 target: 0,
                 id: 0
@@ -528,7 +528,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         if(this.whisperTarget) {
             this.whisperTarget.canceled = true;
             this.whisperTargetInitialize = undefined;
-            this.connection.send_command("clearwhispersession").catch(error => {
+            this.connection.send_command("clearwhispertarget").catch(error => {
                 logWarn(LogCategory.CLIENT, tr("Failed to clear the whisper target: %o"), error);
             });
         }
