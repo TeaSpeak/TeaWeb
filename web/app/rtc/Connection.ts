@@ -217,7 +217,7 @@ class CommandHandler extends AbstractCommandHandler {
                 }).then(() => this.handle["peer"].createAnswer())
                 .then(async answer => {
                     if(RTCConnection.kEnableSdpTrace) {
-                        logTrace(LogCategory.WEBRTC, tr("Applying local description from remote %s:\n%s"), data.mode, answer.sdp);
+                        logTrace(LogCategory.WEBRTC, tr("Generated local answer due to remote %s:\n%s"), data.mode, answer.sdp);
                     }
                     answer.sdp = this.sdpProcessor.processOutgoingSdp(answer.sdp, "answer");
 
@@ -782,6 +782,10 @@ export class RTCConnection {
 
     private async updateTracks() {
         for(const type of kRtcSourceTrackTypes) {
+            if(!this.currentTransceiver[type]?.sender) {
+                continue;
+            }
+
             let fallback;
             switch (type) {
                 case "audio":
@@ -794,7 +798,15 @@ export class RTCConnection {
                     fallback = getIdleTrack("video");
                     break;
             }
-            await this.currentTransceiver[type]?.sender.replaceTrack(this.currentTracks[type] || fallback);
+
+            let target = this.currentTracks[type] || fallback;
+            if(this.currentTransceiver[type].sender.track === target) {
+                continue;
+            }
+
+            await this.currentTransceiver[type].sender.replaceTrack(target);
+            target.enabled = true;
+            console.error("Replaced track for %o (Fallback: %o)", type, target === fallback);
         }
     }
 

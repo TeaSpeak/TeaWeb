@@ -19,6 +19,7 @@ import {spawnAbout} from "tc-shared/ui/modal/ModalAbout";
 import {spawnVideoSourceSelectModal} from "tc-shared/ui/modal/video-source/Controller";
 import {LogCategory, logError} from "tc-shared/log";
 import {getVideoDriver} from "tc-shared/video/VideoSource";
+import {spawnEchoTestModal} from "tc-shared/ui/modal/echo-test/Controller";
 
 /*
 function initialize_sounds(event_registry: Registry<ClientGlobalControlEvents>) {
@@ -156,6 +157,13 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
 
             case "about":
                 spawnAbout();
+                break;
+
+            case "server-echo-test":
+                const connection = event.connection || server_connections.active_connection();
+                if(connection) {
+                    spawnEchoTestModal(connection);
+                }
                 break;
 
             default:

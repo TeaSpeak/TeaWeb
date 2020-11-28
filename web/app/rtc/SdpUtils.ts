@@ -11,7 +11,7 @@ interface SdpCodec {
 }
 
 /* For optimal performance these payload formats should match the servers one */
-const OPUS_VOICE_PAYLOAD_TYPE = 111
+const OPUS_VOICE_PAYLOAD_TYPE = 111;
 const OPUS_MUSIC_PAYLOAD_TYPE = 112;
 const H264_PAYLOAD_TYPE = 126;
 
@@ -24,25 +24,27 @@ type SdpMedia = {
 
 export class SdpProcessor {
     private static readonly kAudioCodecs: SdpCodec[] = [
-        /* Primary audio format */
+        // Primary audio format
+        // Attention, the payload id should be the same as the server once.
+        // If not, Firefox start to make trouble and isn't replaying the sound...
         {
-            /* Opus Mono/Opus Voice */
+            // Opus Mono/Opus Voice
             payload: OPUS_VOICE_PAYLOAD_TYPE,
             codec: "opus",
             rate: 48000,
             encoding: 2,
-            fmtp: { minptime: 1, maxptime: 20, useinbandfec: 1, stereo: 0 },
+            fmtp: { minptime: 1, maxptime: 20, useinbandfec: 1, usedtx: 1, stereo: 0, "sprop-stereo": 0 },
             rtcpFb: [ "transport-cc" ]
         },
         {
-            /* Opus Stereo/Opus Music */
+            // Opus Stereo/Opus Music
             payload: OPUS_MUSIC_PAYLOAD_TYPE,
             codec: "opus",
             rate: 48000,
             encoding: 2,
-            fmtp: { minptime: 1, maxptime: 20, useinbandfec: 1, stereo: 1 },
+            fmtp: { minptime: 1, maxptime: 20, useinbandfec: 1, usedtx: 1, stereo: 1, "sprop-stereo": 1 },
             rtcpFb: [ "transport-cc" ]
-        }
+        },
     ];
 
     private static readonly kVideoCodecs: SdpCodec[] = [
@@ -193,6 +195,7 @@ export class SdpProcessor {
                      * This causes us only to add one, the primary, codec and hope for the best
                      * (Opus Stereo and Mono mixing seem to work right now 11.2020)
                      */
+                    /* TODO: Test this again since we're not sending a end signal via RTCP. This might change the behaviour? */
                     break;
                 }
             }

@@ -38,6 +38,7 @@ import {ChannelTree} from "./tree/ChannelTree";
 import {LocalClientEntry} from "./tree/Client";
 import {ServerAddress} from "./tree/Server";
 import {ChannelVideoFrame} from "tc-shared/ui/frames/video/Controller";
+import {global_client_actions} from "tc-shared/events/GlobalEvents";
 
 export enum InputHardwareState {
     MISSING,
@@ -392,18 +393,13 @@ export class ConnectionHandler {
                 control_bar.apply_server_voice_state();
             */
 
-            /*
-            this.serverConnection.getVoiceConnection().startWhisper({ target: "echo" }).catch(error => {
-                logError(LogCategory.CLIENT, tr("Failed to start local echo: %o"), error);
-            });
-             */
-            if(__build.target === "web") {
+            if(__build.target === "web" && settings.static_global(Settings.KEY_VOICE_ECHO_TEST_ENABLED)) {
                 this.serverFeatures.awaitFeatures().then(result => {
                     if(!result) {
                         return;
                     }
                     if(this.serverFeatures.supportsFeature(ServerFeature.WHISPER_ECHO)) {
-                        spawnEchoTestModal(this);
+                        global_client_actions.fire("action_open_window", { window: "server-echo-test", connection: this });
                     }
                 });
             }

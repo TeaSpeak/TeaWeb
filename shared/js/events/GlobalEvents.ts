@@ -17,7 +17,8 @@ export interface ClientGlobalControlEvents {
             "ban-list" |
             "permissions" |
             "token-list" |
-            "token-use",
+            "token-use" |
+            "server-echo-test",
         connection?: ConnectionHandler
     },
 

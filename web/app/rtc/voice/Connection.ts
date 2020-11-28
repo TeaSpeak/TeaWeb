@@ -365,6 +365,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
     stopWhisper() {
         if(this.whisperTarget) {
             this.whisperTarget.canceled = true;
+            this.whisperTarget = undefined;
             this.whisperTargetInitialize = undefined;
             this.connection.send_command("whispersessionreset").catch(error => {
                 logWarn(LogCategory.CLIENT, tr("Failed to clear the whisper target: %o"), error);
