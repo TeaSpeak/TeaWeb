@@ -13,6 +13,7 @@ import {spawnAvatarList} from "../ui/modal/ModalAvatarList";
 import {connection_log} from "../ui/modal/ModalConnect";
 import {Registry} from "../events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
+import { tr } from "tc-shared/i18n/localize";
 
 export class ServerProperties {
     virtualserver_host: string = "";

@@ -22,6 +22,7 @@ import {ViewReasonId} from "../ConnectionHandler";
 import {EventChannelData} from "../ui/frames/log/Definitions";
 import {ErrorCode} from "../connection/ErrorCode";
 import {ClientIcon} from "svg-sprites/client-icons";
+import { tr } from "tc-shared/i18n/localize";
 
 export enum ChannelType {
     PERMANENT,

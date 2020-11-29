@@ -4,6 +4,7 @@ import {guid} from "./crypto/uid";
 import * as React from "react";
 import {useEffect} from "react";
 import {unstable_batchedUpdates} from "react-dom";
+import { tr } from "./i18n/localize";
 
 export interface Event<Events, T = keyof Events> {
     readonly type: T;

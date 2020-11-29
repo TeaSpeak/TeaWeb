@@ -8,6 +8,7 @@ import * as aplayer from "tc-backend/audio/player";
 import * as ppt from "tc-backend/ppt";
 import {getRecorderBackend, IDevice} from "../audio/recorder";
 import {FilterType, StateFilter, ThresholdFilter} from "../voice/Filter";
+import { tr } from "tc-shared/i18n/localize";
 
 export type VadType = "threshold" | "push_to_talk" | "active";
 export interface RecorderProfileConfig {

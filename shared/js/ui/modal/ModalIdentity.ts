@@ -2,6 +2,7 @@ import {createErrorModal, createInfoModal, createModal, Modal} from "../../ui/el
 import {TeaSpeakIdentity} from "../../profiles/identities/TeamSpeakIdentity";
 import * as tooltip from "../../ui/elements/Tooltip";
 import {formatMessage} from "../../ui/frames/chat";
+import { tr } from "tc-shared/i18n/localize";
 
 export function spawnTeamSpeakIdentityImprove(identity: TeaSpeakIdentity, name: string): Modal {
     let modal: Modal;

@@ -10,6 +10,7 @@ import {global_client_actions} from "../events/GlobalEvents";
 import {createErrorModal} from "../ui/elements/Modal";
 import {ModalController} from "../ui/react-elements/ModalDefinitions";
 import {server_connections} from "tc-shared/ConnectionManager";
+import { tr, tra } from "tc-shared/i18n/localize";
 
 const parseWatcherId = (id: string): { clientId: number, clientUniqueId: string} => {
     const [ clientIdString, clientUniqueId ] = id.split(" - ");

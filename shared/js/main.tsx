@@ -43,6 +43,10 @@ import "./profiles/ConnectionProfile";
 import "./update/UpdaterWeb";
 import "./file/LocalIcons";
 import "./ui/frames/menu-bar/MainMenu";
+import "./connection/rtc/Connection";
+import "./connection/rtc/video/Connection";
+import "./video/VideoSource";
+import "./media/Video";
 
 import {defaultConnectProfile, findConnectProfile} from "tc-shared/profiles/ConnectionProfile";
 import {server_connections} from "tc-shared/ConnectionManager";
@@ -52,8 +56,6 @@ import {Registry} from "tc-shared/events";
 import {ControlBarEvents} from "tc-shared/ui/frames/control-bar/Definitions";
 import {ControlBar2} from "tc-shared/ui/frames/control-bar/Renderer";
 import {initializeControlBarController} from "tc-shared/ui/frames/control-bar/Controller";
-import {spawnVideoSourceSelectModal} from "tc-shared/ui/modal/video-source/Controller";
-import {getVideoDriver} from "tc-shared/video/VideoSource";
 
 let preventWelcomeUI = false;
 async function initialize() {

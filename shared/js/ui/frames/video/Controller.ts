@@ -7,6 +7,7 @@ import {ChannelVideoEvents, kLocalVideoId} from "tc-shared/ui/frames/video/Defin
 import {VideoBroadcastState, VideoBroadcastType, VideoConnection} from "tc-shared/connection/VideoConnection";
 import {ClientEntry, ClientType, LocalClientEntry, MusicClientEntry} from "tc-shared/tree/Client";
 import {LogCategory, logWarn} from "tc-shared/log";
+import { tr } from "tc-shared/i18n/localize";
 
 const cssStyle = require("./Renderer.scss");
 

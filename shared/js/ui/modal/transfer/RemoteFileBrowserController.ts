@@ -9,7 +9,7 @@ import {Entry, MenuEntry, MenuEntryType, spawn_context_menu} from "../../../ui/e
 import * as ppt from "tc-backend/ppt";
 import {SpecialKey} from "../../../PPTListener";
 import {spawnYesNo} from "../../../ui/modal/ModalYesNo";
-import {tra, traj} from "../../../i18n/localize";
+import {tra, traj, tr} from "../../../i18n/localize";
 import {
     FileTransfer,
     FileTransferState,

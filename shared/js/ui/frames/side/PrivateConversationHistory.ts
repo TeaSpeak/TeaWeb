@@ -3,6 +3,7 @@ import {Stage} from "tc-loader";
 import * as log from "../../../log";
 import {LogCategory} from "../../../log";
 import {ChatEvent} from "../../../ui/frames/side/ConversationDefinitions";
+import { tr } from "tc-shared/i18n/localize";
 
 const clientUniqueId2StoreName = uniqueId => "conversation-" + uniqueId;
 

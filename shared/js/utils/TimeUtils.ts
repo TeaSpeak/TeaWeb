@@ -1,3 +1,5 @@
+import { tr } from "tc-shared/i18n/localize";
+
 export function format_online_time(secs: number) : string {
     let years   = Math.floor(secs  / (60 * 60 * 24 * 365));
     let days    = Math.floor(secs  / (60 * 60 * 24)) % 365;

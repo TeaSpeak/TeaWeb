@@ -7,6 +7,7 @@ import * as image_preview from "../image_preview";
 import {Registry} from "../../../events";
 import {ErrorCode} from "../../../connection/ErrorCode";
 import {ClientEvents, MusicClientEntry, SongInfo} from "../../../tree/Client";
+import { tr } from "tc-shared/i18n/localize";
 
 export interface MusicSidebarEvents {
     "open": {}, /* triggers when frame should be shown */

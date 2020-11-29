@@ -5,6 +5,7 @@ import {ChannelMessage} from "tc-shared/ipc/BrowserIPC";
 import {LogCategory, logDebug, logWarn} from "tc-shared/log";
 import {Popout2ControllerMessages, PopoutIPCMessage} from "tc-shared/ui/react-elements/external-modal/IPCMessage";
 import {RegistryMap} from "tc-shared/events";
+import {tr, tra} from "tc-shared/i18n/localize";
 
 export class ExternalModalController extends AbstractExternalModalController {
     private readonly uniqueModalId: string;

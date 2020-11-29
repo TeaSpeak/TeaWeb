@@ -1,5 +1,6 @@
 /* setup jsrenderer */
 import "jsrender";
+import { tr } from "./i18n/localize";
 
 if(__build.target === "web") {
     (window as any).$ = require("jquery");

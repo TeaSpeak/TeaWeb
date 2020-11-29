@@ -1,6 +1,7 @@
 import {Settings, settings} from "../../settings";
 import {LogCategory} from "../../log";
 import * as log from "../../log";
+import { tr } from "tc-shared/i18n/localize";
 
 declare global {
     interface JQuery<TElement = HTMLElement> {

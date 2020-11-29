@@ -6,11 +6,12 @@ import {
     PermissionState
 } from "tc-shared/audio/recorder";
 import * as log from "tc-shared/log";
-import {LogCategory, logWarn} from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
 import {Registry} from "tc-shared/events";
 import {WebIDevice} from "tc-backend/web/audio/Recorder";
 import * as loader from "tc-loader";
-import {queryMediaPermissions} from "tc-backend/web/media/Stream";
+import {queryMediaPermissions} from "tc-shared/media/Stream";
+import { tr } from "tc-shared/i18n/localize";
 
 async function requestMicrophonePermissions() : Promise<PermissionState> {
     const begin = Date.now();

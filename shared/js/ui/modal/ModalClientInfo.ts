@@ -7,6 +7,7 @@ import * as tooltip from "../../ui/elements/Tooltip";
 import * as moment from "moment";
 import {format_number, network} from "../../ui/frames/chat";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
+import { tr } from "tc-shared/i18n/localize";
 
 type InfoUpdateCallback = (info: ClientConnectionInfo) => any;
 

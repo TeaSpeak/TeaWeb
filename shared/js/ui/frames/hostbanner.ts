@@ -2,6 +2,7 @@ import {ConnectionHandler} from "../../ConnectionHandler";
 import {settings, Settings} from "../../settings";
 import {LogCategory} from "../../log";
 import * as log from "../../log";
+import { tr } from "tc-shared/i18n/localize";
 
 export class Hostbanner {
     readonly html_tag: JQuery<HTMLElement>;

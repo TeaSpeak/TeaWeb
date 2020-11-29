@@ -1,5 +1,5 @@
 import {AddressTarget, ResolveOptions} from "tc-shared/dns";
-import {ServerAddress} from "tc-shared/ui/server";
+import {ServerAddress} from "tc-shared/tree/Server";
 
 export function supported();
 export function resolve_address(address: ServerAddress, options?: ResolveOptions) : Promise<AddressTarget>;

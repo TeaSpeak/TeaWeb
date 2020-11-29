@@ -2,6 +2,7 @@ import "broadcastchannel-polyfill";
 import * as log from "../log";
 import {LogCategory} from "../log";
 import {ConnectHandler} from "../ipc/ConnectHandler";
+import { tr } from "tc-shared/i18n/localize";
 
 export interface BroadcastMessage {
     timestamp: number;

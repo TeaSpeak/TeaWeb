@@ -2,6 +2,7 @@ import * as log from "../log";
 import {LogCategory} from "../log";
 import {BasicIPCHandler, IPCChannel, ChannelMessage} from "../ipc/BrowserIPC";
 import {guid} from "../crypto/uid";
+import { tr } from "tc-shared/i18n/localize";
 
 export type ConnectRequestData = {
     address: string;

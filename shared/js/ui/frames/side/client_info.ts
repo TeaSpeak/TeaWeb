@@ -7,6 +7,7 @@ import * as i18nc from "../../../i18n/country";
 import {ClientEntry, LocalClientEntry} from "../../../tree/Client";
 import {format_online_time} from "../../../utils/TimeUtils";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
+import { tr } from "tc-shared/i18n/localize";
 
 export class ClientInfo {
     readonly handle: Frame;

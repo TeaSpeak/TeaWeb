@@ -1,5 +1,6 @@
 import {AudioLibrary} from "./index";
 import {LogCategory, logWarn} from "tc-shared/log";
+import { tr } from "tc-shared/i18n/localize";
 
 export class AudioClient {
     private readonly handle: AudioLibrary;

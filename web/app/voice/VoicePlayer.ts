@@ -6,6 +6,7 @@ import {
 import {Registry} from "tc-shared/events";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {RemoteRTPAudioTrack, RemoteRTPTrackState} from "tc-shared/connection/rtc/RemoteTrack";
+import { tr } from "tc-shared/i18n/localize";
 
 export interface RtpVoicePlayerEvents {
     notify_state_changed: { oldState: VoicePlayerState, newState: VoicePlayerState }

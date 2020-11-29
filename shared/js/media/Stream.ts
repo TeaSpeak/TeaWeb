@@ -1,8 +1,7 @@
 import {MediaStreamRequestResult} from "tc-shared/voice/RecorderBase";
 import * as log from "tc-shared/log";
 import {LogCategory, logWarn} from "tc-shared/log";
-import {inputDeviceList} from "tc-backend/web/audio/RecorderDeviceList";
-import {Registry} from "tc-shared/events";
+import { tr } from "tc-shared/i18n/localize";
 
 export type MediaStreamType = "audio" | "video";
 
@@ -12,21 +11,19 @@ export enum MediaPermissionStatus {
     Denied
 }
 
+/*
 export interface MediaStreamEvents {
     notify_permissions_changed: { type: MediaStreamType, newState: MediaPermissionStatus },
 }
 
 export const mediaStreamEvents = new Registry<MediaStreamEvents>();
+*/
 
 async function requestMediaStream0(constraints: MediaTrackConstraints, type: MediaStreamType, updateDeviceList: boolean) : Promise<MediaStreamRequestResult | MediaStream> {
     const beginTimestamp = Date.now();
     try {
         log.info(LogCategory.AUDIO, tr("Requesting a %s stream for device %s in group %s"), type, constraints.deviceId, constraints.groupId);
         const stream = await navigator.mediaDevices.getUserMedia(type === "audio" ? { audio: constraints } : { video: constraints });
-
-        if(updateDeviceList && inputDeviceList.getStatus() === "no-permissions") {
-            inputDeviceList.refresh().then(() => {}); /* added the then body to avoid a inspection warning... */
-        }
 
         return stream;
     } catch(error) {
@@ -107,6 +104,6 @@ export function stopMediaStream(stream: MediaStream) {
     stream.getVideoTracks().forEach(track => track.stop());
     stream.getAudioTracks().forEach(track => track.stop());
     if('stop' in stream) {
-        stream.stop();
+        (stream as any).stop();
     }
 }

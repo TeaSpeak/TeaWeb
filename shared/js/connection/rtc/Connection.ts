@@ -1,17 +1,16 @@
-import {ServerConnection} from "tc-backend/web/connection/ServerConnection";
 import {AbstractServerConnection, ServerCommand, ServerConnectionEvents} from "tc-shared/connection/ConnectionBase";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
 import * as log from "tc-shared/log";
 import {LogCategory, logDebug, logError, logTrace, logWarn} from "tc-shared/log";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {tr} from "tc-shared/i18n/localize";
+import {tr, tra} from "tc-shared/i18n/localize";
 import {Registry} from "tc-shared/events";
 import {RemoteRTPAudioTrack, RemoteRTPTrackState, RemoteRTPVideoTrack, TrackClientInfo} from "./RemoteTrack";
 import {SdpCompressor, SdpProcessor} from "./SdpUtils";
-import {context} from "tc-backend/web/audio/player";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {WhisperTarget} from "tc-shared/voice/VoiceWhisper";
+import {globalAudioContext} from "tc-backend/audio/player";
 
 const kSdpCompressionMode = 1;
 
@@ -145,7 +144,7 @@ function getIdleTrack(kind: "video" | "audio") : MediaStreamTrack | null {
             return dummyVideoTrack;
         } else if(kind === "audio") {
             if(!dummyAudioTrack) {
-                const dest = context().createMediaStreamDestination();
+                const dest = globalAudioContext().createMediaStreamDestination();
                 dummyAudioTrack = dest.stream.getAudioTracks()[0];
             }
 
@@ -459,7 +458,7 @@ export class RTCConnection {
 
     private readonly audioSupport: boolean;
     private readonly events: Registry<RTCConnectionEvents>;
-    private readonly connection: ServerConnection;
+    private readonly connection: AbstractServerConnection;
     private readonly commandHandler: CommandHandler;
     private readonly sdpProcessor: SdpProcessor;
 
@@ -489,7 +488,7 @@ export class RTCConnection {
     private remoteVideoTracks: {[key: number]: InternalRemoteRTPVideoTrack};
     private temporaryStreams: {[key: number]: TemporaryRtpStream} = {};
 
-    constructor(connection: ServerConnection, audioSupport: boolean) {
+    constructor(connection: AbstractServerConnection, audioSupport: boolean) {
         this.events = new Registry<RTCConnectionEvents>();
         this.connection = connection;
         this.sdpProcessor = new SdpProcessor();
@@ -511,7 +510,7 @@ export class RTCConnection {
         return this.audioSupport;
     }
 
-    getConnection() : ServerConnection {
+    getConnection() : AbstractServerConnection {
         return this.connection;
     }
 

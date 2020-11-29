@@ -280,7 +280,7 @@ namespace server {
         options = options_;
         files = _files;
 
-        if(process.env["ssl_enabled"] || use_https) {
+        if(process.env["ssl_enabled"] === "1" || use_https) {
             //openssl req -nodes -new -x509 -keyout files_key.pem -out files_cert.pem
             const key_file = process.env["ssl_key"] || path.join(__dirname, "files_key.pem");
             const cert_file = process.env["ssl_cert"] || path.join(__dirname, "files_cert.pem");

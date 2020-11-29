@@ -4,6 +4,7 @@ import {VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 import {WhisperSessionInitializeData} from "tc-shared/connection/VoiceConnection";
 import {VoicePlayer} from "./VoicePlayer";
 import {RemoteRTPAudioTrack, TrackClientInfo} from "tc-shared/connection/rtc/RemoteTrack";
+import { tr, tra } from "tc-shared/i18n/localize";
 
 export class RtpWhisperSession implements WhisperSession {
     readonly events: Registry<WhisperSessionEvents>;

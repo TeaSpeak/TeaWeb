@@ -1,7 +1,7 @@
 import {Registry} from "tc-shared/events";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
-import * as aplayer from "tc-backend/web/audio/player";
+import {globalAudioContext, on_ready} from "tc-backend/audio/player";
 
 export interface TrackClientInfo {
     media?: number,
@@ -157,13 +157,13 @@ export class RemoteRTPAudioTrack extends RemoteRTPTrack {
         }
         */
 
-        aplayer.on_ready(() => {
+        on_ready(() => {
             if(!this.mediaStream) {
                 /* we've already been destroyed */
                 return;
             }
 
-            const audioContext = aplayer.context();
+            const audioContext = globalAudioContext();
             this.audioNode = audioContext.createMediaStreamSource(this.mediaStream);
             this.gainNode = audioContext.createGain();
 

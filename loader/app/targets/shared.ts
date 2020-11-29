@@ -33,36 +33,35 @@ loader.register_task(Stage.SETUP, {
     priority: 1000
 });
 
-if(__build.target === "web") {
-    loader.register_task(Stage.SETUP, {
-        name: "outdated browser checker",
-        function: async () => {
-            const browser = detectBrowser();
-            navigator.browserSpecs = browser;
+loader.register_task(Stage.SETUP, {
+    name: __build.target === "web" ? "outdated browser checker" : "outdated renderer tester",
+    function: async () => {
+        const browser = detectBrowser();
+        navigator.browserSpecs = browser;
 
-            if(!browser)
-                return;
+        if(!browser) {
+            return;
+        }
 
-            console.log("Resolved browser manufacturer to \"%s\" version \"%s\" on %s", browser.name, browser.version, browser.os);
-            if(browser.type !== "browser") {
-                loader.critical_error("Your device isn't supported.", "User agent type " + browser.type + " isn't supported.");
-                throw "unsupported user type";
-            }
+        console.log("Resolved browser manufacturer to \"%s\" version \"%s\" on %s", browser.name, browser.version, browser.os);
+        if(browser.type !== "browser") {
+            loader.critical_error("Your device isn't supported.", "User agent type " + browser.type + " isn't supported.");
+            throw "unsupported user type";
+        }
 
-            window.detectedBrowser = browser;
+        window.detectedBrowser = browser;
 
-            switch (browser?.name) {
-                case "aol":
-                case "crios":
-                case "ie":
-                    loader.critical_error("Browser not supported", "We're sorry, but your browser isn't supported.");
-                    throw "unsupported browser";
+        switch (browser?.name) {
+            case "aol":
+            case "crios":
+            case "ie":
+                loader.critical_error("Browser not supported", "We're sorry, but your browser isn't supported.");
+                throw "unsupported browser";
 
-            }
-        },
-        priority: 50
-    });
-}
+        }
+    },
+    priority: 50
+});
 
 /* directly disable all context menus */
 if(!location.search.match(/(.*[?&]|^)disableGlobalContextMenu=0($|&.*)/)) {

@@ -1,6 +1,7 @@
 import {Updater} from "./Updater";
 import {ChangeLog} from "../update/ChangeLog";
 import {spawnUpdatedModal} from "../ui/modal/whats-new/Controller";
+import { tr } from "tc-shared/i18n/localize";
 
 const kIsNewUserKey = "updater-set";
 let updaterUi: Updater;

@@ -4,6 +4,7 @@ import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {ErrorCode} from "../connection/ErrorCode";
 import {LogCategory, logDebug, logTrace, logWarn} from "../log";
 import {ExplicitCommandHandler} from "../connection/AbstractCommandHandler";
+import { tr } from "tc-shared/i18n/localize";
 
 export type ServerFeatureSupport = "unsupported" | "supported" | "experimental" | "deprecated";
 

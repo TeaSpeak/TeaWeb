@@ -5,6 +5,7 @@ import {LogCategory} from "../log";
 import {Settings, settings} from "../settings";
 import {renderMarkdownAsBBCode} from "../text/markdown";
 import {escapeBBCode} from "../text/bbcode";
+import { tr } from "tc-shared/i18n/localize";
 
 const URL_REGEX = /^(([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]{2,63})(?:\/((?:[^\s?]+)?)(?:\?(\S+))?)?$/gm;
 function process_urls(message: string) : string {

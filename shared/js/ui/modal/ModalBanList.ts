@@ -10,6 +10,7 @@ import * as htmltags from "../../ui/htmltags";
 import {format_time, formatMessage} from "../../ui/frames/chat";
 import * as moment from "moment";
 import {ErrorCode} from "../../connection/ErrorCode";
+import { tr } from "tc-shared/i18n/localize";
 
 export function openBanList(client: ConnectionHandler) {
     let modal: Modal;

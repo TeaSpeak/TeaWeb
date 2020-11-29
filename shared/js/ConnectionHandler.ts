@@ -22,7 +22,7 @@ import * as dns from "tc-backend/dns";
 import {EventHandler, Registry} from "./events";
 import {FileManager} from "./file/FileManager";
 import {FileTransferState, TransferProvider} from "./file/Transfer";
-import {traj} from "./i18n/localize";
+import {traj, tr} from "./i18n/localize";
 import {md5} from "./crypto/md5";
 import {guid} from "./crypto/uid";
 import {ServerEventLog} from "./ui/frames/log/ServerEventLog";

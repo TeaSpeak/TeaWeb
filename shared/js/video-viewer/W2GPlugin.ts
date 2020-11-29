@@ -1,6 +1,7 @@
 import {PluginCmdHandler, PluginCommandInvoker} from "../connection/PluginCmdHandler";
 import {Event, Registry} from "../events";
 import {PlayerStatus} from "../video-viewer/Definitions";
+import { tr } from "tc-shared/i18n/localize";
 
 export interface W2GEvents {
     notify_watcher_add: { watcher: W2GWatcher },

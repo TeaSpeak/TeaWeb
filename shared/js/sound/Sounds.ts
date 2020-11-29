@@ -3,6 +3,7 @@ import {LogCategory} from "../log";
 import {Settings, settings} from "../settings";
 import {ConnectionHandler} from "../ConnectionHandler";
 import * as sbackend from "tc-backend/audio/sounds";
+import { tr } from "tc-shared/i18n/localize";
 
 export enum Sound {
     SOUND_TEST = "sound.test",

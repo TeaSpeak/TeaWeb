@@ -1,6 +1,7 @@
 import {EventType, KeyEvent, KeyHook, SpecialKey} from "tc-shared/PPTListener";
 import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
+import { tr } from "tc-shared/i18n/localize";
 
 interface WebKeyEvent extends KeyEvent {
     canceled: boolean;

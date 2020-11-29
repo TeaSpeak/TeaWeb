@@ -227,6 +227,26 @@ class VolumeChangeModal extends React.Component<{ clientName: string, maxVolume?
     }
 }
 
+class VolumeChange extends InternalModal {
+    private readonly events: Registry<VolumeChangeEvents>;
+    private readonly client: ClientEntry;
+
+    constructor(events: Registry<VolumeChangeEvents>, client: ClientEntry) {
+        super();
+
+        this.events = events;
+        this.client = client;
+    }
+
+    renderBody() {
+        return <VolumeChangeModal remote={false} clientName={this.client.clientNickName()} events={this.events} />;
+    }
+
+    title() {
+        return <Translatable>Change local volume</Translatable>;
+    }
+}
+
 export function spawnClientVolumeChange(client: ClientEntry) {
     const events = new Registry<VolumeChangeEvents>();
 
@@ -239,23 +259,33 @@ export function spawnClientVolumeChange(client: ClientEntry) {
         client.setAudioVolume(event.newValue);
     });
 
-    const modal = spawnReactModal(class extends InternalModal {
-        constructor() {
-            super();
-        }
+    const modal = spawnReactModal(VolumeChange, events, client);
 
-        renderBody() {
-            return <VolumeChangeModal remote={false} clientName={client.clientNickName()} events={events} />;
-        }
-
-        title() {
-            return <Translatable>Change local volume</Translatable>;
-        }
-    });
-
-    events.on("close-modal", event => modal.destroy());
+    events.on("close-modal", () => modal.destroy());
     modal.show();
     return modal;
+}
+
+class VolumeChangeBot extends InternalModal {
+    private readonly events: Registry<VolumeChangeEvents>;
+    private readonly client: ClientEntry;
+    private readonly maxValue: number;
+
+    constructor(client: ClientEntry, events: Registry<VolumeChangeEvents>, maxValue: number) {
+        super();
+
+        this.maxValue = maxValue;
+        this.events = events;
+        this.client = client;
+    }
+
+    renderBody() {
+        return <VolumeChangeModal remote={true} clientName={this.client.clientNickName()} maxVolume={this.maxValue} events={this.events} />;
+    }
+
+    title() {
+        return <Translatable>Change remote volume</Translatable>;
+    }
 }
 
 export function spawnMusicBotVolumeChange(client: MusicClientEntry, maxValue: number) {
@@ -278,19 +308,7 @@ export function spawnMusicBotVolumeChange(client: MusicClientEntry, maxValue: nu
         });
     });
 
-    const modal = spawnReactModal(class extends InternalModal {
-        constructor() {
-            super();
-        }
-
-        renderBody() {
-            return <VolumeChangeModal remote={true} clientName={client.clientNickName()} maxVolume={maxValue} events={events} />;
-        }
-
-        title() {
-            return <Translatable>Change remote volume</Translatable>;
-        }
-    });
+    const modal = spawnReactModal(VolumeChangeBot, client, events, maxValue);
 
     events.on("close-modal", event => modal.destroy());
     modal.show();

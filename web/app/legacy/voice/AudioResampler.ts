@@ -1,4 +1,5 @@
 import {LogCategory, logWarn} from "tc-shared/log";
+import { tr } from "tc-shared/i18n/localize";
 
 const OfflineAudioContext = window.webkitOfflineAudioContext || window.OfflineAudioContext;
 export class AudioResampler {

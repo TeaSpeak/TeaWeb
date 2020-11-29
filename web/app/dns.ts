@@ -2,6 +2,7 @@ import {AddressTarget, default_options, ResolveOptions} from "tc-shared/dns";
 import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
 import {ServerAddress} from "tc-shared/tree/Server";
+import { tr } from "tc-shared/i18n/localize";
 
 export enum RRType {
     A = 1, // a host address,[RFC1035],

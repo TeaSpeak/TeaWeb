@@ -4,6 +4,7 @@ import {CssEditorEvents, CssVariable} from "../../../ui/modal/css-editor/Definit
 import {spawnExternalModal} from "../../../ui/react-elements/external-modal";
 import {Registry} from "../../../events";
 import {LogCategory, logWarn} from "../../../log";
+import { tr } from "tc-shared/i18n/localize";
 
 interface CustomVariable {
     name: string;

@@ -1,5 +1,6 @@
 import {Settings, settings} from "./settings";
 import * as loader from "tc-loader";
+import { tr } from "./i18n/localize";
 
 export enum LogCategory {
     CHANNEL,

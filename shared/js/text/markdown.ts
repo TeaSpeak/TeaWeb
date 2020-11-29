@@ -11,6 +11,7 @@ import {
     Token
 } from "remarkable/lib";
 import {escapeBBCode} from "../text/bbcode";
+import { tr } from "tc-shared/i18n/localize";
 const { Remarkable } = require("remarkable");
 
 export class MD2BBCodeRenderer {

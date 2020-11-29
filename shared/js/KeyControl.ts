@@ -4,6 +4,7 @@ import {Settings, settings} from "./settings";
 import * as log from "./log";
 import {LogCategory} from "./log";
 import {server_connections} from "tc-shared/ConnectionManager";
+import { tr } from "./i18n/localize";
 
 export interface KeyControl {
     category: string;

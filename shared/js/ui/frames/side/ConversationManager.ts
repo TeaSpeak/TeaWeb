@@ -6,7 +6,7 @@ import {LogCategory} from "../../../log";
 import {CommandResult} from "../../../connection/ServerConnectionDeclaration";
 import {ServerCommand} from "../../../connection/ConnectionBase";
 import {Settings} from "../../../settings";
-import {traj} from "../../../i18n/localize";
+import {traj, tr} from "../../../i18n/localize";
 import {createErrorModal} from "../../../ui/elements/Modal";
 import ReactDOM = require("react-dom");
 import {

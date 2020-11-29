@@ -11,6 +11,7 @@ import {spawnIconSelect} from "../../ui/modal/ModalIconSelect";
 import {hashPassword} from "../../utils/helpers";
 import {sliderfy} from "../../ui/elements/Slider";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
+import { tr } from "tc-shared/i18n/localize";
 
 export function createChannelModal(connection: ConnectionHandler, channel: ChannelEntry | undefined, parent: ChannelEntry | undefined, permissions: PermissionManager, callback: (properties?: ChannelProperties, permissions?: PermissionValue[]) => any) {
     let properties: ChannelProperties = { } as ChannelProperties; //The changes properties

@@ -1,5 +1,6 @@
 import {LogCategory} from "./log";
 import * as log from "./log";
+import { tr } from "./i18n/localize";
 
 enum CloseCodes {
     UNSET = 3000,

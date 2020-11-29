@@ -2,6 +2,7 @@ import {ConnectionHandler} from "../ConnectionHandler";
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {AbstractCommandHandler} from "../connection/AbstractCommandHandler";
 import {AbstractServerConnection, ServerCommand} from "../connection/ConnectionBase";
+import { tra } from "tc-shared/i18n/localize";
 
 export interface PluginCommandInvoker {
     clientId: number;

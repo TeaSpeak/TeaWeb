@@ -5,6 +5,7 @@ import {ClientEntry} from "../tree/Client";
 import {htmlEscape} from "../ui/frames/chat";
 import {guid} from "../crypto/uid";
 import {server_connections} from "tc-shared/ConnectionManager";
+import { tr } from "tc-shared/i18n/localize";
 
 let mouse_coordinates: {x: number, y: number} = {x: 0, y: 0};
 

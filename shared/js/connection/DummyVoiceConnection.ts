@@ -8,6 +8,7 @@ import {VoiceClient} from "../voice/VoiceClient";
 import {VoicePlayerEvents, VoicePlayerLatencySettings, VoicePlayerState} from "../voice/VoicePlayer";
 import {WhisperSession, WhisperTarget} from "../voice/VoiceWhisper";
 import {Registry} from "../events";
+import { tr } from "tc-shared/i18n/localize";
 
 class DummyVoiceClient implements VoiceClient {
     readonly events: Registry<VoicePlayerEvents>;

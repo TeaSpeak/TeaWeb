@@ -19,6 +19,7 @@ import {LogCategory} from "../../log";
 import * as i18nc from "../../i18n/country";
 import {formatMessage} from "../../ui/frames/chat";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
+import { tr } from "tc-shared/i18n/localize";
 
 export function spawnBookmarkModal() {
     let modal: Modal;

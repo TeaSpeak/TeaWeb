@@ -232,7 +232,7 @@ function initializeController(events: Registry<ModalVideoSourceEvents>, currentS
             fallbackCurrentSourceName = tr("loading...");
             driver.createScreenSource().then(stream => {
                 setCurrentSource(stream);
-                fallbackCurrentSourceName = stream.getName();
+                fallbackCurrentSourceName = stream?.getName() || tr("No stream");
             }).catch(error => {
                 fallbackCurrentSourceName = "screen capture failed";
                 if(typeof error === "string") {

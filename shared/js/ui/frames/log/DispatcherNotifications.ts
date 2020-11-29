@@ -11,6 +11,7 @@ import {formatDate} from "../../../MessageFormatter";
 import {Settings, settings} from "../../../settings";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {getIconManager} from "tc-shared/file/Icons";
+import { tra, tr } from "tc-shared/i18n/localize";
 
 export type DispatcherLog<T extends keyof TypeInfo> = (data: TypeInfo[T], handlerId: string, eventType: T) => void;
 

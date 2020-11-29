@@ -1,5 +1,6 @@
 import {SessionDescription} from "sdp-transform";
 import * as sdpTransform from "sdp-transform";
+import { tr, tra } from "tc-shared/i18n/localize";
 
 export interface RTCNegotiationMediaMapping {
     direction: "sendrecv" | "recvonly" | "sendonly" | "inactive",

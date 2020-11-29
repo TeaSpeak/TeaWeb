@@ -6,9 +6,10 @@ import {
     VideoSource
 } from "tc-shared/video/VideoSource";
 import {Registry} from "tc-shared/events";
-import {queryMediaPermissions, requestMediaStream, stopMediaStream} from "tc-backend/web/media/Stream";
 import {MediaStreamRequestResult} from "tc-shared/voice/RecorderBase";
 import {LogCategory, logDebug, logError, logWarn} from "tc-shared/log";
+import {queryMediaPermissions, requestMediaStream, stopMediaStream} from "tc-shared/media/Stream";
+import { tr } from "tc-shared/i18n/localize";
 
 declare global {
     interface MediaDevices {
@@ -221,9 +222,14 @@ export class WebVideoDriver implements VideoDriver {
             return new WebVideoSource(videoTrack.getSettings().deviceId, tr("Screen"), source);
         } catch (error) {
             logWarn(LogCategory.VIDEO, tr("Failed to create a screen source: %o"), error);
+            if(error instanceof Error) {
+                throw error.message;
+            } else if(typeof error === "string") {
+                throw error;
+            } else {
+                throw tr("Failed to create screen source");
+            }
         }
-
-        return undefined;
     }
 }
 

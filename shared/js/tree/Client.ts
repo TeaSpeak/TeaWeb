@@ -30,6 +30,7 @@ import {VoiceClient} from "../voice/VoiceClient";
 import {VoicePlayerEvents, VoicePlayerState} from "../voice/VoicePlayer";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 import {VideoClient} from "tc-shared/connection/VideoConnection";
+import { tr } from "tc-shared/i18n/localize";
 
 export enum ClientType {
     CLIENT_VOICE,

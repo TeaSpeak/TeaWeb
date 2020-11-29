@@ -10,6 +10,7 @@ import {Registry} from "tc-shared/events";
 import * as aplayer from "tc-backend/web/audio/player";
 import {getAudioLibrary} from "../audio-lib";
 import {LogCategory, logDebug, logError, logWarn} from "tc-shared/log";
+import { tr } from "tc-shared/i18n/localize";
 
 const kDefaultLatencySettings = {
     minBufferTime: 60,

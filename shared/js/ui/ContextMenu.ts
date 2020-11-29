@@ -1,5 +1,6 @@
 import {RemoteIcon} from "tc-shared/file/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
+import { tr } from "tc-shared/i18n/localize";
 
 export type MenuEntryLabel = {
     text: string,

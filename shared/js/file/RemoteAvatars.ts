@@ -12,6 +12,7 @@ import {IPCChannel} from "../ipc/BrowserIPC";
 import {Settings} from "../settings";
 import {ChannelMessage} from "../ipc/BrowserIPC";
 import {guid} from "../crypto/uid";
+import { tr } from "tc-shared/i18n/localize";
 
 function isEquivalent(a, b) {
     // Create arrays of property names

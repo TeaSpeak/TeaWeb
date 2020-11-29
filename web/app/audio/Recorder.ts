@@ -17,7 +17,8 @@ import * as aplayer from "./player";
 import {JAbstractFilter, JStateFilter, JThresholdFilter} from "./RecorderFilter";
 import {Filter, FilterType, FilterTypeClass} from "tc-shared/voice/Filter";
 import {inputDeviceList} from "tc-backend/web/audio/RecorderDeviceList";
-import {requestMediaStream} from "tc-backend/web/media/Stream";
+import {requestMediaStream} from "tc-shared/media/Stream";
+import { tr } from "tc-shared/i18n/localize";
 
 declare global {
     interface MediaStream {
@@ -190,6 +191,10 @@ class JavascriptInput implements AbstractInput {
                 this.state = InputState.PAUSED;
                 return requestResult;
             }
+
+            /* added the then body to avoid a inspection warning... */
+            inputDeviceList.refresh().then(() => {});
+
             this.currentStream = requestResult;
 
             for(const filter of this.registeredFilters) {

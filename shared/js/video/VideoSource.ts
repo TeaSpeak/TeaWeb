@@ -1,4 +1,5 @@
 import {Registry} from "tc-shared/events";
+import { tr } from "tc-shared/i18n/localize";
 
 export interface VideoSource {
     getId() : string;

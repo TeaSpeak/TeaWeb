@@ -9,6 +9,7 @@ import {LogCategory} from "../../log";
 import {CommandResult} from "../../connection/ServerConnectionDeclaration";
 import {AbstractServerConnection} from "../../connection/ConnectionBase";
 import {HandshakeIdentityHandler} from "../../connection/HandshakeHandler";
+import { tr } from "tc-shared/i18n/localize";
 
 class NameHandshakeHandler extends AbstractHandshakeIdentityHandler {
     readonly identity: NameIdentity;

@@ -11,6 +11,7 @@ import {WhisperSession, WhisperTarget} from "tc-shared/voice/VoiceWhisper";
 import {AbstractServerConnection, ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
 import {Registry} from "tc-shared/events";
 import {VoicePlayerEvents, VoicePlayerLatencySettings, VoicePlayerState} from "tc-shared/voice/VoicePlayer";
+import { tr } from "tc-shared/i18n/localize";
 
 class ProxiedVoiceClient implements VoiceClient {
     readonly clientId: number;

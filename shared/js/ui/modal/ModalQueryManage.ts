@@ -169,6 +169,7 @@ import {ConnectionHandler} from "../../ConnectionHandler";
 import {spawnQueryCreate, spawnQueryCreated} from "../../ui/modal/ModalQuery";
 import {formatMessage} from "../../ui/frames/chat";
 import {ErrorCode} from "../../connection/ErrorCode";
+import { tr } from "tc-shared/i18n/localize";
 
 export function spawnQueryManage(client: ConnectionHandler) {
     let modal: Modal;

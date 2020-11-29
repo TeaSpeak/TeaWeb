@@ -10,6 +10,7 @@ import {ChannelTree} from "tc-shared/tree/ChannelTree";
 import {ModalController} from "tc-shared/ui/react-elements/ModalDefinitions";
 import {ChannelTreePopoutEvents} from "tc-shared/ui/tree/popout/Definitions";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
+import { tr, tra } from "tc-shared/i18n/localize";
 
 export class ChannelTreePopoutController {
     readonly channelTree: ChannelTree;

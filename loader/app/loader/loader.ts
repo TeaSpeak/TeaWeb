@@ -13,8 +13,8 @@ declare global {
         StaticSettings: any;
     }
 
-    const tr: typeof window.tr;
-    const tra: typeof window.tra;
+    //const tr: typeof window.tr;
+    //const tra: typeof window.tra;
 }
 
 export interface ApplicationLoader {

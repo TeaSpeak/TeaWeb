@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "jsx": "react",
+    "experimentalDecorators": true,
+    "declarationDir": "../../declarations/shared-app/",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "baseUrl": "../../",
+    "paths": {
+      "tc-shared/*": ["shared/js/*"],
+     // "tc-backend/web/*": ["web/app/*"], /* specific web part */
+      "tc-backend/*": ["shared/backend.d/*"],
+      "tc-loader": ["loader/exports/loader.d.ts"],
+      "svg-sprites/*": ["shared/svg-sprites/*"],
+      "vendor/xbbcode/*": ["vendor/xbbcode/src/*"]
+    }
+  },
+  "exclude": [
+    "../js/workers"
+  ],
+  "include": [
+    "../declaration_fix.d.ts",
+    "../backend.d",
+    "../js/**/*.ts"
+  ]
+}

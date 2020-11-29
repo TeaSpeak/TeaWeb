@@ -23,6 +23,7 @@ import {
 import {LogCategory, logWarn} from "tc-shared/log";
 import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import {VideoBroadcastState, VideoBroadcastType, VideoConnectionStatus} from "tc-shared/connection/VideoConnection";
+import { tr } from "tc-shared/i18n/localize";
 
 class InfoController {
     private readonly mode: ControlBarMode;

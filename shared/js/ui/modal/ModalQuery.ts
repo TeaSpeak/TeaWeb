@@ -2,6 +2,7 @@ import {createErrorModal, createModal} from "../../ui/elements/Modal";
 import {CommandResult} from "../../connection/ServerConnectionDeclaration";
 import {ConnectionHandler} from "../../ConnectionHandler";
 import {SingleCommandHandler} from "../../connection/ConnectionBase";
+import { tr } from "tc-shared/i18n/localize";
 
 export function spawnQueryCreate(connection: ConnectionHandler, callback_created?: (user, pass) => any) {
     let modal;

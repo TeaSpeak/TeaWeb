@@ -10,6 +10,7 @@ import {AudioClient} from "./AudioClient";
 import {LogCategory, logWarn} from "tc-shared/log";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
+import { tr } from "tc-shared/i18n/localize";
 
 export type AudioLibraryWorker = WorkerOwner<AWCommand, AWCommandResponse, AWMessageRelations, AWNotifies, AWNotifiesWorker>;
 export class AudioLibrary {

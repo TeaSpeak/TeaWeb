@@ -1,6 +1,7 @@
 import {createModal} from "../../ui/elements/Modal";
 import * as log from "../../log";
 import {LogCategory} from "../../log";
+import { tr } from "tc-shared/i18n/localize";
 
 function format_date(date: number) {
     const d = new Date(date);

@@ -2,6 +2,7 @@ import * as loader from "tc-loader";
 import * as moment from "moment";
 import * as log from "../log";
 import {LogCategory} from "../log";
+import { tr } from "tc-shared/i18n/localize";
 
 export function setupJSRender() : boolean {
     if(!$.views) {

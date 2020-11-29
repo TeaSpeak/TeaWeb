@@ -2,6 +2,7 @@ import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
 import {SoundFile} from "tc-shared/sound/Sounds";
 import * as aplayer from "./player";
+import { tr } from "tc-shared/i18n/localize";
 
 interface SoundEntry {
     cached?: AudioBuffer;

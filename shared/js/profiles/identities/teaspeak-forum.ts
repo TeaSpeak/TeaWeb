@@ -3,6 +3,7 @@ import * as loader from "tc-loader";
 import * as fidentity from "./TeaForumIdentity";
 import * as log from "../../log";
 import {LogCategory} from "../../log";
+import { tr } from "tc-shared/i18n/localize";
 
 declare global {
     interface Window {

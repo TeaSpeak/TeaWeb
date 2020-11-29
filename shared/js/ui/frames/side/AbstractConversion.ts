@@ -10,7 +10,7 @@ import {preprocessChatMessageForSend} from "../../../text/chat";
 import {CommandResult} from "../../../connection/ServerConnectionDeclaration";
 import * as log from "../../../log";
 import {LogCategory} from "../../../log";
-import {tra} from "../../../i18n/localize";
+import {tra, tr} from "../../../i18n/localize";
 import {ErrorCode} from "../../../connection/ErrorCode";
 
 export const kMaxChatFrameMessageSize = 50; /* max 100 messages, since the server does not support more than 100 messages queried at once */

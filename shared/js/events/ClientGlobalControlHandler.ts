@@ -11,7 +11,7 @@ import {formatMessage} from "../ui/frames/chat";
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {spawnSettingsModal} from "../ui/modal/ModalSettings";
 import {spawnPermissionEditorModal} from "../ui/modal/permission/ModalPermissionEditor";
-import {tr} from "../i18n/localize";
+import {tr, tra} from "../i18n/localize";
 import {spawnGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-editor/Controller";
 import {spawnModalCssVariableEditor} from "tc-shared/ui/modal/css-editor/Controller";
 import {server_connections} from "tc-shared/ConnectionManager";

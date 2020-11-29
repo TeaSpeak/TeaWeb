@@ -1,4 +1,5 @@
 import * as sha1 from "../crypto/sha";
+import { tr } from "tc-shared/i18n/localize";
 
 export function hashPassword(password: string) : Promise<string> {
     return new Promise<string>((resolve, reject) => {

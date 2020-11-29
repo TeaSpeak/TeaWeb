@@ -10,6 +10,7 @@ import {MusicInfo} from "../../ui/frames/side/music_info";
 import {ConversationManager} from "../../ui/frames/side/ConversationManager";
 import {PrivateConversationManager} from "../../ui/frames/side/PrivateConversationManager";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
+import { tr } from "tc-shared/i18n/localize";
 
 export enum InfoFrameMode {
     NONE = "none",

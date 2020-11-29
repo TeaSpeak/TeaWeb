@@ -1,6 +1,7 @@
 import {AbstractServerConnection, ServerCommand} from "../connection/ConnectionBase";
 import {HandshakeIdentityHandler} from "../connection/HandshakeHandler";
 import {AbstractCommandHandler} from "../connection/AbstractCommandHandler";
+import { tr } from "tc-shared/i18n/localize";
 
 export enum IdentitifyType {
     TEAFORO,

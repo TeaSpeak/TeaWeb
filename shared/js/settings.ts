@@ -3,6 +3,7 @@ import {LogCategory, logTrace} from "./log";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {Registry} from "./events";
+import { tr } from "./i18n/localize";
 
 export type ConfigValueTypes = boolean | number | string | object;
 export type ConfigValueTypeNames = "boolean" | "number" | "string" | "object";

@@ -7,6 +7,7 @@ import {
 import {Registry} from "tc-shared/events";
 import {RemoteRTPTrackState, RemoteRTPVideoTrack} from "../RemoteTrack";
 import {LogCategory, logWarn} from "tc-shared/log";
+import { tr } from "tc-shared/i18n/localize";
 
 export class RtpVideoClient implements VideoClient {
     private readonly clientId: number;

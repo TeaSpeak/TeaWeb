@@ -1,6 +1,6 @@
 //TODO: Test if we could render this image and not only the browser by knowing the type.
 import {createErrorModal, createModal} from "../../ui/elements/Modal";
-import {tra} from "../../i18n/localize";
+import {tra, tr} from "../../i18n/localize";
 import {arrayBufferBase64} from "../../utils/buffers";
 
 export function spawnAvatarUpload(callback_data: (data: ArrayBuffer | undefined | null) => any) {

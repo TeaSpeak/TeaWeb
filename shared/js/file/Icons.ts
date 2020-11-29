@@ -1,4 +1,5 @@
 import {Registry} from "tc-shared/events";
+import { tr, tra } from "tc-shared/i18n/localize";
 
 export const kIPCIconChannel = "icons";
 export const kGlobalIconHandlerId = "global";

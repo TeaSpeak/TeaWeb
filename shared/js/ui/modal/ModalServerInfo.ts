@@ -14,6 +14,7 @@ import {format_time, formatMessage} from "../../ui/frames/chat";
 import {Hostbanner} from "../../ui/frames/hostbanner";
 import * as moment from "moment";
 import {ErrorCode} from "../../connection/ErrorCode";
+import { tr } from "tc-shared/i18n/localize";
 
 export function openServerInfo(server: ServerEntry) {
     let modal: Modal;

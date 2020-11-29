@@ -26,6 +26,7 @@ import {LegacySupportVoiceBridge} from "tc-backend/web/connection/LegacySupportV
 import {ServerFeature} from "tc-shared/connection/ServerFeatures";
 import {RTCConnection} from "tc-shared/connection/rtc/Connection";
 import {RtpVideoConnection} from "tc-shared/connection/rtc/video/Connection";
+import { tr } from "tc-shared/i18n/localize";
 
 class ReturnListener<T> {
     resolve: (value?: T | PromiseLike<T>) => void;
@@ -47,8 +48,6 @@ export class ServerConnection extends AbstractServerConnection {
     private connectCancelCallback: () => void;
 
     private returnListeners: ReturnListener<CommandResult>[] = [];
-
-    private _connection_state_listener: ConnectionStateListener;
 
     private rtcConnection: RTCConnection;
     private voiceConnection: RtpVoiceConnection;
@@ -498,13 +497,6 @@ export class ServerConnection extends AbstractServerConnection {
 
     command_handler_boss(): AbstractCommandHandlerBoss {
         return this.commandHandlerBoss;
-    }
-
-    get onconnectionstatechanged() : ConnectionStateListener {
-        return this._connection_state_listener;
-    }
-    set onconnectionstatechanged(listener: ConnectionStateListener) {
-        this._connection_state_listener = listener;
     }
 
     handshake_handler(): HandshakeHandler {

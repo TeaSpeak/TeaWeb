@@ -10,6 +10,7 @@ import {CommandResult} from "../../connection/ServerConnectionDeclaration";
 import {AbstractServerConnection} from "../../connection/ConnectionBase";
 import {HandshakeIdentityHandler} from "../../connection/HandshakeHandler";
 import * as forum from "./teaspeak-forum";
+import { tr } from "tc-shared/i18n/localize";
 
 class TeaForumHandshakeHandler extends AbstractHandshakeIdentityHandler {
     readonly identity: TeaForumIdentity;

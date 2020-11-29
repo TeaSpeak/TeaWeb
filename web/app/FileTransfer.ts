@@ -14,6 +14,7 @@ import {
 } from "tc-shared/file/Transfer";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
+import { tr } from "tc-shared/i18n/localize";
 
 TransferProvider.setProvider(new class extends TransferProvider {
     executeFileUpload(transfer: FileUploadTransfer) {

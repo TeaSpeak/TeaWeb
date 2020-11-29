@@ -9,6 +9,7 @@ import * as i18nc from "../../i18n/country";
 import {spawnSettingsModal} from "../../ui/modal/ModalSettings";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
+import { tr } from "tc-shared/i18n/localize";
 
 //FIXME: Move this shit out of this file!
 export namespace connection_log {

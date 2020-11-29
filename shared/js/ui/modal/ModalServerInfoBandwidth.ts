@@ -5,6 +5,7 @@ import {Graph} from "../../ui/elements/NetGraph";
 import * as tooltip from "../../ui/elements/Tooltip";
 import {network} from "../../ui/frames/chat";
 import {ErrorCode} from "../../connection/ErrorCode";
+import { tr } from "tc-shared/i18n/localize";
 
 export enum RequestInfoStatus {
     SUCCESS,

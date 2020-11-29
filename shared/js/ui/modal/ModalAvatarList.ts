@@ -6,6 +6,7 @@ import {base64_encode_ab} from "../../utils/buffers";
 import {spawnYesNo} from "../../ui/modal/ModalYesNo";
 import {ClientEntry} from "../../tree/Client";
 import * as moment from "moment";
+import { tr } from "tc-shared/i18n/localize";
 
 const avatar_to_uid = (id: string) => {
     const buffer = new Uint8Array(id.length / 2);

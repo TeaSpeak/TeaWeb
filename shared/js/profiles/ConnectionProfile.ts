@@ -9,6 +9,7 @@ import {formatMessage} from "../ui/frames/chat";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {LogCategory, logDebug, logError} from "tc-shared/log";
+import { tr } from "tc-shared/i18n/localize";
 
 export class ConnectionProfile {
     id: string;

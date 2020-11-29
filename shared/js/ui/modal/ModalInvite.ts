@@ -2,6 +2,7 @@ import {settings, Settings} from "../../settings";
 import {createModal, Modal} from "../../ui/elements/Modal";
 import {ConnectionHandler} from "../../ConnectionHandler";
 import {ServerAddress} from "../../tree/Server";
+import { tr } from "tc-shared/i18n/localize";
 
 type URLGeneratorSettings = {
     flag_direct: boolean,
@@ -36,7 +37,7 @@ const url_generators: { [key: string]: URLGenerator } = {
     "tea-web": {
         generate: properties => {
             const address = properties.resolved_address ? properties.resolved_address : properties.address;
-            const address_str = address.host + (address.port === 9987 ? "" : address.port);
+            const address_str = address.host + (address.port === 9987 ? "" : ":" + address.port);
             const parameter = "connect_default=" + (properties.flag_direct ? 1 : 0) + "&connect_address=" + encodeURIComponent(address_str);
 
             let pathbase = "";

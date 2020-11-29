@@ -13,3 +13,5 @@ export function set_device(device_id: string) : Promise<void>;
 export function current_device() : Device;
 
 export function initializeFromGesture();
+
+export function globalAudioContext() : AudioContext;

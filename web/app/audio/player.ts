@@ -1,6 +1,7 @@
 import {Device} from "tc-shared/audio/player";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
+import { tr } from "tc-shared/i18n/localize";
 
 /* lets try without any gestures, maybe the user already clicked the page */
 const kAvoidAudioContextWarning = false;

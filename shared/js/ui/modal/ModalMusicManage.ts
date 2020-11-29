@@ -5,7 +5,7 @@ import {modal, Registry} from "../../events";
 import {CommandResult} from "../../connection/ServerConnectionDeclaration";
 import * as log from "../../log";
 import {LogCategory} from "../../log";
-import {tra} from "../../i18n/localize";
+import {tra, tr} from "../../i18n/localize";
 import * as tooltip from "../../ui/elements/Tooltip";
 import * as i18nc from "../../i18n/country";
 import {find} from "../../permission/PermissionManager";
@@ -20,7 +20,7 @@ export function openMusicManage(client: ConnectionHandler, bot: MusicClientEntry
     permission_controller(ev_registry, bot, client);
 
     let modal = createModal({
-        header: tr(tr("Playlist Manage")),
+        header: tr("Playlist Manage"),
         body: () => build_modal(ev_registry),
         footer: null,
 

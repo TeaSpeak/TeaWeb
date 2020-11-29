@@ -19,6 +19,7 @@ import {LogCategory} from "../../../log";
 import {queryConversationEvents, registerConversationEvent} from "../../../ui/frames/side/PrivateConversationHistory";
 import {AbstractChat, AbstractChatManager} from "../../../ui/frames/side/AbstractConversion";
 import {ChannelTreeEvents} from "tc-shared/tree/ChannelTree";
+import { tr } from "tc-shared/i18n/localize";
 
 export type OutOfViewClient = {
     nickname: string,

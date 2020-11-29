@@ -1,3 +1,5 @@
+import { tr } from "./i18n/localize";
+
 export enum KeyCode {
     KEY_CANCEL = 3,
     KEY_HELP = 6,
