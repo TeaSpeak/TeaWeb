@@ -3,20 +3,6 @@ import * as template_loader from "./template_loader";
 import * as Animation from "../animation";
 import {getUrlParameter} from "./utils";
 
-declare global {
-    interface Window {
-        tr(message: string) : string;
-        tra(message: string, ...args: (string | number | boolean)[]) : string;
-        tra(message: string, ...args: any[]) : JQuery[];
-
-        log: any;
-        StaticSettings: any;
-    }
-
-    //const tr: typeof window.tr;
-    //const tra: typeof window.tra;
-}
-
 export interface ApplicationLoader {
     execute();
 }

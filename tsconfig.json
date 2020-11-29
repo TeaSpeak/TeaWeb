@@ -30,6 +30,8 @@
     "web/environment/",
     "loader/app/targets/certaccept.ts",
     "tools/",
-    "vendor"
+    "vendor",
+    "dist",
+    "declarations"
   ]
 }

@@ -1,3 +1,5 @@
+import {ScreenCaptureDevice} from "tc-shared/video/VideoSource";
+
 export type DeviceListResult = {
     status: "success",
     devices: { id: string, displayName: string }[],
@@ -30,6 +32,18 @@ export type VideoSourceState = {
     error: string
 };
 
+export type ScreenCaptureDeviceList = {
+    status: "success",
+    devices: ScreenCaptureDevice[],
+} | {
+    status: "error",
+    reason: string
+} | {
+    status: "not-supported"
+} | {
+    status: "loading"
+}
+
 export type SettingFrameRate = {
     min: number,
     max: number,
@@ -43,6 +57,8 @@ export interface ModalVideoSourceEvents {
     action_select_source: { id: string | undefined },
     action_setting_dimension: { width: number, height: number },
     action_setting_framerate: { frameRate: number },
+    action_toggle_screen_capture_device_select: { shown: boolean },
+    action_preselect_screen_capture_device: { deviceId: string },
 
     query_source: {},
     query_device_list: {},
@@ -50,6 +66,7 @@ export interface ModalVideoSourceEvents {
     query_start_button: {},
     query_setting_dimension: {},
     query_setting_framerate: {},
+    query_screen_capture_devices: { }
 
     notify_source: { state: VideoSourceState }
     notify_device_list: { status: DeviceListResult },
@@ -70,6 +87,9 @@ export interface ModalVideoSourceEvents {
     },
     notify_settings_framerate: {
         frameRate: SettingFrameRate | undefined
+    },
+    notify_screen_capture_devices: {
+        devices: ScreenCaptureDeviceList
     }
 
     notify_destroy: {}

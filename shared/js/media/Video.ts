@@ -1,4 +1,5 @@
 import {
+    ScreenCaptureDevice,
     VideoDevice,
     VideoDriver,
     VideoDriverEvents,
@@ -212,7 +213,15 @@ export class WebVideoDriver implements VideoDriver {
         }
     }
 
-    async createScreenSource(): Promise<VideoSource> {
+    screenQueryAvailable(): boolean {
+        return false;
+    }
+
+    async queryScreenCaptureDevices(): Promise<ScreenCaptureDevice[]> {
+        throw tr("screen capture device query not supported");
+    }
+
+    async createScreenSource(_id: string | undefined, _allowFocusLoss: boolean): Promise<VideoSource> {
         try {
             const source = await navigator.mediaDevices.getDisplayMedia({ audio: false, video: true });
             const videoTrack = source.getVideoTracks()[0];
@@ -233,7 +242,7 @@ export class WebVideoDriver implements VideoDriver {
     }
 }
 
-class WebVideoSource implements VideoSource {
+export class WebVideoSource implements VideoSource {
     private readonly deviceId: string;
     private readonly displayName: string;
     private readonly stream: MediaStream;

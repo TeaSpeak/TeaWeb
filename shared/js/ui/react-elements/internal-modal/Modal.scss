@@ -197,6 +197,9 @@ html:root {
         display: flex;
         flex-direction: column;
         position: relative;
+
+        /* explicitly set the background color so the next element could use background-color: inherited; */
+        background: var(--modal-content-background);
     }
 }
 

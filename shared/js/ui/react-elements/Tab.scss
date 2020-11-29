@@ -1,0 +1,83 @@
+@import "../../../css/static/properties";
+@import "../../../css/static/mixin";
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    border-radius: .2em;
+    border: 1px solid #111112;
+
+    background-color: #17171a;
+
+    .categories {
+        height: 2.5em;
+
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        border-bottom: 1px solid #1d1d1d;
+
+        .entry {
+            padding: .5em;
+
+            text-align: center;
+
+            flex-grow: 1;
+            flex-shrink: 1;
+
+            cursor: pointer;
+
+            &:hover {
+                color: #b6c4d6;
+            }
+
+            &.selected {
+                border-bottom: 3px solid #245184;
+                margin-bottom: -1px;
+
+                color: #245184;
+            }
+
+            @include transition(color $button_hover_animation_time, border-bottom-color $button_hover_animation_time);
+        }
+    }
+
+    .bodies {
+        position: relative;
+
+        flex-shrink: 1;
+        flex-grow: 1;
+        display: flex;
+        justify-content: stretch;
+
+        min-height: 12em;
+        height: 20em;
+
+        .body {
+            position: absolute;
+
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+
+            padding: .5em;
+
+            display: flex;
+            justify-content: stretch;
+
+            overflow: auto;
+            @include chat-scrollbar-vertical();
+
+            &.hidden {
+                display: none;
+            }
+        }
+    }
+}

@@ -26,6 +26,15 @@ export interface VideoDriverEvents {
 }
 
 export type VideoDevice = { id: string, name: string }
+export type ScreenCaptureDevice = {
+    id: string,
+    name: string,
+
+    type: "full-screen" | "window",
+
+    appIcon?: string,
+    appPreview?: string
+}
 
 export interface VideoDriver {
     getEvents() : Registry<VideoDriverEvents>;
@@ -46,10 +55,14 @@ export interface VideoDriver {
      */
     createVideoSource(id: string | undefined) : Promise<VideoSource>;
 
+    screenQueryAvailable() : boolean;
+
+    queryScreenCaptureDevices() : Promise<ScreenCaptureDevice[]>;
+
     /**
      * Create a source from the screen
      */
-    createScreenSource() : Promise<VideoSource>;
+    createScreenSource(id: string | undefined, allowFocusLoss: boolean) : Promise<VideoSource>;
 }
 
 let driverInstance: VideoDriver;

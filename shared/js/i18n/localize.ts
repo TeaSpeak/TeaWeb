@@ -326,5 +326,19 @@ export async function initialize() {
     // await load_file("http://localhost/home/TeaSpeak/TeaSpeak/Web-Client/web/environment/development/i18n/test.json");
 }
 
+declare global {
+    interface Window {
+        tr(message: string) : string;
+        tra(message: string, ...args: (string | number | boolean)[]) : string;
+        tra(message: string, ...args: any[]) : JQuery[];
+
+        log: any;
+        StaticSettings: any;
+    }
+
+    const tr: typeof window.tr;
+    const tra: typeof window.tra;
+}
+
 window.tr = tr;
 window.tra = tra;

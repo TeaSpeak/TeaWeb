@@ -187,11 +187,16 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
 
     event_registry.on("action_toggle_video_broadcasting", event => {
         if(event.enabled) {
-            spawnVideoSourceSelectModal(event.broadcastType, true).then(async source => {
+            const connection = event.connection;
+            if(!connection.connected) {
+                createErrorModal(tr("You're not connected"), tr("You're not connected to any server!")).open();
+                return;
+            }
+            spawnVideoSourceSelectModal(event.broadcastType, true, !!event.quickSelect).then(async source => {
                 if(!source) { return; }
 
                 try {
-                    event.connection.getServerConnection().getVideoConnection().startBroadcasting(event.broadcastType, source)
+                    connection.getServerConnection().getVideoConnection().startBroadcasting(event.broadcastType, source)
                         .catch(error => {
                             logError(LogCategory.VIDEO, tr("Failed to start %s broadcasting: %o"), event.broadcastType, error);
                             if(typeof error !== "string") {

@@ -21,7 +21,7 @@
     "../js/workers"
   ],
   "include": [
-    "../declaration_fix.d.ts",
+    "../js/proto.ts",
     "../backend.d",
     "../js/**/*.ts"
   ]

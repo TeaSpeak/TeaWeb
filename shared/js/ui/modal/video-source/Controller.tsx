@@ -7,14 +7,21 @@ import {LogCategory, logError} from "tc-shared/log";
 import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
 
 type VideoSourceRef = { source: VideoSource };
-export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, selectDefault: boolean) : Promise<VideoSource> {
+
+/**
+ * @param type The video type which should be prompted
+ * @param selectDefault If we're trying to select a source on default
+ * @param quickSelect If we want to quickly select a source and instantly use it.
+ *                    This option is only useable for screen sharing.
+ */
+export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, selectDefault: boolean, quickSelect: boolean) : Promise<VideoSource> {
     const refSource: VideoSourceRef = {
         source: undefined
     };
 
     const events = new Registry<ModalVideoSourceEvents>();
     events.enableDebug("video-source-select");
-    initializeController(events, refSource, type);
+    initializeController(events, refSource, type, quickSelect);
 
     const modal = spawnReactModal(ModalVideoSource, events, type);
     modal.events.on("destroy", () => {
@@ -25,12 +32,23 @@ export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, sele
         modal.destroy();
     });
     modal.show().then(() => {
-        if(selectDefault) {
+        if(type === "screen" && getVideoDriver().screenQueryAvailable()) {
+            events.fire_react("action_toggle_screen_capture_device_select", { shown: true });
+        } else if(selectDefault) {
             events.fire("action_select_source", { id: undefined });
         }
     });
 
     await new Promise(resolve => {
+        if(type === "screen" && quickSelect) {
+            events.on("notify_video_preview", event => {
+                if(event.status.status === "preview") {
+                    /* we've successfully selected something */
+                    modal.destroy();
+                }
+            });
+        }
+
         modal.events.one(["destroy", "close"], resolve);
     });
 
@@ -39,7 +57,7 @@ export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, sele
 
 type SourceConstraints = { width?: number, height?: number, frameRate?: number };
 
-function initializeController(events: Registry<ModalVideoSourceEvents>, currentSourceRef: VideoSourceRef, type: VideoBroadcastType) {
+function initializeController(events: Registry<ModalVideoSourceEvents>, currentSourceRef: VideoSourceRef, type: VideoBroadcastType, quickSelect: boolean) {
     let currentSource: VideoSource | string;
     let currentConstraints: SourceConstraints;
 
@@ -72,6 +90,20 @@ function initializeController(events: Registry<ModalVideoSourceEvents>, currentS
                 });
             }
         });
+    }
+
+    const notifyScreenCaptureDevices = () => {
+        const driver = getVideoDriver();
+        driver.queryScreenCaptureDevices().then(devices => {
+            events.fire_react("notify_screen_capture_devices", { devices: { status: "success", devices: devices }});
+        }).catch(error => {
+            if(typeof error !== "string") {
+                logError(LogCategory.VIDEO, tr("Failed to query screen capture devices: %o"), error);
+                error = tr("lookup the console");
+            }
+
+            events.fire_react("notify_screen_capture_devices", { devices: { status: "error", reason: error }});
+        })
     }
 
     const notifyVideoPreview = () => {
@@ -188,6 +220,7 @@ function initializeController(events: Registry<ModalVideoSourceEvents>, currentS
 
     events.on("query_source", () => notifyCurrentSource());
     events.on("query_device_list", () => notifyDeviceList());
+    events.on("query_screen_capture_devices", () => notifyScreenCaptureDevices());
     events.on("query_video_preview", () => notifyVideoPreview());
     events.on("query_start_button", () => notifyStartButton());
     events.on("query_setting_dimension", () => notifySettingDimension());
@@ -227,10 +260,12 @@ function initializeController(events: Registry<ModalVideoSourceEvents>, currentS
                     setCurrentSource(tr("Failed to open video device (Lookup the console)"));
                 }
             });
+        } else if(driver.screenQueryAvailable() && typeof event.id === "undefined") {
+            events.fire_react("action_toggle_screen_capture_device_select", { shown: true });
         } else {
             currentSourceId = undefined;
             fallbackCurrentSourceName = tr("loading...");
-            driver.createScreenSource().then(stream => {
+            driver.createScreenSource(event.id, quickSelect).then(stream => {
                 setCurrentSource(stream);
                 fallbackCurrentSourceName = stream?.getName() || tr("No stream");
             }).catch(error => {

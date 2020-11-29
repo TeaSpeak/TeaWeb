@@ -58,6 +58,7 @@ export interface ChannelVideoEvents {
     action_toggle_expended: { expended: boolean },
     action_video_scroll: { direction: "left" | "right" },
     action_set_spotlight: { videoId: string | undefined, expend: boolean },
+    action_focus_spotlight: {},
     action_set_fullscreen: { videoId: string | undefined },
     action_toggle_mute: { videoId: string, broadcastType: VideoBroadcastType, muted: boolean },
 

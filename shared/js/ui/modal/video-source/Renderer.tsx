@@ -2,7 +2,7 @@ import {Registry} from "tc-shared/events";
 import * as React from "react";
 import {
     DeviceListResult,
-    ModalVideoSourceEvents, SettingFrameRate,
+    ModalVideoSourceEvents, ScreenCaptureDeviceList, SettingFrameRate,
     VideoPreviewStatus, VideoSourceState
 } from "tc-shared/ui/modal/video-source/Definitions";
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
@@ -13,6 +13,9 @@ import {useContext, useEffect, useRef, useState} from "react";
 import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
 import {Slider} from "tc-shared/ui/react-elements/Slider";
 import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
+import {Tab, TabEntry} from "tc-shared/ui/react-elements/Tab";
+import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
+import {ScreenCaptureDevice} from "tc-shared/video/VideoSource";
 
 const cssStyle = require("./Renderer.scss");
 const ModalEvents = React.createContext<Registry<ModalVideoSourceEvents>>(undefined);
@@ -30,7 +33,7 @@ const VideoSourceSelector = () => {
 
     if(deviceList === "loading") {
         return (
-            <div className={cssStyle.body} key={"loading"}>
+            <div className={cssStyle.sectionBody} key={"loading"}>
                 <Select type={"boxed"} disabled={true}>
                     <option>{tr("loading ...")}</option>
                 </Select>
@@ -52,7 +55,7 @@ const VideoSourceSelector = () => {
                 break;
         }
         return (
-            <div className={cssStyle.body} key={"error"}>
+            <div className={cssStyle.sectionBody} key={"error"}>
                 <Select type={"boxed"} disabled={true} className={cssStyle.selectError}>
                     <option>{message}</option>
                 </Select>
@@ -60,7 +63,7 @@ const VideoSourceSelector = () => {
         );
     } else {
         return (
-            <div className={cssStyle.body} key={"normal"}>
+            <div className={cssStyle.sectionBody} key={"normal"}>
                 <Select
                     type={"boxed"}
                     value={deviceList.selectedDeviceId || kNoDeviceId}
@@ -117,7 +120,7 @@ const VideoSourceRequester = () => {
     }
 
     return (
-        <div className={cssStyle.body} key={"normal"}>
+        <div className={cssStyle.sectionBody} key={"normal"}>
             <div className={cssStyle.sourcePrompt}>
                 <Button type={"small"} onClick={() => events.fire("action_select_source", { id: undefined })}>
                     <Translatable>Select source</Translatable>
@@ -539,7 +542,7 @@ const calculateBps = (width: number, height: number, frameRate: number) => {
     return estimatedBitsPerPixed * width * height * (frameRate / 30);
 }
 
-const BpsInfo = () => {
+const BpsInfo = React.memo(() => {
     const events = useContext(ModalEvents);
 
     const [ dimensions, setDimensions ] = useState<{ width: number, height: number } | undefined>(undefined);
@@ -580,9 +583,9 @@ const BpsInfo = () => {
             </div>
         </div>
     );
-}
+});
 
-const Settings = () => {
+const Settings = React.memo(() => {
     if(window.detectedBrowser.name === "firefox") {
         /* Firefox does not seem to give a fuck about any of our settings */
         return null;
@@ -593,13 +596,13 @@ const Settings = () => {
     return (
         <AdvancedSettings.Provider value={advanced}>
             <div className={cssStyle.section + " " + cssStyle.columnSettings}>
-                <div className={cssStyle.head}>
+                <div className={cssStyle.sectionHead}>
                     <div className={cssStyle.title}><Translatable>Settings</Translatable></div>
                     <div className={cssStyle.advanced}>
                         <Checkbox label={<Translatable>Advanced</Translatable>} onChange={value => setAdvanced(value)} />
                     </div>
                 </div>
-                <div className={cssStyle.body}>
+                <div className={cssStyle.sectionBody}>
                     <SettingDimension />
                     <SettingFramerate />
                     <BpsInfo />
@@ -607,7 +610,150 @@ const Settings = () => {
             </div>
         </AdvancedSettings.Provider>
     );
+})
+
+const ScreenCaptureDeviceRenderer = React.memo((props: { device: ScreenCaptureDevice, selected: boolean }) => {
+    const events = useContext(ModalEvents);
+
+    return (
+        <div
+            className={cssStyle.screenDeviceEntry + " " + (props.selected ? cssStyle.selected : undefined)}
+            onClick={() => events.fire_react("action_preselect_screen_capture_device", { deviceId: props.device.id })}
+            onDoubleClick={() => {
+                events.fire("action_toggle_screen_capture_device_select", { shown: false });
+                events.fire("action_select_source", { id: props.device.id })
+            }}
+        >
+            <div className={cssStyle.preview}>
+                <img src={props.device.appPreview} alt={tr("Preview image")} />
+            </div>
+            <div className={cssStyle.name} title={props.device.name || props.device.id}>{props.device.name || props.device.id}</div>
+        </div>
+    )
+});
+
+const ScreenCaptureDeviceSelectTag = React.memo((props: { data: ScreenCaptureDeviceList, type: "full-screen" | "window", selectedDevice: string }) => {
+    let body;
+    switch (props.data.status) {
+        case "loading":
+            body = (
+                <div className={cssStyle.overlay} key={"loading"}>
+                    <a><Translatable>loading</Translatable> <LoadingDots /></a>
+                </div>
+            );
+            break;
+
+        case "error":
+        case "not-supported":
+            let message = props.data.status === "error" ? props.data.reason : tr("Not supported");
+            body = (
+                <div className={cssStyle.overlay + " " + cssStyle.error} key={"error"}><a>{message}</a></div>
+            );
+            break;
+
+        case "success":
+            let devices =  props.data.devices
+                .filter(e => e.type === props.type);
+            if(devices.length === 0) {
+                body = (
+                    <div className={cssStyle.overlay} key={"no-devices"}>
+                        <a><Translatable>No sources</Translatable></a>
+                    </div>
+                );
+            } else {
+                body = devices
+                    .map(e => <ScreenCaptureDeviceRenderer device={e} key={e.id} selected={e.id === props.selectedDevice} />);
+            }
+            break;
+    }
+
+    return (
+        <div className={cssStyle.listContainer}>{body}</div>
+    );
+})
+
+const ScreenCaptureDeviceSelectList = React.memo(() => {
+    const events = useContext(ModalEvents);
+    const refUpdateTimer = useRef<number>(undefined);
+
+    const [ list, setList ] = useState<ScreenCaptureDeviceList>(() => {
+        events.fire("query_screen_capture_devices");
+        return { status: "loading" };
+    });
+    events.reactUse("notify_screen_capture_devices", event => {
+        setList(event.devices);
+        if(!refUpdateTimer.current) {
+            refUpdateTimer.current = setTimeout(() => {
+                refUpdateTimer.current = undefined;
+                events.fire("query_screen_capture_devices");
+            }, 500);
+        }
+    }, undefined, []);
+    useEffect(() => () => clearTimeout(refUpdateTimer.current), []);
+
+    const [ selectedDevice, setSelectedDevice ] = useState(undefined);
+    events.reactUse("action_preselect_screen_capture_device", event => setSelectedDevice(event.deviceId), undefined, []);
+
+    return (
+        <Tab defaultTab={"screen"} className={cssStyle.tab}>
+            <TabEntry id={"screen"}>
+                <Translatable>Full Screen</Translatable>
+                <ScreenCaptureDeviceSelectTag type={"full-screen"} data={list} selectedDevice={selectedDevice} />
+            </TabEntry>
+            <TabEntry id={"window"}>
+                <Translatable>Window</Translatable>
+                <ScreenCaptureDeviceSelectTag type={"window"} data={list} selectedDevice={selectedDevice} />
+            </TabEntry>
+        </Tab>
+    );
+});
+
+const SelectSourceButton = () => {
+    const events = useContext(ModalEvents);
+    const [ selectedDevice, setSelectedDevice ] = useState(undefined);
+    events.reactUse("action_preselect_screen_capture_device", event => setSelectedDevice(event.deviceId), undefined, []);
+
+    return (
+        <Button type={"small"} color={"green"} disabled={!selectedDevice} onClick={() => {
+            events.fire("action_toggle_screen_capture_device_select", { shown: false });
+            events.fire("action_select_source", { id: selectedDevice })
+        }}>
+            <Translatable>Select Source</Translatable>
+        </Button>
+    );
 }
+
+const ScreenCaptureDeviceSelect = React.memo(() => {
+    const events = useContext(ModalEvents);
+    const [ shown, setShown ] = useState(() => {
+        return false;
+    });
+
+    events.reactUse("action_toggle_screen_capture_device_select", event => {
+        setShown(event.shown);
+    });
+
+    if(!shown) {
+        return null;
+    }
+
+    return (
+        <div className={cssStyle.overlayScreenDeviceList} key={"shown"}>
+            <div className={cssStyle.sectionHead + " " + cssStyle.title}>
+                <Translatable>Select your source</Translatable>
+            </div>
+            <div className={cssStyle.sectionBody}>
+                <ScreenCaptureDeviceSelectList />
+            </div>
+            <div className={cssStyle.buttons}>
+                <Button type={"small"} color={"red"} onClick={() => events.fire("action_toggle_screen_capture_device_select", { shown: false })}>
+                    <Translatable>Cancel</Translatable>
+                </Button>
+                <SelectSourceButton />
+            </div>
+        </div>
+    )
+});
 
 export class ModalVideoSource extends InternalModal {
     protected readonly events: Registry<ModalVideoSourceEvents>;
@@ -627,16 +773,16 @@ export class ModalVideoSource extends InternalModal {
                     <div className={cssStyle.content}>
                         <div className={cssStyle.columnSource}>
                             <div className={cssStyle.section}>
-                                <div className={cssStyle.head + " " + cssStyle.title}>
+                                <div className={cssStyle.sectionHead + " " + cssStyle.title}>
                                     <Translatable>Select your source</Translatable>
                                 </div>
                                 {this.sourceType === "camera" ? <VideoSourceSelector key={"source-selector"} /> : <VideoSourceRequester key={"source-requester"} />}
                             </div>
                             <div className={cssStyle.section}>
-                                <div className={cssStyle.head + " " + cssStyle.title}>
+                                <div className={cssStyle.sectionHead + " " + cssStyle.title}>
                                     <Translatable>Video preview</Translatable>
                                 </div>
-                                <div className={cssStyle.body}>
+                                <div className={cssStyle.sectionBody}>
                                     <VideoPreview />
                                 </div>
                             </div>
@@ -650,6 +796,7 @@ export class ModalVideoSource extends InternalModal {
                         <ButtonStart />
                     </div>
                 </div>
+                <ScreenCaptureDeviceSelect />
             </ModalEvents.Provider>
         );
     }

@@ -19,7 +19,7 @@ export interface MediaStreamEvents {
 export const mediaStreamEvents = new Registry<MediaStreamEvents>();
 */
 
-async function requestMediaStream0(constraints: MediaTrackConstraints, type: MediaStreamType, updateDeviceList: boolean) : Promise<MediaStreamRequestResult | MediaStream> {
+export async function requestMediaStreamWithConstraints(constraints: MediaTrackConstraints, type: MediaStreamType) : Promise<MediaStreamRequestResult | MediaStream> {
     const beginTimestamp = Date.now();
     try {
         log.info(LogCategory.AUDIO, tr("Requesting a %s stream for device %s in group %s"), type, constraints.deviceId, constraints.groupId);
@@ -74,7 +74,7 @@ export async function requestMediaStream(deviceId: string | undefined, groupId: 
     constrains.autoGainControl = true;
     constrains.noiseSuppression = true;
 
-    const promise = (currentMediaStreamRequest = requestMediaStream0(constrains, type, true));
+    const promise = (currentMediaStreamRequest = requestMediaStreamWithConstraints(constrains, type));
     try {
         return await currentMediaStreamRequest;
     } finally {

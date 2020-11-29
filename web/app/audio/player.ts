@@ -119,3 +119,7 @@ export function initializeFromGesture() {
         createNewContext();
     }
 }
+
+export function globalAudioContext() : AudioContext {
+    return context();
+}

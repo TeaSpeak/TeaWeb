@@ -240,6 +240,7 @@ const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolea
                     events.fire("action_set_fullscreen", { videoId: props.videoId });
                 } else {
                     events.fire("action_set_spotlight", { videoId: props.videoId, expend: true });
+                    events.fire("action_focus_spotlight", { });
                 }
             }}
             onContextMenu={event => {
@@ -262,6 +263,7 @@ const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolea
                         icon: ClientIcon.Fullscreen,
                         click: () => {
                             events.fire("action_set_spotlight", { videoId: props.isSpotlight ? undefined : props.videoId, expend: true });
+                            events.fire("action_focus_spotlight", { });
                         }
                     }
                 ]);
@@ -277,6 +279,7 @@ const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolea
                             events.fire("action_set_fullscreen", { videoId: isFullscreen ? undefined : props.videoId });
                         } else {
                             events.fire("action_set_spotlight", { videoId: props.videoId, expend: true });
+                            events.fire("action_focus_spotlight", { });
                         }
                      }}
                      title={props.isSpotlight ? tr("Toggle fullscreen") : tr("Toggle spotlight")}
@@ -394,11 +397,14 @@ const VideoBar = () => {
 
 const Spotlight = () => {
     const events = useContext(EventContext);
+    const refContainer = useRef<HTMLDivElement>();
+
     const [ videoId, setVideoId ] = useState<string>(() => {
         events.fire("query_spotlight");
         return undefined;
     });
-    events.reactUse("notify_spotlight", event => setVideoId(event.videoId));
+    events.reactUse("notify_spotlight", event => setVideoId(event.videoId), undefined, []);
+    events.reactUse("action_focus_spotlight", () => refContainer.current?.focus(), undefined, []);
 
     let body;
     if(videoId) {
@@ -412,7 +418,16 @@ const Spotlight = () => {
     }
 
     return (
-        <div className={cssStyle.spotlight}>
+        <div
+            className={cssStyle.spotlight}
+            onKeyDown={event => {
+                if(event.key === "Escape") {
+                    events.fire("action_set_spotlight", { videoId: undefined, expend: false });
+                }
+            }}
+            tabIndex={0}
+            ref={refContainer}
+        >
             {body}
         </div>
     )

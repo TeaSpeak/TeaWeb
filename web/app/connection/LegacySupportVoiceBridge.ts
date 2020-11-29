@@ -3,7 +3,6 @@ import {
     VoiceConnectionStatus,
     WhisperSessionInitializer
 } from "tc-shared/connection/VoiceConnection";
-import {RtpVoiceConnection} from "tc-backend/web/rtc/voice/Connection";
 import {VoiceConnection} from "tc-backend/web/legacy/voice/VoiceHandler";
 import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {VoiceClient} from "tc-shared/voice/VoiceClient";
@@ -12,6 +11,7 @@ import {AbstractServerConnection, ConnectionStatistics} from "tc-shared/connecti
 import {Registry} from "tc-shared/events";
 import {VoicePlayerEvents, VoicePlayerLatencySettings, VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 import { tr } from "tc-shared/i18n/localize";
+import {RtpVoiceConnection} from "tc-backend/web/voice/Connection";
 
 class ProxiedVoiceClient implements VoiceClient {
     readonly clientId: number;
