@@ -6,50 +6,10 @@
 	 * Time: 16:42
 	 */
 
-    $UI_BASE_PATH = "ui-files/";
     $UI_RAW_BASE_PATH = "ui-files/raw/";
     $CLIENT_BASE_PATH = "files/";
 
-	function list_dir($base_dir, &$results = array(), $dir = "") {
-		$files = scandir($base_dir . $dir);
-
-		foreach($files as $key => $value){
-			$path = $base_dir.$dir.DIRECTORY_SEPARATOR.$value;
-			if(!is_dir($path)) {
-				$results[] = ($dir ? $dir.DIRECTORY_SEPARATOR : "").$value;
-			} else if($value != "." && $value != "..") {
-				list_dir($base_dir, $results, ($dir ? $dir.DIRECTORY_SEPARATOR : "").$value);
-			}
-		}
-
-		return $results;
-	}
-
-	function endsWith($haystack, $needle) {
-		// search forward starting from end minus needle length characters
-		if ($needle === '') {
-			return true;
-		}
-		$diff = \strlen($haystack) - \strlen($needle);
-		return $diff >= 0 && strpos($haystack, $needle, $diff) !== false;
-	}
-
-	function fdump($name) {
-		if(endsWith($name, ".php")) {
-			global $CLIENT;
-			$CLIENT = true;
-
-			chdir(dirname($name));
-			include $name;
-			return;
-		}
-		$file = fopen($name, "r") or error_exit("missing file \"" . $name . "\".");
-
-		echo (fread($file, filesize($name)));
-		fclose($file);
-	}
-
-	function error_exit($message) {
+	function errorExit($message) {
 		http_response_code(400);
 		die(json_encode([
 			"success" => false,
@@ -57,15 +17,32 @@
 		]));
 	}
 
-	function handle_develop_web_request() {
-		global $UI_RAW_BASE_PATH;
+	function verifyPostSecret() {
+        if(!isset($_POST["secret"])) {
+            errorExit("Missing required information!");
+        }
 
+        $require_secret = file_get_contents(".deploy_secret");
+        if($require_secret === false || strlen($require_secret) == 0) {
+            errorExit("Server missing secret!");
+        }
+
+        if(!is_string($_POST["secret"])) {
+            errorExit("Invalid secret!");
+        }
+
+        if(strcmp(trim($require_secret), trim($_POST["secret"])) !== 0) {
+            errorExit("Secret does not match!");
+        }
+    }
+
+	function handleRequest() {
 		if(isset($_GET) && isset($_GET["type"])) {
 			if ($_GET["type"] == "update-info") {
 				global $CLIENT_BASE_PATH;
 				$raw_versions = file_get_contents($CLIENT_BASE_PATH . "/version.json");
 				if($raw_versions === false) {
-                    error_exit("Missing file!");
+                    errorExit("Missing file!");
                 }
 
 				$versions = json_decode($raw_versions, true);
@@ -79,7 +56,7 @@
 				$path = $CLIENT_BASE_PATH . $_GET["channel"] . DIRECTORY_SEPARATOR . $_GET["version"] . DIRECTORY_SEPARATOR;
 				$raw_release_info = file_get_contents($path . "info.json");
 				if($raw_release_info === false) {
-                    error_exit("missing info file (version and/or channel missing. Path was " . $path . ")");
+                    errorExit("missing info file (version and/or channel missing. Path was " . $path . ")");
                 }
 				$release_info = json_decode($raw_release_info);
 
@@ -97,7 +74,7 @@
 					readfile($path . $platform->update);
 					die();
 				}
-				error_exit("Missing platform, arch or file");
+				errorExit("Missing platform, arch or file");
 			}
 			else if ($_GET["type"] == "ui-info") {
 				global $UI_BASE_PATH;
@@ -128,10 +105,10 @@
 				global $UI_BASE_PATH;
 
 				if(!isset($_GET["channel"]) || !isset($_GET["version"]))
-					error_exit("missing required parameters");
+					errorExit("missing required parameters");
 
 				if($_GET["version"] !== "latest" && !isset($_GET["git-ref"]))
-					error_exit("missing required parameters");
+					errorExit("missing required parameters");
 
 				$version_info = file_get_contents($UI_BASE_PATH . "info.json");
 				if($version_info === false) $version_info = array();
@@ -139,7 +116,7 @@
 
 				$channel_data = $version_info[$_GET["channel"]];
 				if(!isset($channel_data))
-					error_exit("channel unknown");
+					errorExit("channel unknown");
 
 				$ui_pack = false;
 				if($_GET["version"] === "latest") {
@@ -153,7 +130,7 @@
 					}
 				}
 				if($ui_pack === false)
-					error_exit("missing version");
+					errorExit("missing version");
 
 
 				header("Cache-Control: public"); // needed for internet explorer
@@ -170,29 +147,34 @@
 				$read = readfile($ui_pack["file"]);
 				header("Content-Length:" . $read);
 
-				if($read === false) error_exit("internal error: Failed to read file!");
+				if($read === false) errorExit("internal error: Failed to read file!");
 				die();
 			}
 		}
 		else if($_POST["type"] == "deploy-build") {
 			global $CLIENT_BASE_PATH;
 
-			if(!isset($_POST["secret"]) || !isset($_POST["version"]) || !isset($_POST["platform"]) || !isset($_POST["arch"]) || !isset($_POST["update_suffix"]) || !isset($_POST["installer_suffix"]))
-				error_exit("Missing required information!");
-
-			{
-				$require_secret = file_get_contents(".deploy_secret");
-				if($require_secret === false || strlen($require_secret) == 0) error_exit("Server missing secret!");
-
-				if(!is_string($_POST["secret"])) error_exit("Invalid secret!");
-				if(strcmp(trim($require_secret), trim($_POST["secret"])) !== 0)
-					error_exit("Secret does not match!");
+			if(!isset($_POST["version"]) || !isset($_POST["platform"]) || !isset($_POST["arch"]) || !isset($_POST["update_suffix"]) || !isset($_POST["installer_suffix"])) {
+                errorExit("Missing required information!");
 			}
 
-			if(!isset($_FILES["update"])) error_exit("Missing update file");
-			if($_FILES["update"]["error"] !== UPLOAD_ERR_OK) error_exit("Upload for update failed!");
-			if(!isset($_FILES["installer"])) error_exit("Missing installer file");
-			if($_FILES["installer"]["error"] !== UPLOAD_ERR_OK) error_exit("Upload for installer failed!");
+            verifyPostSecret();
+
+			if(!isset($_FILES["update"])) {
+                errorExit("Missing update file");
+            }
+
+			if($_FILES["update"]["error"] !== UPLOAD_ERR_OK) {
+                errorExit("Upload for update failed!");
+            }
+
+			if(!isset($_FILES["installer"])) {
+                errorExit("Missing installer file");
+            }
+
+			if($_FILES["installer"]["error"] !== UPLOAD_ERR_OK) {
+                errorExit("Upload for installer failed!");
+            }
 
 			$json_version = json_decode($_POST["version"], true);
 			$version = $json_version["major"] . "." . $json_version["minor"] . "." . $json_version["patch"] . ($json_version["build"] > 0 ? "-" . $json_version["build"] : "");
@@ -206,8 +188,14 @@
 
 			{
 				$version_info = file_get_contents($path . "info.json");
-				if($version_info === false) $version_info = array();
-				else $version_info = json_decode($version_info, true);
+				if($version_info === false) {
+                    $version_info = array();
+                } else {
+                    $version_info = json_decode($version_info, true);
+                    if($version_info === false) {
+                        errorExit("Failed to decode old versions info file");
+                    }
+                }
 
 				for($index = 0; $index < count($version_info); $index++) {
 					if($version_info[$index]["platform"] == $_POST["platform"] && $version_info[$index]["arch"] == $_POST["arch"]) {
@@ -215,6 +203,7 @@
 						break;
 					}
 				}
+
 				$info = array();
 				$info["platform"] = $_POST["platform"];
 				$info["arch"] = $_POST["arch"];
@@ -227,12 +216,19 @@
 			{
 				$filename = $CLIENT_BASE_PATH . DIRECTORY_SEPARATOR . "version.json";
 				$indexes = file_get_contents($filename);
-				if($indexes === false) $indexes = array();
-				else $indexes = json_decode($indexes, true);
+				if($indexes === false) {
+                    $indexes = array();
+                } else {
+                    $indexes = json_decode($indexes, true);
+                    if($indexes === false) {
+                        errorExit("Failed to decode old latest versions info file");
+                    }
+                }
 
 				$index = &$indexes[$_POST["channel"]];
-				if(!isset($index))
-					$index = array();
+				if(!isset($index)) {
+                    $index = array();
+				}
 
 				for($idx = 0; $idx < count($index); $idx++) {
 					if($index[$idx]["platform"] == $_POST["platform"] && $index[$idx]["arch"] == $_POST["arch"]) {
@@ -260,8 +256,11 @@
 		else if($_POST["type"] == "deploy-ui-build") {
 			global $UI_BASE_PATH;
 
-			if(!isset($_POST["secret"]) || !isset($_POST["channel"]) || !isset($_POST["version"]) || !isset($_POST["git_ref"]) || !isset($_POST["required_client"]))
-				error_exit("Missing required information!");
+			if(!isset($_POST["channel"]) || !isset($_POST["version"]) || !isset($_POST["git_ref"]) || !isset($_POST["required_client"])) {
+                errorExit("Missing required information!");
+			}
+
+            verifyPostSecret();
 
 			$path = $UI_BASE_PATH . DIRECTORY_SEPARATOR;
 			$channeled_path = $UI_BASE_PATH . DIRECTORY_SEPARATOR . $_POST["channel"];
@@ -270,22 +269,20 @@
 			exec("mkdir -p " . $channeled_path);
 
 			{
-				$require_secret = file_get_contents(".deploy_secret");
-				if($require_secret === false || strlen($require_secret) == 0) error_exit("Server missing secret!");
-
-				error_log($_POST["secret"]);
-				error_log(trim($require_secret));
-				if(!is_string($_POST["secret"])) error_exit("Invalid secret!");
-				if(strcmp(trim($require_secret), trim($_POST["secret"])) !== 0)
-					error_exit("Secret does not match!");
-			}
-			{
 				$info = file_get_contents($path . "info.json");
-				if($info === false) $info = array();
-				else $info = json_decode($info, true);
+				if($info === false) {
+                    $info = array();
+                } else {
+                    $info = json_decode($info, true);
+                    if($info === false) {
+                        errorExit("failed to decode old info file");
+                    }
+                }
 
 				$channel_info = &$info[$_POST["channel"]];
-				if(!$channel_info) $channel_info = array();
+				if(!$channel_info) {
+                    $channel_info = array();
+                }
 
 				$entry = [
 					"timestamp" => time(),
@@ -314,4 +311,4 @@
 		]));
 	}
 
-	handle_develop_web_request();
+	handleRequest();
