@@ -171,13 +171,15 @@ function renderToolItems() : MenuBarEntry[] {
     const items: MenuBarEntry[] = [];
 
     const currentConnectionConnected = !!server_connections.active_connection()?.connected;
-    items.push({
-        type: "normal",
-        label: tr("Echo Test"),
-        icon: ClientIcon.ActivateMicrophone,
-        click: () => global_client_actions.fire("action_open_window", { window: "server-echo-test" }),
-        disabled: !currentConnectionConnected
-    });
+    if(__build.target === "web") {
+        items.push({
+            type: "normal",
+            label: tr("Echo Test"),
+            icon: ClientIcon.ActivateMicrophone,
+            click: () => global_client_actions.fire("action_open_window", { window: "server-echo-test" }),
+            disabled: !currentConnectionConnected
+        });
+    }
 
     items.push({
         type: "normal",
