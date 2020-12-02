@@ -34,7 +34,7 @@ export interface ChannelTreeUIEvents {
     action_set_collapsed_state: { treeEntryId: number, state: "collapsed" | "expended" },
     action_select: {
         entryIds: number[],
-        mode: "auto" | "exclusive" | "append" | "remove",
+        mode: "auto" | "auto-add" | "exclusive" | "append" | "remove",
         ignoreClientMove: boolean
     },
     action_select_auto: { direction: "next" | "previous" },

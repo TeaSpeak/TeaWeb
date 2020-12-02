@@ -1,4 +1,9 @@
 # Changelog:
+* **02.12.20**
+    - Fixed a bug within the client entry move mechanic of the channel tree which prevented any client selection
+    - Selecting clicked client when moving 
+    - When a client has been moved into another client his channel will be used
+    
 * **29.11.20**
     - Added support for the native client to show and broadcast video
     - By default using a quick select method when sharing the screen

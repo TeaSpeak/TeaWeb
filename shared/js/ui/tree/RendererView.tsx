@@ -234,8 +234,16 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
     }
 
     private onMouseMove(e: React.MouseEvent) {
-        if (!this.mouseMove.down || this.mouseMove.fired) return;
+        if (!this.mouseMove.down || this.mouseMove.fired) {
+            return;
+        }
+
         if (Math.abs((this.mouseMove.x - e.pageX) * (this.mouseMove.y - e.pageY)) > (this.props.moveThreshold || 9)) {
+            const sourceEntry = this.getEntryFromPoint(this.mouseMove.x, this.mouseMove.y);
+            if(!sourceEntry) { return; }
+
+            this.props.events.fire("action_select", { entryIds: [ sourceEntry ], mode: "auto-add", ignoreClientMove: true });
+
             this.mouseMove.fired = true;
             this.props.events.fire("action_start_entry_move", {
                 current: { x: e.pageX, y: e.pageY },
@@ -286,11 +294,13 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         pageY -= bounds.y;
         pageX -= bounds.x;
 
-        if (pageX < 0 || pageY < 0)
+        if (pageX < 0 || pageY < 0) {
             return undefined;
+        }
 
-        if (pageX > container.clientWidth)
+        if (pageX > container.clientWidth) {
             return undefined;
+        }
 
         const total_offset = container.scrollTop + pageY;
         return this.state.tree[Math.floor(total_offset / ChannelTreeView.EntryHeight)]?.entryId;

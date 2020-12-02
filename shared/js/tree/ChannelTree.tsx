@@ -134,7 +134,7 @@ export class ChannelTreeEntrySelect {
      * append    := Append these entries to the current selection
      * remove    := Remove these entries from the current selection
      */
-    select(entries: ChannelTreeEntry<any>[], mode: "auto" | "exclusive" | "append" | "remove") {
+    select(entries: ChannelTreeEntry<any>[], mode: "auto" | "auto-add" | "exclusive" | "append" | "remove") {
         entries = entries.filter(entry => !!entry);
 
         if(mode === "exclusive") {
@@ -193,7 +193,7 @@ export class ChannelTreeEntrySelect {
             if(deleted_entries.length !== 0) {
                 this.handle.events.fire("notify_selection_changed");
             }
-        } else if(mode === "auto") {
+        } else if(mode === "auto" || mode === "auto-add") {
             let deleted_entries = [];
             let new_entries = [];
 
@@ -203,7 +203,7 @@ export class ChannelTreeEntrySelect {
                     if(index === -1) {
                         this.selectedEntries.push(entry);
                         new_entries.push(entry);
-                    } else {
+                    } else if(mode === "auto") {
                         this.selectedEntries.splice(index, 1);
                         deleted_entries.push(entry);
                     }
@@ -213,8 +213,9 @@ export class ChannelTreeEntrySelect {
                 if(entries.length !== 0) {
                     const entry = entries[entries.length - 1];
                     this.selectedEntries.push(entry);
-                    if(!deleted_entries.remove(entry))
+                    if(!deleted_entries.remove(entry)) {
                         new_entries.push(entry); /* entry wans't selected yet */
+                    }
                 }
             }
 

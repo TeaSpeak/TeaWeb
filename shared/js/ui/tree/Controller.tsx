@@ -657,7 +657,9 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
     });
 
     events.on("action_select", event => {
+        console.error("Select mode: %o", moveSelection);
         if(!event.ignoreClientMove && moveSelection?.length) {
+            console.error("X");
             return;
         }
 
@@ -795,17 +797,28 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
         }
 
         const entry = channelTree.findEntryId(event.treeEntryId);
-        if(!entry || !(entry instanceof ChannelEntry)) {
-            logWarn(LogCategory.CHANNEL, tr("Tried to move clients to an invalid tree entry with id %o"), event.treeEntryId);
+
+
+        let targetChannel: ChannelEntry;
+        if(entry instanceof ChannelEntry) {
+            targetChannel = entry;
+        } else if(entry instanceof ClientEntry) {
+            targetChannel = entry.currentChannel();
+        }
+
+        if(!targetChannel) {
+            logWarn(LogCategory.CHANNEL, tr("Tried to move clients to an tree entry which has no target channel. Tree entry id %o"), event.treeEntryId);
+            moveSelection = undefined;
             return;
         }
 
         moveSelection.filter(e => e.currentChannel() !== entry).forEach(e => {
             channelTree.client.serverConnection.send_command("clientmove", {
                 clid: e.clientId(),
-                cid: entry.channelId
+                cid: targetChannel.channelId
             });
         });
+
         moveSelection = undefined;
     });
 

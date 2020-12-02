@@ -34,7 +34,7 @@ export class RendererMove extends ReactComponentBase<TreeEntryMoveProps, TreeEnt
             if (e.type === "mouseup") {
                 if (e.button !== 0) return;
 
-                this.props.onMoveEnd({x: e.pageX, y: e.pageY});
+                this.props.onMoveEnd({ x: e.pageX, y: e.pageY });
             } else {
                 this.props.onMoveCancel();
             }
