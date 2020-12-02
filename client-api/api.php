@@ -6,7 +6,7 @@
 	 * Time: 16:42
 	 */
 
-    $UI_RAW_BASE_PATH = "ui-files/raw/";
+    $UI_BASE_PATH = "ui-files/";
     $CLIENT_BASE_PATH = "files/";
 
 	function errorExit($message) {
