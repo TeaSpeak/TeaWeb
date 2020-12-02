@@ -131,7 +131,7 @@ export class ServerConnection extends AbstractServerConnection {
 
     async connect(address : ServerAddress, handshake: HandshakeHandler, timeout?: number) : Promise<void> {
         const connectBeginTimestamp = Date.now();
-        timeout = typeof(timeout) === "number" ? timeout : 5000;
+        timeout = typeof(timeout) === "number" ? timeout : 10_000;
 
         try {
             await this.disconnect();
@@ -469,7 +469,7 @@ export class ServerConnection extends AbstractServerConnection {
             listener.timeout = setTimeout(() => {
                 this.returnListeners.remove(listener);
                 listener.reject("timeout");
-            }, 1500);
+            }, options.timeout || 15_000);
             this.returnListeners.push(listener);
 
             this.sendData(ServerConnection.commandDataToJson({

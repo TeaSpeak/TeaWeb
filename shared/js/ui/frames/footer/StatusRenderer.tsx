@@ -76,6 +76,12 @@ const ConnectionStateRenderer = React.memo((props: { state: ConnectionStatus, is
             statusBody = <Translatable key={"healthy"}>Healthy</Translatable>;
             break;
 
+        case "unsupported":
+            title = tr("Not supported");
+            statusClass = cssStyle.disconnected;
+            statusBody = <Translatable key={"not-supported"}>Not supported</Translatable>;
+            break;
+
         default:
             statusClass = cssStyle.unhealthy;
             statusBody = <Translatable key={"invalid-state"}>Invalid state</Translatable>;

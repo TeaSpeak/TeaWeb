@@ -17,7 +17,7 @@ export interface CommandOptions {
 export const CommandOptionDefaults: CommandOptions = {
     flagset: [],
     process_result: true,
-    timeout: 1000
+    timeout: 10_000
 };
 
 export interface ServerConnectionEvents {

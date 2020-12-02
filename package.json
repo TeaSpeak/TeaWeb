@@ -1,6 +1,6 @@
 {
   "name": "teaspeak-web",
-  "version": "1.2.0",
+  "version": "1.5.0",
   "description": "Welcome here! This repository is created with two reasons:\n 1. People can bring their own ideas and follow their implementation\n 2. People can see TeaSpeak Web client progress and avoid creating repetitive issues all the time.",
   "scripts": {
     "compile-project-base": "tsc -p tsbaseconfig.json",
