@@ -61,51 +61,12 @@
 		global $UI_RAW_BASE_PATH;
 
 		if(isset($_GET) && isset($_GET["type"])) {
-			if($_GET["type"] === "files") {
-				header("Content-Type: text/plain");
-				header("info-version: 1");
-				/* header("mode: develop"); */
-
-				echo ("type\thash\tpath\tname\n");
-				foreach (list_dir($UI_RAW_BASE_PATH) as $file) {
-					$type_idx = strrpos($file, ".");
-					$type = $type_idx > 0 ? substr($file, $type_idx + 1) : "";
-					if($type == "php") $type = "html";
-
-					$name_idx = strrpos($file, "/");
-					$name = $name_idx > 0 ? substr($file, $name_idx + 1) : $file;
-					$path = $name_idx > 0 ? substr($file, 0, $name_idx) : ".";
-
-					$name_idx = strrpos($name, ".");
-					if($name_idx > 0)
-						$name = substr($name, 0, $name_idx);
-
-					echo $type . "\t" . sha1_file($UI_RAW_BASE_PATH . $file) . "\t" . $path . "\t" . $name . (strlen($type) > 0 ? "." . $type : "") . "\n";
-				}
-				die;
-			}
-			else if($_GET["type"] === "file") {
-				header("Content-Type: text/plain");
-
-				$path = realpath($UI_RAW_BASE_PATH . $_GET["path"]);
-				$name = $_GET["name"];
-				if($path === False || strpos($path, realpath(".")) === False || strpos($name, "/") !== False) error_exit("Invalid file");
-
-				if(!is_file( $path . DIRECTORY_SEPARATOR . $name)) {
-					if(endsWith($name, ".html")) {
-						$name = substr($name, 0, strlen($name) - 4);
-						$name .= "php";
-					}
-				}
-				if(!is_file( $path . DIRECTORY_SEPARATOR . $name)) error_exit("Missing file");
-
-				fdump( $path . DIRECTORY_SEPARATOR . $name);
-				die();
-			}
-			else if ($_GET["type"] == "update-info") {
+			if ($_GET["type"] == "update-info") {
 				global $CLIENT_BASE_PATH;
 				$raw_versions = file_get_contents($CLIENT_BASE_PATH . "/version.json");
-				if($raw_versions === false) error_exit("Missing file!");
+				if($raw_versions === false) {
+                    error_exit("Missing file!");
+                }
 
 				$versions = json_decode($raw_versions, true);
 				$versions["success"] = true;
@@ -117,7 +78,9 @@
 
 				$path = $CLIENT_BASE_PATH . $_GET["channel"] . DIRECTORY_SEPARATOR . $_GET["version"] . DIRECTORY_SEPARATOR;
 				$raw_release_info = file_get_contents($path . "info.json");
-				if($raw_release_info === false) error_exit("missing info file (version and/or channel missing. Path was " . $path . ")");
+				if($raw_release_info === false) {
+                    error_exit("missing info file (version and/or channel missing. Path was " . $path . ")");
+                }
 				$release_info = json_decode($raw_release_info);
 
 				foreach($release_info as $platform) {
