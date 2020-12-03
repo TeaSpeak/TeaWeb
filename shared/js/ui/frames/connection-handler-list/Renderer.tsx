@@ -110,11 +110,12 @@ const MoveableConnectionHandler = (props: { handlerId: string, mode: ConnectionH
                     handlerId: props.handlerId,
                     mouse: { x: event.pageX, y: event.pageY, xOffset: basePoint.x + refContainer.current.parentElement.scrollLeft - refContainer.current.offsetLeft }
                 });
+
                 detachListener();
             }
         };
 
-        const mouseUpListener = () => detachListener;
+        const mouseUpListener = () => detachListener();
 
         const attachListener = () => {
             if(attached.status) { return; }
