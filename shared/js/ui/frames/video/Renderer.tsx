@@ -78,6 +78,7 @@ const VideoInfo = React.memo((props: { videoId: string }) => {
 
 const VideoStreamReplay = React.memo((props: { stream: MediaStream | undefined, className: string, title: string }) => {
     const refVideo = useRef<HTMLVideoElement>();
+    const refReplayTimeout = useRef<number>();
 
     useEffect(() => {
         const video = refVideo.current;
@@ -86,9 +87,23 @@ const VideoStreamReplay = React.memo((props: { stream: MediaStream | undefined, 
             video.srcObject = props.stream;
             video.autoplay = true;
             video.muted = true;
-            video.play().then(undefined).catch(undefined);
+
+            video.play().then(undefined).catch(() => {
+                logWarn(LogCategory.VIDEO, tr("Failed to start video replay. Retrying in 500ms intervals."));
+                refReplayTimeout.current = setInterval(() => {
+                    video.play().then(() => {
+                        clearInterval(refReplayTimeout.current);
+                        refReplayTimeout.current = undefined;
+                    }).catch(() => {});
+                });
+            });
         } else {
             video.style.opacity = "0";
+        }
+
+        return () => {
+            clearInterval(refReplayTimeout.current);
+            refReplayTimeout.current = undefined;
         }
     }, [ props.stream ]);
 
