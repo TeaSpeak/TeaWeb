@@ -342,16 +342,6 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         return this._family_index;
     }
 
-    protected onSelect(singleSelect: boolean) {
-        super.onSelect(singleSelect);
-        if(!singleSelect) return;
-
-        if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
-            this.channelTree.client.side_bar.channel_conversations().setSelectedConversation(this.channelId);
-            this.channelTree.client.side_bar.show_channel_conversations();
-        }
-    }
-
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {
         let channelCreate = !![
             PermissionType.B_CHANNEL_CREATE_TEMPORARY,

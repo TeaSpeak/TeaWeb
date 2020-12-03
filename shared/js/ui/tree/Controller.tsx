@@ -196,6 +196,7 @@ class ChannelTreeController {
         this.channelTree.channels.forEach(channel => this.initializeChannelEvents(channel));
         this.channelTree.clients.forEach(channel => this.initializeClientEvents(channel));
         this.sendChannelTreeEntries();
+        this.sendSelectedEntry();
     }
 
     @EventHandler<ChannelTreeEvents>("notify_channel_created")
@@ -250,14 +251,17 @@ class ChannelTreeController {
         this.sendChannelTreeEntries();
     }
 
+    @EventHandler<ChannelTreeEvents>("notify_selected_entry_changed")
+    private handleSelectedEntryChanged(_event: ChannelTreeEvents["notify_selected_entry_changed"]) {
+        if(!this.channelTreeInitialized) { return; }
+
+        this.sendSelectedEntry();
+    }
+
     /* entry event handlers */
     private initializeTreeEntryEvents<T extends ChannelTreeEntryEvents>(entry: ChannelTreeEntryModel<T>, events: any[]) {
         events.push(entry.events.on("notify_unread_state_change", event => {
             this.events.fire("notify_unread_state", { unread: event.unread, treeEntryId: entry.uniqueEntryId });
-        }));
-
-        events.push(entry.events.on("notify_select_state_change", event => {
-            this.events.fire("notify_select_state", { selected: event.selected, treeEntryId: entry.uniqueEntryId });
         }));
     }
 
@@ -385,6 +389,11 @@ class ChannelTreeController {
         this.channelTree.rootChannel().forEach(entry => buildSubTree(entry, 1));
 
         this.events.fire_react("notify_tree_entries", { entries: entries });
+    }
+
+    public sendSelectedEntry() {
+        const selectedEntry = this.channelTree.getSelectedEntry();
+        this.events.fire_react("notify_selected_entry", { treeEntryId: selectedEntry ? selectedEntry.uniqueEntryId : 0 });
     }
 
     public sendChannelInfo(channel: ChannelEntry) {
@@ -558,16 +567,6 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
         events.fire_react("notify_unread_state", { treeEntryId: event.treeEntryId, unread: entry.isUnread() });
     });
 
-    events.on("query_select_state", event => {
-        const entry = channelTree.findEntryId(event.treeEntryId);
-        if(!entry) {
-            logWarn(LogCategory.CHANNEL, tr("Tried to query the select state of an invalid tree entry with id %o"), event.treeEntryId);
-            return;
-        }
-
-        events.fire_react("notify_select_state", { treeEntryId: event.treeEntryId, selected: entry.isSelected() });
-    });
-
     events.on("notify_destroy", channelTree.client.events().on("notify_visibility_changed", event => events.fire("notify_visibility_changed", event)));
 
     events.on("query_tree_entries", () => controller.sendChannelTreeEntries());
@@ -663,67 +662,43 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
     });
 
     events.on("action_select", event => {
-        console.error("Select mode: %o", moveSelection);
-        if(!event.ignoreClientMove && moveSelection?.length) {
-            console.error("X");
+        if(event.treeEntryId === 0) {
+            channelTree.setSelectedEntry(undefined);
             return;
         }
 
-        const entries = [];
-        for(const entryId of event.entryIds) {
-            const entry = channelTree.findEntryId(entryId);
-            if(!entry) {
-                logWarn(LogCategory.CHANNEL, tr("Tried to select an invalid tree entry with id %o. Skipping entry."), entryId);
-                continue;
-            }
-
-            entries.push(entry);
+        const entry = channelTree.findEntryId(event.treeEntryId);
+        if(!entry) {
+            logWarn(LogCategory.CHANNEL, tr("Tried to select an invalid channel tree entry with id %o"), event.treeEntryId);
+            return;
         }
 
-        channelTree.selection.select(entries, event.mode);
-    });
-
-    events.on("action_select_auto", event => {
-        if(event.direction === "next") {
-            channelTree.selection.selectNextTreeEntry();
-        } else if(event.direction === "previous") {
-            channelTree.selection.selectPreviousTreeEntry();
-        }
+        channelTree.setSelectedEntry(entry);
     });
 
     events.on("action_show_context_menu", event => {
-        if(event.treeEntryId === 0) {
+        const entries = event.treeEntryIds.map(entryId => {
+            const entry = channelTree.findEntryId(entryId);
+            if(!entry) {
+                logWarn(LogCategory.CHANNEL, tr("Tried to open a context menu for an invalid channel tree entry with id %o"), entryId);
+            }
+            return entry;
+        }).filter(entry => !!entry);
+
+        if(entries.length === 0) {
             channelTree.showContextMenu(event.pageX, event.pageY);
             return;
+        } else if(entries.length === 1) {
+            entries[0].showContextMenu(event.pageX, event.pageY);
+        } else {
+            channelTree.showMultiSelectContextMenu(entries, event.pageX, event.pageY);
         }
-        const entry = channelTree.findEntryId(event.treeEntryId);
-        if(!entry) {
-            logWarn(LogCategory.CHANNEL, tr("Tried to open a context menu for an invalid channel tree entry with id %o"), event.treeEntryId);
-            return;
-        }
-
-        if (channelTree.selection.isMultiSelect() && entry.isSelected()) {
-            channelTree.open_multiselect_context_menu(channelTree.selection.selectedEntries, event.pageX, event.pageY);
-            return;
-        }
-
-        channelTree.events.fire("action_select_entries", {
-            entries: [entry],
-            mode: "exclusive"
-        });
-        entry.showContextMenu(event.pageX, event.pageY);
     });
 
     events.on("action_channel_join", event => {
-        if(!event.ignoreMultiSelect && channelTree.selection.isMultiSelect()) {
-            return;
-        }
-
-        const entry = event.treeEntryId === "selected" ? channelTree.selection.selectedEntries[0] : channelTree.findEntryId(event.treeEntryId);
+        const entry = channelTree.findEntryId(event.treeEntryId);
         if(!entry || !(entry instanceof ChannelEntry)) {
-            if(event.treeEntryId !== "selected") {
-                logWarn(LogCategory.CHANNEL, tr("Tried to join an invalid tree entry with id %o"), event.treeEntryId);
-            }
+            logWarn(LogCategory.CHANNEL, tr("Tried to join an invalid tree entry with id %o"), event.treeEntryId);
             return;
         }
 
@@ -737,15 +712,7 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
             return;
         }
 
-        if(moveSelection) {
-            /* don't select entries while we're moving */
-            return;
-        }
-
-        channelTree.events.fire("action_select_entries", {
-            entries: [entry],
-            mode: "exclusive"
-        });
+        channelTree.setSelectedEntry(entry);
         spawnFileTransferModal(entry.channelId);
     });
 
@@ -753,10 +720,6 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
         const entry = channelTree.findEntryId(event.treeEntryId);
         if(!entry || !(entry instanceof ClientEntry)) {
             logWarn(LogCategory.CHANNEL, tr("Tried to execute a double click action for an invalid tree entry with id %o"), event.treeEntryId);
-            return;
-        }
-
-        if(channelTree.selection.isMultiSelect()) {
             return;
         }
 
@@ -786,46 +749,111 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
         })
     });
 
-    let moveSelection: ClientEntry[];
-    events.on("action_start_entry_move", event => {
-        const selection = channelTree.selection.selectedEntries.slice();
-        if(selection.length === 0) { return; }
-        if(selection.findIndex(element => !(element instanceof ClientEntry)) !== -1) { return; }
-
-        moveSelection = selection as any;
-        events.fire_react("notify_entry_move", { entries: selection.map(client => (client as ClientEntry).clientNickName()).join(", "), begin: event.start, current: event.current });
-    });
-
-    events.on("action_move_entries", event => {
-        if(event.treeEntryId === 0 || !moveSelection?.length) {
-            moveSelection = undefined;
+    events.on("action_move_clients", event => {
+        const entry = channelTree.findEntryId(event.targetTreeEntry);
+        if(!entry) {
+            logWarn(LogCategory.CHANNEL, tr("Received client move notify with an unknown target entry id %o"), event.targetTreeEntry);
             return;
         }
 
-        const entry = channelTree.findEntryId(event.treeEntryId);
-
-
         let targetChannel: ChannelEntry;
-        if(entry instanceof ChannelEntry) {
-            targetChannel = entry;
-        } else if(entry instanceof ClientEntry) {
+        if(entry instanceof ClientEntry) {
             targetChannel = entry.currentChannel();
+        } else if(entry instanceof ChannelEntry) {
+            targetChannel = entry;
+        } else {
+            logWarn(LogCategory.CHANNEL, tr("Received client move notify with an invalid target entry id %o"), event.targetTreeEntry);
+            return;
         }
 
         if(!targetChannel) {
-            logWarn(LogCategory.CHANNEL, tr("Tried to move clients to an tree entry which has no target channel. Tree entry id %o"), event.treeEntryId);
-            moveSelection = undefined;
+            /* should not happen often that a client hasn't a channel */
             return;
         }
 
-        moveSelection.filter(e => e.currentChannel() !== entry).forEach(e => {
-            channelTree.client.serverConnection.send_command("clientmove", {
-                clid: e.clientId(),
-                cid: targetChannel.channelId
-            });
+        const clients = event.entries.map(entryId => {
+            const entry = channelTree.findEntryId(entryId);
+            if(!entry || !(entry instanceof ClientEntry)) {
+                logWarn(LogCategory.CHANNEL, tr("Received client move notify with an entry id which isn't a client. Entry id: %o"), entryId);
+                return undefined;
+            }
+
+            return entry;
+        }).filter(client => !!client).filter(client => client.currentChannel() !== targetChannel);
+
+        if(clients.length === 0) {
+            return;
+        }
+
+        let bulks = clients.map(client => { return { clid: client.clientId() }; });
+        bulks[0]["cid"] = targetChannel.channelId;
+
+        channelTree.client.serverConnection.send_command("clientmove", bulks);
+    });
+
+    events.on("action_move_channels", event => {
+        const targetChannel = channelTree.findEntryId(event.targetTreeEntry);
+        if(!targetChannel || !(targetChannel instanceof ChannelEntry)) {
+            logWarn(LogCategory.CHANNEL, tr("Received channel move notify with an unknown/invalid target entry id %o"), event.targetTreeEntry);
+            return;
+        }
+
+        let channels = event.entries.map(entryId => {
+            const entry = channelTree.findEntryId(entryId);
+            if(!entry || !(entry instanceof ChannelEntry)) {
+                logWarn(LogCategory.CHANNEL, tr("Received channel move notify with a channel id which isn't a channel. Entry id: %o"), entryId);
+                return undefined;
+            }
+
+            return entry;
+        }).filter(channel => !!channel);
+
+        /* remove all channel in channel channels */
+        channels = channels.filter(channel => {
+            while((channel = channel.parent_channel())) {
+                if(channels.indexOf(channel) !== -1) {
+                    return false;
+                }
+            }
+            return true;
         });
 
-        moveSelection = undefined;
+        channels = channels.filter(channel => channel !== targetChannel);
+
+        if(channels.length === 0) {
+            return;
+        }
+
+        let parentChannelId: number, previousChannelId: number;
+        if(event.mode === "before") {
+            parentChannelId = targetChannel.hasParent() ? targetChannel.parent_channel().channelId : 0;
+            previousChannelId = targetChannel.channel_previous ? targetChannel.channel_previous.channelId : 0;
+        } else if(event.mode == "after") {
+            parentChannelId = targetChannel.hasParent() ? targetChannel.parent_channel().channelId : 0;
+            previousChannelId = targetChannel.channelId;
+        } else if(event.mode === "child") {
+            parentChannelId = targetChannel.channelId;
+            previousChannelId = 0;
+        } else {
+            return;
+        }
+
+        (async () => {
+            let channel: ChannelEntry;
+            while((channel = channels.pop_front())) {
+                const success = await channelTree.client.serverConnection.send_command("channelmove", {
+                    cid: channel.channelId,
+                    cpid: parentChannelId,
+                    order: previousChannelId
+                }).then(() => true).catch(() => false);
+
+                if(!success) {
+                    break;
+                }
+
+                previousChannelId = channel.channelId;
+            }
+        })();
     });
 
     events.on("notify_client_name_edit_failed", event => {

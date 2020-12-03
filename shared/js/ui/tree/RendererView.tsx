@@ -8,7 +8,6 @@ import * as React from "react";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 import ResizeObserver from 'resize-observer-polyfill';
 import {RDPChannelTree, RDPEntry} from "./RendererDataProvider";
-import {RendererMove} from "./RendererMove";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
 
@@ -59,14 +58,6 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
 
     private scrollFixRequested;
 
-    private mouseMove: { x: number, y: number, down: boolean, fired: boolean } = {
-        x: 0,
-        y: 0,
-        down: false,
-        fired: false
-    };
-    private readonly documentMouseListener;
-
     private inViewCallbacks: {
         index: number,
         callback: () => void,
@@ -83,16 +74,6 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
             smoothScroll: false,
             tree: [],
             treeRevision: -1
-        };
-
-        this.documentMouseListener = (e: MouseEvent) => {
-            if (e.type !== "mouseleave" && e.button !== 0)
-                return;
-
-            this.mouseMove.down = false;
-            this.mouseMove.fired = false;
-
-            this.removeDocumentMouseListener();
         };
     }
 
@@ -143,16 +124,6 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         });
     }
 
-    private registerDocumentMouseListener() {
-        document.addEventListener("mouseleave", this.documentMouseListener);
-        document.addEventListener("mouseup", this.documentMouseListener);
-    }
-
-    private removeDocumentMouseListener() {
-        document.removeEventListener("mouseleave", this.documentMouseListener);
-        document.removeEventListener("mouseup", this.documentMouseListener);
-    }
-
     private visibleEntries() {
         let viewEntryCount = Math.ceil(this.state.view_height / ChannelTreeView.EntryHeight);
         const viewEntryBegin = Math.floor(this.state.scroll_offset / ChannelTreeView.EntryHeight);
@@ -190,13 +161,11 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
                 className={viewStyle.channelTreeContainer + " " + (this.state.smoothScroll ? viewStyle.smoothScroll : "")}
                 onScroll={() => this.onScroll()}
                 ref={this.refContainer}
-                onMouseDown={e => this.onMouseDown(e)}
-                onMouseMove={e => this.onMouseMove(e)}
                 onContextMenu={event => {
                     if(event.target !== this.refContainer.current) { return; }
 
                     event.preventDefault();
-                    this.props.events.fire("action_show_context_menu", { pageY: event.pageY, pageX: event.pageX, treeEntryId: 0 });
+                    this.props.events.fire("action_show_context_menu", { pageY: event.pageY, pageX: event.pageX, treeEntryIds: [] });
                 }}
             >
                 <div
@@ -204,16 +173,6 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
                     style={{height: (this.state.tree.length * ChannelTreeView.EntryHeight) + "px"}}>
                     {elements}
                 </div>
-                <RendererMove
-                    onMoveEnd={target => {
-                        const targetEntry = this.getEntryFromPoint(target.x, target.y);
-                        this.props.events.fire("action_move_entries", { treeEntryId: typeof targetEntry === "number" ? targetEntry : 0 });
-                    }}
-                    onMoveCancel={() => {
-                        this.props.events.fire("action_move_entries", { treeEntryId: 0 });
-                    }}
-                    ref={this.props.dataProvider.refMove}
-                />
             </div>
         )
     }
@@ -222,34 +181,6 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         this.setState({
             scroll_offset: this.refContainer.current.scrollTop
         });
-    }
-
-    private onMouseDown(e: React.MouseEvent) {
-        if (e.button !== 0) return; /* left button only */
-
-        this.mouseMove.down = true;
-        this.mouseMove.x = e.pageX;
-        this.mouseMove.y = e.pageY;
-        this.registerDocumentMouseListener();
-    }
-
-    private onMouseMove(e: React.MouseEvent) {
-        if (!this.mouseMove.down || this.mouseMove.fired) {
-            return;
-        }
-
-        if (Math.abs((this.mouseMove.x - e.pageX) * (this.mouseMove.y - e.pageY)) > (this.props.moveThreshold || 9)) {
-            const sourceEntry = this.getEntryFromPoint(this.mouseMove.x, this.mouseMove.y);
-            if(!sourceEntry) { return; }
-
-            this.props.events.fire("action_select", { entryIds: [ sourceEntry ], mode: "auto-add", ignoreClientMove: true });
-
-            this.mouseMove.fired = true;
-            this.props.events.fire("action_start_entry_move", {
-                current: { x: e.pageX, y: e.pageY },
-                start: { x: this.mouseMove.x, y: this.mouseMove.y }
-            });
-        }
     }
 
     scrollEntryInView(entryId: number, callback?: () => void) {

@@ -4,12 +4,12 @@ import {FileType} from "../../../file/FileManager";
 import {CommandResult} from "../../../connection/ServerConnectionDeclaration";
 import PermissionType from "../../../permission/PermissionType";
 import * as log from "../../../log";
-import {LogCategory} from "../../../log";
+import {LogCategory, logTrace} from "../../../log";
 import {Entry, MenuEntry, MenuEntryType, spawn_context_menu} from "../../../ui/elements/ContextMenu";
 import * as ppt from "tc-backend/ppt";
 import {SpecialKey} from "../../../PPTListener";
 import {spawnYesNo} from "../../../ui/modal/ModalYesNo";
-import {tra, traj, tr} from "../../../i18n/localize";
+import {tr, tra, traj} from "../../../i18n/localize";
 import {
     FileTransfer,
     FileTransferState,
@@ -105,6 +105,8 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             });
             return;
         }
+        logTrace(LogCategory.FILE_TRANSFER, tr("Requesting a file list for %o"), path);
+
         let request: Promise<ListedFileInfo[]>;
         if (path.type === "root") {
             request = (async () => {

@@ -372,56 +372,6 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
     protected initializeListener() {
         if(this._listener_initialized) return;
         this._listener_initialized = true;
-
-        //FIXME: TODO!
-        /*
-        this.tag.on('mousedown', event => {
-            if(event.which != 1) return; //Only the left button
-
-            let clients = this.channelTree.currently_selected as (ClientEntry | ClientEntry[]);
-
-            if(ppt.key_pressed(SpecialKey.SHIFT)) {
-                if(clients != this && !($.isArray(clients) && clients.indexOf(this) != -1))
-                    clients = $.isArray(clients) ? [...clients, this] : [clients, this];
-            } else {
-                clients = this;
-            }
-
-            this.channelTree.client_mover.activate(clients, target => {
-                if(!target) return;
-
-                for(const client of $.isArray(clients) ? clients : [clients]) {
-                    if(target == client._channel) continue;
-
-                    const source = client._channel;
-                    const self = this.channelTree.client.getClient();
-                    this.channelTree.client.serverConnection.send_command("clientmove", {
-                        clid: client.clientId(),
-                        cid: target.getChannelId()
-                    }).then(event => {
-                        if(client.clientId() == this.channelTree.client.clientId)
-                            this.channelTree.client.sound.play(Sound.CHANNEL_JOINED);
-                        else if(target !== source && target != self.currentChannel())
-                            this.channelTree.client.sound.play(Sound.USER_MOVED);
-                    });
-                }
-
-                this.channelTree.onSelect();
-            }, event);
-        });
-         */
-    }
-
-    protected onSelect(singleSelect: boolean) {
-        super.onSelect(singleSelect);
-        if(!singleSelect) return;
-
-        if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CLIENT)) {
-            if(this instanceof MusicClientEntry)
-                this.channelTree.client.side_bar.show_music_player(this);
-            else
-                this.channelTree.client.side_bar.show_client_info(this);
-        }
     }
 
     protected contextmenu_info() : contextmenu.MenuEntry[] {

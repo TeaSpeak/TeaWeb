@@ -170,18 +170,6 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
         this.remote_address = undefined;
     }
 
-    protected onSelect(singleSelect: boolean) {
-        super.onSelect(singleSelect);
-        if(!singleSelect) return;
-
-        if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
-            const sidebar = this.channelTree.client.side_bar;
-            sidebar.channel_conversations().findOrCreateConversation(0);
-            sidebar.channel_conversations().setSelectedConversation(0);
-            sidebar.show_channel_conversations();
-        }
-    }
-
     contextMenuItems() : contextmenu.MenuEntry[] {
         return [
             {

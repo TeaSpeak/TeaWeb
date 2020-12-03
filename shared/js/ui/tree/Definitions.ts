@@ -29,27 +29,23 @@ export type ServerState = { state: "disconnected" } | { state: "connecting", tar
 export interface ChannelTreeUIEvents {
     /* actions */
     action_toggle_popout: { shown: boolean },
-    action_show_context_menu: { treeEntryId: number | 0, pageX: number, pageY: number },
+    action_show_context_menu: { treeEntryIds: number[], pageX: number, pageY: number },
     action_start_entry_move: { start: { x: number, y: number }, current: { x: number, y: number } },
     action_set_collapsed_state: { treeEntryId: number, state: "collapsed" | "expended" },
-    action_select: {
-        entryIds: number[],
-        mode: "auto" | "auto-add" | "exclusive" | "append" | "remove",
-        ignoreClientMove: boolean
-    },
-    action_select_auto: { direction: "next" | "previous" },
-    action_channel_join: { treeEntryId: number | "selected", ignoreMultiSelect: boolean },
+    action_select: { treeEntryId: number | 0 },
+    action_channel_join: { treeEntryId: number },
     action_channel_open_file_browser: { treeEntryId: number },
     action_client_double_click: { treeEntryId: number },
     action_client_name_submit: { treeEntryId: number, name: string },
-    action_move_entries: { treeEntryId: number /* zero if move failed */ }
+    action_move_clients: { targetTreeEntry: number, entries: number[] },
+    action_move_channels: { targetTreeEntry: number, mode: "before" | "after" | "child", entries: number[] },
 
     /* queries */
     query_tree_entries: {},
     query_popout_state: {},
+    query_selected_entry: {},
 
     query_unread_state: { treeEntryId: number },
-    query_select_state: { treeEntryId: number },
 
     query_channel_info: { treeEntryId: number },
     query_channel_icon: { treeEntryId: number },
@@ -65,6 +61,7 @@ export interface ChannelTreeUIEvents {
     /* notifies */
     notify_tree_entries: { entries: ChannelTreeEntry[] },
     notify_popout_state: { shown: boolean, showButton: boolean },
+    notify_selected_entry: { treeEntryId: number | 0 },
 
     notify_channel_info: { treeEntryId: number, info: ChannelEntryInfo },
     notify_channel_icon: { treeEntryId: number, icon: ClientIcon },
@@ -80,10 +77,16 @@ export interface ChannelTreeUIEvents {
     notify_server_state: { treeEntryId: number, state: ServerState },
 
     notify_unread_state: { treeEntryId: number, unread: boolean },
-    notify_select_state: { treeEntryId: number, selected: boolean },
-
-    notify_entry_move: { entries: string, begin: { x: number, y: number }, current: { x: number, y: number } },
 
     notify_visibility_changed: { visible: boolean },
     notify_destroy: {}
 }
+
+export type ChannelTreeDragData = {
+    version: 1,
+    handlerId: string,
+    type: string,
+
+    entryIds: number[],
+    entryTypes: ("server" | "channel" | "client")[]
+};

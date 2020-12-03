@@ -4,7 +4,9 @@ import {
     ChannelIcons,
     ChannelTreeUIEvents,
     ClientIcons,
-    ClientNameInfo, ClientTalkIconState, ServerState
+    ClientNameInfo,
+    ClientTalkIconState,
+    ServerState
 } from "tc-shared/ui/tree/Definitions";
 import {ChannelTreeView, PopoutButton} from "tc-shared/ui/tree/RendererView";
 import * as React from "react";
@@ -20,7 +22,8 @@ import {
     RendererClient
 } from "tc-shared/ui/tree/RendererClient";
 import {ServerRenderer} from "tc-shared/ui/tree/RendererServer";
-import {RendererMove} from "./RendererMove";
+import {generateDragElement, getDragInfo, parseDragData, setupDragData} from "tc-shared/ui/tree/DragHelper";
+import {createErrorModal} from "tc-shared/ui/elements/Modal";
 
 function isEquivalent(a, b) {
     const typeA = typeof a;
@@ -61,15 +64,191 @@ function isEquivalent(a, b) {
     }
 }
 
+/**
+ * auto      := Select/unselect/add/remove depending on the selected state & shift key state
+ * exclusive := Only selected these entries
+ * append    := Append these entries to the current selection
+ * remove    := Remove these entries from the current selection
+ */
+export type RDPTreeSelectType = "auto" | "auto-add" | "exclusive" | "append" | "remove";
+export class RDPTreeSelection {
+    readonly handle: RDPChannelTree;
+    selectedEntries: RDPEntry[] = [];
+
+    private readonly documentKeyListener;
+    private readonly documentBlurListener;
+    private shiftKeyPressed = false;
+
+    constructor(handle: RDPChannelTree) {
+        this.handle = handle;
+
+        this.documentKeyListener = event => this.shiftKeyPressed = event.shiftKey;
+        this.documentBlurListener = () => this.shiftKeyPressed = false;
+
+        document.addEventListener("keydown", this.documentKeyListener);
+        document.addEventListener("keyup", this.documentKeyListener);
+        document.addEventListener("focusout", this.documentBlurListener);
+        document.addEventListener("mouseout", this.documentBlurListener);
+    }
+
+    reset() {
+        this.clearSelection();
+    }
+
+    destroy() {
+        document.removeEventListener("keydown", this.documentKeyListener);
+        document.removeEventListener("keyup", this.documentKeyListener);
+        document.removeEventListener("focusout", this.documentBlurListener);
+        document.removeEventListener("mouseout", this.documentBlurListener);
+        this.selectedEntries.splice(0, this.selectedEntries.length);
+    }
+
+    isMultiSelect() {
+        return this.selectedEntries.length > 1;
+    }
+
+    isAnythingSelected() {
+        return this.selectedEntries.length > 0;
+    }
+
+    clearSelection() {
+        this.select([], "exclusive", false);
+    }
+
+    select(entries: RDPEntry[], mode: RDPTreeSelectType, selectMaintree: boolean) {
+        entries = entries.filter(entry => !!entry);
+
+        let deletedEntries: RDPEntry[] = [];
+        let newEntries: RDPEntry[] = [];
+
+        if(mode === "exclusive") {
+            deletedEntries = this.selectedEntries.slice();
+            newEntries = entries;
+        } else if(mode === "append") {
+            newEntries = entries;
+        } else if(mode === "remove") {
+            deletedEntries = entries;
+        } else if(mode === "auto" || mode === "auto-add") {
+            if(this.shiftKeyPressed) {
+                for(const entry of entries) {
+                    const index = this.selectedEntries.findIndex(e => e === entry);
+                    if(index === -1) {
+                        newEntries.push(entry);
+                    } else if(mode === "auto") {
+                        deletedEntries.push(entry);
+                    }
+                }
+            } else {
+                deletedEntries = this.selectedEntries.slice();
+                if(entries.length !== 0) {
+                    const entry = entries[entries.length - 1];
+                    if(!deletedEntries.remove(entry)) {
+                        newEntries.push(entry); /* entry wans't selected yet */
+                    }
+                }
+            }
+        } else {
+            console.warn("Received entry select event with unknown mode: %s", mode);
+        }
+
+        newEntries.forEach(entry => deletedEntries.remove(entry));
+        newEntries = newEntries.filter(entry => {
+            if(this.selectedEntries.indexOf(entry) === -1) {
+                this.selectedEntries.push(entry);
+                return true;
+            } else {
+                return false;
+            }
+        });
+        deletedEntries = deletedEntries.filter(entry => this.selectedEntries.remove(entry));
+
+        deletedEntries.forEach(entry => entry.setSelected(false));
+        newEntries.forEach(entry => entry.setSelected(true));
+
+        /* it's important to keep it sorted from the top to the bottom (example would be the channel move) */
+        if(deletedEntries.length > 0 || newEntries.length > 0) {
+            const treeEntries = this.handle.getTreeEntries();
+
+            const lookupMap = {};
+            this.selectedEntries.forEach(entry => lookupMap[entry.entryId] = treeEntries.indexOf(entry));
+            this.selectedEntries.sort((a, b) => lookupMap[a.entryId] - lookupMap[b.entryId]);
+        }
+
+        if(this.selectedEntries.length === 1 && selectMaintree) {
+            this.handle.events.fire("action_select", { treeEntryId: this.selectedEntries[0].entryId });
+        }
+    }
+
+    public selectNext(selectClients: boolean, direction: "up" | "down") {
+        const entries = this.handle.getTreeEntries();
+        const selectedEntriesIndex = this.selectedEntries.map(e => entries.indexOf(e)).filter(e => e !== -1);
+
+        let index;
+        if(direction === "up") {
+            index = selectedEntriesIndex.reduce((previousValue, currentValue) => Math.min(previousValue, currentValue), entries.length);
+            if(index === entries.length) {
+                index = entries.length - 1;
+            }
+        } else {
+            index = selectedEntriesIndex.reduce((previousValue, currentValue) => Math.max(previousValue, currentValue), -1);
+            if(index === -1) {
+                index = entries.length - 1;
+            }
+        }
+
+        if(index === -1) {
+            /* tree contains no entries */
+            return;
+        }
+
+        if(!this.doSelectNext(entries[index], selectClients, direction)) {
+            /* There is no next entry. Select the last one. */
+            if(this.isMultiSelect()) {
+                this.select([ entries[index] ], "exclusive", true);
+            }
+        }
+    }
+
+    private doSelectNext(current: RDPEntry, selectClients: boolean, direction: "up" | "down") : boolean {
+        const directionModifier = direction === "down" ? 1 : -1;
+
+        const entries = this.handle.getTreeEntries();
+        let index = entries.indexOf(current);
+        if(index === -1) { return false; }
+        index += directionModifier;
+
+        if(selectClients) {
+            if(index >= entries.length || index < 0) {
+                return false;
+            }
+
+            this.select([entries[index]], "exclusive", true);
+            return true;
+        } else {
+            while(index >= 0 && index < entries.length && entries[index] instanceof RDPClient) {
+                index += directionModifier;
+            }
+
+            if(index === entries.length || index <= 0) {
+                return false;
+            }
+
+            this.select([entries[index]], "exclusive", true);
+            return true;
+        }
+    }
+}
+
 export class RDPChannelTree {
     readonly events: Registry<ChannelTreeUIEvents>;
     readonly handlerId: string;
 
     private registeredEventHandlers = [];
 
-    readonly refMove = React.createRef<RendererMove>();
     readonly refTree = React.createRef<ChannelTreeView>();
     readonly refPopoutButton = React.createRef<PopoutButton>();
+
+    readonly selection: RDPTreeSelection;
 
     popoutShown: boolean = false;
     popoutButtonShown: boolean = false;
@@ -78,9 +257,12 @@ export class RDPChannelTree {
     private orderedTree: RDPEntry[] = [];
     private treeEntries: {[key: number]: RDPEntry} = {};
 
+    private dragOverChannelEntry: RDPChannel;
+
     constructor(events: Registry<ChannelTreeUIEvents>, handlerId: string) {
         this.events = events;
         this.handlerId = handlerId;
+        this.selection = new RDPTreeSelection(this);
     }
 
     initialize() {
@@ -97,17 +279,6 @@ export class RDPChannelTree {
 
             entry.handleUnreadUpdate(event.unread);
         }));
-
-        events.push(this.events.on("notify_select_state", event => {
-            const entry = this.treeEntries[event.treeEntryId];
-            if(!entry) {
-                logError(LogCategory.CHANNEL, tr("Received select notify for invalid tree entry %o."), event.treeEntryId);
-                return;
-            }
-
-            entry.handleSelectUpdate(event.selected);
-        }));
-
 
         events.push(this.events.on("notify_channel_info", event => {
             const entry = this.treeEntries[event.treeEntryId];
@@ -201,8 +372,17 @@ export class RDPChannelTree {
             entry.handleStateUpdate(event.state);
         }));
 
+        events.push(this.events.on("notify_selected_entry", event => {
+            const entry = this.getTreeEntries().find(entry => entry.entryId === event.treeEntryId);
+            this.selection.select(entry ? [entry] : [], "exclusive", false);
+            if(entry) {
+                this.refTree.current?.scrollEntryInView(entry.entryId);
+            }
+        }));
+
         this.events.fire("query_tree_entries");
         this.events.fire("query_popout_state");
+        this.events.fire("query_selected_entry");
     }
 
     destroy() {
@@ -213,6 +393,129 @@ export class RDPChannelTree {
 
     getTreeEntries() {
         return this.orderedTree;
+    }
+
+    handleDragStart(event: DragEvent) {
+        const entries = this.selection.selectedEntries;
+        if(entries.length === 0) {
+            /* should never happen */
+            event.preventDefault();
+            return;
+        }
+
+        let dragType;
+        if(entries.findIndex(e => !(e instanceof RDPClient)) === -1) {
+            /* clients only => move */
+            event.dataTransfer.effectAllowed = "move"; /* prohibit copying */
+            dragType = "client";
+        } else if(entries.findIndex(e => !(e instanceof RDPServer)) === -1) {
+            /* server only => doing nothing right now */
+            event.preventDefault();
+            return;
+        } else if(entries.findIndex(e => !(e instanceof RDPChannel)) === -1) {
+            /* channels only => move */
+            event.dataTransfer.effectAllowed = "all";
+            dragType = "channel";
+        } else {
+            event.preventDefault();
+            return;
+        }
+
+        event.dataTransfer.dropEffect = "move";
+        event.dataTransfer.setDragImage(generateDragElement(entries), 0, 6);
+        setupDragData(event.dataTransfer, this, entries, dragType);
+    }
+
+
+    handleUiDragOver(event: DragEvent, target: RDPEntry) {
+        if(this.dragOverChannelEntry !== target) {
+            this.dragOverChannelEntry?.setDragHint("none");
+            this.dragOverChannelEntry = undefined;
+        }
+
+        const info = getDragInfo(event.dataTransfer);
+        if(!info) {
+            return;
+        }
+
+        event.dataTransfer.dropEffect = info.handlerId === this.handlerId ? "move" : "copy";
+        if(info.type === "client") {
+            if(target instanceof RDPServer) {
+                /* can't move a client into a server */
+                return;
+            }
+
+            /* clients can be dropped anywhere (if they're getting dropped on another client we'll use use his channel */
+            event.preventDefault();
+            return;
+        } else if(info.type === "channel") {
+            if(!(target instanceof RDPChannel) || !target.refChannelContainer.current) {
+                /* channel could only be moved into channels */
+                return;
+            }
+
+            const containerPosition = target.refChannelContainer.current.getBoundingClientRect();
+            const offsetY = (event.pageY - containerPosition.y) / containerPosition.height;
+
+            if(offsetY <= .25) {
+                target.setDragHint("top");
+            } else if(offsetY <= .75) {
+                target.setDragHint("contain");
+            } else {
+                target.setDragHint("bottom");
+            }
+
+            this.dragOverChannelEntry = target;
+            event.preventDefault();
+        } else {
+            /* unknown => not supported */
+        }
+    }
+
+    handleUiDrop(event: DragEvent, target: RDPEntry) {
+        let currentDragHint: RDPChannelDragHint;
+        if(this.dragOverChannelEntry) {
+            currentDragHint = this.dragOverChannelEntry?.dragHint;
+            this.dragOverChannelEntry?.setDragHint("none");
+            this.dragOverChannelEntry = undefined;
+        }
+
+        const data = parseDragData(event.dataTransfer);
+        if(!data) {
+            return;
+        }
+
+        event.preventDefault();
+        if(data.type === "client") {
+            if(data.handlerId !== this.handlerId) {
+                createErrorModal(tr("Action not possible"), tr("You can't move clients between different server connections.")).open();
+                return;
+            }
+
+            this.events.fire("action_move_clients", {
+                entries: data.entryIds,
+                targetTreeEntry: target.entryId
+            });
+        } else if(data.type === "channel") {
+            if(!(target instanceof RDPChannel)) {
+                return;
+            }
+
+            console.error("hint: %o", currentDragHint);
+            if(!currentDragHint || currentDragHint === "none") {
+                return;
+            }
+
+            if(data.entryIds.indexOf(target.entryId) !== -1) {
+                return;
+            }
+
+            this.events.fire("action_move_channels", {
+                targetTreeEntry: target.entryId,
+                mode: currentDragHint === "contain" ? "child" : currentDragHint === "top" ? "before" : "after",
+                entries: data.entryIds
+            });
+        }
     }
 
     @EventHandler<ChannelTreeUIEvents>("notify_tree_entries")
@@ -253,9 +556,15 @@ export class RDPChannelTree {
             return result;
         }).filter(e => !!e);
 
-        Object.keys(oldEntryInstances).map(key => oldEntryInstances[key]).forEach(entry => {
-            entry.destroy();
-        });
+        const removedEntries = Object.keys(oldEntryInstances).map(key => oldEntryInstances[key]);
+        if(removedEntries.indexOf(this.dragOverChannelEntry) !== -1) {
+            this.dragOverChannelEntry = undefined;
+        }
+
+        if(removedEntries.length > 0) {
+            this.selection.select(removedEntries, "remove", false);
+            removedEntries.forEach(entry => entry.destroy());
+        }
 
         this.refTree.current?.setState({
             tree: this.orderedTree.slice(),
@@ -263,16 +572,6 @@ export class RDPChannelTree {
         });
     }
 
-
-    @EventHandler<ChannelTreeUIEvents>("notify_entry_move")
-    private handleNotifyEntryMove(event: ChannelTreeUIEvents["notify_entry_move"]) {
-        if(!this.refMove.current) {
-            this.events.fire_react("action_move_entries", { treeEntryId: 0 });
-            return;
-        }
-
-        this.refMove.current.enableEntryMove(event.entries, event.begin, event.current);
-    }
 
     @EventHandler<ChannelTreeUIEvents>("notify_popout_state")
     private handleNotifyPopoutState(event: ChannelTreeUIEvents["notify_popout_state"]) {
@@ -322,7 +621,6 @@ export abstract class RDPEntry {
         const events = this.getEvents();
 
         events.fire("query_unread_state", { treeEntryId: this.entryId });
-        events.fire("query_select_state", { treeEntryId: this.entryId });
     }
 
     handleUnreadUpdate(value: boolean) {
@@ -332,7 +630,7 @@ export abstract class RDPEntry {
         this.refUnread.current?.forceUpdate();
     }
 
-    handleSelectUpdate(value: boolean) {
+    setSelected(value: boolean) {
         if(this.selected === value) { return; }
 
         this.selected = value;
@@ -353,16 +651,52 @@ export abstract class RDPEntry {
         return this.renderedInstance = this.doRender();
     }
 
+    select(mode: RDPTreeSelectType) {
+        this.handle.selection.select([ this ], mode, true);
+    }
+
+    handleUiDoubleClicked() {
+        this.select("exclusive");
+        this.getEvents().fire("action_client_double_click", { treeEntryId: this.entryId });
+    }
+
+    handleUiContextMenu(pageX: number, pageY: number) {
+        this.select("auto-add");
+        this.getEvents().fire("action_show_context_menu", {
+            pageX: pageX,
+            pageY: pageY,
+            treeEntryIds: this.handle.selection.selectedEntries.map(entry => entry.entryId)
+        });
+    }
+
+    handleUiDragStart(event: DragEvent) {
+        if(!this.selected) {
+            this.handle.selection.select([ this ], "exclusive", true);
+        }
+
+        this.handle.handleDragStart(event);
+    }
+
+    handleUiDragOver(event: DragEvent) {
+        this.handle.handleUiDragOver(event, this);
+    }
+
+    handleUiDrop(event: DragEvent) {
+        this.handle.handleUiDrop(event, this);
+    }
+
     protected abstract doRender() : React.ReactElement;
 
     protected abstract renderSelectStateUpdate();
     protected abstract renderPositionUpdate();
 }
 
+export type RDPChannelDragHint = "none" | "top" | "bottom" | "contain";
 export class RDPChannel extends RDPEntry {
     readonly refIcon = React.createRef<ChannelIconClass>();
     readonly refIcons = React.createRef<ChannelIconsRenderer>();
     readonly refChannel = React.createRef<RendererChannel>();
+    readonly refChannelContainer = React.createRef<HTMLDivElement>();
 
     /* if uninitialized, undefined */
     info: ChannelEntryInfo;
@@ -373,8 +707,12 @@ export class RDPChannel extends RDPEntry {
     /* if uninitialized, undefined */
     icons: ChannelIcons;
 
+    dragHint: "none" | "top" | "bottom" | "contain";
+
     constructor(handle: RDPChannelTree, entryId: number) {
         super(handle, entryId);
+
+        this.dragHint = "none";
     }
 
     doRender(): React.ReactElement {
@@ -416,6 +754,13 @@ export class RDPChannel extends RDPEntry {
         if(isEquivalent(newInfo, this.info)) { return; }
 
         this.info = newInfo;
+        this.refChannel.current?.forceUpdate();
+    }
+
+    setDragHint(hint: RDPChannelDragHint) {
+        if(this.dragHint === hint) { return; }
+
+        this.dragHint = hint;
         this.refChannel.current?.forceUpdate();
     }
 }

@@ -2,7 +2,7 @@ import {Registry} from "tc-shared/events";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 import * as React from "react";
 import {ChannelTreeView, PopoutButton} from "tc-shared/ui/tree/RendererView";
-import {RDPChannelTree} from "./RendererDataProvider";
+import {RDPChannel, RDPChannelTree} from "./RendererDataProvider";
 import {useEffect, useRef} from "react";
 
 const viewStyle = require("./View.scss");
@@ -34,13 +34,17 @@ const ContainerView = (props: { tree: RDPChannelTree, events: Registry<ChannelTr
 
             if(event.key === "ArrowUp") {
                 event.preventDefault();
-                props.events.fire("action_select_auto", { direction: "previous" });
+                props.tree.selection.selectNext(true, "up");
             } else if(event.key === "ArrowDown") {
                 event.preventDefault();
-                props.events.fire("action_select_auto", { direction: "next" });
+                props.tree.selection.selectNext(true, "down");
             } else if(event.key === "Enter") {
                 event.preventDefault();
-                props.events.fire("action_channel_join", { treeEntryId: "selected", ignoreMultiSelect: false });
+
+                const selectedEntries = props.tree.selection.selectedEntries;
+                if(selectedEntries.length !== 1) { return; }
+                if(!(selectedEntries[0] instanceof RDPChannel)) { return; }
+                props.events.fire("action_channel_join", { treeEntryId: selectedEntries[0].entryId });
             }
         });
 

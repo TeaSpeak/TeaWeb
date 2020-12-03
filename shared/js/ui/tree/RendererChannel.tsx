@@ -123,29 +123,31 @@ export class RendererChannel extends React.Component<{ channel: RDPChannel }, {}
             );
         }
 
+        let dragClass;
+        if(channel.dragHint !== "none") {
+            dragClass = channelStyle["drag-" + channel.dragHint];
+        }
+
         return (
             <div
-                className={viewStyle.treeEntry + " " + channelStyle.channelEntry + " " + (channel.selected ? viewStyle.selected : "")}
+                ref={this.props.channel.refChannelContainer}
+                className={viewStyle.treeEntry + " " + channelStyle.channelEntry + " " + (channel.selected ? viewStyle.selected : "") + " " + dragClass}
                 style={{ top: channel.offsetTop }}
                 onMouseUp={event => {
                     if (event.button !== 0) {
                         return; /* only left mouse clicks */
                     }
 
-                    events.fire("action_select", {
-                        entryIds: [ entryId ],
-                        mode: "auto",
-                        ignoreClientMove: false
-                    });
+                    this.props.channel.select("auto");
                 }}
-                onDoubleClick={() => events.fire("action_channel_join", { ignoreMultiSelect: false, treeEntryId: entryId })}
+                onDoubleClick={() => events.fire("action_channel_join", { treeEntryId: entryId })}
                 onContextMenu={event => {
                     if (settings.static(Settings.KEY_DISABLE_CONTEXT_MENU)) {
                         return;
                     }
 
                     event.preventDefault();
-                    events.fire("action_show_context_menu", { treeEntryId: entryId, pageX: event.pageX, pageY: event.pageY });
+                    this.props.channel.handleUiContextMenu(event.pageX, event.pageY);
                 }}
                 onMouseDown={event => {
                     if (event.buttons !== 4) {
@@ -155,8 +157,12 @@ export class RendererChannel extends React.Component<{ channel: RDPChannel }, {}
                     event.preventDefault();
                     events.fire("action_channel_open_file_browser", { treeEntryId: entryId });
                 }}
+                draggable={true}
+                onDragStart={event => this.props.channel.handleUiDragStart(event.nativeEvent)}
+                onDragOver={event => this.props.channel.handleUiDragOver(event.nativeEvent)}
+                onDrop={event => this.props.channel.handleUiDrop(event.nativeEvent)}
             >
-                <div className={viewStyle.leftPadding} style={{ paddingLeft: channel.offsetLeft + "em" }} />
+                <div className={viewStyle.leftPadding + " " + channelStyle.leftPadding} style={{ paddingLeft: channel.offsetLeft + "em" }} />
                 <UnreadMarkerRenderer entry={this.props.channel} ref={this.props.channel.refUnread} />
                 {collapsedIndicator}
                 {channelIcon}

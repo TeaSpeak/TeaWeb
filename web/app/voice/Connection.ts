@@ -69,14 +69,17 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
             }
         });
 
-        /* FIXME: Listener for audio! */
-
         this.listenerClientMoved = this.rtcConnection.getConnection().command_handler_boss().register_explicit_handler("notifyclientmoved", event => {
             const localClientId = this.rtcConnection.getConnection().client.getClientId();
             for(const data of event.arguments) {
                 if(parseInt(data["clid"]) === localClientId) {
-                    /* TODO: Error handling if we failed to start */
-                    this.rtcConnection.startTrackBroadcast("audio");
+                    this.rtcConnection.startTrackBroadcast("audio").catch(error => {
+                        logError(LogCategory.VOICE, tr("Failed to start voice audio broadcasting after channel switch: %o"), error);
+                        this.localFailedReason = tr("Failed to start audio broadcasting");
+                        this.setConnectionState(VoiceConnectionStatus.Failed);
+                    }).catch(() => {
+                        this.setConnectionState(VoiceConnectionStatus.Connected);
+                    });
                 }
             }
         });

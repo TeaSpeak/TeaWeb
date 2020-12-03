@@ -13,7 +13,6 @@ export class ServerRenderer extends React.Component<{ server: RDPServer }, {}> {
     render() {
         const server = this.props.server;
         const selected = this.props.server.selected;
-        const events = server.getEvents();
 
         let name, icon;
         switch (server.state?.state) {
@@ -39,16 +38,12 @@ export class ServerRenderer extends React.Component<{ server: RDPServer }, {}> {
             <div
                 className={serverStyle.serverEntry + " " + viewStyle.treeEntry + " " + (selected ? viewStyle.selected : "")}
                 style={{ top: server.offsetTop }}
-                onMouseUp={event => {
+                onMouseDown={event => {
                     if (event.button !== 0) {
                         return; /* only left mouse clicks */
                     }
 
-                    events.fire("action_select", {
-                        entryIds: [ server.entryId ],
-                        mode: "auto",
-                        ignoreClientMove: false
-                    });
+                    this.props.server.select("auto");
                 }}
                 onContextMenu={event => {
                     if (settings.static(Settings.KEY_DISABLE_CONTEXT_MENU)) {
@@ -56,8 +51,12 @@ export class ServerRenderer extends React.Component<{ server: RDPServer }, {}> {
                     }
 
                     event.preventDefault();
-                    events.fire("action_show_context_menu", { treeEntryId: server.entryId, pageX: event.pageX, pageY: event.pageY });
+                    this.props.server.handleUiContextMenu(event.pageX, event.pageY);
                 }}
+                draggable={true}
+                onDragStart={event => this.props.server.handleUiDragStart(event.nativeEvent)}
+                onDragOver={event => this.props.server.handleUiDragOver(event.nativeEvent)}
+                onDrop={event => this.props.server.handleUiDrop(event.nativeEvent)}
             >
                 <div className={viewStyle.leftPadding} style={{ paddingLeft: server.offsetLeft + "em" }} />
                 <UnreadMarkerRenderer entry={server} ref={server.refUnread} />

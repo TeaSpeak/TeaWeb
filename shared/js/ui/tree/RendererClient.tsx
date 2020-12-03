@@ -183,27 +183,27 @@ export class RendererClient extends React.Component<{ client: RDPClient }, {}> {
                      }
 
                      event.preventDefault();
-                     events.fire("action_show_context_menu", { treeEntryId: client.entryId, pageX: event.pageX, pageY: event.pageY });
+                     this.props.client.handleUiContextMenu(event.pageX, event.pageY);
                  }}
                  onMouseUp={event => {
                      if (event.button !== 0) {
                          return; /* only left mouse clicks */
                      }
 
-                     events.fire("action_select", {
-                         entryIds: [ client.entryId ],
-                         mode: "auto",
-                         ignoreClientMove: false
-                     });
+                     this.props.client.select("auto");
                  }}
-                 onDoubleClick={() => events.fire("action_client_double_click", { treeEntryId: client.entryId })}
+                 onDoubleClick={() => this.props.client.handleUiDoubleClicked()}
+                 draggable={!client.rename}
+                 onDragStart={event => this.props.client.handleUiDragStart(event.nativeEvent)}
+                 onDragOver={event => this.props.client.handleUiDragOver(event.nativeEvent)}
+                 onDrop={event => this.props.client.handleUiDrop(event.nativeEvent)}
             >
                 <div className={viewStyle.leftPadding} style={{ paddingLeft: client.offsetLeft + "em" }} />
                 <UnreadMarkerRenderer entry={client} ref={client.refUnread} />
                 <ClientStatus client={client} ref={client.refStatus} />
                 {...(client.rename ? [
                     <ClientNameEdit initialName={client.renameDefault} editFinished={value => {
-                        events.fire_react("action_client_name_submit", { treeEntryId: client.entryId, name: value });
+                        events.fire("action_client_name_submit", { treeEntryId: client.entryId, name: value });
                     }} key={"rename"} />
                 ] : [
                     <ClientName client={client} ref={client.refName} key={"name"} />,
