@@ -145,7 +145,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                     const response = channelInfos[index];
 
                     if (response instanceof CommandResult) {
-                        /* some kind of error occured (maybe password set, or non existing) */
+                        /* some kind of error occurred (maybe password set, or non existing) */
                         result.push({
                             type: FileType.DIRECTORY,
                             name: requestArray[index].name,

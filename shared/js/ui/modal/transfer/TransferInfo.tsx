@@ -69,10 +69,12 @@ const ExpendState = (props: { extended: boolean, events: Registry<TransferInfoEv
     const [expended, setExpended] = useState(props.extended);
 
     props.events.reactUse("action_toggle_expansion", event => setExpended(event.visible));
-    return <div className={cssStyle.expansionContainer + (expended ? " " + cssStyle.expended : "")}
-                onClick={() => props.events.fire("action_toggle_expansion", {visible: !expended})}>
-        <HTMLRenderer purify={false}>{iconArrow}</HTMLRenderer>
-    </div>;
+    return (
+        <div className={cssStyle.expansionContainer + (expended ? " " + cssStyle.expended : "")}
+             onClick={() => props.events.fire("action_toggle_expansion", {visible: !expended})}>
+            <HTMLRenderer purify={false}>{iconArrow}</HTMLRenderer>
+        </div>
+    );
 };
 
 const ToggleFinishedTransfersCheckbox = (props: { events: Registry<TransferInfoEvents> }) => {

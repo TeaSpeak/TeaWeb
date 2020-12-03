@@ -113,10 +113,14 @@ class FileCommandHandler extends AbstractCommandHandler {
 
     finishFileInfo(returnCode: string) : FileInfo[] | "unknown-request" | "unfinished-request" {
         const qIndex = this.pendingFileInfos.findIndex(e => e.returnCode === returnCode);
-        if(qIndex === -1) return "unknown-request";
+        if(qIndex === -1) {
+            return "unknown-request";
+        }
 
         const [ query ] = this.pendingFileInfos.splice(qIndex, 1);
-        if(!query.finished) return "unfinished-request";
+        if(!query.finished) {
+            return "unfinished-request";
+        }
 
         return query.currentFiles;
     }
@@ -440,8 +444,9 @@ export class FileManager {
     }
 
     requestFileInfo(files: { channelId?: number, channelPassword?: string, path: string }[]) : Promise<(FileInfo | CommandResult)[]> {
-        if(files.length === 0)
+        if(files.length === 0) {
             return Promise.resolve([]);
+        }
 
         const returnCode = this.commandHandler.registerFileInfo();
         const infos = files.map(e => {
@@ -455,23 +460,26 @@ export class FileManager {
 
         return this.connectionHandler.serverConnection.send_command("ftgetfileinfo", infos, { flagset: ["as-list"] }).then(cmdResult => {
             const bulks = cmdResult.getBulks();
-            if(bulks.length != files.length)
+            if(bulks.length != files.length) {
                 return Promise.reject(tr("response bulk miss match"));
+            }
 
             const infos = this.commandHandler.finishFileInfo(returnCode);
             if(!Array.isArray(infos)) {
-                if(infos === "unfinished-request")
+                if(infos === "unfinished-request") {
                     return Promise.reject(tr("the server failed to full fill the request"));
-                else
+                } else {
                     return Promise.reject(tr("request gone away while parsing response"));
+                }
             }
 
             let result: (FileInfo | CommandResult)[] = [];
             for(let index = 0; index < files.length; index++) {
                 if(bulks[index].id === 0) {
                     const info = infos.pop_front();
-                    if(!info)
+                    if(!info) {
                         return Promise.reject(tr("Missing info for bulk ") + index);
+                    }
 
                     result.push(info);
                 } else {

@@ -608,7 +608,7 @@ const FileListEntry = (props: { row: TableRow<ListedFileInfo>, columns: TableCol
                     pageX: e.pageX,
                     pageY: e.pageY
                 });
-                e.preventDefault();
+                e.stopPropagation();
             }}
             draggable={!props.row.userData.virtual}
             onDragStart={event => {
@@ -901,9 +901,7 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
     }
 
     private onBodyContextMenu(event: React.MouseEvent) {
-        if (event.isDefaultPrevented()) return;
         event.preventDefault();
-
         this.props.events.fire("action_select_files", {mode: "exclusive", files: []});
         this.props.events.fire("action_selection_context_menu", {pageY: event.pageY, pageX: event.pageX});
     }

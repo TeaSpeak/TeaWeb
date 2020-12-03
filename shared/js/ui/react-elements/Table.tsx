@@ -145,7 +145,8 @@ export class Table extends React.Component<TableProperties, TableState> {
             <div
                 className={cssStyle.container + " " + (this.props.className || " ")}
                 onDrop={e => this.props.onDrop && this.props.onDrop(e)}
-                onDragOver={e => this.props.onDragOver && this.props.onDragOver(e)}>
+                onDragOver={e => this.props.onDragOver && this.props.onDragOver(e)}
+            >
                 <div
                     ref={this.refHeader}
                     className={cssStyle.header + " " + (this.props.headerClassName || " ")}
