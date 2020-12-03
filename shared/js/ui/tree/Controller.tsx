@@ -205,6 +205,12 @@ class ChannelTreeController {
         this.sendChannelTreeEntries();
     }
 
+    @EventHandler<ChannelTreeEvents>("notify_channel_moved")
+    private handleChannelMoved(_event: ChannelTreeEvents["notify_channel_moved"]) {
+        if(!this.channelTreeInitialized) { return; }
+        this.sendChannelTreeEntries();
+    }
+
     @EventHandler<ChannelTreeEvents>("notify_channel_deleted")
     private handleChannelDeleted(event: ChannelTreeEvents["notify_channel_deleted"]) {
         if(!this.channelTreeInitialized) { return; }
