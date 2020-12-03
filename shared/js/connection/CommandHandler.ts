@@ -335,6 +335,11 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             updates.push({key: key, value: json[key]});
         }
         channel.updateVariables(...updates);
+        if(tree.channelsInitialized) {
+            if(this.connection.client.isSubscribeToAllChannels()) {
+                channel.subscribe().then(undefined);
+            }
+        }
     }
 
     private batch_update_finished_timeout;
