@@ -274,6 +274,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
 
         const client = new RtpVoiceClient(clientId);
         this.voiceClients[clientId] = client;
+        this.voiceClients[clientId].setGloballyMuted(this.speakerMuted);
         client.events.on("notify_state_changed", this.voiceClientStateChangedEventListener);
         return client;
     }
