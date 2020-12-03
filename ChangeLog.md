@@ -3,6 +3,7 @@
     - Fixed server connection tab move handler
     - Fixed file browser context menu when having an overlay
     - Added channel movement and reordering
+    - Automatically subscribe to newly created channels
     
 * **02.12.20**
     - Fixed a bug within the client entry move mechanic of the channel tree which prevented any client selection
