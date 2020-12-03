@@ -445,6 +445,24 @@ export class RDPChannelTree {
                 return;
             }
 
+
+            if(target instanceof RDPChannel) {
+                target.setDragHint("contain");
+                this.dragOverChannelEntry = target;
+            } else {
+                const treeEntries = this.getTreeEntries();
+
+                let index = treeEntries.indexOf(target);
+
+                while(index >= 0 && !(treeEntries[index] instanceof RDPChannel)) {
+                    index--;
+                }
+
+                if(index < 0) { return; }
+                this.dragOverChannelEntry = treeEntries[index] as RDPChannel;
+                this.dragOverChannelEntry.setDragHint("contain");
+            }
+
             /* clients can be dropped anywhere (if they're getting dropped on another client we'll use use his channel */
             event.preventDefault();
             return;
