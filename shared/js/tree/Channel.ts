@@ -677,19 +677,58 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
     cached_password() { return this.cachedPasswordHash; }
 
-    async subscribe() : Promise<void> {
-        if(this.subscribe_mode == ChannelSubscribeMode.SUBSCRIBED)
+    async updateSubscribeMode() {
+        let shouldBeSubscribed = false;
+        switch (this.subscribe_mode) {
+            case ChannelSubscribeMode.INHERITED:
+                shouldBeSubscribed = this.channelTree.client.isSubscribeToAllChannels();
+                break;
+
+            case ChannelSubscribeMode.SUBSCRIBED:
+                shouldBeSubscribed = true;
+                break;
+
+            case ChannelSubscribeMode.UNSUBSCRIBED:
+                shouldBeSubscribed = false;
+                break;
+        }
+
+        if(this.flag_subscribed === shouldBeSubscribed) {
             return;
+        }
+
+        const connection = this.channelTree.client.getServerConnection();
+        if(!connection.connected()) {
+            this.flag_subscribed = shouldBeSubscribed;
+            return;
+        }
+
+        if(shouldBeSubscribed) {
+            await connection.send_command('channelsubscribe', {
+                'cid': this.getChannelId()
+            });
+        } else {
+            await connection.send_command('channelunsubscribe', {
+                'cid': this.getChannelId()
+            });
+        }
+    }
+
+    async subscribe() : Promise<void> {
+        if(this.subscribe_mode == ChannelSubscribeMode.SUBSCRIBED) {
+            return;
+        }
 
         this.subscribe_mode = ChannelSubscribeMode.SUBSCRIBED;
 
         const connection = this.channelTree.client.getServerConnection();
-        if(!this.flag_subscribed && connection)
+        if(!this.flag_subscribed && connection) {
             await connection.send_command('channelsubscribe', {
                 'cid': this.getChannelId()
             });
-        else
+        } else {
             this.flag_subscribed = false;
+        }
     }
 
     async unsubscribe(inherited_subscription_mode?: boolean) : Promise<void> {
@@ -705,15 +744,17 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         }
 
         if(unsubscribe) {
-            if(connection)
+            if(connection) {
                 await connection.send_command('channelunsubscribe', {
                     'cid': this.getChannelId()
                 });
-            else
+            } else {
                 this.flag_subscribed = false;
+            }
 
-            for(const client of this.clients(false))
+            for(const client of this.clients(false)) {
                 this.channelTree.deleteClient(client, { serverLeave: false, reason: ViewReasonId.VREASON_SYSTEM });
+            }
         }
     }
 
