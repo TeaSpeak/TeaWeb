@@ -3,7 +3,6 @@ import {MenuEntryType} from "tc-shared/ui/elements/ContextMenu";
 import * as log from "tc-shared/log";
 import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {PermissionType} from "tc-shared/permission/PermissionType";
-import {SpecialKey} from "tc-shared/PPTListener";
 import {Sound} from "tc-shared/sound/Sounds";
 import {Group} from "tc-shared/permission/GroupManager";
 import {ServerAddress, ServerEntry} from "./Server";
@@ -15,7 +14,6 @@ import {createChannelModal} from "tc-shared/ui/modal/ModalCreateChannel";
 import {Registry} from "tc-shared/events";
 import * as ReactDOM from "react-dom";
 import * as React from "react";
-import * as ppt from "tc-backend/ppt";
 
 import {batch_updates, BatchUpdateType, flush_batched_updates} from "tc-shared/ui/react-elements/ReactComponentBase";
 import {createInputModal} from "tc-shared/ui/elements/Modal";
@@ -23,11 +21,10 @@ import {spawnBanClient} from "tc-shared/ui/modal/ModalBanClient";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {tra} from "tc-shared/i18n/localize";
-import {EventType} from "tc-shared/ui/frames/log/Definitions";
 import {renderChannelTree} from "tc-shared/ui/tree/Controller";
 import {ChannelTreePopoutController} from "tc-shared/ui/tree/popout/Controller";
 import {Settings, settings} from "tc-shared/settings";
-import {ServerConnection} from "tc-backend/web/connection/ServerConnection";
+import {ClientIcon} from "svg-sprites/client-icons";
 
 export interface ChannelTreeEvents {
     /* general tree notified */
@@ -536,7 +533,7 @@ export class ChannelTree {
         const server = entries.find(e => e instanceof ServerEntry) as ServerEntry;
 
         let client_menu: contextmenu.MenuEntry[];
-        let channel_menu: contextmenu.MenuEntry[];
+        let channelMenu: contextmenu.MenuEntry[];
         let server_menu: contextmenu.MenuEntry[];
 
         if(clients.length > 0) {
@@ -681,11 +678,87 @@ export class ChannelTree {
                 }
             }
         }
+
         if(channels.length > 0) {
-            channel_menu = [];
+            channelMenu = [];
+
+            channelMenu.push({
+                type: MenuEntryType.ENTRY,
+                name: tr("Subscribe to channels"),
+                icon_class: ClientIcon.SubscribeToAllChannels,
+                callback: () => {
+                    const bulks = channels.filter(channel => {
+                        channel.setSubscriptionMode(ChannelSubscribeMode.SUBSCRIBED, false);
+                        return !channel.isSubscribed();
+                    }).map(channel => {
+                        return {
+                            cid: channel.channelId
+                        };
+                    });
+
+                    if(bulks.length === 0) {
+                        /* shall not happen */
+                        return;
+                    }
+
+                    this.client.serverConnection.send_command("channelsubscribe", bulks);
+                },
+                visible: channels.findIndex(channel => channel.getSubscriptionMode() !== ChannelSubscribeMode.SUBSCRIBED) !== -1
+            });
+
+            channelMenu.push({
+                type: MenuEntryType.ENTRY,
+                name: tr("Unsubscribe from channels"),
+                icon_class: ClientIcon.UnsubscribeFromAllChannels,
+                callback: () => {
+                    const bulks = channels.filter(channel => {
+                        channel.setSubscriptionMode(ChannelSubscribeMode.UNSUBSCRIBED, false);
+                        return channel.isSubscribed();
+                    }).map(channel => {
+                        return {
+                            cid: channel.channelId
+                        };
+                    });
+
+                    if(bulks.length === 0) {
+                        /* shall not happen */
+                        return;
+                    }
+
+                    this.client.serverConnection.send_command("channelunsubscribe", bulks);
+                },
+                visible: channels.findIndex(channel => channel.getSubscriptionMode() !== ChannelSubscribeMode.UNSUBSCRIBED) !== -1
+            });
+
+            channelMenu.push({
+                type: MenuEntryType.ENTRY,
+                name: tr("Use inherited subscribe mode"),
+                icon_class: ClientIcon.SubscribeToAllChannels,
+                callback: () => {
+                    const inheritedSubscribe = this.client.isSubscribeToAllChannels();
+                    const bulks = channels.filter(channel => {
+                        channel.setSubscriptionMode(ChannelSubscribeMode.INHERITED, false);
+                        return channel.isSubscribed() != inheritedSubscribe;
+                    }).map(channel => {
+                        return {
+                            cid: channel.channelId
+                        };
+                    });
+
+                    if(bulks.length === 0) {
+                        /* might happen */
+                        return;
+                    }
+
+                    this.client.serverConnection.send_command(inheritedSubscribe ? "channelsubscribe" : "channelunsubscribe", bulks);
+                },
+                visible: channels.findIndex(channel => channel.getSubscriptionMode() !== ChannelSubscribeMode.INHERITED) !== -1
+            });
+
+            channelMenu.push(contextmenu.Entry.HR());
 
             //TODO: Subscribe mode settings
-            channel_menu.push({
+            channelMenu.push({
                 type: MenuEntryType.ENTRY,
                 name: tr("Delete all channels"),
                 icon_class: "client-delete",
@@ -712,7 +785,7 @@ export class ChannelTree {
             },
             {
                 text: tr("Apply to all channels"),
-                menu: channel_menu,
+                menu: channelMenu,
                 icon: "client-channel_green"
             },
             {

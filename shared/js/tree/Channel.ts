@@ -753,14 +753,16 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         return this.subscriptionMode;
     }
 
-    setSubscriptionMode(mode: ChannelSubscribeMode) {
+    setSubscriptionMode(mode: ChannelSubscribeMode, dontSyncSubscribeMode?: boolean) {
         if(this.subscriptionMode === mode) {
             return;
         }
 
         this.subscriptionMode = mode;
         this.channelTree.client.settings.changeServer(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId), mode);
-        this.updateSubscribeMode().then(undefined);
+        if(!dontSyncSubscribeMode) {
+            this.updateSubscribeMode().then(undefined);
+        }
     }
 
     log_data() : EventChannelData {

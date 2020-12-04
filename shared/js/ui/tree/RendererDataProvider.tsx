@@ -253,6 +253,8 @@ export class RDPChannelTree {
     popoutShown: boolean = false;
     popoutButtonShown: boolean = false;
 
+    private readonly documentDragStopListener;
+
     private treeRevision: number = 0;
     private orderedTree: RDPEntry[] = [];
     private treeEntries: {[key: number]: RDPEntry} = {};
@@ -263,6 +265,13 @@ export class RDPChannelTree {
         this.events = events;
         this.handlerId = handlerId;
         this.selection = new RDPTreeSelection(this);
+
+        this.documentDragStopListener = () => {
+            if(this.dragOverChannelEntry) {
+                this.dragOverChannelEntry.setDragHint("none");
+                this.dragOverChannelEntry = undefined;
+            }
+        }
     }
 
     initialize() {
@@ -380,12 +389,20 @@ export class RDPChannelTree {
             }
         }));
 
+        document.addEventListener("dragend", this.documentDragStopListener);
+        document.addEventListener("focusout", this.documentDragStopListener);
+        document.addEventListener("mouseout", this.documentDragStopListener);
+
         this.events.fire("query_tree_entries");
         this.events.fire("query_popout_state");
         this.events.fire("query_selected_entry");
     }
 
     destroy() {
+        document.removeEventListener("dragend", this.documentDragStopListener);
+        document.removeEventListener("focusout", this.documentDragStopListener);
+        document.removeEventListener("mouseout", this.documentDragStopListener);
+
         this.events.unregister_handler(this);
         this.registeredEventHandlers.forEach(callback => callback());
         this.registeredEventHandlers = [];
