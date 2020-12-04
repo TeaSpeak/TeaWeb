@@ -109,6 +109,20 @@ export function createChannelModal(connection: ConnectionHandler, channel: Chann
             delete properties["channel_flag_default"];
         }
 
+        if(!channel) {
+            /* Delete the default values */
+            if(properties["channel_flag_maxfamilyclients_unlimited"]) {
+                delete properties["channel_flag_maxfamilyclients_unlimited"];
+                delete properties["channel_flag_maxfamilyclients_inherited"];
+                delete properties["channel_maxfamilyclients"];
+            }
+
+            if(properties["channel_flag_maxclients_unlimited"]) {
+                delete properties["channel_flag_maxclients_unlimited"];
+                delete properties["channel_maxclients"];
+            }
+        }
+
         callback(properties, updated); //First may create the channel
     });
 
