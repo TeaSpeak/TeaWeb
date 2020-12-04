@@ -1,5 +1,5 @@
 import * as log from "../log";
-import {LogCategory} from "../log";
+import {LogCategory, logError} from "../log";
 import {AbstractServerConnection, CommandOptions, ServerCommand} from "../connection/ConnectionBase";
 import {Sound} from "../sound/Sounds";
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
@@ -12,7 +12,6 @@ import {
     MusicClientEntry,
     SongInfo
 } from "../tree/Client";
-import {ChannelEntry} from "../tree/Channel";
 import {ConnectionHandler, ConnectionState, DisconnectReason, ViewReasonId} from "../ConnectionHandler";
 import {formatMessage} from "../ui/frames/chat";
 import {spawnPoke} from "../ui/modal/ModalPoke";
@@ -24,6 +23,7 @@ import {tr} from "../i18n/localize";
 import {EventClient, EventType} from "../ui/frames/log/Definitions";
 import {ErrorCode} from "../connection/ErrorCode";
 import {server_connections} from "tc-shared/ConnectionManager";
+import {ChannelEntry} from "tc-shared/tree/Channel";
 
 export class ServerConnectionCommandBoss extends AbstractCommandHandlerBoss {
     constructor(connection: AbstractServerConnection) {
@@ -86,22 +86,24 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         this["notifyplaylistsongloaded"] = this.handleNotifyPlaylistSongLoaded;
     }
 
-    private loggable_invoker(unique_id, client_id, name) : EventClient | undefined {
-        const id = parseInt(client_id);
-        if(typeof(client_id) === "undefined" || Number.isNaN(id))
+    private loggable_invoker(uniqueId, clientId, clientName) : EventClient | undefined {
+        const id = typeof clientId === "string" ? parseInt(clientId) : clientId;
+        if(typeof(clientId) === "undefined" || Number.isNaN(id)) {
             return undefined;
+        }
 
-        if(id == 0)
+        if(id == 0) {
             return {
                 client_id: 0,
                 client_unique_id: this.connection_handler.channelTree.server.properties.virtualserver_unique_identifier,
                 client_name: this.connection_handler.channelTree.server.properties.virtualserver_name,
             };
+        }
 
         return {
-            client_unique_id: unique_id,
-            client_name: name,
-            client_id: client_id
+            client_unique_id: uniqueId,
+            client_name: clientName,
+            client_id: clientId
         };
     }
 
@@ -290,35 +292,36 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         client.set_connection_info(object);
     }
 
-    private createChannelFromJson(json, ignoreOrder: boolean = false) {
+    private createChannelFromJson(json, ignoreMissingPreviousChannel: boolean = false) : ChannelEntry {
         let tree = this.connection.client.channelTree;
 
-        let channel = new ChannelEntry(parseInt(json["cid"]), json["channel_name"]);
-        let parent, previous;
-        if(json["channel_order"] !== "0") {
-            previous = tree.findChannel(json["channel_order"]);
-            if(!previous && json["channel_order"] != 0) {
-                if(!ignoreOrder) {
-                    log.error(LogCategory.NETWORKING, tr("Invalid channel order id!"));
-                    return;
-                }
+        let channelId = parseInt(json["cid"]);
+        let channelName = json["channel_name"];
+
+        let previousChannelId = parseInt(json["channel_order"]);
+        let parentChannelId = parseInt(json["cpid"]);
+
+        let parentChannel: ChannelEntry;
+        let previousChannel: ChannelEntry;
+
+        if(previousChannelId !== 0) {
+            previousChannel = tree.findChannel(previousChannelId);
+
+            if(!previousChannel && !ignoreMissingPreviousChannel) {
+                logError(LogCategory.NETWORKING, tr("Received a channel with an invalid order id (%d)"), previousChannelId);
+                /* maybe disconnect? */
             }
         }
 
-        parent = tree.findChannel(json["cpid"]);
-        if(!parent && json["cpid"] != 0) {
-            log.error(LogCategory.NETWORKING, tr("Invalid channel parent"));
-            return;
-        }
-
-        tree.insertChannel(channel, previous, parent);
-        if(ignoreOrder) {
-            for(let ch of tree.channels) {
-                if(ch.properties.channel_order == channel.channelId) {
-                    tree.moveChannel(ch, channel, channel.parent, true); //Corrent the order :)
-                }
+        if(parentChannelId !== 0) {
+            parentChannel = tree.findChannel(parentChannelId);
+            if(!parentChannel) {
+                logError(LogCategory.NETWORKING, tr("Received a channel with an invalid parent channel (%d)"), parentChannelId);
+                /* maybe disconnect? */
             }
         }
+
+        const channel = tree.handleChannelCreated(previousChannel, parentChannel, channelId, channelName);
 
         let updates: {
             key: string,
@@ -338,22 +341,27 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         if(tree.channelsInitialized) {
             channel.updateSubscribeMode().then(undefined);
         }
+
+        return channel;
     }
 
-    private batch_update_finished_timeout;
+    private batchTreeUpdateFinishedTimeout;
     handleCommandChannelList(json) {
-        if(this.batch_update_finished_timeout) {
-            clearTimeout(this.batch_update_finished_timeout);
-            this.batch_update_finished_timeout = 0;
+        if(this.batchTreeUpdateFinishedTimeout) {
+            clearTimeout(this.batchTreeUpdateFinishedTimeout);
+            this.batchTreeUpdateFinishedTimeout = 0;
             /* batch update is still active */
         } else {
             batch_updates(BatchUpdateType.CHANNEL_TREE);
         }
 
-        for(let index = 0; index < json.length; index++)
+        for(let index = 0; index < json.length; index++) {
             this.createChannelFromJson(json[index], true);
+        }
 
-        this.batch_update_finished_timeout = setTimeout(() => {
+        this.batchTreeUpdateFinishedTimeout = setTimeout(() => {
+            flush_batched_updates(BatchUpdateType.CHANNEL_TREE);
+            this.batchTreeUpdateFinishedTimeout = 0;
         }, 500);
     }
 
@@ -362,34 +370,74 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         this.connection.client.channelTree.channelsInitialized = true;
         this.connection.client.channelTree.events.fire_react("notify_channel_list_received");
 
-        if(this.batch_update_finished_timeout) {
-            clearTimeout(this.batch_update_finished_timeout);
-            this.batch_update_finished_timeout = 0;
+        if(this.batchTreeUpdateFinishedTimeout) {
+            clearTimeout(this.batchTreeUpdateFinishedTimeout);
+            this.batchTreeUpdateFinishedTimeout = 0;
             flush_batched_updates(BatchUpdateType.CHANNEL_TREE);
         }
     }
 
     handleCommandChannelCreate(json) {
-        this.createChannelFromJson(json[0]);
+        json = json[0];
+
+        const channel = this.createChannelFromJson(json);
+        if(!channel) { return; }
+
+        const ownAction = parseInt(json["invokerid"]) === this.connection.client.getClientId();
+        if(ownAction) {
+            this.connection.client.sound.play(Sound.CHANNEL_CREATED);
+        }
+
+        const log = this.connection.client.log;
+        log.log("channel.create", {
+            channel: channel.log_data(),
+            creator: this.loggable_invoker(json["invokeruid"], json["invokerid"], json["invokername"]),
+            ownAction: ownAction
+        });
     }
 
     handleCommandChannelShow(json) {
-        this.createChannelFromJson(json[0]); //TODO may chat?
+        json = json[0];
+        const channel = this.createChannelFromJson(json);
+
+        const log = this.connection.client.log;
+        log.log("channel.show", {
+            channel: channel.log_data(),
+        });
     }
 
     handleCommandChannelDelete(json) {
         let tree = this.connection.client.channelTree;
         const conversations = this.connection.client.side_bar.channel_conversations();
 
+        let playSound = false;
+
         log.info(LogCategory.NETWORKING, tr("Got %d channel deletions"), json.length);
         for(let index = 0; index < json.length; index++) {
             conversations.destroyConversation(parseInt(json[index]["cid"]));
             let channel = tree.findChannel(json[index]["cid"]);
             if(!channel) {
-                log.error(LogCategory.NETWORKING, tr("Invalid channel onDelete (Unknown channel)"));
+                logError(LogCategory.NETWORKING, tr("Invalid channel onDelete (Unknown channel)"));
                 continue;
             }
             tree.deleteChannel(channel);
+
+            const ownAction = parseInt(json[index]["invokerid"]) === this.connection.client.getClientId();
+
+            const log = this.connection.client.log;
+            log.log("channel.delete", {
+                channel: channel.log_data(),
+                deleter: this.loggable_invoker(json[index]["invokeruid"], json[index]["invokerid"], json[index]["invokername"]),
+                ownAction: ownAction
+            });
+
+            if(ownAction) {
+                playSound = true;
+            }
+        }
+
+        if(playSound) {
+            this.connection.client.sound.play(Sound.CHANNEL_DELETED);
         }
     }
 
@@ -402,10 +450,15 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             conversations.destroyConversation(parseInt(json[index]["cid"]));
             let channel = tree.findChannel(json[index]["cid"]);
             if(!channel) {
-                log.error(LogCategory.NETWORKING, tr("Invalid channel on hide (Unknown channel)"));
+                logError(LogCategory.NETWORKING, tr("Invalid channel on hide (Unknown channel)"));
                 continue;
             }
             tree.deleteChannel(channel);
+
+            const log = this.connection.client.log;
+            log.log("channel.hide", {
+                channel: channel.log_data(),
+            });
         }
     }
 
@@ -974,7 +1027,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                     continue;
                 }
 
-                channel.flag_subscribed = true;
+                channel.setSubscribed(true);
             }
         } finally {
             flush_batched_updates(BatchUpdateType.CHANNEL_TREE);
@@ -989,9 +1042,10 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 continue;
             }
 
-            channel.flag_subscribed = false;
-            for(const client of channel.clients(false))
+            channel.setSubscribed(false);
+            for(const client of channel.clients(false)) {
                 this.connection.client.channelTree.deleteClient(client, { reason: ViewReasonId.VREASON_SYSTEM, serverLeave: false });
+            }
         }
     }
 

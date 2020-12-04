@@ -27,6 +27,7 @@ import {EventType} from "tc-shared/ui/frames/log/Definitions";
 import {renderChannelTree} from "tc-shared/ui/tree/Controller";
 import {ChannelTreePopoutController} from "tc-shared/ui/tree/popout/Controller";
 import {Settings, settings} from "tc-shared/settings";
+import {ServerConnection} from "tc-backend/web/connection/ServerConnection";
 
 export interface ChannelTreeEvents {
     /* general tree notified */
@@ -98,7 +99,7 @@ export class ChannelTree {
     private channelLast?: ChannelEntry;
     private channelFirst?: ChannelEntry;
 
-    constructor(client) {
+    constructor(client: ConnectionHandler) {
         this.events = new Registry<ChannelTreeEvents>();
         this.events.enableDebug("channel-tree");
 
@@ -222,7 +223,6 @@ export class ChannelTree {
         }
 
         channel.channelTree = null;
-
         batch_updates(BatchUpdateType.CHANNEL_TREE);
         try {
             if(!this.channels.remove(channel)) {
@@ -244,12 +244,12 @@ export class ChannelTree {
         }
     }
 
-    insertChannel(channel: ChannelEntry, previous: ChannelEntry, parent: ChannelEntry) {
-        channel.channelTree = this;
+    handleChannelCreated(previous: ChannelEntry, parent: ChannelEntry, channelId: number, channelName: string) : ChannelEntry {
+        const channel = new ChannelEntry(this, channelId, channelName);
         this.channels.push(channel);
-
         this.moveChannel(channel, previous, parent, false);
         this.events.fire("notify_channel_created", { channel: channel });
+        return channel;
     }
 
     findChannel(channelId: number) : ChannelEntry | undefined {
@@ -783,6 +783,7 @@ export class ChannelTree {
     spawnCreateChannel(parent?: ChannelEntry) {
         createChannelModal(this.client, undefined, parent, this.client.permissions, (properties?, permissions?) => {
             if(!properties) return;
+
             properties["cpid"] = parent ? parent.channelId : 0;
             log.debug(LogCategory.CHANNEL, tr("Creating a new channel.\nProperties: %o\nPermissions: %o"), properties);
             this.client.serverConnection.send_command("channelcreate", properties).then(() => {
@@ -809,12 +810,6 @@ export class ChannelTree {
                 }
 
                 return new Promise<ChannelEntry>(resolve => { resolve(channel); })
-            }).then(channel => {
-                this.client.log.log(EventType.CHANNEL_CREATE_OWN, {
-                    channel: channel.log_data(),
-                    creator: this.client.getClient().log_data(),
-                });
-                this.client.sound.play(Sound.CHANNEL_CREATED);
             });
         });
     }
@@ -831,15 +826,17 @@ export class ChannelTree {
         return this.channelFirst;
     }
 
-    unsubscribe_all_channels(subscribe_specified?: boolean) {
-        if(!this.client.serverConnection || !this.client.serverConnection.connected())
+    unsubscribe_all_channels() {
+        if(!this.client.serverConnection || !this.client.serverConnection.connected()) {
             return;
+        }
 
         this.client.serverConnection.send_command('channelunsubscribeall').then(() => {
             const channels: number[] = [];
             for(const channel of this.channels) {
-                if(channel.subscribe_mode == ChannelSubscribeMode.SUBSCRIBED)
+                if(channel.getSubscriptionMode() == ChannelSubscribeMode.SUBSCRIBED) {
                     channels.push(channel.getChannelId());
+                }
             }
 
             if(channels.length > 0) {
@@ -859,8 +856,9 @@ export class ChannelTree {
         this.client.serverConnection.send_command('channelsubscribeall').then(() => {
             const channels: number[] = [];
             for(const channel of this.channels) {
-                if(channel.subscribe_mode == ChannelSubscribeMode.UNSUBSCRIBED)
+                if(channel.getSubscriptionMode() == ChannelSubscribeMode.UNSUBSCRIBED) {
                     channels.push(channel.getChannelId());
+                }
             }
 
             if(channels.length > 0) {
@@ -877,17 +875,18 @@ export class ChannelTree {
         if(typeof root === "undefined")
             this.rootChannel().forEach(e => this.expand_channels(e));
         else {
-            root.collapsed = false;
-            for(const child of root.children(false))
+            root.setCollapsed(false);
+            for(const child of root.children(false)) {
                 this.expand_channels(child);
+            }
         }
     }
 
     collapse_channels(root?: ChannelEntry) {
-        if(typeof root === "undefined")
+        if(typeof root === "undefined") {
             this.rootChannel().forEach(e => this.collapse_channels(e));
-        else {
-            root.collapsed = true;
+        } else {
+            root.setCollapsed(true);
             for(const child of root.children(false))
                 this.collapse_channels(child);
         }

@@ -3,6 +3,7 @@ import {ViewReasonId} from "../../../ConnectionHandler";
 import * as React from "react";
 import {ServerEventLog} from "../../../ui/frames/log/ServerEventLog";
 
+/* FIXME: Remove this! */
 export enum EventType {
     CONNECTION_BEGIN = "connection.begin",
     CONNECTION_HOSTNAME_RESOLVE = "connection.hostname.resolve",
@@ -54,9 +55,6 @@ export enum EventType {
 
     CHANNEL_CREATE = "channel.create",
     CHANNEL_DELETE = "channel.delete",
-
-    CHANNEL_CREATE_OWN = "channel.create.own",
-    CHANNEL_DELETE_OWN = "channel.delete.own",
 
     ERROR_CUSTOM = "error.custom",
     ERROR_PERMISSION = "error.permission",
@@ -165,13 +163,19 @@ export namespace event {
     }
 
     export type EventChannelCreate = {
-        creator: EventClient;
-        channel: EventChannelData;
+        creator: EventClient,
+        channel: EventChannelData,
+        ownAction: boolean
+    }
+
+    export type EventChannelToggle = {
+        channel: EventChannelData
     }
 
     export type EventChannelDelete = {
-        deleter: EventClient;
-        channel: EventChannelData;
+        deleter: EventClient,
+        channel: EventChannelData,
+        ownAction: boolean
     }
 
     export type EventConnectionConnected = {
@@ -310,11 +314,10 @@ export interface TypeInfo {
     "client.nickname.changed": event.EventClientNicknameChanged,
     "client.nickname.changed.own": event.EventClientNicknameChanged,
 
-    "channel.create": event.EventChannelCreate;
-    "channel.delete": event.EventChannelDelete;
-
-    "channel.create.own": event.EventChannelCreate;
-    "channel.delete.own": event.EventChannelDelete;
+    "channel.create": event.EventChannelCreate,
+    "channel.show": event.EventChannelToggle,
+    "channel.hide": event.EventChannelToggle,
+    "channel.delete": event.EventChannelDelete,
 
     "client.poke.received": event.EventClientPokeReceived,
     "client.poke.send": event.EventClientPokeSend,

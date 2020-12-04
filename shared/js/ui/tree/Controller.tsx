@@ -369,7 +369,7 @@ class ChannelTreeController {
 
         const buildSubTree = (channel: ChannelEntry, depth: number) => {
             entries.push({ type: "channel", entryId: channel.uniqueEntryId, depth: depth });
-            if(channel.collapsed) {
+            if(channel.isCollapsed()) {
                 return;
             }
 
@@ -400,7 +400,7 @@ class ChannelTreeController {
         this.events.fire_react("notify_channel_info", {
             treeEntryId: channel.uniqueEntryId,
             info: {
-                collapsedState: channel.child_channel_head || channel.channelClientsOrdered().length > 0 ? channel.collapsed ? "collapsed" : "expended" : "unset",
+                collapsedState: channel.child_channel_head || channel.channelClientsOrdered().length > 0 ? channel.isCollapsed() ? "collapsed" : "expended" : "unset",
                 name: channel.parsed_channel_name.text,
                 nameStyle: channel.parsed_channel_name.alignment
             }
@@ -658,7 +658,7 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
             return;
         }
 
-        entry.collapsed = event.state === "collapsed";
+        entry.setCollapsed(event.state === "collapsed");
     });
 
     events.on("action_select", event => {

@@ -30,9 +30,9 @@ export function getRegisteredLogDispatchers() : TypeInfo[] {
 const ClientRenderer = (props: { client: EventClient, handlerId: string, braces?: boolean }) => (
     <ClientTag
         handlerId={props.handlerId}
-        clientName={props.client.client_name}
-        clientId={props.client.client_id}
-        clientUniqueId={props.client.client_unique_id}
+        clientName={props.client?.client_name || tr("Unknown")}
+        clientId={props.client?.client_id || 0}
+        clientUniqueId={props.client?.client_unique_id || "unknown"}
         className={cssStyle.clientEntry}
     />
 );
@@ -40,8 +40,8 @@ const ClientRenderer = (props: { client: EventClient, handlerId: string, braces?
 const ChannelRenderer = (props: { channel: EventChannelData, handlerId: string, braces?: boolean }) => (
     <ChannelTag
         handlerId={props.handlerId}
-        channelName={props.channel.channel_name}
-        channelId={props.channel.channel_id}
+        channelName={props.channel?.channel_name || tr("Unknown")}
+        channelId={props.channel?.channel_id || 0}
         className={cssStyle.channelEntry}
     />
 );
@@ -576,33 +576,51 @@ registerDispatcher(EventType.CONNECTION_COMMAND_ERROR,data => {
     )
 });
 
+registerDispatcher(EventType.CHANNEL_CREATE,(data, handlerId) => {
+    if(data.ownAction) {
+        return (
+            <VariadicTranslatable text={"Channel {} has been created."}>
+                <ChannelRenderer channel={data.channel} handlerId={handlerId} />
+            </VariadicTranslatable>
+        );
+    } else {
+        return (
+            <VariadicTranslatable text={"Channel {} has been created by {}."}>
+                <ChannelRenderer channel={data.channel} handlerId={handlerId} />
+                <ClientRenderer client={data.creator} handlerId={handlerId} />
+            </VariadicTranslatable>
+        );
+    }
+});
 
-registerDispatcher(EventType.CHANNEL_CREATE,(data, handlerId) => (
-    <VariadicTranslatable text={"Channel {} has been created by {}."}>
-        <ChannelRenderer channel={data.channel} handlerId={handlerId} />
-        <ClientRenderer client={data.creator} handlerId={handlerId} />
-    </VariadicTranslatable>
-));
-
-registerDispatcher(EventType.CHANNEL_CREATE_OWN,(data, handlerId) => (
-    <VariadicTranslatable text={"Channel {} has been created."}>
-        <ChannelRenderer channel={data.channel} handlerId={handlerId} />
-    </VariadicTranslatable>
-));
-
-registerDispatcher(EventType.CHANNEL_DELETE,(data, handlerId) => (
-    <VariadicTranslatable text={"Channel {} has been deleted by {}."}>
-        <ChannelRenderer channel={data.channel} handlerId={handlerId} />
-        <ClientRenderer client={data.deleter} handlerId={handlerId} />
-    </VariadicTranslatable>
-));
-
-registerDispatcher(EventType.CHANNEL_DELETE_OWN,(data, handlerId) => (
-    <VariadicTranslatable text={"Channel {} has been deleted."}>
+registerDispatcher("channel.show",(data, handlerId) => (
+    <VariadicTranslatable text={"Channel {} has appeared."}>
         <ChannelRenderer channel={data.channel} handlerId={handlerId} />
     </VariadicTranslatable>
 ));
 
+registerDispatcher(EventType.CHANNEL_DELETE,(data, handlerId) => {
+    if(data.ownAction) {
+        return (
+            <VariadicTranslatable text={"Channel {} has been deleted."}>
+                <ChannelRenderer channel={data.channel} handlerId={handlerId} />
+            </VariadicTranslatable>
+        );
+    } else {
+        return (
+            <VariadicTranslatable text={"Channel {} has been deleted by {}."}>
+                <ChannelRenderer channel={data.channel} handlerId={handlerId} />
+                <ClientRenderer client={data.deleter} handlerId={handlerId} />
+            </VariadicTranslatable>
+        );
+    }
+});
+
+registerDispatcher("channel.hide",(data, handlerId) => (
+    <VariadicTranslatable text={"Channel {} has disappeared."}>
+        <ChannelRenderer channel={data.channel} handlerId={handlerId} />
+    </VariadicTranslatable>
+));
 
 registerDispatcher(EventType.CLIENT_POKE_SEND,(data, handlerId) => (
     <VariadicTranslatable text={"You poked {}."}>

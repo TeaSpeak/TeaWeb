@@ -102,7 +102,7 @@ function apply_general(container: JQuery, channel: ChannelEntry) {
     {
         const tag = container.find(".current-clients .value").empty();
 
-        if (channel.flag_subscribed) {
+        if (channel.isSubscribed()) {
             const current = channel.clients().length;
             let channel_limit = tr("Unlimited");
             if (!channel.properties.channel_flag_maxclients_unlimited)

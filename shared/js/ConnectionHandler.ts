@@ -1088,10 +1088,11 @@ export class ConnectionHandler {
     setSubscribeToAllChannels(flag: boolean) {
         if(this.client_status.channel_subscribe_all === flag) return;
         this.client_status.channel_subscribe_all = flag;
-        if(flag)
+        if(flag) {
             this.channelTree.subscribe_all_channels();
-        else
+        } else {
             this.channelTree.unsubscribe_all_channels();
+        }
         this.event_registry.fire("notify_state_updated", { state: "subscribe" });
     }
 

@@ -1,4 +1,7 @@
 # Changelog:
+* **04.12.20**
+    - Properly logging channel creations, deletions, shows and hides
+    
 * **03.12.20**
     - Fixed server connection tab move handler
     - Fixed file browser context menu when having an overlay

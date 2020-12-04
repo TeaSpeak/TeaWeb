@@ -18,7 +18,6 @@ import {formatMessage} from "../ui/frames/chat";
 import {Registry} from "../events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 import {spawnFileTransferModal} from "../ui/modal/transfer/ModalFileTransfer";
-import {ViewReasonId} from "../ConnectionHandler";
 import {EventChannelData} from "../ui/frames/log/Definitions";
 import {ErrorCode} from "../connection/ErrorCode";
 import {ClientIcon} from "svg-sprites/client-icons";
@@ -173,22 +172,22 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     private _cached_channel_description_promise_resolve: any = undefined;
     private _cached_channel_description_promise_reject: any = undefined;
 
-    private _flag_collapsed: boolean;
-    private _flag_subscribed: boolean;
-    private _subscribe_mode: ChannelSubscribeMode;
+    private collapsed: boolean;
+    private subscribed: boolean;
+    private subscriptionMode: ChannelSubscribeMode;
 
     private client_list: ClientEntry[] = []; /* this list is sorted correctly! */
     private readonly clientPropertyChangedListener;
 
-    constructor(channelId, channelName) {
+    constructor(channelTree: ChannelTree, channelId: number, channelName: string) {
         super();
 
+        this.channelTree = channelTree;
         this.events = new Registry<ChannelEvents>();
 
         this.properties = new ChannelProperties();
         this.channelId = channelId;
         this.properties.channel_name = channelName;
-        this.channelTree = null;
 
         this.parsed_channel_name = new ParsedChannelName("undefined", false);
 
@@ -205,6 +204,9 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 updatedProperties: event.updated_properties
             });
         });
+
+        this.collapsed = this.channelTree.client.settings.server(Settings.FN_SERVER_CHANNEL_COLLAPSED(this.channelId));
+        this.subscriptionMode = this.channelTree.client.settings.server(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId));
     }
 
     destroy() {
@@ -428,21 +430,21 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                             icon: "client-subscribe_to_channel",
                             name: bold(tr("Subscribe to channel")),
                             callback: () => this.subscribe(),
-                            visible: !this.flag_subscribed
+                            visible: !this.isSubscribed()
                         },
                         {
                             type: contextmenu.MenuEntryType.ENTRY,
                             icon: "client-channel_unsubscribed",
                             name: bold(tr("Unsubscribe from channel")),
                             callback: () => this.unsubscribe(),
-                            visible: this.flag_subscribed
+                            visible: this.isSubscribed()
                         },
                         {
                             type: contextmenu.MenuEntryType.ENTRY,
                             icon: "client-subscribe_mode",
                             name: bold(tr("Use inherited subscribe mode")),
                             callback: () => this.unsubscribe(true),
-                            visible: this.subscribe_mode != ChannelSubscribeMode.INHERITED
+                            visible: this.subscriptionMode != ChannelSubscribeMode.INHERITED
                         }
                     ];
                 return [];
@@ -488,10 +490,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 name: tr("Delete channel"),
                 invalidPermission: !flagDelete,
                 callback: () => {
-                    const client = this.channelTree.client;
-                    this.channelTree.client.serverConnection.send_command("channeldelete", {cid: this.channelId}).then(() => {
-                        client.sound.play(Sound.CHANNEL_DELETED);
-                    });
+                    this.channelTree.client.serverConnection.send_command("channeldelete", {cid: this.channelId});
                 }
             },
             contextmenu.Entry.HR(),
@@ -679,7 +678,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
     async updateSubscribeMode() {
         let shouldBeSubscribed = false;
-        switch (this.subscribe_mode) {
+        switch (this.subscriptionMode) {
             case ChannelSubscribeMode.INHERITED:
                 shouldBeSubscribed = this.channelTree.client.isSubscribeToAllChannels();
                 break;
@@ -693,13 +692,13 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 break;
         }
 
-        if(this.flag_subscribed === shouldBeSubscribed) {
+        if(this.subscribed === shouldBeSubscribed) {
             return;
         }
 
         const connection = this.channelTree.client.getServerConnection();
         if(!connection.connected()) {
-            this.flag_subscribed = shouldBeSubscribed;
+            this.setSubscribed(false);
             return;
         }
 
@@ -715,87 +714,53 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     }
 
     async subscribe() : Promise<void> {
-        if(this.subscribe_mode == ChannelSubscribeMode.SUBSCRIBED) {
-            return;
-        }
-
-        this.subscribe_mode = ChannelSubscribeMode.SUBSCRIBED;
-
-        const connection = this.channelTree.client.getServerConnection();
-        if(!this.flag_subscribed && connection) {
-            await connection.send_command('channelsubscribe', {
-                'cid': this.getChannelId()
-            });
-        } else {
-            this.flag_subscribed = false;
-        }
+        this.setSubscriptionMode(ChannelSubscribeMode.SUBSCRIBED);
     }
 
     async unsubscribe(inherited_subscription_mode?: boolean) : Promise<void> {
-        const connection = this.channelTree.client.getServerConnection();
-        let unsubscribe: boolean;
-
-        if(inherited_subscription_mode) {
-            this.subscribe_mode = ChannelSubscribeMode.INHERITED;
-            unsubscribe = this.flag_subscribed && !this.channelTree.client.isSubscribeToAllChannels();
-        } else {
-            this.subscribe_mode = ChannelSubscribeMode.UNSUBSCRIBED;
-            unsubscribe = this.flag_subscribed;
-        }
-
-        if(unsubscribe) {
-            if(connection) {
-                await connection.send_command('channelunsubscribe', {
-                    'cid': this.getChannelId()
-                });
-            } else {
-                this.flag_subscribed = false;
-            }
-
-            for(const client of this.clients(false)) {
-                this.channelTree.deleteClient(client, { serverLeave: false, reason: ViewReasonId.VREASON_SYSTEM });
-            }
-        }
+        this.setSubscriptionMode(inherited_subscription_mode ? ChannelSubscribeMode.INHERITED : ChannelSubscribeMode.UNSUBSCRIBED);
     }
 
-    get collapsed() : boolean {
-        if(typeof this._flag_collapsed === "undefined")
-            this._flag_collapsed = this.channelTree.client.settings.server(Settings.FN_SERVER_CHANNEL_COLLAPSED(this.channelId));
-        return this._flag_collapsed;
+    isCollapsed() : boolean {
+        return this.collapsed;
     }
 
-    set collapsed(flag: boolean) {
-        if(this._flag_collapsed === flag) {
+    setCollapsed(flag: boolean) {
+        if(this.collapsed === flag) {
             return;
         }
 
-        this._flag_collapsed = flag;
+        this.collapsed = flag;
         this.events.fire("notify_collapsed_state_changed", { collapsed: flag });
         this.channelTree.client.settings.changeServer(Settings.FN_SERVER_CHANNEL_COLLAPSED(this.channelId), flag);
     }
 
-    get flag_subscribed() : boolean {
-        return this._flag_subscribed;
+    isSubscribed() : boolean {
+        return this.subscribed;
     }
 
-    set flag_subscribed(flag: boolean) {
-        if(this._flag_subscribed == flag)
+    /* Attention: This method is not to subscribe to a channel! It's used to update the current subscription state.*/
+    setSubscribed(flag: boolean) {
+        if(this.subscribed === flag) {
             return;
+        }
 
-        this._flag_subscribed = flag;
+        this.subscribed = flag;
         this.events.fire("notify_subscribe_state_changed", { channel_subscribed: flag });
     }
 
-    get subscribe_mode() : ChannelSubscribeMode {
-        return typeof(this._subscribe_mode) !== 'undefined' ? this._subscribe_mode : (this._subscribe_mode = this.channelTree.client.settings.server(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId), ChannelSubscribeMode.INHERITED));
+    getSubscriptionMode() : ChannelSubscribeMode {
+        return this.subscriptionMode;
     }
 
-    set subscribe_mode(mode: ChannelSubscribeMode) {
-        if(this.subscribe_mode == mode)
+    setSubscriptionMode(mode: ChannelSubscribeMode) {
+        if(this.subscriptionMode === mode) {
             return;
+        }
 
-        this._subscribe_mode = mode;
+        this.subscriptionMode = mode;
         this.channelTree.client.settings.changeServer(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId), mode);
+        this.updateSubscribeMode().then(undefined);
     }
 
     log_data() : EventChannelData {
@@ -810,7 +775,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
             return undefined;
         }
 
-        const subscribed = this.flag_subscribed;
+        const subscribed = this.isSubscribed();
         if (this.properties.channel_flag_password === true && !this.cached_password()) {
             return subscribed ? ClientIcon.ChannelYellowSubscribed : ClientIcon.ChannelYellow;
         } else if (!this.properties.channel_flag_maxclients_unlimited && this.clients().length >= this.properties.channel_maxclients) {
