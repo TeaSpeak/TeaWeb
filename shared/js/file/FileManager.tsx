@@ -458,7 +458,8 @@ export class FileManager {
         });
         infos[0]["return_code"] = returnCode;
 
-        return this.connectionHandler.serverConnection.send_command("ftgetfileinfo", infos, { flagset: ["as-list"] }).then(cmdResult => {
+        return this.connectionHandler.serverConnection.send_command("ftgetfileinfo", infos, { flagset: ["as-list"], process_result: false })
+            .catch(error => Promise.resolve(error)).then(cmdResult => {
             const bulks = cmdResult.getBulks();
             if(bulks.length != files.length) {
                 return Promise.reject(tr("response bulk miss match"));
