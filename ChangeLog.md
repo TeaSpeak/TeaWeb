@@ -1,6 +1,7 @@
 # Changelog:
 * **04.12.20**
     - Properly logging channel creations, deletions, shows and hides
+    - Fixed missing collapsed arrow update after channel move
     
 * **03.12.20**
     - Fixed server connection tab move handler

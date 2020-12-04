@@ -40,7 +40,12 @@ export interface ChannelTreeEvents {
 
     /* channel tree events */
     notify_channel_created: { channel: ChannelEntry },
-    notify_channel_moved: { channel: ChannelEntry },
+    notify_channel_moved: {
+        channel: ChannelEntry,
+
+        previousParent: ChannelEntry | undefined,
+        previousOrder: ChannelEntry | undefined,
+    },
     notify_channel_deleted: { channel: ChannelEntry },
     notify_channel_client_order_changed: { channel: ChannelEntry },
 
@@ -302,6 +307,9 @@ export class ChannelTree {
             return;
         }
 
+        const previousParent = channel.parent_channel();
+        const previousOrder = channel.channel_previous;
+
         this.unregisterChannelFromTree(channel);
         channel.channel_previous = channelPrevious;
         channel.channel_next = undefined;
@@ -349,7 +357,11 @@ export class ChannelTree {
         }
 
         if(triggerMoveEvent) {
-            this.events.fire("notify_channel_moved", { channel: channel });
+            this.events.fire("notify_channel_moved", {
+                channel: channel,
+                previousOrder: previousOrder,
+                previousParent: previousParent
+            });
         }
     }
 

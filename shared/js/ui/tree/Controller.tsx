@@ -207,9 +207,18 @@ class ChannelTreeController {
     }
 
     @EventHandler<ChannelTreeEvents>("notify_channel_moved")
-    private handleChannelMoved(_event: ChannelTreeEvents["notify_channel_moved"]) {
+    private handleChannelMoved(event: ChannelTreeEvents["notify_channel_moved"]) {
         if(!this.channelTreeInitialized) { return; }
         this.sendChannelTreeEntries();
+
+        if(event.previousParent && !event.previousParent.child_channel_head) {
+            /* the collapsed state arrow changed */
+            this.sendChannelInfo(event.previousParent);
+        }
+        if(event.channel.parent_channel()) {
+            /* the collapsed state arrow may changed */
+            this.sendChannelInfo(event.channel.parent_channel());
+        }
     }
 
     @EventHandler<ChannelTreeEvents>("notify_channel_deleted")
