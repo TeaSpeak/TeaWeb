@@ -13,7 +13,7 @@ import * as React from "react";
 import {ChannelIconClass, ChannelIconsRenderer, RendererChannel} from "tc-shared/ui/tree/RendererChannel";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {UnreadMarkerRenderer} from "tc-shared/ui/tree/RendererTreeEntry";
-import {LogCategory, logError} from "tc-shared/log";
+import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {
     ClientIconsRenderer,
     ClientName,
@@ -78,12 +78,25 @@ export class RDPTreeSelection {
     private readonly documentKeyListener;
     private readonly documentBlurListener;
     private shiftKeyPressed = false;
+    private controlKeyPressed = false;
+
+    private rangeStartEntry: RDPEntry;
+    private rangeMode: "add" | "remove";
 
     constructor(handle: RDPChannelTree) {
         this.handle = handle;
 
-        this.documentKeyListener = event => this.shiftKeyPressed = event.shiftKey;
-        this.documentBlurListener = () => this.shiftKeyPressed = false;
+        this.documentKeyListener = (event: KeyboardEvent) => {
+            this.shiftKeyPressed = event.shiftKey;
+            this.controlKeyPressed = event.ctrlKey;
+        };
+
+        this.documentBlurListener = (event: MouseEvent | FocusEvent) => {
+            if(event.relatedTarget === null || event.relatedTarget["nodeName"] === "HTML") {
+                this.shiftKeyPressed = false;
+                this.controlKeyPressed = false;
+            }
+        };
 
         document.addEventListener("keydown", this.documentKeyListener);
         document.addEventListener("keyup", this.documentKeyListener);
@@ -115,7 +128,7 @@ export class RDPTreeSelection {
         this.select([], "exclusive", false);
     }
 
-    select(entries: RDPEntry[], mode: RDPTreeSelectType, selectMaintree: boolean) {
+    select(entries: RDPEntry[], mode: RDPTreeSelectType, selectMainTree: boolean) {
         entries = entries.filter(entry => !!entry);
 
         let deletedEntries: RDPEntry[] = [];
@@ -124,31 +137,56 @@ export class RDPTreeSelection {
         if(mode === "exclusive") {
             deletedEntries = this.selectedEntries.slice();
             newEntries = entries;
+            this.rangeStartEntry = entries.last();
         } else if(mode === "append") {
             newEntries = entries;
         } else if(mode === "remove") {
             deletedEntries = entries;
         } else if(mode === "auto" || mode === "auto-add") {
-            if(this.shiftKeyPressed) {
-                for(const entry of entries) {
-                    const index = this.selectedEntries.findIndex(e => e === entry);
-                    if(index === -1) {
-                        newEntries.push(entry);
-                    } else if(mode === "auto") {
-                        deletedEntries.push(entry);
-                    }
+            if(this.shiftKeyPressed && this.selectedEntries.length === 1) {
+                this.rangeStartEntry = this.selectedEntries[0];
+                this.rangeMode = "add";
+            }
+
+            if(this.shiftKeyPressed && this.rangeStartEntry) {
+                const treeEntries = this.handle.getTreeEntries();
+
+                const targetEntry = entries.last();
+                if(!targetEntry) { return; }
+
+                let targetIndex = treeEntries.indexOf(targetEntry);
+                let sourceIndex = treeEntries.indexOf(this.rangeStartEntry);
+                if(sourceIndex === -1 || targetIndex === -1) { return; }
+
+                if(targetIndex < sourceIndex) {
+                    const index = targetIndex;
+                    targetIndex = sourceIndex;
+                    sourceIndex = index;
+                }
+
+                const array = this.rangeMode === "add" ? newEntries : deletedEntries;
+                for(let index = sourceIndex; index <= targetIndex; index++) {
+                    array.push(treeEntries[index]);
+                }
+            } else if(this.controlKeyPressed || this.shiftKeyPressed) {
+                const targetEntry = entries.last();
+                if(!targetEntry) { return; }
+
+                this.rangeStartEntry = targetEntry;
+                if(this.selectedEntries.indexOf(targetEntry) === -1 || mode === "auto-add") {
+                    this.rangeMode = "add";
+                    newEntries.push(targetEntry);
+                } else {
+                    this.rangeMode = "remove";
+                    deletedEntries.push(targetEntry);
                 }
             } else {
+                this.rangeStartEntry = undefined;
                 deletedEntries = this.selectedEntries.slice();
-                if(entries.length !== 0) {
-                    const entry = entries[entries.length - 1];
-                    if(!deletedEntries.remove(entry)) {
-                        newEntries.push(entry); /* entry wans't selected yet */
-                    }
-                }
+                newEntries = entries;
             }
         } else {
-            console.warn("Received entry select event with unknown mode: %s", mode);
+            logWarn(LogCategory.CHANNEL, tr("Received entry select event with unknown mode: %s"), mode);
         }
 
         newEntries.forEach(entry => deletedEntries.remove(entry));
@@ -161,7 +199,6 @@ export class RDPTreeSelection {
             }
         });
         deletedEntries = deletedEntries.filter(entry => this.selectedEntries.remove(entry));
-
         deletedEntries.forEach(entry => entry.setSelected(false));
         newEntries.forEach(entry => entry.setSelected(true));
 
@@ -174,7 +211,7 @@ export class RDPTreeSelection {
             this.selectedEntries.sort((a, b) => lookupMap[a.entryId] - lookupMap[b.entryId]);
         }
 
-        if(this.selectedEntries.length === 1 && selectMaintree) {
+        if(this.selectedEntries.length === 1 && selectMainTree) {
             this.handle.events.fire("action_select", { treeEntryId: this.selectedEntries[0].entryId });
         }
     }
@@ -536,7 +573,6 @@ export class RDPChannelTree {
                 return;
             }
 
-            console.error("hint: %o", currentDragHint);
             if(!currentDragHint || currentDragHint === "none") {
                 return;
             }

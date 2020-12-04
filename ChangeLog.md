@@ -3,6 +3,7 @@
     - Properly logging channel creations, deletions, shows and hides
     - Fixed missing collapsed arrow update after channel move
     - Added an option for mass channel subscription and unsubscription
+    - Adding channel entry range selection for ealier multi channel select
     
 * **03.12.20**
     - Fixed server connection tab move handler
