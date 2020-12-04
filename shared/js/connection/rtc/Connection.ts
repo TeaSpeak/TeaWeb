@@ -463,6 +463,7 @@ export class RTCConnection {
     private readonly sdpProcessor: SdpProcessor;
 
     private connectionState: RTPConnectionState;
+    private connectTimeout: number;
     private failedReason: string;
     private retryCalculator: RetryTimeCalculator;
     private retryTimestamp: number;
@@ -541,6 +542,7 @@ export class RTCConnection {
     }
 
     reset(updateConnectionState: boolean) {
+        logTrace(LogCategory.WEBRTC, tr("Resetting the RTC connection (Updating connection state: %o)"), updateConnectionState);
         if(this.peer) {
             if(this.getConnection().connected()) {
                 this.getConnection().send_command("rtcsessionreset").catch(error => {
@@ -548,17 +550,22 @@ export class RTCConnection {
                 });
             }
 
-            for(let key in this.peer) {
-                if(!key.startsWith("on")) {
-                    continue;
-                }
+            this.peer.onconnectionstatechange = undefined;
+            this.peer.ondatachannel = undefined;
+            this.peer.onicecandidate = undefined;
+            this.peer.onicecandidateerror = undefined;
+            this.peer.oniceconnectionstatechange = undefined;
+            this.peer.onicegatheringstatechange = undefined;
+            this.peer.onnegotiationneeded = undefined;
+            this.peer.onsignalingstatechange = undefined;
+            this.peer.onstatsended = undefined;
+            this.peer.ontrack = undefined;
 
-                delete this.peer[key];
-            }
             this.peer.close();
             this.peer = undefined;
         }
 
+        clearTimeout(this.connectTimeout);
         Object.keys(this.currentTransceiver).forEach(key => this.currentTransceiver[key] = undefined);
 
         this.sdpProcessor.reset();
@@ -872,6 +879,10 @@ export class RTCConnection {
         if(this.peer !== peer) { return; }
 
         this.peer.onnegotiationneeded = () => this.handleNegotiationNeeded();
+        this.connectTimeout = setTimeout(() => {
+            this.handleFatalError("Connection initialize timeout", true);
+        }, 10_000);
+
         /* Nothing left to do. Server should send a notifyrtcsessiondescription with mode answer */
     }
 
@@ -942,6 +953,7 @@ export class RTCConnection {
                 break;
 
             case "connected":
+                clearTimeout(this.connectTimeout);
                 this.retryCalculator.reset();
                 this.updateConnectionState(RTPConnectionState.CONNECTED);
                 break;
