@@ -336,9 +336,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         }
         channel.updateVariables(...updates);
         if(tree.channelsInitialized) {
-            if(this.connection.client.isSubscribeToAllChannels()) {
-                channel.subscribe().then(undefined);
-            }
+            channel.updateSubscribeMode().then(undefined);
         }
     }
 
