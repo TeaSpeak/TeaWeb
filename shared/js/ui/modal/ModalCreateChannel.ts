@@ -99,9 +99,16 @@ export function createChannelModal(connection: ConnectionHandler, channel: Chann
         console.log(tr("Updated permissions %o"), updated);
     }).click(() => {
         modal.close();
-        for(const key of Object.keys(channel ? channel.properties : {}))
-            if(channel.properties[key] == properties[key])
+        for(const key of Object.keys(channel ? channel.properties : {})) {
+            if(channel.properties[key] == properties[key]) {
                 delete properties[key];
+            }
+        }
+
+        if(!properties["channel_flag_default"]) {
+            delete properties["channel_flag_default"];
+        }
+
         callback(properties, updated); //First may create the channel
     });
 
@@ -231,14 +238,15 @@ function applyStandardListener(connection: ConnectionHandler, properties: Channe
                 return;
 
             let type;
-            if(properties.channel_flag_default || (typeof(properties.channel_flag_default) === "undefined" && channel && channel.properties.channel_flag_default))
+            if(properties.channel_flag_default || (typeof(properties.channel_flag_default) === "undefined" && channel && channel.properties.channel_flag_default)) {
                 type = "def";
-            else if(properties.channel_flag_permanent || (typeof(properties.channel_flag_permanent) === "undefined" && channel && channel.properties.channel_flag_permanent))
+            } else if(properties.channel_flag_permanent || (typeof(properties.channel_flag_permanent) === "undefined" && channel && channel.properties.channel_flag_permanent)) {
                 type = "perm";
-            else if(properties.channel_flag_semi_permanent || (typeof(properties.channel_flag_semi_permanent) === "undefined" && channel && channel.properties.channel_flag_semi_permanent))
+            } else if(properties.channel_flag_semi_permanent || (typeof(properties.channel_flag_semi_permanent) === "undefined" && channel && channel.properties.channel_flag_semi_permanent)) {
                 type = "semi";
-            else
+            } else {
                 type = "temp";
+            }
 
             simple.find("option[name='channel-type'][value='" + type + "']").prop("selected", true);
         };
@@ -440,6 +448,11 @@ function applyStandardListener(connection: ConnectionHandler, properties: Channe
                     .prop("disabled", flag)
                     .parent().toggleClass("disabled", flag);
                 properties.channel_flag_maxclients_unlimited = flag;
+                if(flag) {
+                    input_limit.trigger("change");
+                } else {
+                    properties.channel_maxclients = -1;
+                }
             });
 
             input_limit.on('change', event => {
@@ -486,6 +499,12 @@ function applyStandardListener(connection: ConnectionHandler, properties: Channe
                     .parent().toggleClass("disabled", flag_unlimited || flag_inherited);
                 properties.channel_flag_maxfamilyclients_unlimited = flag_unlimited;
                 properties.channel_flag_maxfamilyclients_inherited = flag_inherited;
+
+                if(!flag_inherited && !flag_inherited) {
+                    input_limit.trigger("change");
+                } else {
+                    properties.channel_maxfamilyclients = -1;
+                }
             });
 
             input_limit.on('change', event => {
