@@ -301,6 +301,11 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         let previousChannelId = parseInt(json["channel_order"]);
         let parentChannelId = parseInt(json["cpid"]);
 
+        if(Number.isNaN(channelId) || Number.isNaN(previousChannelId) || Number.isNaN(parentChannelId)) {
+            logError(LogCategory.NETWORKING, tr("Tried to create a channel with invalid ids (%o - %o - %o)"), channelId, previousChannelId, parentChannelId);
+            return;
+        }
+
         let parentChannel: ChannelEntry;
         let previousChannel: ChannelEntry;
 

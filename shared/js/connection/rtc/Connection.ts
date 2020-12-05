@@ -199,10 +199,13 @@ class CommandHandler extends AbstractCommandHandler {
                 this.handle["peer"].setRemoteDescription({
                     sdp: sdp,
                     type: "answer"
+                }).then(() => {
+                    this.handle["peerRemoteDescriptionReceived"] = true;
+                    this.handle.applyCachedRemoteIceCandidates();
                 }).catch(error => {
                     logError(LogCategory.WEBRTC, tr("Failed to set the remote description: %o"), error);
                     this.handle["handleFatalError"](tr("Failed to set the remote description (answer)"), true);
-                })
+                });
             } else if(data.mode === "offer") {
                 this.handle["peer"].setRemoteDescription({
                     sdp: sdp,
@@ -236,6 +239,25 @@ class CommandHandler extends AbstractCommandHandler {
                 logWarn(LogCategory.NETWORKING, tr("Received invalid mode for rtc session description (%s)."), data.mode);
             }
             return true;
+        } else if(command.command === "notifyrtcicecandidate") {
+            const candidate = command.arguments[0]["candidate"];
+            const mediaLine = parseInt(command.arguments[0]["medialine"]);
+
+            if(Number.isNaN(mediaLine)) {
+                logError(LogCategory.WEBRTC, tr("Failed to parse ICE media line: %o"), command.arguments[0]["medialine"]);
+                return;
+            }
+
+            if(candidate) {
+                const parsedCandidate = new RTCIceCandidate({
+                    candidate: "candidate:" + candidate,
+                    sdpMLineIndex: mediaLine
+                });
+
+                this.handle.handleRemoteIceCandidate(parsedCandidate, mediaLine);
+            } else {
+                this.handle.handleRemoteIceCandidate(undefined, mediaLine);
+            }
         } else if(command.command === "notifyrtcstreamassignment") {
             const data = command.arguments[0];
             const ssrc = parseInt(data["streamid"]) >>> 0;
@@ -471,6 +493,9 @@ export class RTCConnection {
     private peer: RTCPeerConnection;
     private localCandidateCount: number;
 
+    private peerRemoteDescriptionReceived: boolean;
+    private cachedRemoteIceCandidates: { candidate: RTCIceCandidate, mediaLine: number }[];
+
     private currentTracks: {[T in RTCSourceTrackType]: MediaStreamTrack | undefined} = {
         "audio-whisper": undefined,
         "video-screen": undefined,
@@ -563,6 +588,8 @@ export class RTCConnection {
             this.peer.close();
             this.peer = undefined;
         }
+        this.peerRemoteDescriptionReceived = false;
+        this.cachedRemoteIceCandidates = [];
 
         clearTimeout(this.connectTimeout);
         Object.keys(this.currentTransceiver).forEach(key => this.currentTransceiver[key] = undefined);
@@ -783,7 +810,7 @@ export class RTCConnection {
             this.peer.addTransceiver("video");
         }
 
-        this.peer.onicecandidate = event => this.handleIceCandidate(event.candidate);
+        this.peer.onicecandidate = event => this.handleLocalIceCandidate(event.candidate);
         this.peer.onicecandidateerror = event => this.handleIceCandidateError(event);
         this.peer.oniceconnectionstatechange = () => this.handleIceConnectionStateChanged();
         this.peer.onicegatheringstatechange = () => this.handleIceGatheringStateChanged();
@@ -893,7 +920,7 @@ export class RTCConnection {
         }
     }
 
-    private handleIceCandidate(candidate: RTCIceCandidate | undefined) {
+    private handleLocalIceCandidate(candidate: RTCIceCandidate | undefined) {
         if(candidate) {
             if(candidate.address?.endsWith(".local")) {
                 logTrace(LogCategory.WEBRTC, tr("Skipping local fqdn ICE candidate %s"), candidate.toJSON().candidate);
@@ -922,6 +949,38 @@ export class RTCConnection {
             });
         }
     }
+
+    public handleRemoteIceCandidate(candidate: RTCIceCandidate | undefined, mediaLine: number) {
+        if(!this.peer) {
+            logWarn(LogCategory.WEBRTC, tr("Received remote ICE candidate without an active peer. Dropping candidate."));
+            return;
+        }
+
+        if(!this.peerRemoteDescriptionReceived) {
+            logTrace(LogCategory.WEBRTC, tr("Received remote ICE candidate but haven't yet received a remote description. Caching the candidate."));
+            this.cachedRemoteIceCandidates.push({ mediaLine: mediaLine, candidate: candidate });
+            return;
+        }
+
+        if(!candidate) {
+            /* candidates finished */
+        } else {
+            this.peer.addIceCandidate(candidate).then(() => {
+                logTrace(LogCategory.WEBRTC, tr("Successfully added a remote ice candidate for media line %d: %s"), mediaLine, candidate.candidate);
+            }).catch(error => {
+                logWarn(LogCategory.WEBRTC, tr("Failed to add a remote ice candidate for media line %d: %o (Candidate: %s)"), mediaLine, error, candidate.candidate);
+            });
+        }
+    }
+
+    public applyCachedRemoteIceCandidates() {
+        for(const { candidate, mediaLine } of this.cachedRemoteIceCandidates) {
+            this.handleRemoteIceCandidate(candidate, mediaLine);
+        }
+
+        this.cachedRemoteIceCandidates = [];
+    }
+
     private handleIceCandidateError(event: RTCPeerConnectionIceErrorEvent) {
         if(this.peer.iceGatheringState === "gathering") {
             log.warn(LogCategory.WEBRTC, tr("Received error while gathering the ice candidates: %d/%s for %s (url: %s)"),
