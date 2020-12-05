@@ -1,4 +1,7 @@
 # Changelog:
+* **05.12.20**
+    - Fixed the webclient for Firefox in incognito mode
+    
 * **04.12.20**
     - Properly logging channel creations, deletions, shows and hides
     - Fixed missing collapsed arrow update after channel move

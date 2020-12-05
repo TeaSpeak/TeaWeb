@@ -65,8 +65,9 @@ export const ServerLogRenderer = (props: { events: Registry<ServerLogUIEvents>, 
     });
 
     const fixScroll = () => {
-        if(!refContainer.current)
+        if(!refContainer.current) {
             return;
+        }
 
         refContainer.current.scrollTop = scrollOffset.current === "bottom" ? refContainer.current.scrollHeight : scrollOffset.current;
     };
@@ -86,7 +87,7 @@ export const ServerLogRenderer = (props: { events: Registry<ServerLogUIEvents>, 
 
             const top = target.scrollTop;
             const total = target.scrollHeight - target.clientHeight;
-            const shouldFollow = top + 50 > total;
+            const shouldFollow = top + 100 > total;
 
             scrollOffset.current = shouldFollow ? "bottom" : top;
         }}>

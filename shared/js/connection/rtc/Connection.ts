@@ -70,7 +70,6 @@ class RetryTimeCalculator {
         this.retryCount++;
         const time = this.currentTime;
         this.currentTime = Math.min(this.currentTime + this.increment, this.maxTime);
-        console.error(time + " - " + this.retryCount);
         return time;
     }
 

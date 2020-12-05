@@ -1,4 +1,5 @@
 import {tr} from "../i18n/localize";
+import {LogCategory, logDebug} from "tc-shared/log";
 
 export enum ImageType {
     UNKNOWN,
@@ -56,41 +57,72 @@ export function responseImageType(encoded_data: string | ArrayBuffer, base64_enc
     return ImageType.UNKNOWN;
 }
 
+export type ImageCacheState = {
+    state: "loaded",
+    instance: Cache
+} | {
+    state: "errored",
+    reason: string
+} | {
+    state: "unloaded"
+}
+
 export class ImageCache {
-    readonly cache_name: string;
+    readonly cacheName: string;
 
-    private _cache_category: Cache;
+    private state: ImageCacheState;
 
-    constructor(name: string) {
-        this.cache_name = name;
+    private constructor(name: string) {
+        this.cacheName = name;
+        this.state = { state: "unloaded" };
     }
 
-    setupped() : boolean { return !!this._cache_category; }
+    public static async load(cacheName: string) : Promise<ImageCache> {
+        const cache = new ImageCache(cacheName);
 
-    async reset() {
-        if(!window.caches)
+        return cache;
+    }
+
+    private async initialize() {
+        if(!window.caches) {
+            this.state = { "state": "errored", reason: tr("Caches are not enabled by the user") };
             return;
+        }
 
         try {
-            await caches.delete(this.cache_name);
+            const instance = await window.caches.open(this.cacheName);
+            this.state = { state: "loaded", instance: instance };
+        } catch (error) {
+            logDebug(LogCategory.GENERAL, tr("Failed to open image cache %s: %o"), this.cacheName, error);
+            this.state = { "state": "errored", reason: tr("Failed to open the cache") };
+        }
+    }
+
+    private getCacheInstance() : Cache | undefined {
+        return this.state.state === "loaded" ? this.state.instance : undefined;
+    }
+
+    isPersistent() {
+        return this.state.state === "loaded";
+    }
+
+    async reset() {
+        if(!window.caches) {
+            /* Caches are disabled by the user */
+            return;
+        }
+
+        try {
+            await caches.delete(this.cacheName);
         } catch(error) {
             throw "Failed to delete cache: " + error;
         }
+
         try {
-            await this.setup();
+            await this.initialize();
         } catch(error) {
             throw "Failed to reinitialize cache!";
         }
-    }
-
-    async setup() {
-        if(!window.caches)
-            throw "Missing caches!";
-
-        if(this._cache_category)
-            return;
-
-        this._cache_category = await caches.open(this.cache_name);
     }
 
     async cleanup(maxAge: number) {
@@ -98,9 +130,11 @@ export class ImageCache {
     }
 
     async resolveCached(key: string, maxAge?: number) : Promise<Response | undefined> {
-        maxAge = typeof(maxAge) === "number" ? maxAge : -1;
+        const cacheInstance = this.getCacheInstance();
+        if(!cacheInstance) { return undefined; }
 
-        const cachedResponse = await this._cache_category.match("https://_local_cache/cache_request_" + key);
+        maxAge = typeof(maxAge) === "number" ? maxAge : -1;
+        const cachedResponse = await cacheInstance.match("https://_local_cache/cache_request_" + key);
         if(!cachedResponse)
             return undefined;
 
@@ -109,6 +143,9 @@ export class ImageCache {
     }
 
     async putCache(key: string, value: Response, type?: string, headers?: {[key: string]:string}) {
+        const cacheInstance = this.getCacheInstance();
+        if(!cacheInstance) { return; }
+
         const new_headers = new Headers();
         for(const key of value.headers.keys())
             new_headers.set(key, value.headers.get(key));
@@ -117,13 +154,16 @@ export class ImageCache {
         for(const key of Object.keys(headers || {}))
             new_headers.set(key, headers[key]);
 
-        await this._cache_category.put("https://_local_cache/cache_request_" + key, new Response(value.body, {
+        await cacheInstance.put("https://_local_cache/cache_request_" + key, new Response(value.body, {
             headers: new_headers
         }));
     }
 
     async delete(key: string) {
-        const flag = await this._cache_category.delete("https://_local_cache/cache_request_" + key, {
+        const cacheInstance = this.getCacheInstance();
+        if(!cacheInstance) { return; }
+        
+        const flag = await cacheInstance.delete("https://_local_cache/cache_request_" + key, {
             ignoreVary: true,
             ignoreMethod: true,
             ignoreSearch: true

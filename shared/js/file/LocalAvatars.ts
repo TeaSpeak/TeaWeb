@@ -42,19 +42,14 @@ class LocalClientAvatar extends ClientAvatar {
     }
 }
 
+let localAvatarCache: ImageCache;
 export class AvatarManager extends AbstractAvatarManager {
-    private static cache: ImageCache;
-
     readonly handle: FileManager;
     private cachedAvatars: {[avatarId: string]: LocalClientAvatar} = {};
 
     constructor(handle: FileManager) {
         super();
         this.handle = handle;
-
-        if(!AvatarManager.cache) {
-            AvatarManager.cache = new ImageCache("avatars");
-        }
     }
 
     destroy() {
@@ -83,11 +78,7 @@ export class AvatarManager extends AbstractAvatarManager {
 
         /* try to lookup our cache for the avatar */
         cache_lookup: {
-            if(!AvatarManager.cache.setupped()) {
-                await AvatarManager.cache.setup();
-            }
-
-            const response = await AvatarManager.cache.resolveCached('avatar_' + avatar.clientAvatarId); //TODO age!
+            const response = await localAvatarCache.resolveCached('avatar_' + avatar.clientAvatarId); //TODO age!
             if(!response) {
                 break cache_lookup;
             }
@@ -96,11 +87,11 @@ export class AvatarManager extends AbstractAvatarManager {
             if(avatar.getAvatarHash() !== "unknown") {
                 if(cachedAvatarHash === undefined) {
                     log.debug(LogCategory.FILE_TRANSFER, tr("Invalidating cached avatar for %s (Version miss match. Cached: unset, Current: %s)"), avatar.clientAvatarId, avatar.getAvatarHash());
-                    await AvatarManager.cache.delete('avatar_' + avatar.clientAvatarId);
+                    await localAvatarCache.delete('avatar_' + avatar.clientAvatarId);
                     break cache_lookup;
                 } else if(cachedAvatarHash !== avatar.getAvatarHash()) {
                     log.debug(LogCategory.FILE_TRANSFER, tr("Invalidating cached avatar for %s (Version miss match. Cached: %s, Current: %s)"), avatar.clientAvatarId, cachedAvatarHash, avatar.getAvatarHash());
-                    await AvatarManager.cache.delete('avatar_' + avatar.clientAvatarId);
+                    await localAvatarCache.delete('avatar_' + avatar.clientAvatarId);
                     break cache_lookup;
                 }
             } else if(cachedAvatarHash) {
@@ -174,7 +165,7 @@ export class AvatarManager extends AbstractAvatarManager {
                 return;
             }
 
-            await AvatarManager.cache.putCache('avatar_' + avatar.clientAvatarId, transferResponse.getResponse().clone(), "image/" + media, {
+            await localAvatarCache.putCache('avatar_' + avatar.clientAvatarId, transferResponse.getResponse().clone(), "image/" + media, {
                 "X-avatar-version": avatar.getAvatarHash()
             });
 
@@ -231,31 +222,29 @@ export class AvatarManager extends AbstractAvatarManager {
         });
     }
 
-    updateCache(clientAvatarId: string, clientAvatarHash: string) {
-        AvatarManager.cache.setup().then(async () => {
-            const cached = this.cachedAvatars[clientAvatarId];
-            if(cached) {
-                if(cached.getAvatarHash() === clientAvatarHash)
-                    return;
+    async updateCache(clientAvatarId: string, clientAvatarHash: string) {
+        const cached = this.cachedAvatars[clientAvatarId];
+        if(cached) {
+            if(cached.getAvatarHash() === clientAvatarHash)
+                return;
 
-                log.info(LogCategory.GENERAL, tr("Deleting cached avatar for client %s. Cached version: %s; New version: %s"), cached.getAvatarHash(), clientAvatarHash);
-            }
+            log.info(LogCategory.GENERAL, tr("Deleting cached avatar for client %s. Cached version: %s; New version: %s"), cached.getAvatarHash(), clientAvatarHash);
+        }
 
-            const response = await AvatarManager.cache.resolveCached('avatar_' + clientAvatarId);
-            if(response) {
-                let cachedAvatarHash = response.headers.has("X-avatar-version") ? response.headers.get("X-avatar-version") : undefined;
-                if(cachedAvatarHash !== clientAvatarHash) {
-                    await AvatarManager.cache.delete("avatar_" + clientAvatarId).catch(error => {
-                        log.warn(LogCategory.FILE_TRANSFER, tr("Failed to delete avatar %s: %o"), clientAvatarId, error);
-                    });
-                }
+        const response = await localAvatarCache.resolveCached('avatar_' + clientAvatarId);
+        if(response) {
+            let cachedAvatarHash = response.headers.has("X-avatar-version") ? response.headers.get("X-avatar-version") : undefined;
+            if(cachedAvatarHash !== clientAvatarHash) {
+                await localAvatarCache.delete("avatar_" + clientAvatarId).catch(error => {
+                    log.warn(LogCategory.FILE_TRANSFER, tr("Failed to delete avatar %s: %o"), clientAvatarId, error);
+                });
             }
+        }
 
-            if(cached) {
-                cached.events.fire("avatar_changed", { newAvatarHash: clientAvatarHash });
-                this.executeAvatarLoad(cached);
-            }
-        });
+        if(cached) {
+            cached.events.fire("avatar_changed", { newAvatarHash: clientAvatarHash });
+            this.executeAvatarLoad(cached);
+        }
     }
 
     resolveAvatar(clientAvatarId: string, avatarHash?: string, cacheOnly?: boolean) : ClientAvatar {
@@ -449,6 +438,7 @@ class LocalAvatarManagerFactory extends AbstractAvatarManagerFactory {
 loader.register_task(Stage.LOADED, {
     name: "Avatar init",
     function: async () => {
+        localAvatarCache = await ImageCache.load("avatars");
         setGlobalAvatarManagerFactory(new LocalAvatarManagerFactory());
     },
     priority: 5

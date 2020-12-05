@@ -346,9 +346,7 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     name: "icon init",
     priority: 60,
     function: async () => {
-        localIconCache = new ImageCache("icons");
-        await localIconCache.setup();
-
+        localIconCache = await ImageCache.load("icons");
         setIconManager(new IconManager());
     }
 });
