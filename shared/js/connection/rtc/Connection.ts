@@ -773,9 +773,6 @@ export class RTCConnection {
     }
 
     public doInitialSetup() {
-        /* initialize rtc connection */
-        this.retryCalculator.reset();
-
         if(!("RTCPeerConnection" in window)) {
             this.handleFatalError(tr("WebRTC has been disabled (RTCPeerConnection is not defined)"), false);
             return;
@@ -917,6 +914,7 @@ export class RTCConnection {
             /* will be called by the server connection handler */
         } else {
             this.reset(true);
+            this.retryCalculator.reset();
         }
     }
 
