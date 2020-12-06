@@ -89,6 +89,11 @@ html:root {
 
             @include transition(opacity $button_hover_animation_time);
         }
+
+        :global(.icon-container) {
+            height: 16px;
+            width: 16px;
+        }
     }
 
     .leftPadding {
