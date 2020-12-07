@@ -10,9 +10,9 @@ export const IconRenderer = (props: {
     className?: string;
 }) => {
     if(!props.icon) {
-        return <div className={cssStyle.empty + " icon-container icon-empty " + props.className} title={props.title} />;
+        return <div className={cssStyle.container + " icon-container icon-empty " + props.className} title={props.title} />;
     } else if(typeof props.icon === "string") {
-        return <div className={"icon " + props.icon + " " + props.className} title={props.title} />;
+        return <div className={cssStyle.container + " icon " + props.icon + " " + props.className} title={props.title} />;
     } else {
         throw "JQuery icons are not longer supported";
     }
@@ -26,27 +26,27 @@ export const RemoteIconRenderer = (props: { icon: RemoteIcon, className?: string
     switch (props.icon.getState()) {
         case "empty":
         case "destroyed":
-            return <div key={"empty"} className={"icon-container icon-empty " + props.className} title={props.title} />;
+            return <div key={"empty"} className={cssStyle.container + " icon-container icon-empty " + props.className} title={props.title} />;
 
         case "loaded":
             if(props.icon.iconId >= 0 && props.icon.iconId <= 1000) {
                 if(props.icon.iconId === 0) {
-                    return <div key={"loaded-empty"} className={"icon-container icon-empty " + props.className} title={props.title} />;
+                    return <div key={"loaded-empty"} className={cssStyle.container + " icon-container icon-empty " + props.className} title={props.title} />;
                 }
 
-                return <div key={"loaded"} className={"icon_em client-group_" + props.icon.iconId + " " + props.className} title={props.title} />;
+                return <div key={"loaded"} className={cssStyle.container + " icon_em client-group_" + props.icon.iconId + " " + props.className} title={props.title} />;
             }
             return (
-                <div key={"icon-" + props.icon.iconId} className={"icon-container " + props.className}>
+                <div key={"icon-" + props.icon.iconId} className={cssStyle.container + "icon-container " + props.className}>
                     <img style={{ maxWidth: "100%", maxHeight: "100%" }} src={props.icon.getImageUrl()} alt={props.title || ("icon " + props.icon.iconId)} draggable={false} />
                 </div>
             );
 
         case "loading":
-            return <div key={"loading"} className={"icon-container " + props.className} title={props.title}><div className={"icon_loading"} /></div>;
+            return <div key={"loading"} className={cssStyle.container + " icon-container " + props.className} title={props.title}><div className={"icon_loading"} /></div>;
 
         case "error":
-            return <div key={"error"} className={"icon client-warning " + props.className} title={props.icon.getErrorMessage() || tr("Failed to load icon")} />;
+            return <div key={"error"} className={cssStyle.container + " icon client-warning " + props.className} title={props.icon.getErrorMessage() || tr("Failed to load icon")} />;
 
         default:
             throw "invalid icon state";

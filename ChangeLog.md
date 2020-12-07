@@ -10,7 +10,8 @@
         - Fixed BBCode inline code style
         - URL tags can not contain any other tags
         - Correctly parsing the "lazy close tag" `[/]`
-        
+    - The client info modal now updates its values accordingly on client changes
+    
 * **05.12.20**
     - Fixed the webclient for Firefox in incognito mode
     

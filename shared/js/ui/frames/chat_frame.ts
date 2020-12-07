@@ -11,6 +11,7 @@ import {ConversationManager} from "../../ui/frames/side/ConversationManager";
 import {PrivateConversationManager} from "../../ui/frames/side/PrivateConversationManager";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 import { tr } from "tc-shared/i18n/localize";
+import {ClientInfoController} from "tc-shared/ui/frames/side/ClientInfoController";
 
 export enum InfoFrameMode {
     NONE = "none",
@@ -60,7 +61,7 @@ export class InfoFrame {
         this._value_ping = this._html_tag.find(".value-ping");
         this._html_tag.find(".chat-counter").on('click', event => this.handle.show_private_conversations());
         this._button_conversation = this._html_tag.find(".button.open-conversation").on('click', event => {
-            const selected_client = this.handle.client_info().current_client();
+            const selected_client = this.handle.getClientInfo().getClient();
             if(!selected_client) return;
 
             const conversation = selected_client ? this.handle.private_conversations().findOrCreateConversation(selected_client) : undefined;
@@ -248,7 +249,7 @@ export class InfoFrame {
 
         if(mode === InfoFrameMode.CLIENT_INFO && this._button_conversation) {
             //Will be called every time a client is shown
-            const selected_client = this.handle.client_info().current_client();
+            const selected_client = this.handle.getClientInfo().getClient();
             const conversation = selected_client ? this.handle.private_conversations().findConversation(selected_client) : undefined;
 
             const visibility = (selected_client && selected_client.clientId() !== this.handle.handle.getClientId()) ? "visible" : "hidden";
@@ -281,7 +282,7 @@ export class Frame {
     private containerChannelChat: JQuery;
     private _content_type: FrameContent;
 
-    private clientInfo: ClientInfo;
+    private clientInfo: ClientInfoController;
     private musicInfo: MusicInfo;
     private channelConversations: ConversationManager;
     private privateConversations: PrivateConversationManager;
@@ -293,7 +294,7 @@ export class Frame {
         this.infoFrame = new InfoFrame(this);
         this.privateConversations = new PrivateConversationManager(handle);
         this.channelConversations = new ConversationManager(handle);
-        this.clientInfo = new ClientInfo(this);
+        this.clientInfo = new ClientInfoController(handle);
         this.musicInfo = new MusicInfo(this);
 
         this._build_html_tag();
@@ -313,7 +314,7 @@ export class Frame {
         this.infoFrame && this.infoFrame.destroy();
         this.infoFrame = undefined;
 
-        this.clientInfo && this.clientInfo.destroy();
+        this.clientInfo?.destroy();
         this.clientInfo = undefined;
 
         this.musicInfo && this.musicInfo.destroy();
@@ -349,7 +350,7 @@ export class Frame {
         return this.channelConversations;
     }
 
-    client_info() : ClientInfo {
+    getClientInfo() : ClientInfoController {
         return this.clientInfo;
     }
 
@@ -386,16 +387,15 @@ export class Frame {
     }
 
     show_client_info(client: ClientEntry) {
-        this.clientInfo.set_current_client(client);
+        this.clientInfo.setClient(client);
         this.infoFrame.set_mode(InfoFrameMode.CLIENT_INFO); /* specially needs an update here to update the conversation button */
 
         if(this._content_type === FrameContent.CLIENT_INFO)
             return;
 
-        this.clientInfo.previous_frame_content = this._content_type;
         this._clear();
         this._content_type = FrameContent.CLIENT_INFO;
-        this.containerChannelChat.append(this.clientInfo.html_tag());
+        this.containerChannelChat.append(this.clientInfo.getHtmlTag());
     }
 
     show_music_player(client: MusicClientEntry) {

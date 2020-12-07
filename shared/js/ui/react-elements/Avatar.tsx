@@ -1,6 +1,6 @@
 import * as React from "react";
 import {ClientAvatar, kDefaultAvatarImage, kLoadingAvatarImage} from "tc-shared/file/Avatars";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import * as image_preview from "tc-shared/ui/frames/image_preview";
 
 const ImageStyle = { height: "100%", width: "100%", cursor: "pointer" };
@@ -8,6 +8,7 @@ export const AvatarRenderer = React.memo((props: { avatar: ClientAvatar | "loadi
     let [ revision, setRevision ] = useState(0);
 
     let image;
+    let avatar: ClientAvatar;
     if(props.avatar === "loading") {
         image = <img draggable={false} src={kLoadingAvatarImage} alt={tr("loading")}/>;
     } else if(props.avatar === "default") {
@@ -63,8 +64,10 @@ export const AvatarRenderer = React.memo((props: { avatar: ClientAvatar | "loadi
                 break;
         }
 
-        props.avatar?.events.reactUse("avatar_state_changed", () => setRevision(revision + 1));
+        avatar = props.avatar;
     }
+
+    useEffect(() => avatar && avatar.events.on("avatar_state_changed", () => setRevision(revision + 1)), [ props.avatar ]);
 
     return (
         <div className={props.className} style={{ overflow: "hidden" }}>

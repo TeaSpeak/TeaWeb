@@ -54,6 +54,8 @@ export class ClientProperties {
     client_servergroups: string = "";
 
     client_channel_group_id: number = 0;
+    client_channel_group_inherited_channel_id: number = 0;
+
     client_lastconnected: number = 0;
     client_created: number = 0;
     client_totalconnections: number = 0;
@@ -799,16 +801,9 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 update_avatar = true;
         }
 
-        /* process updates after variables have been set */
-        const side_bar = this.channelTree?.client?.side_bar;
-        if(side_bar) {
-            const client_info = side_bar.client_info();
-            if(client_info.current_client() === this)
-                client_info.set_current_client(this, true); /* force an update */
-        }
-
-        if(update_avatar)
+        if(update_avatar) {
             this.channelTree.client?.fileManager?.avatars.updateCache(this.avatarId(), this.properties.client_flag_avatar);
+        }
 
         /* devel-block(log-client-property-updates) */
         group.end();
@@ -823,8 +818,9 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
     }
 
     updateClientVariables(force_update?: boolean) : Promise<void> {
-        if(Date.now() - 10 * 60 * 1000 < this.promiseClientInfoTimestamp && this.promiseClientInfo && (typeof(force_update) !== "boolean" || force_update))
+        if(Date.now() - 10 * 60 * 1000 < this.promiseClientInfoTimestamp && this.promiseClientInfo && (typeof(force_update) !== "boolean" || force_update)) {
             return this.promiseClientInfo;
+        }
 
         this.promiseClientInfoTimestamp = Date.now();
         return (this.promiseClientInfo = new Promise<void>((resolve, reject) => {
@@ -931,8 +927,9 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
     }
 
     setAudioVolume(value: number) {
-        if(this.voiceVolume == value)
+        if(this.voiceVolume == value) {
             return;
+        }
 
         this.voiceVolume = value;
 

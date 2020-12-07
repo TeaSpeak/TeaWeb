@@ -273,7 +273,8 @@ if(typeof ($) !== "undefined") {
         }
 }
 
-if(!Object.values)
+if(!Object.values) {
     Object.values = object => Object.keys(object).map(e => object[e]);
+}
 
 export = {};

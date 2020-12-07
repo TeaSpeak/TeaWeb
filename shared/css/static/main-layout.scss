@@ -268,23 +268,6 @@ $animation_seperator_length: .1s;
 	}
 }
 
-.icon-container {
-	position: relative;
-	display: inline-block;
-	height: 16px;
-	width: 16px;
-
-	> img {
-		position: absolute;
-	}
-}
-
-.icon_empty {
-	display: inline-block;
-	height: 16px;
-	width: 16px;
-}
-
 html, body {
 	overflow: hidden;
 }
