@@ -232,30 +232,33 @@ export class Group {
     }
 
     log(message: string, ...optionalParams: any[]) : this {
-        if(!this.enabled)
+        if(!this.enabled) {
             return this;
+        }
 
         if(!this.initialized) {
             if(this.mode == GroupMode.NATIVE) {
-                if(this._collapsed && console.groupCollapsed)
+                if(this._collapsed && console.groupCollapsed) {
                     console.groupCollapsed(this.name, ...this.optionalParams);
-                else
+                } else {
                     console.group(this.name, ...this.optionalParams);
+                }
             } else {
                 this._log_prefix = "  ";
                 let parent = this.owner;
                 while(parent) {
-                    if(parent.mode == GroupMode.PREFIX)
+                    if(parent.mode == GroupMode.PREFIX) {
                         this._log_prefix = this._log_prefix + parent._log_prefix;
-                    else
+                    } else {
                         break;
+                    }
                 }
             }
             this.initialized = true;
         }
-        if(this.mode == GroupMode.NATIVE)
+        if(this.mode == GroupMode.NATIVE) {
             logDirect(this.level, message, ...optionalParams);
-        else {
+        } else {
             logDirect(this.level, "[%s] " + this._log_prefix + message, category_mapping.get(this.category), ...optionalParams);
         }
         return this;

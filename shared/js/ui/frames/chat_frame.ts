@@ -275,91 +275,91 @@ export enum FrameContent {
 
 export class Frame {
     readonly handle: ConnectionHandler;
-    private _info_frame: InfoFrame;
-    private _html_tag: JQuery;
-    private _container_info: JQuery;
-    private _container_chat: JQuery;
+    private infoFrame: InfoFrame;
+    private htmlTag: JQuery;
+    private containerInfo: JQuery;
+    private containerChannelChat: JQuery;
     private _content_type: FrameContent;
 
-    private _client_info: ClientInfo;
-    private _music_info: MusicInfo;
-    private _channel_conversations: ConversationManager;
-    private _private_conversations: PrivateConversationManager;
+    private clientInfo: ClientInfo;
+    private musicInfo: MusicInfo;
+    private channelConversations: ConversationManager;
+    private privateConversations: PrivateConversationManager;
 
     constructor(handle: ConnectionHandler) {
         this.handle = handle;
 
         this._content_type = FrameContent.NONE;
-        this._info_frame = new InfoFrame(this);
-        this._private_conversations = new PrivateConversationManager(handle);
-        this._channel_conversations = new ConversationManager(handle);
-        this._client_info = new ClientInfo(this);
-        this._music_info = new MusicInfo(this);
+        this.infoFrame = new InfoFrame(this);
+        this.privateConversations = new PrivateConversationManager(handle);
+        this.channelConversations = new ConversationManager(handle);
+        this.clientInfo = new ClientInfo(this);
+        this.musicInfo = new MusicInfo(this);
 
         this._build_html_tag();
         this.show_channel_conversations();
         this.info_frame().update_chat_counter();
     }
 
-    html_tag() : JQuery { return this._html_tag; }
-    info_frame() : InfoFrame { return this._info_frame; }
+    html_tag() : JQuery { return this.htmlTag; }
+    info_frame() : InfoFrame { return this.infoFrame; }
 
     content_type() : FrameContent { return this._content_type; }
 
     destroy() {
-        this._html_tag && this._html_tag.remove();
-        this._html_tag = undefined;
+        this.htmlTag && this.htmlTag.remove();
+        this.htmlTag = undefined;
 
-        this._info_frame && this._info_frame.destroy();
-        this._info_frame = undefined;
+        this.infoFrame && this.infoFrame.destroy();
+        this.infoFrame = undefined;
 
-        this._client_info && this._client_info.destroy();
-        this._client_info = undefined;
+        this.clientInfo && this.clientInfo.destroy();
+        this.clientInfo = undefined;
 
-        this._music_info && this._music_info.destroy();
-        this._music_info = undefined;
+        this.musicInfo && this.musicInfo.destroy();
+        this.musicInfo = undefined;
 
-        this._private_conversations && this._private_conversations.destroy();
-        this._private_conversations = undefined;
+        this.privateConversations && this.privateConversations.destroy();
+        this.privateConversations = undefined;
 
-        this._channel_conversations && this._channel_conversations.destroy();
-        this._channel_conversations = undefined;
+        this.channelConversations && this.channelConversations.destroy();
+        this.channelConversations = undefined;
 
-        this._container_info && this._container_info.remove();
-        this._container_info = undefined;
+        this.containerInfo && this.containerInfo.remove();
+        this.containerInfo = undefined;
 
-        this._container_chat && this._container_chat.remove();
-        this._container_chat = undefined;
+        this.containerChannelChat && this.containerChannelChat.remove();
+        this.containerChannelChat = undefined;
     }
 
     private _build_html_tag() {
-        this._html_tag = $("#tmpl_frame_chat").renderTag();
-        this._container_info = this._html_tag.find(".container-info");
-        this._container_chat = this._html_tag.find(".container-chat");
+        this.htmlTag = $("#tmpl_frame_chat").renderTag();
+        this.containerInfo = this.htmlTag.find(".container-info");
+        this.containerChannelChat = this.htmlTag.find(".container-chat");
 
-        this._info_frame.html_tag().appendTo(this._container_info);
+        this.infoFrame.html_tag().appendTo(this.containerInfo);
     }
 
 
     private_conversations() : PrivateConversationManager {
-        return this._private_conversations;
+        return this.privateConversations;
     }
 
     channel_conversations() : ConversationManager {
-        return this._channel_conversations;
+        return this.channelConversations;
     }
 
     client_info() : ClientInfo {
-        return this._client_info;
+        return this.clientInfo;
     }
 
     music_info() : MusicInfo {
-        return this._music_info;
+        return this.musicInfo;
     }
 
     private _clear() {
         this._content_type = FrameContent.NONE;
-        this._container_chat.children().detach();
+        this.containerChannelChat.children().detach();
     }
 
     show_private_conversations() {
@@ -368,9 +368,9 @@ export class Frame {
 
         this._clear();
         this._content_type = FrameContent.PRIVATE_CHAT;
-        this._container_chat.append(this._private_conversations.htmlTag);
-        this._private_conversations.handlePanelShow();
-        this._info_frame.set_mode(InfoFrameMode.PRIVATE_CHAT);
+        this.containerChannelChat.append(this.privateConversations.htmlTag);
+        this.privateConversations.handlePanelShow();
+        this.infoFrame.set_mode(InfoFrameMode.PRIVATE_CHAT);
     }
 
     show_channel_conversations() {
@@ -379,36 +379,36 @@ export class Frame {
 
         this._clear();
         this._content_type = FrameContent.CHANNEL_CHAT;
-        this._container_chat.append(this._channel_conversations.htmlTag);
-        this._channel_conversations.handlePanelShow();
+        this.containerChannelChat.append(this.channelConversations.htmlTag);
+        this.channelConversations.handlePanelShow();
 
-        this._info_frame.set_mode(InfoFrameMode.CHANNEL_CHAT);
+        this.infoFrame.set_mode(InfoFrameMode.CHANNEL_CHAT);
     }
 
     show_client_info(client: ClientEntry) {
-        this._client_info.set_current_client(client);
-        this._info_frame.set_mode(InfoFrameMode.CLIENT_INFO); /* specially needs an update here to update the conversation button */
+        this.clientInfo.set_current_client(client);
+        this.infoFrame.set_mode(InfoFrameMode.CLIENT_INFO); /* specially needs an update here to update the conversation button */
 
         if(this._content_type === FrameContent.CLIENT_INFO)
             return;
 
-        this._client_info.previous_frame_content = this._content_type;
+        this.clientInfo.previous_frame_content = this._content_type;
         this._clear();
         this._content_type = FrameContent.CLIENT_INFO;
-        this._container_chat.append(this._client_info.html_tag());
+        this.containerChannelChat.append(this.clientInfo.html_tag());
     }
 
     show_music_player(client: MusicClientEntry) {
-        this._music_info.set_current_bot(client);
+        this.musicInfo.set_current_bot(client);
 
         if(this._content_type === FrameContent.MUSIC_BOT)
             return;
 
-        this._info_frame.set_mode(InfoFrameMode.MUSIC_BOT);
-        this._music_info.previous_frame_content = this._content_type;
+        this.infoFrame.set_mode(InfoFrameMode.MUSIC_BOT);
+        this.musicInfo.previous_frame_content = this._content_type;
         this._clear();
         this._content_type = FrameContent.MUSIC_BOT;
-        this._container_chat.append(this._music_info.html_tag());
+        this.containerChannelChat.append(this.musicInfo.html_tag());
     }
 
     set_content(type: FrameContent) {
@@ -422,7 +422,7 @@ export class Frame {
         else {
             this._clear();
             this._content_type = FrameContent.NONE;
-            this._info_frame.set_mode(InfoFrameMode.NONE);
+            this.infoFrame.set_mode(InfoFrameMode.NONE);
         }
     }
 }

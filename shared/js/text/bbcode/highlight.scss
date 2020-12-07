@@ -13,13 +13,13 @@
     &.inlineCode {
         display: inline-block;
 
-        > .hljs {
-            padding: 0 .25em!important;
-        }
-
         white-space: pre-wrap;
         margin: 0 0 -0.1em;
         vertical-align: bottom;
+
+        > :global(.hljs) {
+            padding: 0 .25em!important;
+        }
     }
     &.code {
         word-wrap: normal;

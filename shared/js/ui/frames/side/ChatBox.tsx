@@ -31,8 +31,9 @@ const EmojiButton = (props: { events: Registry<ChatBoxEvents> }) => {
     const refContainer = useRef();
 
     useEffect(() => {
-        if(!shown)
+        if(!shown) {
             return;
+        }
 
         const clickListener = (event: MouseEvent) => {
             let target = event.target as HTMLElement;
@@ -90,8 +91,9 @@ const nodeToText = (element: Node) => {
             return '\n';
         }
 
-        if(element.children.length > 0)
+        if(element.children.length > 0) {
             return [...element.childNodes].map(nodeToText).join("");
+        }
 
         return typeof(element.innerText) === "string" ? element.innerText : "";
     } else {
@@ -139,14 +141,14 @@ const TextInput = (props: { events: Registry<ChatBoxEvents>, enabled?: boolean, 
         const clipboard = event.clipboardData || (window as any).clipboardData;
         if(!clipboard) return;
 
-        const raw_text = clipboard.getData('text/plain');
+        const rawText = clipboard.getData('text/plain');
         const selection = window.getSelection();
         if (!selection.rangeCount)
             return false;
 
         let htmlXML = clipboard.getData('text/html');
         if(!htmlXML) {
-            pasteTextTransformElement.textContent = raw_text;
+            pasteTextTransformElement.textContent = rawText;
             htmlXML = pasteTextTransformElement.innerHTML;
         }
 
@@ -159,17 +161,21 @@ const TextInput = (props: { events: Registry<ChatBoxEvents>, enabled?: boolean, 
         {
             let prefix_length = 0, suffix_length = 0;
             {
-                for (let i = 0; i < raw_text.length; i++)
-                    if (raw_text.charAt(i) === '\n')
+                for (let i = 0; i < rawText.length; i++) {
+                    if (rawText.charAt(i) === '\n') {
                         prefix_length++;
-                    else if (raw_text.charAt(i) !== '\r')
+                    } else if (rawText.charAt(i) !== '\r') {
                         break;
+                    }
+                }
 
-                for (let i = raw_text.length - 1; i >= 0; i++)
-                    if (raw_text.charAt(i) === '\n')
+                for (let i = rawText.length - 1; i >= 0; i++) {
+                    if (rawText.charAt(i) === '\n') {
                         suffix_length++;
-                    else if (raw_text.charAt(i) !== '\r')
+                    } else if (rawText.charAt(i) !== '\r') {
                         break;
+                    }
+                }
             }
 
             data = data.replace(/^[\n\r]+|[\n\r]+$/g, '');
@@ -186,14 +192,16 @@ const TextInput = (props: { events: Registry<ChatBoxEvents>, enabled?: boolean, 
 
         const inputEmpty = refInput.current.innerText.trim().length === 0;
         if(event.key === "Enter" && !event.shiftKey) {
-            if(inputEmpty)
+            if(inputEmpty) {
                 return;
+            }
 
             const text = refInput.current.innerText;
             props.events.fire("action_submit_message", { message: text });
             history.current.push(text);
-            while(history.current.length > 10)
+            while(history.current.length > 10) {
                 history.current.pop_front();
+            }
 
             refInput.current.innerText = "";
             setHistoryIndex(-1);
@@ -221,15 +229,17 @@ const TextInput = (props: { events: Registry<ChatBoxEvents>, enabled?: boolean, 
 
     props.events.reactUse("action_request_focus", () => refInput.current?.focus());
     props.events.reactUse("notify_typing", () => {
-        if(typeof typingTimeout.current === "number")
+        if(typeof typingTimeout.current === "number") {
             return;
+        }
 
         typingTimeout.current = setTimeout(() => typingTimeout.current = undefined, 1000);
     });
     props.events.reactUse("action_insert_text", event => {
         refInput.current.innerHTML = refInput.current.innerHTML + event.text;
-        if(event.focus)
+        if(event.focus) {
             refInput.current.focus();
+        }
     });
     props.events.reactUse("action_set_enabled", event => {
         setEnabled(event.enabled);
@@ -273,8 +283,9 @@ const MarkdownFormatHelper = () => {
     const [ visible, setVisible ] = useState(settings.global(Settings.KEY_CHAT_ENABLE_MARKDOWN));
 
     settings.events.reactUse("notify_setting_changed", event => {
-        if(event.setting !== Settings.KEY_CHAT_ENABLE_MARKDOWN.key)
+        if(event.setting !== Settings.KEY_CHAT_ENABLE_MARKDOWN.key) {
             return;
+        }
 
         setVisible(settings.global(Settings.KEY_CHAT_ENABLE_MARKDOWN));
     });
@@ -323,7 +334,8 @@ export class ChatBox extends React.Component<ChatBoxProperties, ChatBoxState> {
     }
 
     componentDidUpdate(prevProps: Readonly<ChatBoxProperties>, prevState: Readonly<ChatBoxState>, snapshot?: any): void {
-        if(prevState.enabled !== this.state.enabled)
+        if(prevState.enabled !== this.state.enabled) {
             this.events.fire_react("action_set_enabled", { enabled: this.state.enabled });
+        }
     }
 }

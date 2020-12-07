@@ -4,15 +4,16 @@ import {rendererHTML, rendererReact, rendererText} from "tc-shared/text/bbcode/r
 import {parse as parseBBCode} from "vendor/xbbcode/parser";
 import {fixupJQueryUrlTags} from "tc-shared/text/bbcode/url";
 import {fixupJQueryImageTags} from "tc-shared/text/bbcode/image";
+import "./bbcode.scss";
 
-export const escapeBBCode = (text: string) => text.replace(/([\[\]])/g, "\\$1");
+export const escapeBBCode = (text: string) => text.replace(/(\[)/g, "\\$1");
 
 export const allowedBBCodes = [
     "b", "big",
     "i", "italic",
     "u", "underlined",
     "s", "strikethrough",
-    "color",
+    "color", "bgcolor",
     "url",
     "code",
     "i-code", "icode",
@@ -22,7 +23,9 @@ export const allowedBBCodes = [
     "left", "l", "center", "c", "right", "r",
 
     "ul", "ol", "list",
+    "ulist", "olist",
     "li",
+    "*",
 
     "table",
     "tr", "td", "th",
@@ -37,7 +40,7 @@ export interface BBCodeRenderOptions {
     convertSingleUrls: boolean;
 }
 
-const yt_url_regex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$/;
+const youtubeUrlRegex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$/;
 
 function preprocessMessage(message: string, settings: BBCodeRenderOptions) : string {
     /* try if its only one url */
@@ -53,7 +56,7 @@ function preprocessMessage(message: string, settings: BBCodeRenderOptions) : str
 
         single_url_yt:
         {
-            const result = raw_url.match(yt_url_regex);
+            const result = raw_url.match(youtubeUrlRegex);
             if(!result) break single_url_yt;
 
             return "[yt]https://www.youtube.com/watch?v=" + result[5] + "[/yt]";

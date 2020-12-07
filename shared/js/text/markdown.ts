@@ -1,32 +1,35 @@
 import * as log from "../log";
-import {LogCategory} from "../log";
+import {LogCategory, logTrace} from "../log";
 import {
-    CodeToken, Env, FenceToken, HeadingOpenToken,
+    CodeToken,
+    Env,
+    FenceToken,
+    HeadingOpenToken,
     ImageToken,
-    LinkOpenToken, Options,
-    ParagraphOpenToken,
+    LinkOpenToken,
+    Options,
+    ParagraphCloseToken,
     SubToken,
     SupToken,
     TextToken,
     Token
 } from "remarkable/lib";
 import {escapeBBCode} from "../text/bbcode";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
+
 const { Remarkable } = require("remarkable");
 
 export class MD2BBCodeRenderer {
     private static renderers: {[key: string]:(renderer: MD2BBCodeRenderer, token: Token) => string} = {
-        "text": (renderer: MD2BBCodeRenderer, token: TextToken) => renderer.options().textProcessor(token.content),
+        "text": (renderer: MD2BBCodeRenderer, token: TextToken) => {
+            renderer.currentLineCount += token.content.split("\n").length;
+            return renderer.options().textProcessor(token.content);
+        },
         "softbreak": () => "\n",
         "hardbreak": () => "\n",
 
-        "paragraph_open": (renderer: MD2BBCodeRenderer, token: ParagraphOpenToken) => {
-            debugger;
-            const last_line = !renderer.last_paragraph || !renderer.last_paragraph.lines ? 0 : renderer.last_paragraph.lines[1];
-            const lines = token.lines[0] - last_line;
-            return [...new Array(lines)].map(() => "[br]").join("");
-        },
-        "paragraph_close": () => "",
+        "paragraph_open": () => "",
+        "paragraph_close": (_, token: ParagraphCloseToken) => token.tight ? "" : "[br]",
 
         "strong_open": () => "[b]",
         "strong_close": () => "[/b]",
@@ -70,7 +73,10 @@ export class MD2BBCodeRenderer {
         "link_open": (renderer: MD2BBCodeRenderer, token: LinkOpenToken) => "[url" + (token.href ? ("=" + token.href) : "") + "]",
         "link_close": () => "[/url]",
 
-        "image": (renderer: MD2BBCodeRenderer, token: ImageToken) => "[img=" + (token.src) + "]" + (token.alt || token.src) + "[/img]",
+        "image": (renderer: MD2BBCodeRenderer, token: ImageToken) => {
+            renderer.currentLineCount += 1;
+            return "[img=" + (token.src) + "]" + (token.alt || token.src) + "[/img]";
+        },
 
         //footnote_ref
 
@@ -96,14 +102,26 @@ export class MD2BBCodeRenderer {
     };
 
     private _options;
-    last_paragraph: Token;
+    currentLineCount: number;
+
+    reset() {
+        this._options = undefined;
+        this.currentLineCount = 0;
+    }
 
     render(tokens: Token[], options: Options, env: Env): string {
-        this.last_paragraph = undefined;
         this._options = options;
+
         let result = '';
 
         for(let index = 0; index < tokens.length; index++) {
+            if(tokens[index].lines?.length) {
+                while(this.currentLineCount < tokens[index].lines[0]) {
+                    this.currentLineCount += 1;
+                    result += "[br]";
+                }
+            }
+
             if (tokens[index].type === 'inline') {
                 /* we're just ignoring the inline fact */
                 result += this.render((tokens[index] as any).children, options, env);
@@ -124,10 +142,7 @@ export class MD2BBCodeRenderer {
             return 'content' in token ? this.options().textProcessor(token.content) : "";
         }
 
-        const result = renderer(this, token);
-        if(token.type === "paragraph_open")
-            this.last_paragraph = token;
-        return result;
+        return renderer(this, token);
     }
 
     options() : any {
@@ -135,17 +150,19 @@ export class MD2BBCodeRenderer {
     }
 }
 
+const md2bbCodeRenderer = new MD2BBCodeRenderer();
 const remarkableRenderer = new Remarkable("full", {
     typographer: true
 });
-remarkableRenderer.renderer = new MD2BBCodeRenderer() as any;
+remarkableRenderer.renderer = md2bbCodeRenderer as any;
 remarkableRenderer.inline.ruler.disable([ 'newline', 'autolink' ]);
 
 export function renderMarkdownAsBBCode(message: string, textProcessor: (text: string) => string) : string {
     remarkableRenderer.set({ textProcessor: textProcessor } as any);
 
+    md2bbCodeRenderer.reset();
+
     let result = remarkableRenderer.render(message);
-    if(result.endsWith("\n"))
-        result = result.substr(0, result.length - 1);
+    logTrace(LogCategory.CHAT, tr("Markdown render result:\n%s"), result);
     return result;
 }

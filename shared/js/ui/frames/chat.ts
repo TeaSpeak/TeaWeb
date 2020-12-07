@@ -19,10 +19,11 @@ export function htmlEscape(message: string) : string[] {
 }
 
 export function formatElement(object: any, escape_html: boolean = true) : JQuery[] {
-    if($.isArray(object)) {
+    if(Array.isArray(object)) {
         let result = [];
-        for(let element of object)
+        for(let element of object) {
             result.push(...formatElement(element, escape_html));
+        }
         return result;
     } else if(typeof(object) == "string") {
         if(object.length == 0) return [];

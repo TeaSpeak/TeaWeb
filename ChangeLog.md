@@ -1,4 +1,15 @@
 # Changelog:
+* **07.12.20**
+    - Fixed the Markdown to BBCode transpiler falsely emitting empty lines
+    - Fixed invalid BBCode escaping
+    - Added proper BBCode support for lazy close tags
+    - Improved the URL detecting and replace support (Reduced false positives and proper protocol checking)
+    - Adding support for list bb codes and background color
+    - Fixed some minor BBCode parser bugs
+        - Fixed BBCode inline code style
+        - URL tags can not contain any other tags
+        - Correctly parsing the "lazy close tag" `[/]`
+        
 * **05.12.20**
     - Fixed the webclient for Firefox in incognito mode
     

@@ -298,34 +298,6 @@ html:root {
                     margin-bottom: .1em;
                 }
 
-                table {
-                    th, td {
-                        border-color: var(--chat-message-table-border);
-                    }
-
-                    tr {
-                        background-color: var(--chat-message-table-row-background);
-                    }
-
-                    tr:nth-child(2n) {
-                        background-color: var(--chat-message-table-row-even-background);
-                    }
-                }
-
-                :global(.xbbcode-tag-img) {
-                    padding: .25em;
-                    border-radius: .25em;
-
-                    overflow: hidden;
-                    max-width: 20em;
-                    max-height: 20em;
-
-                    img {
-                        width: 100%;
-                        height: 100%;
-                    }
-                }
-
                 :global(.chat-emoji) {
                     height: 1.1em;
                     width: 1.1em;
@@ -340,12 +312,6 @@ html:root {
                         margin-top: .1em;
                         margin-bottom: .1em;
                     }
-                }
-
-                :global(.xbbcode-tag-quote) {
-                    border-color: var(--chat-message-quote-border);
-                    padding-left: .5em;
-                    color: var(--chat-message-quote);
                 }
             }
 

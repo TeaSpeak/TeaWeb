@@ -1,70 +1,74 @@
-//https://regex101.com/r/YQbfcX/2
-//static readonly URL_REGEX = /^(?<hostname>([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]{2,63})(?:\/(?<path>(?:[^\s?]+)?)(?:\?(?<query>\S+))?)?$/gm;
-import * as log from "../log";
-import {LogCategory} from "../log";
+import UrlKnife from 'url-knife';
 import {Settings, settings} from "../settings";
 import {renderMarkdownAsBBCode} from "../text/markdown";
 import {escapeBBCode} from "../text/bbcode";
-import { tr } from "tc-shared/i18n/localize";
 
-const URL_REGEX = /^(([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]{2,63})(?:\/((?:[^\s?]+)?)(?:\?(\S+))?)?$/gm;
-function process_urls(message: string) : string {
-    const words = message.split(/[ \n]/);
-    for(let index = 0; index < words.length; index++) {
-        const flag_escaped = words[index].startsWith('!');
-        const unescaped = flag_escaped ? words[index].substr(1) : words[index];
+interface UrlKnifeUrl {
+    value: {
+        url: string,
+    },
+    area: string,
+    index: {
+        start: number,
+        end: number
+    }
+}
 
-        _try:
-            try {
-                const url = new URL(unescaped);
-                log.debug(LogCategory.GENERAL, tr("Chat message contains URL: %o"), url);
-                if(url.protocol !== 'http:' && url.protocol !== 'https:')
-                    break _try;
-                if(flag_escaped) {
-                    message = undefined;
-                    words[index] = unescaped;
-                } else {
-                    message = undefined;
-                    words[index] = "[url=" + url.toString() + "]" + url.toString() + "[/url]";
-                }
-            } catch(e) { /* word isn't an url */ }
+function bbcodeLinkUrls(message: string) : string {
+    const urls: UrlKnifeUrl[] = UrlKnife.TextArea.extractAllUrls(message, {
+        'ip_v4' : true,
+        'ip_v6' : false,
+        'localhost' : false,
+        'intranet' : true
+    });
 
-        if(unescaped.match(URL_REGEX)) {
-            if(flag_escaped) {
-                message = undefined;
-                words[index] = unescaped;
-            } else {
-                message = undefined;
-                words[index] = "[url=" + unescaped + "]" + unescaped + "[/url]";
-            }
+    /* we want to go through the urls from the back to the front */
+    urls.sort((a, b) => b.index.start - a.index.start);
+    for(const url of urls) {
+        const prefix = message.substr(0, url.index.start);
+        const suffix = message.substr(url.index.end);
+        const urlPath = message.substring(url.index.start, url.index.end);
+        let bbcodeUrl;
+
+        let colonIndex = urlPath.indexOf(":");
+        if(colonIndex === -1 || colonIndex + 2 < urlPath.length || urlPath[colonIndex + 1] !== "/" || urlPath[colonIndex + 2] !== "/") {
+            bbcodeUrl = "[url=https://" + urlPath + "]" + urlPath + "[/url]";
+        } else {
+            bbcodeUrl = "[url]" + urlPath + "[/url]";
         }
+
+        message = prefix + bbcodeUrl + suffix;
     }
 
-    return message || words.join(" ");
+    return message;
 }
 
 export function preprocessChatMessageForSend(message: string) : string {
-    const process_url = settings.static_global(Settings.KEY_CHAT_TAG_URLS);
-    const parse_markdown = settings.static_global(Settings.KEY_CHAT_ENABLE_MARKDOWN);
-    const escape_bb = !settings.static_global(Settings.KEY_CHAT_ENABLE_BBCODE);
+    const processUrls = settings.static_global(Settings.KEY_CHAT_TAG_URLS);
+    const parseMarkdown = settings.static_global(Settings.KEY_CHAT_ENABLE_MARKDOWN);
+    const escapeBBCodes = !settings.static_global(Settings.KEY_CHAT_ENABLE_BBCODE);
 
-    if(parse_markdown) {
+    if(parseMarkdown) {
         return renderMarkdownAsBBCode(message, text => {
-            if(escape_bb)
+            if(escapeBBCodes) {
                 text = escapeBBCode(text);
+            }
 
-            if(process_url)
-                text = process_urls(text);
+            if(processUrls) {
+                text = bbcodeLinkUrls(text);
+            }
 
             return text;
         });
+    } else {
+        if(escapeBBCodes) {
+            message = escapeBBCode(message);
+        }
+
+        if(processUrls) {
+            message = bbcodeLinkUrls(message);
+        }
+
+        return message;
     }
-
-    if(escape_bb)
-        message = escapeBBCode(message);
-
-    if(process_url)
-        message = process_urls(message);
-
-    return message;
 }
