@@ -5,7 +5,6 @@ import {ChannelEntry} from "../../tree/Channel";
 import {ServerEntry} from "../../tree/Server";
 import {openMusicManage} from "../../ui/modal/ModalMusicManage";
 import {formatMessage} from "../../ui/frames/chat";
-import {ClientInfo} from "../../ui/frames/side/client_info";
 import {MusicInfo} from "../../ui/frames/side/music_info";
 import {ConversationManager} from "../../ui/frames/side/ConversationManager";
 import {PrivateConversationManager} from "../../ui/frames/side/PrivateConversationManager";

@@ -1,10 +1,11 @@
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {ClientEntry, ClientType, LocalClientEntry} from "tc-shared/tree/Client";
 import {
     ClientForumInfo,
     ClientGroupInfo,
     ClientInfoEvents,
-    ClientStatusInfo, ClientVersionInfo
+    ClientStatusInfo,
+    ClientVersionInfo
 } from "tc-shared/ui/frames/side/ClientInfoDefinitions";
 
 import * as ReactDOM from "react-dom";
@@ -92,6 +93,14 @@ export class ClientInfoController {
             this.unregisterClientEvents();
             this.sendOnline();
         }));
+
+        this.listenerConnection.push(this.connection.events().on("notify_connection_state_changed", event => {
+            if(event.new_state !== ConnectionState.CONNECTED && this.currentClientStatus) {
+                this.currentClient = undefined;
+                this.currentClientStatus.leaveTimestamp = Date.now() / 1000;
+                this.sendOnline();
+            }
+        }))
 
         this.uiEvents.on("query_client_name", () => this.sendClientName());
         this.uiEvents.on("query_client_description", () => this.sendClientDescription());
