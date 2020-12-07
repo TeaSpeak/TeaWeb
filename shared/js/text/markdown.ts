@@ -88,8 +88,9 @@ export class MD2BBCodeRenderer {
         "ins_open": () => "[u]",
         "ins_close": () => "[/u]",
 
-        "code": (renderer: MD2BBCodeRenderer, token: CodeToken) => "[i-code]" + escapeBBCode(token.content) + "[/i-code]",
-        "fence": (renderer: MD2BBCodeRenderer, token: FenceToken) => "[code" + (token.params ? ("=" + token.params) : "") + "]" + escapeBBCode(token.content) + "[/code]",
+        //[code]teaspeak.de[/code]
+        "code": (renderer: MD2BBCodeRenderer, token: CodeToken) => "[i-code]" + token.content + "[/i-code]",
+        "fence": (renderer: MD2BBCodeRenderer, token: FenceToken) => "[code" + (token.params ? ("=" + token.params) : "") + "]" + token.content + "[/code]",
 
         "heading_open": (renderer: MD2BBCodeRenderer, token: HeadingOpenToken) => "[size=" + (9 - Math.min(4, token.hLevel)) + "]",
         "heading_close": () => "[/size][hr]",

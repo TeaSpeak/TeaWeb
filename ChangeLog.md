@@ -5,6 +5,7 @@
     - Added proper BBCode support for lazy close tags
     - Improved the URL detecting and replace support (Reduced false positives and proper protocol checking)
     - Adding support for list bb codes and background color
+    - Fixed a bug where `code` and `noparse` areas got parsed by the bbcode url parser
     - Fixed some minor BBCode parser bugs
         - Fixed BBCode inline code style
         - URL tags can not contain any other tags

@@ -2,6 +2,8 @@ import UrlKnife from 'url-knife';
 import {Settings, settings} from "../settings";
 import {renderMarkdownAsBBCode} from "../text/markdown";
 import {escapeBBCode} from "../text/bbcode";
+import {parse as parseBBCode} from "vendor/xbbcode/parser";
+import {TagElement} from "vendor/xbbcode/elements";
 
 interface UrlKnifeUrl {
     value: {
@@ -14,7 +16,7 @@ interface UrlKnifeUrl {
     }
 }
 
-function bbcodeLinkUrls(message: string) : string {
+function bbcodeLinkUrls(message: string, ignore: { start: number, end: number }[]) : string {
     const urls: UrlKnifeUrl[] = UrlKnife.TextArea.extractAllUrls(message, {
         'ip_v4' : true,
         'ip_v6' : false,
@@ -25,6 +27,10 @@ function bbcodeLinkUrls(message: string) : string {
     /* we want to go through the urls from the back to the front */
     urls.sort((a, b) => b.index.start - a.index.start);
     for(const url of urls) {
+        if(ignore.findIndex(range => range.start <= url.index.start && range.end >= url.index.end) !== -1) {
+            continue;
+        }
+
         const prefix = message.substr(0, url.index.start);
         const suffix = message.substr(url.index.end);
         const urlPath = message.substring(url.index.start, url.index.end);
@@ -44,31 +50,48 @@ function bbcodeLinkUrls(message: string) : string {
 }
 
 export function preprocessChatMessageForSend(message: string) : string {
-    const processUrls = settings.static_global(Settings.KEY_CHAT_TAG_URLS);
     const parseMarkdown = settings.static_global(Settings.KEY_CHAT_ENABLE_MARKDOWN);
     const escapeBBCodes = !settings.static_global(Settings.KEY_CHAT_ENABLE_BBCODE);
 
     if(parseMarkdown) {
-        return renderMarkdownAsBBCode(message, text => {
-            if(escapeBBCodes) {
-                text = escapeBBCode(text);
-            }
-
-            if(processUrls) {
-                text = bbcodeLinkUrls(text);
-            }
-
-            return text;
-        });
-    } else {
-        if(escapeBBCodes) {
-            message = escapeBBCode(message);
-        }
-
-        if(processUrls) {
-            message = bbcodeLinkUrls(message);
-        }
-
-        return message;
+        message = renderMarkdownAsBBCode(message, text => escapeBBCodes ? escapeBBCode(text) : text);
+    } else if(escapeBBCodes) {
+        message = escapeBBCode(message);
     }
+
+    if(settings.static_global(Settings.KEY_CHAT_TAG_URLS)) {
+        const bbcodeElements = parseBBCode(message, {});
+        const noParseRanges: { start: number, end: number }[] = [];
+
+        while(true) {
+            const element = bbcodeElements.pop();
+            if(!element) {
+                break;
+            }
+
+            if(!(element instanceof TagElement)) {
+                continue;
+            }
+
+            switch(element.tagType?.tag) {
+                case "code":
+                case "i-code":
+                case "url":
+                case "img":
+                case "no-parse":
+                case "youtube":
+                case "quote":
+                    noParseRanges.push(element.textPosition);
+                    break;
+
+                default:
+                    bbcodeElements.push(...element.content);
+                    break;
+            }
+        }
+
+        message = bbcodeLinkUrls(message, noParseRanges);
+    }
+
+    return message;
 }
