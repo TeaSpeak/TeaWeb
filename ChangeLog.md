@@ -1,4 +1,8 @@
 # Changelog:
+* **08.12.20**
+    - Fixed the permission editor not resolving unique ids
+    - Fixed client database info resolve
+    
 * **07.12.20**
     - Fixed the Markdown to BBCode transpiler falsely emitting empty lines
     - Fixed invalid BBCode escaping
