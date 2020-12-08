@@ -79,7 +79,7 @@ export class ImageCache {
 
     public static async load(cacheName: string) : Promise<ImageCache> {
         const cache = new ImageCache(cacheName);
-
+        await cache.initialize();
         return cache;
     }
 
