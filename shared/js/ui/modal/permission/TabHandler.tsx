@@ -894,8 +894,9 @@ class ChannelList extends React.Component<{ connection: ConnectionHandler, event
 
     @EventHandler<PermissionModalEvents>("action_select_channel")
     private handleActionSelectChannel(event: PermissionModalEvents["action_select_channel"]) {
-        if (event.target !== this.props.tabTarget)
+        if (event.target !== this.props.tabTarget) {
             return;
+        }
 
         this.setState({selectedChanelId: event.id});
         if (this.isActiveTab) {
@@ -909,13 +910,15 @@ class ChannelList extends React.Component<{ connection: ConnectionHandler, event
     @EventHandler<PermissionModalEvents>("action_activate_tab")
     private handleActionTabSelect(event: PermissionModalEvents["action_activate_tab"]) {
         this.isActiveTab = event.tab === this.props.tabTarget;
-        if (!this.isActiveTab)
+        if (!this.isActiveTab) {
             return;
+        }
 
-        if (typeof event.activeChannelId === "number")
-            this.setState({selectedChanelId: event.activeChannelId});
+        if (typeof event.activeChannelId === "number") {
+            this.setState({ selectedChanelId: event.activeChannelId });
+        }
 
-        this.props.events.fire("action_set_permission_editor_subject", {
+        this.props.events.fire_later("action_set_permission_editor_subject", {
             mode: this.props.tabTarget,
             channelId: typeof event.activeChannelId === "number" ? event.activeChannelId : this.state.selectedChanelId
         });
@@ -945,8 +948,9 @@ const ClientSelect = (props: { events: Registry<PermissionModalEvents>, tabTarge
     const refDatabaseId = useRef<FlatInputField>();
 
     props.events.reactUse("action_activate_tab", event => {
-        if (event.tab !== props.tabTarget)
+        if (event.tab !== props.tabTarget) {
             return;
+        }
 
         if (typeof event.activeClientDatabaseId !== "undefined") {
             props.events.fire("action_select_client", {
@@ -954,13 +958,14 @@ const ClientSelect = (props: { events: Registry<PermissionModalEvents>, tabTarge
                 id: event.activeClientDatabaseId === 0 ? "undefined" : event.activeClientDatabaseId
             });
         } else {
-            if (clientInfo && clientInfo.databaseId)
+            if (clientInfo && clientInfo.databaseId) {
                 props.events.fire("action_set_permission_editor_subject", {
                     mode: props.tabTarget,
                     clientDatabaseId: clientInfo.databaseId
                 });
-            else
+            } else {
                 props.events.fire("action_set_permission_editor_subject", {mode: props.tabTarget, clientDatabaseId: 0});
+            }
         }
     });
 
@@ -1066,13 +1071,15 @@ const ClientSelect = (props: { events: Registry<PermissionModalEvents>, tabTarge
                         client = undefined;
                     } else {
                         try {
-                            if (arrayBufferBase64(value).byteLength !== 20) {
+                            if (arrayBufferBase64(value).byteLength !== 20 && value !== "serveradmin") {
                                 refInput.current?.setState({
                                     isInvalid: true,
                                     invalidMessage: tr("Invalid UUID length")
                                 });
                                 return;
                             }
+
+                            client = value;
                         } catch (e) {
                             refInput.current?.setState({isInvalid: true, invalidMessage: tr("Invalid UUID")});
                             return;

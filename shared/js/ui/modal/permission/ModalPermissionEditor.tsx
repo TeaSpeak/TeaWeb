@@ -304,13 +304,13 @@ class PermissionEditorModal extends InternalModal {
     }
 
     protected onInitialize() {
-        this.modalEvents.fire("query_client_permissions");
-        this.modalEvents.fire("action_activate_tab", {
+        this.modalEvents.fire_later("action_activate_tab", {
             tab: this.defaultTab,
             activeChannelId: this.defaultTabValues?.channelId,
             activeGroupId: this.defaultTabValues?.groupId,
             activeClientDatabaseId: this.defaultTabValues?.clientDatabaseId
         });
+        this.modalEvents.fire_later("query_client_permissions");
     }
 
     protected onDestroy() {
@@ -870,8 +870,9 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
 
         const failed = failedPermission();
         events.fire("action_set_mode", {mode: failed ? "no-permissions" : editorMode, failedPermission: failed});
-        if (!failed && editorMode === "normal")
+        if (!failed && editorMode === "normal") {
             events.fire("query_permission_values");
+        }
     });
 
     events.on("query_permission_list", () => {
@@ -999,14 +1000,16 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
                 }
 
                 let prefix = mode === "groups-server" ? "server" : "channel";
-                if (mode === "groups-server")
+                if (mode === "groups-server") {
                     payload[0].sgid = groupId;
-                else
+                } else {
                     payload[0].cgid = groupId;
+                }
 
                 promise = connection.serverConnection.send_command(prefix + "groupaddperm", payload);
                 break;
             }
+
             case "channel":
                 if (!channelId) {
                     promise = Promise.reject(tr("Invalid channel id"));

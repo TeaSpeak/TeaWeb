@@ -109,7 +109,7 @@ export class CommandHelper extends AbstractCommandHandler {
         for(const clientDatabaseId of uniqueClientDatabaseIds) {
             request.push({ cldbid: clientDatabaseId });
 
-            const requestCallbacks = this.infoByUniqueIdRequest[clientDatabaseId] || (this.infoByUniqueIdRequest[clientDatabaseId] = []);
+            const requestCallbacks = this.infoByDatabaseIdRequest[clientDatabaseId] || (this.infoByDatabaseIdRequest[clientDatabaseId] = []);
             requestCallbacks.push(resolvers[clientDatabaseId] = info => response.push(info));
         }
 

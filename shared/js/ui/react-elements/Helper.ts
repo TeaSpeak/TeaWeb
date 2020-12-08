@@ -1,4 +1,4 @@
-import {Dispatch, SetStateAction, useEffect, useMemo, useState} from "react";
+import {Dispatch, SetStateAction, useMemo, useState} from "react";
 
 export function useDependentState<S>(
     factory: (prevState?: S) => S,

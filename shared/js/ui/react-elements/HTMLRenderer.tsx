@@ -1,14 +1,6 @@
 import * as React from "react";
 import * as purify from "dompurify";
 
-/*
-export const HTMLRenderer = (props: { purify: boolean, children: string }) => {
-    const html = props.purify ? purify.sanitize(props.children) : props.children;
-
-    return <span dangerouslySetInnerHTML={{ __html: html }} />
-};
-*/
-
 export class HTMLRenderer extends React.PureComponent<{ purify: boolean, children: string }, {}> {
     private readonly reference = React.createRef<HTMLSpanElement>();
     private readonly newNodes: Element[];
