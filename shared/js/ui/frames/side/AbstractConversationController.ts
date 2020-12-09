@@ -1,14 +1,14 @@
 import {
     ChatHistoryState,
-    ConversationUIEvents
-} from "../../../ui/frames/side/ConversationDefinitions";
+    AbstractConversationUiEvents
+} from "./AbstractConversationDefinitions";
 import {EventHandler, Registry} from "../../../events";
 import * as log from "../../../log";
 import {LogCategory} from "../../../log";
 import {tra, tr} from "../../../i18n/localize";
 import {
     AbstractChat,
-    AbstractChatEvents,
+    AbstractConversationEvents,
     AbstractChatManager,
     AbstractChatManagerEvents
 } from "tc-shared/conversations/AbstractConversion";
@@ -16,50 +16,25 @@ import {
 export const kMaxChatFrameMessageSize = 50; /* max 100 messages, since the server does not support more than 100 messages queried at once */
 
 export abstract class AbstractConversationController<
-    Events extends ConversationUIEvents,
+    Events extends AbstractConversationUiEvents,
     Manager extends AbstractChatManager<ManagerEvents, ConversationType, ConversationEvents>,
     ManagerEvents extends AbstractChatManagerEvents<ConversationType>,
     ConversationType extends AbstractChat<ConversationEvents>,
-    ConversationEvents extends AbstractChatEvents
+    ConversationEvents extends AbstractConversationEvents
 > {
     protected readonly uiEvents: Registry<Events>;
-    protected readonly conversationManager: Manager;
-    protected readonly listenerManager: (() => void)[];
-
-    private historyUiStates: {[id: string]: {
-            executingUIHistoryQuery: boolean,
-            historyErrorMessage: string | undefined,
-            historyRetryTimestamp: number
-    }} = {};
+    protected conversationManager: Manager | undefined;
+    protected listenerManager: (() => void)[];
 
     protected currentSelectedConversation: ConversationType;
     protected currentSelectedListener: (() => void)[];
 
     protected crossChannelChatSupported = true;
 
-    protected constructor(conversationManager: Manager) {
+    protected constructor() {
         this.uiEvents = new Registry<Events>();
         this.currentSelectedListener = [];
-        this.conversationManager = conversationManager;
-
         this.listenerManager = [];
-
-        this.listenerManager.push(this.conversationManager.events.on("notify_selected_changed", event => {
-            this.currentSelectedListener.forEach(callback => callback());
-            this.currentSelectedListener = [];
-
-            this.currentSelectedConversation = event.newConversation;
-            this.uiEvents.fire_react("notify_selected_chat", { chatId: event.newConversation ? event.newConversation.getChatId() : "unselected" });
-
-            const conversation = event.newConversation;
-            if(conversation) {
-                this.registerConversationEvents(conversation);
-            }
-        }));
-
-        this.listenerManager.push(this.conversationManager.events.on("notify_conversation_destroyed", event => {
-            delete this.historyUiStates[event.conversation.getChatId()];
-        }));
     }
 
     destroy() {
@@ -68,6 +43,31 @@ export abstract class AbstractConversationController<
 
         this.uiEvents.fire("notify_destroy");
         this.uiEvents.destroy();
+    }
+
+    getUiEvents() : Registry<Events> {
+        return this.uiEvents;
+    }
+
+    protected setConversationManager(manager: Manager | undefined) {
+        if(this.conversationManager === manager) {
+            return;
+        }
+
+        this.listenerManager.forEach(callback => callback());
+        this.listenerManager = [];
+        this.conversationManager = manager;
+
+        if(manager) {
+            this.registerConversationManagerEvents(manager);
+            this.setCurrentlySelected(manager.getSelectedConversation());
+        } else {
+            this.setCurrentlySelected(undefined);
+        }
+    }
+
+    protected registerConversationManagerEvents(manager: Manager) {
+        this.listenerManager.push(manager.events.on("notify_selected_changed", event => this.setCurrentlySelected(event.newConversation)));
     }
 
     protected registerConversationEvents(conversation: ConversationType) {
@@ -94,13 +94,30 @@ export abstract class AbstractConversationController<
         }));
     }
 
+    protected setCurrentlySelected(conversation: ConversationType | undefined) {
+        if(this.currentSelectedConversation === conversation) {
+            return;
+        }
+
+        this.currentSelectedListener.forEach(callback => callback());
+        this.currentSelectedListener = [];
+
+        this.currentSelectedConversation = conversation;
+        this.uiEvents.fire_react("notify_selected_chat", { chatId: conversation ? conversation.getChatId() : "unselected" });
+
+        if(conversation) {
+            this.registerConversationEvents(conversation);
+        }
+    }
+
+    /* TODO: Is this even a thing? */
     handlePanelShow() {
         this.uiEvents.fire_react("notify_panel_show");
     }
 
     protected reportStateToUI(conversation: AbstractChat<any>) {
         let historyState: ChatHistoryState;
-        const localHistoryState = this.historyUiStates[conversation.getChatId()];
+        const localHistoryState = this.conversationManager.historyUiStates[conversation.getChatId()];
         if(!localHistoryState) {
             historyState = conversation.hasHistory() ? "available" : "none";
         } else {
@@ -171,7 +188,7 @@ export abstract class AbstractConversationController<
         }
     }
     public uiQueryHistory(conversation: AbstractChat<any>, timestamp: number, enforce?: boolean) {
-        const localHistoryState = this.historyUiStates[conversation.getChatId()] || (this.historyUiStates[conversation.getChatId()] = {
+        const localHistoryState = this.conversationManager.historyUiStates[conversation.getChatId()] || (this.conversationManager.historyUiStates[conversation.getChatId()] = {
             executingUIHistoryQuery: false,
             historyErrorMessage: undefined,
             historyRetryTimestamp: 0
@@ -242,13 +259,13 @@ export abstract class AbstractConversationController<
         this.crossChannelChatSupported = flag;
         const currentConversation = this.getCurrentConversation();
         if(currentConversation) {
-            this.reportStateToUI(this.getCurrentConversation());
+            this.reportStateToUI(currentConversation);
         }
     }
 
-    @EventHandler<ConversationUIEvents>("query_conversation_state")
-    protected handleQueryConversationState(event: ConversationUIEvents["query_conversation_state"]) {
-        const conversation = this.conversationManager.findConversationById(event.chatId);
+    @EventHandler<AbstractConversationUiEvents>("query_conversation_state")
+    protected handleQueryConversationState(event: AbstractConversationUiEvents["query_conversation_state"]) {
+        const conversation = this.conversationManager?.findConversationById(event.chatId);
         if(!conversation) {
             this.uiEvents.fire_react("notify_conversation_state", {
                 state: "error",
@@ -267,9 +284,9 @@ export abstract class AbstractConversationController<
         }
     }
 
-    @EventHandler<ConversationUIEvents>("query_conversation_history")
-    protected handleQueryHistory(event: ConversationUIEvents["query_conversation_history"]) {
-        const conversation = this.conversationManager.findConversationById(event.chatId);
+    @EventHandler<AbstractConversationUiEvents>("query_conversation_history")
+    protected handleQueryHistory(event: AbstractConversationUiEvents["query_conversation_history"]) {
+        const conversation = this.conversationManager?.findConversationById(event.chatId);
         if(!conversation) {
             this.uiEvents.fire_react("notify_conversation_history", {
                 state: "error",
@@ -286,15 +303,15 @@ export abstract class AbstractConversationController<
         this.uiQueryHistory(conversation, event.timestamp);
     }
 
-    @EventHandler<ConversationUIEvents>(["action_clear_unread_flag", "action_self_typing"])
-    protected handleClearUnreadFlag(event: ConversationUIEvents["action_clear_unread_flag" | "action_self_typing"]) {
-        const conversation = this.conversationManager.findConversationById(event.chatId);
+    @EventHandler<AbstractConversationUiEvents>(["action_clear_unread_flag", "action_self_typing"])
+    protected handleClearUnreadFlag(event: AbstractConversationUiEvents["action_clear_unread_flag" | "action_self_typing"]) {
+        const conversation = this.conversationManager?.findConversationById(event.chatId);
         conversation?.setUnreadTimestamp(Date.now());
     }
 
-    @EventHandler<ConversationUIEvents>("action_send_message")
-    protected handleSendMessage(event: ConversationUIEvents["action_send_message"]) {
-        const conversation = this.conversationManager.findConversationById(event.chatId);
+    @EventHandler<AbstractConversationUiEvents>("action_send_message")
+    protected handleSendMessage(event: AbstractConversationUiEvents["action_send_message"]) {
+        const conversation = this.conversationManager?.findConversationById(event.chatId);
         if(!conversation) {
             log.error(LogCategory.CLIENT, tr("Tried to send a chat message to an unknown conversation with id %s"), event.chatId);
             return;
@@ -303,9 +320,9 @@ export abstract class AbstractConversationController<
         conversation.sendMessage(event.text);
     }
 
-    @EventHandler<ConversationUIEvents>("action_jump_to_present")
-    protected handleJumpToPresent(event: ConversationUIEvents["action_jump_to_present"]) {
-        const conversation = this.conversationManager.findConversationById(event.chatId);
+    @EventHandler<AbstractConversationUiEvents>("action_jump_to_present")
+    protected handleJumpToPresent(event: AbstractConversationUiEvents["action_jump_to_present"]) {
+        const conversation = this.conversationManager?.findConversationById(event.chatId);
         if(!conversation) {
             log.error(LogCategory.CLIENT, tr("Tried to jump to present for an unknown conversation with id %s"), event.chatId);
             return;
@@ -314,14 +331,14 @@ export abstract class AbstractConversationController<
         this.reportStateToUI(conversation);
     }
 
-    @EventHandler<ConversationUIEvents>("query_selected_chat")
+    @EventHandler<AbstractConversationUiEvents>("query_selected_chat")
     private handleQuerySelectedChat() {
-        this.uiEvents.fire_react("notify_selected_chat", { chatId: this.currentSelectedConversation ? this.currentSelectedConversation.getChatId() : "unselected"})
+        this.uiEvents.fire_react("notify_selected_chat", { chatId: this.currentSelectedConversation ? this.currentSelectedConversation.getChatId() : "unselected"});
     }
 
-    @EventHandler<ConversationUIEvents>("action_select_chat")
-    private handleActionSelectChat(event: ConversationUIEvents["action_select_chat"]) {
-        const conversation = this.conversationManager.findConversationById(event.chatId);
+    @EventHandler<AbstractConversationUiEvents>("action_select_chat")
+    private handleActionSelectChat(event: AbstractConversationUiEvents["action_select_chat"]) {
+        const conversation = this.conversationManager?.findConversationById(event.chatId);
         this.conversationManager.setSelectedConversation(conversation);
     }
 }

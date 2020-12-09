@@ -412,7 +412,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 callback: () => {
                     const conversation = this.channelTree.client.getChannelConversations().findOrCreateConversation(this.getChannelId());
                     this.channelTree.client.getChannelConversations().setSelectedConversation(conversation);
-                    this.channelTree.client.side_bar.showChannelConversations();
+                    this.channelTree.client.getSideBar().showChannelConversations();
                 },
                 visible: !settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)
             }, {

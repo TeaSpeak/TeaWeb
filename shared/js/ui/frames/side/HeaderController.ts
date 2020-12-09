@@ -18,7 +18,7 @@ const ChannelInfoUpdateProperties: (keyof ChannelProperties)[] = [
 ];
 
 /* TODO: Remove the ping interval handler. It's currently still there since the clients are not emitting the event yet */
-export class SideHeader {
+export class SideHeaderController {
     private readonly uiEvents: Registry<SideHeaderEvents>;
 
     private connection: ConnectionHandler;
@@ -43,26 +43,32 @@ export class SideHeader {
 
     private initialize() {
         this.uiEvents.on("action_open_conversation", () => {
-            const selectedClient = this.connection.side_bar.getClientInfo().getClient()
+            const selectedClient = this.connection.getSelectedClientInfo().getClient()
             if(selectedClient) {
                 const conversations = this.connection.getPrivateConversations();
                 conversations.setSelectedConversation(conversations.findOrCreateConversation(selectedClient));
             }
-            this.connection.side_bar.showPrivateConversations();
+            this.connection.getSideBar().showPrivateConversations();
         });
 
         this.uiEvents.on("action_switch_channel_chat", () => {
-            this.connection.side_bar.showChannelConversations();
+            this.connection.getSideBar().showChannelConversations();
         });
 
         this.uiEvents.on("action_bot_manage", () => {
-            const bot = this.connection.side_bar.music_info().current_bot();
+            /* FIXME: TODO! */
+            /*
+            const bot = this.connection.getSideBar().music_info().current_bot();
             if(!bot) return;
 
             openMusicManage(this.connection, bot);
+            */
         });
 
-        this.uiEvents.on("action_bot_add_song", () => this.connection.side_bar.music_info().events.fire("action_song_add"));
+        this.uiEvents.on("action_bot_add_song", () => {
+            /* FIXME: TODO! */
+            //this.connection.side_bar.music_info().events.fire("action_song_add")
+        });
 
         this.uiEvents.on("query_client_info_own_client", () => this.sendClientInfoOwnClient());
         this.uiEvents.on("query_current_channel_state", event => this.sendChannelState(event.mode));
@@ -98,7 +104,7 @@ export class SideHeader {
         this.listenerConnection.push(this.connection.serverConnection.events.on("notify_ping_updated", () => this.sendPing()));
         this.listenerConnection.push(this.connection.getPrivateConversations().events.on("notify_unread_count_changed", () => this.sendPrivateConversationInfo()));
         this.listenerConnection.push(this.connection.getPrivateConversations().events.on(["notify_conversation_destroyed", "notify_conversation_destroyed"], () => this.sendPrivateConversationInfo()));
-        this.listenerConnection.push(this.connection.side_bar.getClientInfo().events.on("notify_client_changed", () => this.sendClientInfoOwnClient()));
+        this.listenerConnection.push(this.connection.getSelectedClientInfo().events.on("notify_client_changed", () => this.sendClientInfoOwnClient()));
     }
 
     setConnectionHandler(connection: ConnectionHandler) {
@@ -253,7 +259,7 @@ export class SideHeader {
 
     private sendClientInfoOwnClient() {
         if(this.connection) {
-            this.uiEvents.fire_react("notify_client_info_own_client", { isOwnClient: this.connection.side_bar.getClientInfo().getClient() instanceof LocalClientEntry });
+            this.uiEvents.fire_react("notify_client_info_own_client", { isOwnClient: this.connection.getSelectedClientInfo().getClient() instanceof LocalClientEntry });
         } else {
             this.uiEvents.fire_react("notify_client_info_own_client", { isOwnClient: false });
         }

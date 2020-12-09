@@ -168,23 +168,22 @@ export class ChannelTree {
         if(this.selectedEntry instanceof ClientEntry) {
             if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CLIENT)) {
                 if(this.selectedEntry instanceof MusicClientEntry) {
-                    this.client.side_bar.showMusicPlayer(this.selectedEntry);
+                    this.client.getSideBar().showMusicPlayer(this.selectedEntry);
                 } else {
-                    this.client.side_bar.showClientInfo(this.selectedEntry);
+                    this.client.getSideBar().showClientInfo(this.selectedEntry);
                 }
             }
         } else if(this.selectedEntry instanceof ChannelEntry) {
             if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
                 const conversation = this.client.getChannelConversations().findOrCreateConversation(this.selectedEntry.channelId);
                 this.client.getChannelConversations().setSelectedConversation(conversation);
-                this.client.side_bar.showChannelConversations();
+                this.client.getSideBar().showChannelConversations();
             }
         } else if(this.selectedEntry instanceof ServerEntry) {
             if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
-                const sidebar = this.client.side_bar;
                 const conversation = this.client.getChannelConversations().findOrCreateConversation(0);
                 this.client.getChannelConversations().setSelectedConversation(conversation);
-                sidebar.showChannelConversations();
+                this.client.getSideBar().showChannelConversations()
             }
         }
     }

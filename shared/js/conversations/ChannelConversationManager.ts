@@ -1,11 +1,11 @@
 import {
     AbstractChat,
-    AbstractChatEvents,
+    AbstractConversationEvents,
     AbstractChatManager,
     AbstractChatManagerEvents,
     kMaxChatFrameMessageSize
 } from "./AbstractConversion";
-import {ChatMessage, ConversationHistoryResponse} from "tc-shared/ui/frames/side/ConversationDefinitions";
+import {ChatMessage, ConversationHistoryResponse} from "../ui/frames/side/AbstractConversationDefinitions";
 import {Settings} from "tc-shared/settings";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
@@ -17,7 +17,7 @@ import {LocalClientEntry} from "tc-shared/tree/Client";
 import {ServerCommand} from "tc-shared/connection/ConnectionBase";
 import {ChannelConversationMode} from "tc-shared/tree/Channel";
 
-export interface ChannelConversationEvents extends AbstractChatEvents {
+export interface ChannelConversationEvents extends AbstractConversationEvents {
     notify_messages_deleted: { messages: string[] },
     notify_messages_loaded: {}
 }

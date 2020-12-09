@@ -11,7 +11,7 @@ export interface ContextDividerProperties {
     separatorClassName?: string;
     separatorActiveClassName?: string;
 
-    children: [React.ReactElement, React.ReactElement];
+    children?: never;
 }
 
 export interface ContextDividerState {
@@ -99,11 +99,9 @@ export class ContextDivider extends React.Component<ContextDividerProperties, Co
         if(this.state.active && this.props.separatorClassName)
             separatorClassNames += " " + this.props.separatorClassName;
 
-        return [
-            this.props.children[0],
-            <div key={"context-separator"} ref={this.refSeparator} className={separatorClassNames} onMouseDown={e => this.startMovement(e)} onTouchStart={e => this.startMovement(e)} />,
-            this.props.children[1]
-        ];
+        return (
+            <div key={"context-separator"} ref={this.refSeparator} className={separatorClassNames} onMouseDown={e => this.startMovement(e)} onTouchStart={e => this.startMovement(e)} />
+        )
     }
 
     componentDidMount(): void {

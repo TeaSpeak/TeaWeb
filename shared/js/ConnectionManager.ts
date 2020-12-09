@@ -5,6 +5,7 @@ import {Stage} from "tc-loader";
 import {FooterRenderer} from "tc-shared/ui/frames/footer/Renderer";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import {SideBarController} from "tc-shared/ui/frames/SideBarController";
 
 export let server_connections: ConnectionManager;
 
@@ -36,17 +37,21 @@ export class ConnectionManager {
     private containerSideBar: HTMLDivElement;
     private containerFooter: HTMLDivElement;
 
+    private sideBarController: SideBarController;
+
     constructor() {
         this.event_registry = new Registry<ConnectionManagerEvents>();
         this.event_registry.enableDebug("connection-manager");
 
+        this.sideBarController = new SideBarController();
+
         this.containerChannelVideo = new ReplaceableContainer(document.getElementById("channel-video") as HTMLDivElement);
-        this.containerSideBar = document.getElementById("chat") as HTMLDivElement;
         this._container_log_server = $("#server-log");
         this._container_channel_tree = $("#channelTree");
         this._container_hostbanner = $("#hostbanner");
         this.containerFooter = document.getElementById("container-footer") as HTMLDivElement;
 
+        this.sideBarController.renderInto(document.getElementById("chat") as HTMLDivElement);
         this.set_active_connection(undefined);
     }
 
@@ -111,6 +116,8 @@ export class ConnectionManager {
     }
 
     private set_active_connection_(handler: ConnectionHandler) {
+        this.sideBarController.setConnection(handler);
+
         this._container_channel_tree.children().detach();
         this._container_log_server.children().detach();
         this._container_hostbanner.children().detach();
@@ -120,8 +127,8 @@ export class ConnectionManager {
             this._container_hostbanner.append(handler.hostbanner.html_tag);
             this._container_channel_tree.append(handler.channelTree.tag_tree());
             this._container_log_server.append(handler.log.getHTMLTag());
-            handler.side_bar.renderInto(this.containerSideBar);
         }
+
         const old_handler = this.active_handler;
         this.active_handler = handler;
         this.event_registry.fire("notify_active_handler_changed", {

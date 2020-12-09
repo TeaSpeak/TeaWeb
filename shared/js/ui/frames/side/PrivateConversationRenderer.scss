@@ -17,6 +17,13 @@ html:root {
     --chat-private-selected-background: #2c2c2c;
 }
 
+.dividerContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+    height: 100%;
+}
+
 .divider {
     width: 2px!important;
     min-width: 2px!important;

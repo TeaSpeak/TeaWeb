@@ -2,7 +2,7 @@ import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import { tr } from "tc-shared/i18n/localize";
 import {LogCategory, logDebug, logError, logInfo, logWarn} from "tc-shared/log";
-import {ChatEvent} from "tc-shared/ui/frames/side/ConversationDefinitions";
+import {ChatEvent} from "../ui/frames/side/AbstractConversationDefinitions";
 
 const clientUniqueId2StoreName = uniqueId => "conversation-" + uniqueId;
 

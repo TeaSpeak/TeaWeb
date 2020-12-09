@@ -8,7 +8,7 @@ import {useContext, useState} from "react";
 import {ClientInfoRenderer} from "tc-shared/ui/frames/side/ClientInfoRenderer";
 import {PrivateConversationsPanel} from "tc-shared/ui/frames/side/PrivateConversationRenderer";
 
-const cssStyle = require("./SideBar.scss");
+const cssStyle = require("./SideBarRenderer.scss");
 
 const EventContent = React.createContext<Registry<SideBarEvents>>(undefined);
 
@@ -109,7 +109,6 @@ const SideBarHeader = (props: { type: SideBarType, eventsHeader: Registry<SideHe
 }
 
 export const SideBarRenderer = (props: {
-    handlerId: string,
     events: Registry<SideBarEvents>,
     eventsHeader: Registry<SideHeaderEvents>
 }) => {

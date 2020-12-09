@@ -1,4 +1,4 @@
-import {Frame, FrameContent} from "../../../ui/frames/chat_frame";
+import {SideBarController, FrameContent} from "../SideBarController";
 import {LogCategory} from "../../../log";
 import {CommandResult, PlaylistSong} from "../../../connection/ServerConnectionDeclaration";
 import {createErrorModal, createInputModal} from "../../../ui/elements/Modal";
@@ -67,7 +67,7 @@ interface LoadedSongData {
 
 export class MusicInfo {
     readonly events: Registry<MusicSidebarEvents>;
-    readonly handle: Frame;
+    readonly handle: SideBarController;
 
     private _html_tag: JQuery;
     private _container_playlist: JQuery;
@@ -91,7 +91,7 @@ export class MusicInfo {
 
     previous_frame_content: FrameContent;
 
-    constructor(handle: Frame) {
+    constructor(handle: SideBarController) {
         this.events = new Registry<MusicSidebarEvents>();
         this.handle = handle;
 

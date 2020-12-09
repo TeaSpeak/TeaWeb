@@ -15,8 +15,8 @@ import {
     ChatEventPartnerAction,
     ChatHistoryState,
     ChatMessage,
-    ConversationUIEvents, ChatEventModeChanged
-} from "tc-shared/ui/frames/side/ConversationDefinitions";
+    AbstractConversationUiEvents, ChatEventModeChanged
+} from "./AbstractConversationDefinitions";
 import {TimestampRenderer} from "tc-shared/ui/react-elements/TimestampRenderer";
 import {BBCodeRenderer} from "tc-shared/text/bbcode";
 import {getGlobalAvatarManagerFactory} from "tc-shared/file/Avatars";
@@ -34,7 +34,7 @@ const ChatMessageTextRenderer = React.memo((props: { text: string }) => {
 const ChatEventMessageRenderer = React.memo((props: {
     message: ChatMessage,
     callbackDelete?: () => void,
-    events: Registry<ConversationUIEvents>,
+    events: Registry<AbstractConversationUiEvents>,
     handlerId: string,
 
     refHTMLElement?: Ref<HTMLDivElement>
@@ -126,7 +126,7 @@ const UnreadEntry = (props: { refDiv: React.Ref<HTMLDivElement> }) => (
     </div>
 );
 
-const LoadOderMessages = (props: { events: Registry<ConversationUIEvents>, chatId: string, state: ChatHistoryState | "error", errorMessage?: string, retryTimestamp?: number, timestamp: number | undefined }) => {
+const LoadOderMessages = (props: { events: Registry<AbstractConversationUiEvents>, chatId: string, state: ChatHistoryState | "error", errorMessage?: string, retryTimestamp?: number, timestamp: number | undefined }) => {
     if(props.state === "none")
         return null;
 
@@ -172,7 +172,7 @@ const LoadOderMessages = (props: { events: Registry<ConversationUIEvents>, chatI
     )
 };
 
-const JumpToPresent = (props: { events: Registry<ConversationUIEvents>, chatId: string }) => (
+const JumpToPresent = (props: { events: Registry<AbstractConversationUiEvents>, chatId: string }) => (
     <div
         className={cssStyle.containerLoadMessages + " " + cssStyle.present}
         onClick={() => props.events.fire("action_jump_to_present", { chatId: props.chatId })}
@@ -305,7 +305,7 @@ const ChatEventModeChangedRenderer = (props: { event: ChatEventModeChanged, refH
     }
 }
 
-const PartnerTypingIndicator = (props: { events: Registry<ConversationUIEvents>, chatId: string, timeout?: number }) => {
+const PartnerTypingIndicator = (props: { events: Registry<AbstractConversationUiEvents>, chatId: string, timeout?: number }) => {
     const kTypingTimeout = props.timeout || 5000;
 
 
@@ -349,7 +349,7 @@ const PartnerTypingIndicator = (props: { events: Registry<ConversationUIEvents>,
 };
 
 interface ConversationMessagesProperties {
-    events: Registry<ConversationUIEvents>;
+    events: Registry<AbstractConversationUiEvents>;
     handlerId: string;
 
     noFirstMessageOverlay?: boolean
@@ -698,8 +698,8 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
         }
     }
 
-    @EventHandler<ConversationUIEvents>("notify_selected_chat")
-    private handleNotifySelectedChat(event: ConversationUIEvents["notify_selected_chat"]) {
+    @EventHandler<AbstractConversationUiEvents>("notify_selected_chat")
+    private handleNotifySelectedChat(event: AbstractConversationUiEvents["notify_selected_chat"]) {
         if(this.currentChatId === event.chatId) {
             return;
         }
@@ -718,8 +718,8 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
         }
     }
 
-    @EventHandler<ConversationUIEvents>("notify_conversation_state")
-    private handleConversationStateUpdate(event: ConversationUIEvents["notify_conversation_state"]) {
+    @EventHandler<AbstractConversationUiEvents>("notify_conversation_state")
+    private handleConversationStateUpdate(event: AbstractConversationUiEvents["notify_conversation_state"]) {
         if(event.chatId !== this.currentChatId)
             return;
 
@@ -771,8 +771,8 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
         }
     }
 
-    @EventHandler<ConversationUIEvents>("notify_chat_event")
-    private handleChatEvent(event: ConversationUIEvents["notify_chat_event"]) {
+    @EventHandler<AbstractConversationUiEvents>("notify_chat_event")
+    private handleChatEvent(event: AbstractConversationUiEvents["notify_chat_event"]) {
         if(event.chatId !== this.currentChatId || this.state.isBrowsingHistory)
             return;
 
@@ -793,8 +793,8 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
         this.forceUpdate(() => this.scrollToBottom());
     }
 
-    @EventHandler<ConversationUIEvents>("notify_chat_message_delete")
-    private handleMessageDeleted(event: ConversationUIEvents["notify_chat_message_delete"]) {
+    @EventHandler<AbstractConversationUiEvents>("notify_chat_message_delete")
+    private handleMessageDeleted(event: AbstractConversationUiEvents["notify_chat_message_delete"]) {
         if(event.chatId !== this.currentChatId) {
             return;
         }
@@ -805,8 +805,8 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
         this.forceUpdate(() => this.scrollToBottom());
     }
 
-    @EventHandler<ConversationUIEvents>("notify_unread_timestamp_changed")
-    private handleUnreadTimestampChanged(event: ConversationUIEvents["notify_unread_timestamp_changed"]) {
+    @EventHandler<AbstractConversationUiEvents>("notify_unread_timestamp_changed")
+    private handleUnreadTimestampChanged(event: AbstractConversationUiEvents["notify_unread_timestamp_changed"]) {
         if (event.chatId !== this.currentChatId)
             return;
 
@@ -823,13 +823,13 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
         }
     }
 
-    @EventHandler<ConversationUIEvents>("notify_panel_show")
+    @EventHandler<AbstractConversationUiEvents>("notify_panel_show")
     private handlePanelShow() {
         this.fixScroll();
     }
 
-    @EventHandler<ConversationUIEvents>("query_conversation_history")
-    private handleQueryConversationHistory(event: ConversationUIEvents["query_conversation_history"]) {
+    @EventHandler<AbstractConversationUiEvents>("query_conversation_history")
+    private handleQueryConversationHistory(event: AbstractConversationUiEvents["query_conversation_history"]) {
         if (event.chatId !== this.currentChatId)
             return;
 
@@ -838,8 +838,8 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
         });
     }
 
-    @EventHandler<ConversationUIEvents>("notify_conversation_history")
-    private handleNotifyConversationHistory(event: ConversationUIEvents["notify_conversation_history"]) {
+    @EventHandler<AbstractConversationUiEvents>("notify_conversation_history")
+    private handleNotifyConversationHistory(event: AbstractConversationUiEvents["notify_conversation_history"]) {
         if (event.chatId !== this.currentChatId)
             return;
 
@@ -881,7 +881,7 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
     }
 }
 
-export const ConversationPanel = React.memo((props: { events: Registry<ConversationUIEvents>, handlerId: string, messagesDeletable: boolean, noFirstMessageOverlay: boolean }) => {
+export const ConversationPanel = React.memo((props: { events: Registry<AbstractConversationUiEvents>, handlerId: string, messagesDeletable: boolean, noFirstMessageOverlay: boolean }) => {
     const currentChat = useRef({ id: "unselected" });
     const chatEnabled = useRef(false);
 
@@ -900,7 +900,7 @@ export const ConversationPanel = React.memo((props: { events: Registry<Conversat
         chatEnabled.current = event.state === "normal" && event.sendEnabled;
         updateChatBox();
     });
-    
+
     props.events.reactUse("notify_send_enabled", event => {
         if(event.chatId !== currentChat.current.id)
             return;
