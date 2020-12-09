@@ -13,7 +13,6 @@ import * as htmltags from "./ui/htmltags";
 import {FilterMode, InputState, MediaStreamRequestResult} from "./voice/RecorderBase";
 import {CommandResult} from "./connection/ServerConnectionDeclaration";
 import {defaultRecorder, RecorderProfile} from "./voice/RecorderProfile";
-import {Frame} from "./ui/frames/chat_frame";
 import {Hostbanner} from "./ui/frames/hostbanner";
 import {connection_log, Regex} from "./ui/modal/ModalConnect";
 import {formatMessage} from "./ui/frames/chat";
@@ -40,7 +39,8 @@ import {ChannelVideoFrame} from "tc-shared/ui/frames/video/Controller";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {ChannelConversationManager} from "./conversations/ChannelConversationManager";
 import {PrivateConversationManager} from "tc-shared/conversations/PrivateConversationManager";
-import {ChannelConversationController} from "./ui/frames/side/ChannelConversationController";
+import {SelectedClientInfo} from "./SelectedClientInfo";
+import {SideBarManager} from "tc-shared/SideBarManager";
 
 export enum InputHardwareState {
     MISSING,
@@ -145,7 +145,6 @@ export class ConnectionHandler {
     permissions: PermissionManager;
     groups: GroupManager;
 
-    side_bar: Frame;
     video_frame: ChannelVideoFrame;
 
     settings: ServerSettings;
@@ -157,8 +156,12 @@ export class ConnectionHandler {
 
     serverFeatures: ServerFeatures;
 
+    private sideBar: SideBarManager;
+
     private channelConversations: ChannelConversationManager;
     private privateConversations: PrivateConversationManager;
+
+    private clientInfoManager: SelectedClientInfo;
 
     private _clientId: number = 0;
     private localClient: LocalClientEntry;
@@ -211,14 +214,15 @@ export class ConnectionHandler {
         this.fileManager = new FileManager(this);
         this.permissions = new PermissionManager(this);
 
+        this.sideBar = new SideBarManager(this);
         this.privateConversations = new PrivateConversationManager(this);
         this.channelConversations = new ChannelConversationManager(this);
+        this.clientInfoManager = new SelectedClientInfo(this);
 
         this.pluginCmdRegistry = new PluginCmdRegistry(this);
         this.video_frame = new ChannelVideoFrame(this);
 
         this.log = new ServerEventLog(this);
-        this.side_bar = new Frame(this);
         this.sound = new SoundManager(this);
         this.hostbanner = new Hostbanner(this);
 
@@ -356,6 +360,14 @@ export class ConnectionHandler {
 
     getChannelConversations() : ChannelConversationManager {
         return this.channelConversations;
+    }
+
+    getSelectedClientInfo() : SelectedClientInfo {
+        return this.clientInfoManager;
+    }
+
+    getSideBar() : SideBarManager {
+        return this.sideBar;
     }
 
     initializeLocalClient(clientId: number, acceptedName: string) {
@@ -1042,8 +1054,11 @@ export class ConnectionHandler {
         this.channelTree?.destroy();
         this.channelTree = undefined;
 
-        this.side_bar?.destroy();
-        this.side_bar = undefined;
+        this.sideBar?.destroy();
+        this.sideBar = undefined;
+
+        this.clientInfoManager?.destroy();
+        this.clientInfoManager = undefined;
 
         this.log?.destroy();
         this.log = undefined;

@@ -1,11 +1,11 @@
 import {
     AbstractChat,
-    AbstractChatEvents,
+    AbstractConversationEvents,
     AbstractChatManager,
     AbstractChatManagerEvents
 } from "tc-shared/conversations/AbstractConversion";
 import {ClientEntry} from "tc-shared/tree/Client";
-import {ChatEvent, ChatMessage, ConversationHistoryResponse} from "tc-shared/ui/frames/side/ConversationDefinitions";
+import {ChatEvent, ChatMessage, ConversationHistoryResponse} from "../ui/frames/side/AbstractConversationDefinitions";
 import {ChannelTreeEvents} from "tc-shared/tree/ChannelTree";
 import {queryConversationEvents, registerConversationEvent} from "tc-shared/conversations/PrivateConversationHistory";
 import {LogCategory, logWarn} from "tc-shared/log";
@@ -19,7 +19,7 @@ export type OutOfViewClient = {
 
 let receivingEventUniqueIdIndex = 0;
 
-export interface PrivateConversationEvents extends AbstractChatEvents {
+export interface PrivateConversationEvents extends AbstractConversationEvents {
     notify_partner_typing: {},
     notify_partner_changed: {
         chatId: string,

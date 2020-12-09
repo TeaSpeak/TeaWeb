@@ -7,6 +7,7 @@
     - Enabled context menus for all clickable client tags
     - Allowing to drag client tags
     - Fixed the context menu within popout windows for the web client
+    - Reworked the whole sidebar (Hightly decreased memory footprint)
     
 * **08.12.20**
     - Fixed the permission editor not resolving unique ids

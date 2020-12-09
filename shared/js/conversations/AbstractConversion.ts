@@ -4,7 +4,7 @@ import {
     ChatMessage,
     ChatState,
     ConversationHistoryResponse
-} from "tc-shared/ui/frames/side/ConversationDefinitions";
+} from "../ui/frames/side/AbstractConversationDefinitions";
 import {Registry} from "tc-shared/events";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {preprocessChatMessageForSend} from "tc-shared/text/chat";
@@ -16,7 +16,7 @@ import {guid} from "tc-shared/crypto/uid";
 
 export const kMaxChatFrameMessageSize = 50; /* max 100 messages, since the server does not support more than 100 messages queried at once */
 
-export interface AbstractChatEvents {
+export interface AbstractConversationEvents {
     notify_chat_event: {
         triggerUnread: boolean,
         event: ChatEvent
@@ -45,7 +45,7 @@ export interface AbstractChatEvents {
     }
 }
 
-export abstract class AbstractChat<Events extends AbstractChatEvents> {
+export abstract class AbstractChat<Events extends AbstractConversationEvents> {
     readonly events: Registry<Events>;
 
     protected readonly connection: ConnectionHandler;
@@ -341,7 +341,7 @@ export interface AbstractChatManagerEvents<ConversationType> {
     }
 }
 
-export abstract class AbstractChatManager<ManagerEvents extends AbstractChatManagerEvents<ConversationType>, ConversationType extends AbstractChat<ConversationEvents>, ConversationEvents extends AbstractChatEvents> {
+export abstract class AbstractChatManager<ManagerEvents extends AbstractChatManagerEvents<ConversationType>, ConversationType extends AbstractChat<ConversationEvents>, ConversationEvents extends AbstractConversationEvents> {
     readonly events: Registry<ManagerEvents>;
     readonly connection: ConnectionHandler;
     protected readonly listenerConnection: (() => void)[];
@@ -351,6 +351,12 @@ export abstract class AbstractChatManager<ManagerEvents extends AbstractChatMana
     private selectedConversation: ConversationType;
 
     private currentUnreadCount: number;
+    /* FIXME: Access modifier */
+    public historyUiStates: {[id: string]: {
+            executingUIHistoryQuery: boolean,
+            historyErrorMessage: string | undefined,
+            historyRetryTimestamp: number
+        }} = {};
 
     protected constructor(connection: ConnectionHandler) {
         this.events = new Registry<ManagerEvents>();
@@ -417,6 +423,8 @@ export abstract class AbstractChatManager<ManagerEvents extends AbstractChatMana
         if(conversation === this.selectedConversation) {
             this.setSelectedConversation(undefined);
         }
+
+        delete this.historyUiStates[conversation.getChatId()];
 
         conversation.events.off("notify_unread_state_changed", this.listenerUnreadTimestamp);
         delete this.conversations[conversation.getChatId()];

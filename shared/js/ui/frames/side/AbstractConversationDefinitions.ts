@@ -111,7 +111,7 @@ export interface ChatStatePrivate {
 
 export type ChatStateData = ChatStateNormal | ChatStateNoPermissions | ChatStateError | ChatStateLoading | ChatStatePrivate;
 
-export interface ConversationUIEvents {
+export interface AbstractConversationUiEvents {
     action_select_chat: { chatId: "unselected" | string },
     action_clear_unread_flag: { chatId: string },
     action_self_typing: { chatId: string },

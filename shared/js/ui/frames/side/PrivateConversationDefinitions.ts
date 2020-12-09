@@ -1,4 +1,4 @@
-import {ConversationUIEvents} from "../../../ui/frames/side/ConversationDefinitions";
+import {AbstractConversationUiEvents} from "./AbstractConversationDefinitions";
 
 export type PrivateConversationInfo = {
     nickname: string;
@@ -11,7 +11,7 @@ export type PrivateConversationInfo = {
     unreadMessages: boolean;
 };
 
-export interface PrivateConversationUIEvents extends ConversationUIEvents {
+export interface PrivateConversationUIEvents extends AbstractConversationUiEvents {
     action_close_chat: { chatId: string },
 
     query_private_conversations: {},

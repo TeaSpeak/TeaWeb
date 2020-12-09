@@ -1,11 +1,9 @@
-import * as React from "react";
 import {ConnectionHandler, ConnectionState} from "../../../ConnectionHandler";
 import {EventHandler} from "../../../events";
 import * as log from "../../../log";
 import {LogCategory} from "../../../log";
 import {tr} from "../../../i18n/localize";
-import {ConversationUIEvents} from "../../../ui/frames/side/ConversationDefinitions";
-import {ConversationPanel} from "./AbstractConversationRenderer";
+import {AbstractConversationUiEvents} from "./AbstractConversationDefinitions";
 import {AbstractConversationController} from "./AbstractConversationController";
 import {
     ChannelConversation,
@@ -14,34 +12,22 @@ import {
     ChannelConversationManagerEvents
 } from "tc-shared/conversations/ChannelConversationManager";
 import {ServerFeature} from "tc-shared/connection/ServerFeatures";
-import ReactDOM = require("react-dom");
+import {ChannelConversationUiEvents} from "tc-shared/ui/frames/side/ChannelConversationDefinitions";
 
 export class ChannelConversationController extends AbstractConversationController<
-    ConversationUIEvents,
+    ChannelConversationUiEvents,
     ChannelConversationManager,
     ChannelConversationManagerEvents,
     ChannelConversation,
     ChannelConversationEvents
 > {
-    readonly connection: ConnectionHandler;
-    readonly htmlTag: HTMLDivElement;
+    private connection: ConnectionHandler;
+    private connectionListener: (() => void)[];
 
-    constructor(connection: ConnectionHandler) {
-        super(connection.getChannelConversations() as any);
-        this.connection = connection;
+    constructor() {
+        super();
+        this.connectionListener = [];
 
-        this.htmlTag = document.createElement("div");
-        this.htmlTag.style.display = "flex";
-        this.htmlTag.style.flexDirection = "column";
-        this.htmlTag.style.justifyContent = "stretch";
-        this.htmlTag.style.height = "100%";
-
-        ReactDOM.render(React.createElement(ConversationPanel, {
-            events: this.uiEvents,
-            handlerId: this.connection.handlerId,
-            noFirstMessageOverlay: false,
-            messagesDeletable: true
-        }), this.htmlTag);
         /*
         spawnExternalModal("conversation", this.uiEvents, {
             handlerId: this.connection.handlerId,
@@ -52,7 +38,37 @@ export class ChannelConversationController extends AbstractConversationControlle
         });
         */
 
-        this.uiEvents.on("notify_destroy", connection.events().on("notify_visibility_changed", event => {
+        this.uiEvents.register_handler(this, true);
+    }
+
+    destroy() {
+        this.connectionListener.forEach(callback => callback());
+        this.connectionListener = [];
+
+        this.uiEvents.unregister_handler(this);
+        super.destroy();
+    }
+
+    setConnectionHandler(connection: ConnectionHandler) {
+        if(this.connection === connection) {
+            return;
+        }
+
+        this.connectionListener.forEach(callback => callback());
+        this.connectionListener = [];
+
+        this.connection = connection;
+        if(connection) {
+            this.initializeConnectionListener(connection);
+            /* FIXME: Update cross channel talk state! */
+            this.setConversationManager(connection.getChannelConversations());
+        } else {
+            this.setConversationManager(undefined);
+        }
+    }
+
+    private initializeConnectionListener(connection: ConnectionHandler) {
+        this.connectionListener.push(connection.events().on("notify_visibility_changed", event => {
             if(!event.visible) {
                 return;
             }
@@ -60,9 +76,7 @@ export class ChannelConversationController extends AbstractConversationControlle
             this.handlePanelShow();
         }));
 
-        this.uiEvents.register_handler(this, true);
-
-        this.listenerManager.push(connection.events().on("notify_connection_state_changed", event => {
+        this.connectionListener.push(connection.events().on("notify_connection_state_changed", event => {
             if(event.newState === ConnectionState.CONNECTED) {
                 connection.serverFeatures.awaitFeatures().then(success => {
                     if(!success) { return; }
@@ -75,17 +89,9 @@ export class ChannelConversationController extends AbstractConversationControlle
         }));
     }
 
-    destroy() {
-        ReactDOM.unmountComponentAtNode(this.htmlTag);
-        this.htmlTag.remove();
-
-        this.uiEvents.unregister_handler(this);
-        super.destroy();
-    }
-
-    @EventHandler<ConversationUIEvents>("action_delete_message")
-    private handleMessageDelete(event: ConversationUIEvents["action_delete_message"]) {
-        const conversation = this.conversationManager.findConversationById(event.chatId);
+    @EventHandler<AbstractConversationUiEvents>("action_delete_message")
+    private handleMessageDelete(event: AbstractConversationUiEvents["action_delete_message"]) {
+        const conversation = this.conversationManager?.findConversationById(event.chatId);
         if(!conversation) {
             log.error(LogCategory.CLIENT, tr("Tried to delete a chat message from an unknown conversation with id %s"), event.chatId);
             return;

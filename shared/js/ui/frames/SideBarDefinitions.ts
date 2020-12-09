@@ -1,7 +1,8 @@
 import {Registry} from "tc-shared/events";
 import {PrivateConversationUIEvents} from "tc-shared/ui/frames/side/PrivateConversationDefinitions";
-import {ConversationUIEvents} from "tc-shared/ui/frames/side/ConversationDefinitions";
+import {AbstractConversationUiEvents} from "./side/AbstractConversationDefinitions";
 import {ClientInfoEvents} from "tc-shared/ui/frames/side/ClientInfoDefinitions";
+import {SideHeaderEvents} from "tc-shared/ui/frames/side/HeaderDefinitions";
 
 /* TODO: Somehow outsource the event registries to IPC? */
 
@@ -9,7 +10,7 @@ export type SideBarType = "none" | "channel-chat" | "private-chat" | "client-inf
 export interface SideBarTypeData {
     "none": {},
     "channel-chat": {
-        events: Registry<ConversationUIEvents>,
+        events: Registry<AbstractConversationUiEvents>,
         handlerId: string
     },
     "private-chat": {
@@ -32,7 +33,9 @@ export type SideBarNotifyContentData<T extends SideBarType> = {
 export interface SideBarEvents {
     query_content: {},
     query_content_data: { content: SideBarType },
+    query_header_data: {},
 
     notify_content: { content: SideBarType },
-    notify_content_data: SideBarNotifyContentData<SideBarType>
+    notify_content_data: SideBarNotifyContentData<SideBarType>,
+    notify_header_data: { events: Registry<SideHeaderEvents> }
 }
