@@ -42,6 +42,12 @@ export enum ChannelSubscribeMode {
     INHERITED
 }
 
+export enum ChannelConversationMode {
+    Public = 0,
+    Private = 1,
+    None = 2
+}
+
 export class ChannelProperties {
     channel_order: number = 0;
     channel_name: string = "";
@@ -73,7 +79,7 @@ export class ChannelProperties {
     //Only after request
     channel_description: string = "";
 
-    channel_conversation_mode: number = 0; /* 0 := Private, the default */
+    channel_conversation_mode: ChannelConversationMode = 0;
     channel_conversation_history_length: number = -1;
 }
 
@@ -563,6 +569,8 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
             log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Clannel update properties", entries);
         }
         /* devel-block-end */
+
+        /* TODO: Validate values. Example: channel_conversation_mode */
 
         for(let variable of variables) {
             let key = variable.key;

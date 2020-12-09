@@ -105,9 +105,9 @@ const BlockPing = () => {
         }
 
         if(pingInfo.javaScript === undefined) {
-            title = tr("Ping: " + pingInfo.native.toFixed(3) + "ms");
+            title = tra("Ping: {}ms", pingInfo.native.toFixed(3));
         } else {
-            title = tr("Native: " + pingInfo.native.toFixed(3) + "ms\nJavascript: " + pingInfo.javaScript.toFixed(3) + "ms");
+            title = tra("Native: {}ms\nJavascript: {}ms", pingInfo.native.toFixed(3), pingInfo.javaScript.toFixed(3));
         }
         value = <div className={cssStyle.value + " " + cssStyle.ping + " " + pingClass} key={"ping"} title={title}>{pingInfo.native.toFixed(0)}ms</div>;
     }

@@ -2,15 +2,17 @@ import {
     ChatEvent,
     ChatEventMessage,
     ChatMessage,
-    ChatState, ConversationHistoryResponse
+    ChatState,
+    ConversationHistoryResponse
 } from "tc-shared/ui/frames/side/ConversationDefinitions";
 import {Registry} from "tc-shared/events";
-import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
+import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {preprocessChatMessageForSend} from "tc-shared/text/chat";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {LogCategory, logWarn} from "tc-shared/log";
-import {ChannelConversation} from "tc-shared/conversations/ChannelConversationManager";
+import {ChannelConversationMode} from "tc-shared/tree/Channel";
+import {guid} from "tc-shared/crypto/uid";
 
 export const kMaxChatFrameMessageSize = 50; /* max 100 messages, since the server does not support more than 100 messages queried at once */
 
@@ -34,6 +36,12 @@ export interface AbstractChatEvents {
     },
     notify_history_state_changed: {
         hasHistory: boolean
+    },
+    notify_conversation_mode_changed: {
+        newMode: ChannelConversationMode
+    },
+    notify_read_state_changed: {
+        readable: boolean
     }
 }
 
@@ -50,13 +58,14 @@ export abstract class AbstractChat<Events extends AbstractChatEvents> {
     protected failedPermission: string;
     protected errorMessage: string;
 
-    protected conversationPrivate: boolean = false;
+    private conversationMode: ChannelConversationMode;
     protected crossChannelChatSupported: boolean = true;
 
     protected unreadTimestamp: number;
     protected unreadState: boolean = false;
 
     protected messageSendEnabled: boolean = true;
+    private conversationReadable = true;
 
     private history = false;
 
@@ -65,6 +74,7 @@ export abstract class AbstractChat<Events extends AbstractChatEvents> {
         this.connection = connection;
         this.chatId = chatId;
         this.unreadTimestamp = Date.now();
+        this.conversationMode = ChannelConversationMode.Public;
     }
 
     destroy() {
@@ -103,7 +113,7 @@ export abstract class AbstractChat<Events extends AbstractChatEvents> {
                 this.setUnreadTimestamp(Date.now());
             } else if(!this.isUnread() && triggerUnread) {
                 this.setUnreadTimestamp(event.message.timestamp - 1);
-            } else {
+            } else if(!this.isUnread()) {
                 /* mark the last message as read */
                 this.setUnreadTimestamp(event.message.timestamp);
             }
@@ -119,7 +129,7 @@ export abstract class AbstractChat<Events extends AbstractChatEvents> {
 
             if(!this.isUnread() && triggerUnread) {
                 this.setUnreadTimestamp(event.timestamp - 1);
-            } else {
+            } else if(!this.isUnread()) {
                 /* mark the last message as read */
                 this.setUnreadTimestamp(event.timestamp);
             }
@@ -197,8 +207,41 @@ export abstract class AbstractChat<Events extends AbstractChatEvents> {
         return this.unreadState;
     }
 
+    public getConversationMode() : ChannelConversationMode {
+        return this.conversationMode;
+    }
+
     public isPrivate() : boolean {
-        return this.conversationPrivate;
+        return this.conversationMode === ChannelConversationMode.Private;
+    }
+
+    protected setConversationMode(mode: ChannelConversationMode) {
+        if(this.conversationMode === mode) {
+            return;
+        }
+
+        this.registerChatEvent({
+            type: "mode-changed",
+            uniqueId: guid() + "-mode-change",
+            timestamp: Date.now(),
+            newMode: mode === ChannelConversationMode.Public ? "normal" : mode === ChannelConversationMode.Private ? "private" : "none"
+        }, true);
+
+        this.conversationMode = mode;
+        this.events.fire("notify_conversation_mode_changed", { newMode: mode });
+    }
+
+    public isReadable() {
+        return this.conversationReadable;
+    }
+
+    protected setReadable(flag: boolean) {
+        if(this.conversationReadable === flag) {
+            return;
+        }
+
+        this.conversationReadable = flag;
+        this.events.fire("notify_read_state_changed", { readable: flag });
     }
 
     public isSendEnabled() : boolean {
@@ -275,7 +318,6 @@ export abstract class AbstractChat<Events extends AbstractChatEvents> {
         this.events.fire("notify_send_toggle", { enabled: enabled });
     }
 
-    public abstract canClientAccessChat() : boolean;
     public abstract queryHistory(criteria: { begin?: number, end?: number, limit?: number }) : Promise<ConversationHistoryResponse>;
     public abstract queryCurrentMessages();
     public abstract sendMessage(text: string);

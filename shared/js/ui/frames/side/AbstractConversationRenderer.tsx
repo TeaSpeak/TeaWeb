@@ -15,7 +15,7 @@ import {
     ChatEventPartnerAction,
     ChatHistoryState,
     ChatMessage,
-    ConversationUIEvents
+    ConversationUIEvents, ChatEventModeChanged
 } from "tc-shared/ui/frames/side/ConversationDefinitions";
 import {TimestampRenderer} from "tc-shared/ui/react-elements/TimestampRenderer";
 import {BBCodeRenderer} from "tc-shared/text/bbcode";
@@ -276,6 +276,34 @@ const ChatEventPartnerActionRenderer = (props: { event: ChatEventPartnerAction, 
     }
     return null;
 };
+
+const ChatEventModeChangedRenderer = (props: { event: ChatEventModeChanged, refHTMLElement: Ref<HTMLDivElement> }) => {
+    switch (props.event.newMode) {
+        case "none":
+            return (
+                <div className={cssStyle.containerSwitch + " " + cssStyle.actionClose} ref={props.refHTMLElement}>
+                    <a><Translatable>The conversation has been disabled</Translatable></a>
+                    <div />
+                </div>
+            );
+
+        case "private":
+            return (
+                <div className={cssStyle.containerSwitch + " " + cssStyle.actionClose} ref={props.refHTMLElement}>
+                    <a><Translatable>The conversation has been made private</Translatable></a>
+                    <div />
+                </div>
+            );
+
+        case "normal":
+            return (
+                <div className={cssStyle.containerSwitch + " " + cssStyle.actionClose} ref={props.refHTMLElement}>
+                    <a><Translatable>The conversation has been made public</Translatable></a>
+                    <div />
+                </div>
+            );
+    }
+}
 
 const PartnerTypingIndicator = (props: { events: Registry<ConversationUIEvents>, chatId: string, timeout?: number }) => {
     const kTypingTimeout = props.timeout || 5000;
@@ -653,6 +681,14 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
 
                 case "partner-action":
                     this.viewEntries.push(<ChatEventPartnerActionRenderer
+                        key={event.uniqueId}
+                        event={event}
+                        refHTMLElement={reference}
+                    />);
+                    break;
+
+                case "mode-changed":
+                    this.viewEntries.push(<ChatEventModeChangedRenderer
                         key={event.uniqueId}
                         event={event}
                         refHTMLElement={reference}
