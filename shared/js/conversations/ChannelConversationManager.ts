@@ -1,44 +1,58 @@
-import * as React from "react";
-import {ConnectionHandler, ConnectionState} from "../../../ConnectionHandler";
-import {EventHandler, Registry} from "../../../events";
-import * as log from "../../../log";
-import {LogCategory} from "../../../log";
-import {CommandResult} from "../../../connection/ServerConnectionDeclaration";
-import {ServerCommand} from "../../../connection/ConnectionBase";
-import {Settings} from "../../../settings";
-import {traj, tr} from "../../../i18n/localize";
-import {createErrorModal} from "../../../ui/elements/Modal";
-import ReactDOM = require("react-dom");
 import {
-    ChatMessage, ConversationHistoryResponse,
-    ConversationUIEvents
-} from "../../../ui/frames/side/ConversationDefinitions";
-import {ConversationPanel} from "../../../ui/frames/side/ConversationUI";
-import {AbstractChat, AbstractChatManager, kMaxChatFrameMessageSize} from "./AbstractConversion";
-import {ErrorCode} from "../../../connection/ErrorCode";
+    AbstractChat,
+    AbstractChatEvents,
+    AbstractChatManager,
+    AbstractChatManagerEvents,
+    kMaxChatFrameMessageSize
+} from "./AbstractConversion";
+import {ChatMessage, ConversationHistoryResponse} from "tc-shared/ui/frames/side/ConversationDefinitions";
+import {Settings} from "tc-shared/settings";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {LogCategory, logError, logWarn} from "tc-shared/log";
+import {createErrorModal} from "tc-shared/ui/elements/Modal";
+import {traj} from "tc-shared/i18n/localize";
+import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {LocalClientEntry} from "tc-shared/tree/Client";
+import {ServerCommand} from "tc-shared/connection/ConnectionBase";
+
+export interface ChannelConversationEvents extends AbstractChatEvents {
+    notify_messages_deleted: { messages: string[] },
+    notify_messages_loaded: {}
+}
 
 const kSuccessQueryThrottle = 5 * 1000;
 const kErrorQueryThrottle = 30 * 1000;
-export class Conversation extends AbstractChat<ConversationUIEvents> {
-    private readonly handle: ConversationManager;
+export class ChannelConversation extends AbstractChat<ChannelConversationEvents> {
+    private readonly handle: ChannelConversationManager;
     public readonly conversationId: number;
 
     private conversationVolatile: boolean = false;
+    private preventUnreadUpdate = false;
 
     private executingHistoryQueries = false;
     private pendingHistoryQueries: (() => Promise<any>)[] = [];
     public historyQueryResponse: ChatMessage[] = [];
 
-    constructor(handle: ConversationManager, events: Registry<ConversationUIEvents>, id: number) {
-        super(handle.connection, id.toString(), events);
+    constructor(handle: ChannelConversationManager, id: number) {
+        super(handle.connection, id.toString());
         this.handle = handle;
         this.conversationId = id;
 
-        this.lastReadMessage = handle.connection.settings.server(Settings.FN_CHANNEL_CHAT_READ(id), Date.now());
+        this.preventUnreadUpdate = true;
+        const dateNow = Date.now();
+        const unreadTimestamp = handle.connection.settings.server(Settings.FN_CHANNEL_CHAT_READ(id), Date.now());
+        this.setUnreadTimestamp(unreadTimestamp);
+        this.preventUnreadUpdate = false;
+
+        this.events.on("notify_unread_state_changed", event => {
+            this.handle.connection.channelTree.findChannel(this.conversationId)?.setUnread(event.unread);
+        });
     }
 
-    destroy() { }
+    destroy() {
+        super.destroy();
+    }
 
     queryHistory(criteria: { begin?: number, end?: number, limit?: number }) : Promise<ConversationHistoryResponse> {
         return new Promise<ConversationHistoryResponse>(resolve => {
@@ -108,7 +122,7 @@ export class Conversation extends AbstractChat<ConversationUIEvents> {
                             errorMessage = error.formattedMessage();
                         }
                     } else {
-                        log.error(LogCategory.CHAT, tr("Failed to fetch conversation history. %o"), error);
+                        logError(LogCategory.CHAT, tr("Failed to fetch conversation history. %o"), error);
                         errorMessage = tr("lookup the console");
                     }
                     resolve({
@@ -125,56 +139,54 @@ export class Conversation extends AbstractChat<ConversationUIEvents> {
 
     queryCurrentMessages() {
         this.presentMessages = [];
-        this.mode = "loading";
+        this.setCurrentMode("loading");
 
-        this.reportStateToUI();
         this.queryHistory({ end: 1, limit: kMaxChatFrameMessageSize }).then(history => {
             this.conversationPrivate = false;
             this.conversationVolatile = false;
             this.failedPermission = undefined;
             this.errorMessage = undefined;
-            this.hasHistory = !!history.moreEvents;
+            this.setHistory(!!history.moreEvents);
             this.presentMessages = history.events?.map(e => Object.assign({ uniqueId: "m-" + this.conversationId + "-" + e.timestamp }, e)) || [];
 
             switch (history.status) {
                 case "error":
-                    this.mode = "normal";
-                    this.presentEvents.push({
+                    this.setCurrentMode("normal");
+                    this.registerChatEvent({
                         type: "query-failed",
                         timestamp: Date.now(),
                         uniqueId: "qf-" + this.conversationId + "-" + Date.now() + "-" + Math.random(),
                         message: history.errorMessage
-                    });
+                    }, false);
                     break;
 
                 case "no-permission":
-                    this.mode = "no-permissions";
+                    this.setCurrentMode("no-permissions");
                     this.failedPermission = history.failedPermission;
                     break;
 
                 case "private":
                     this.conversationPrivate = true;
-                    this.mode = "normal";
+                    this.setCurrentMode("normal");
                     break;
 
                 case "success":
-                    this.mode = "normal";
+                    this.setCurrentMode("normal");
                     break;
 
                 case "unsupported":
                     this.crossChannelChatSupported = false;
                     this.conversationPrivate = true;
-                    this.mode = "normal";
+                    this.setCurrentMode("normal");
                     break;
             }
 
-            /* only update the UI if needed */
-            if(this.handle.selectedConversation() === this.conversationId)
-                this.reportStateToUI();
+            this.events.fire("notify_messages_loaded");
         });
     }
 
-    protected canClientAccessChat() {
+    /* TODO: Query this state and if changed notify state */
+    public canClientAccessChat() {
         return this.conversationId === 0 || this.handle.connection.getClient().currentChannel()?.channelId === this.conversationId;
     }
 
@@ -186,7 +198,7 @@ export class Conversation extends AbstractChat<ConversationUIEvents> {
         try {
             const promise = this.pendingHistoryQueries.pop_front()();
             promise
-                .catch(error => log.error(LogCategory.CLIENT, tr("Conversation history query task threw an error; this should never happen: %o"), error))
+                .catch(error => logError(LogCategory.CLIENT, tr("Conversation history query task threw an error; this should never happen: %o"), error))
                 .then(() => { this.executingHistoryQueries = false; this.executeHistoryQuery(); });
         } catch (e) {
             this.executingHistoryQueries = false;
@@ -205,8 +217,12 @@ export class Conversation extends AbstractChat<ConversationUIEvents> {
             return;
         }
 
-        if(timestamp > this.lastReadMessage) {
-            this.setUnreadTimestamp(this.lastReadMessage);
+        if(this.unreadTimestamp < timestamp) {
+            this.registerChatEvent({
+                type: "unread-trigger",
+                timestamp: timestamp,
+                uniqueId: "unread-trigger-" + Date.now() + " - " + timestamp
+            }, true);
         }
     }
 
@@ -217,29 +233,36 @@ export class Conversation extends AbstractChat<ConversationUIEvents> {
     public handleDeleteMessages(criteria: { begin: number, end: number, cldbid: number, limit: number }) {
         let limit = { current: criteria.limit };
 
-        this.presentMessages = this.presentMessages.filter(message => {
-            if(message.type !== "message")
-                return;
+        const deletedMessages = this.presentMessages.filter(message => {
+            if(message.type !== "message") {
+                return false;
+            }
 
-            if(message.message.sender_database_id !== criteria.cldbid)
-                return true;
+            if(message.message.sender_database_id !== criteria.cldbid) {
+                return false;
+            }
 
-            if(criteria.end != 0 && message.timestamp > criteria.end)
-                return true;
+            if(criteria.end != 0 && message.timestamp > criteria.end) {
+                return false;
+            }
 
-            if(criteria.begin != 0 && message.timestamp < criteria.begin)
-                return true;
+            if(criteria.begin != 0 && message.timestamp < criteria.begin) {
+                return false;
+            }
 
-            return --limit.current < 0;
+            /* if the limit is zero it means all messages */
+            return --limit.current >= 0;
         });
 
-        this.events.fire("notify_chat_message_delete", { chatId: this.conversationId.toString(), criteria: criteria });
+        this.presentMessages = this.presentMessages.filter(message => deletedMessages.indexOf(message) === -1);
+        this.events.fire("notify_messages_deleted", { messages: deletedMessages.map(message => message.uniqueId) });
+        this.updateUnreadState();
     }
 
     public deleteMessage(messageUniqueId: string) {
         const message = this.presentMessages.find(e => e.uniqueId === messageUniqueId);
         if(!message) {
-            log.warn(LogCategory.CHAT, tr("Tried to delete an unknown message (id: %s)"), messageUniqueId);
+            logWarn(LogCategory.CHAT, tr("Tried to delete an unknown message (id: %s)"), messageUniqueId);
             return;
         }
 
@@ -253,32 +276,34 @@ export class Conversation extends AbstractChat<ConversationUIEvents> {
             limit: 1,
             cldbid: message.message.sender_database_id
         }, { process_result: false }).catch(error => {
-            log.error(LogCategory.CHAT, tr("Failed to delete conversation message for conversation %d: %o"), this.conversationId, error);
-            if(error instanceof CommandResult)
+            logError(LogCategory.CHAT, tr("Failed to delete conversation message for conversation %d: %o"), this.conversationId, error);
+            if(error instanceof CommandResult) {
                 error = error.extra_message || error.message;
+            }
 
             createErrorModal(tr("Failed to delete message"), traj("Failed to delete conversation message{:br:}Error: {}", error)).open();
         });
     }
 
-    setUnreadTimestamp(timestamp: number | undefined) {
+    setUnreadTimestamp(timestamp: number) {
         super.setUnreadTimestamp(timestamp);
 
-        /* we've to update the last read timestamp regardless of if we're having actual unread stuff */
-        this.handle.connection.settings.changeServer(Settings.FN_CHANNEL_CHAT_READ(this.conversationId), typeof timestamp === "number" ? timestamp : Date.now());
-        this.handle.connection.channelTree.findChannel(this.conversationId)?.setUnread(timestamp !== undefined);
+        if(this.preventUnreadUpdate) {
+            return;
+        }
+
+        this.handle.connection.settings.changeServer(Settings.FN_CHANNEL_CHAT_READ(this.conversationId), timestamp);
     }
 
     public localClientSwitchedChannel(type: "join" | "leave") {
-        this.presentEvents.push({
+        this.registerChatEvent({
             type: "local-user-switch",
             uniqueId: "us-" + this.conversationId + "-" + Date.now() + "-" + Math.random(),
             timestamp: Date.now(),
             mode: type
-        });
+        }, false);
 
-        if(this.conversationId === this.handle.selectedConversation())
-            this.reportStateToUI();
+        /* TODO: Update can access state! */
     }
 
     sendMessage(text: string) {
@@ -286,138 +311,84 @@ export class Conversation extends AbstractChat<ConversationUIEvents> {
     }
 }
 
-export class ConversationManager extends AbstractChatManager<ConversationUIEvents> {
-    readonly connection: ConnectionHandler;
-    readonly htmlTag: HTMLDivElement;
+export interface ChannelConversationManagerEvents extends AbstractChatManagerEvents<ChannelConversation> { }
 
-    private conversations: {[key: number]: Conversation} = {};
-    private selectedConversation_: number;
+export class ChannelConversationManager extends AbstractChatManager<ChannelConversationManagerEvents, ChannelConversation, ChannelConversationEvents> {
+    readonly connection: ConnectionHandler;
 
     constructor(connection: ConnectionHandler) {
-        super();
+        super(connection);
         this.connection = connection;
 
-        this.htmlTag = document.createElement("div");
-        this.htmlTag.style.display = "flex";
-        this.htmlTag.style.flexDirection = "column";
-        this.htmlTag.style.justifyContent = "stretch";
-        this.htmlTag.style.height = "100%";
-
-        ReactDOM.render(React.createElement(ConversationPanel, {
-            events: this.uiEvents,
-            handlerId: this.connection.handlerId,
-            noFirstMessageOverlay: false,
-            messagesDeletable: true
-        }), this.htmlTag);
-        /*
-        spawnExternalModal("conversation", this.uiEvents, {
-            handlerId: this.connection.handlerId,
-            noFirstMessageOverlay: false,
-            messagesDeletable: true
-        }).open().then(() => {
-            console.error("Opened");
-        });
-        */
-
-        this.uiEvents.on("action_select_chat", event => this.selectedConversation_ = parseInt(event.chatId));
-        this.uiEvents.on("notify_destroy", connection.events().on("notify_connection_state_changed", event => {
-            if(ConnectionState.socketConnected(event.old_state) !== ConnectionState.socketConnected(event.new_state)) {
-                this.conversations = {};
-                this.setSelectedConversation(-1);
-            }
-        }));
-        this.uiEvents.on("notify_destroy", connection.events().on("notify_visibility_changed", event => {
-            if(!event.visible)
-                return;
-
-            this.handlePanelShow();
-        }));
-
-        connection.events().one("notify_handler_initialized", () => this.uiEvents.on("notify_destroy", connection.channelTree.events.on("notify_client_moved", event => {
+        connection.events().one("notify_handler_initialized", () => this.listenerConnection.push(connection.channelTree.events.on("notify_client_moved", event => {
             if(event.client instanceof LocalClientEntry) {
                 event.oldChannel && this.findOrCreateConversation(event.oldChannel.channelId).localClientSwitchedChannel("leave");
                 this.findOrCreateConversation(event.newChannel.channelId).localClientSwitchedChannel("join");
             }
         })));
 
-        this.uiEvents.register_handler(this, true);
-        this.uiEvents.on("notify_destroy", connection.serverConnection.command_handler_boss().register_explicit_handler("notifyconversationhistory", this.handleConversationHistory.bind(this)));
-        this.uiEvents.on("notify_destroy", connection.serverConnection.command_handler_boss().register_explicit_handler("notifyconversationindex", this.handleConversationIndex.bind(this)));
-        this.uiEvents.on("notify_destroy", connection.serverConnection.command_handler_boss().register_explicit_handler("notifyconversationmessagedelete", this.handleConversationMessageDelete.bind(this)));
+        this.listenerConnection.push(connection.events().on("notify_connection_state_changed", event => {
+            if(ConnectionState.socketConnected(event.oldState) !== ConnectionState.socketConnected(event.newState)) {
+                this.setSelectedConversation(undefined);
+                this.getConversations().forEach(conversation => {
+                    this.unregisterConversation(conversation);
+                    conversation.destroy();
+                });
+            }
+        }));
 
-        this.uiEvents.on("notify_destroy", this.connection.channelTree.events.on("notify_channel_list_received", () => {
+        this.listenerConnection.push(connection.serverConnection.command_handler_boss().register_explicit_handler("notifyconversationhistory", this.handleConversationHistory.bind(this)));
+        this.listenerConnection.push(connection.serverConnection.command_handler_boss().register_explicit_handler("notifyconversationindex", this.handleConversationIndex.bind(this)));
+        this.listenerConnection.push(connection.serverConnection.command_handler_boss().register_explicit_handler("notifyconversationmessagedelete", this.handleConversationMessageDelete.bind(this)));
+
+        this.listenerConnection.push(this.connection.channelTree.events.on("notify_channel_list_received", () => {
             this.queryUnreadFlags();
         }));
 
-        this.uiEvents.on("notify_destroy", this.connection.channelTree.events.on("notify_channel_updated", _event => {
+        this.listenerConnection.push(this.connection.channelTree.events.on("notify_channel_updated", () => {
             /* TODO private flag! */
         }));
     }
 
     destroy() {
-        ReactDOM.unmountComponentAtNode(this.htmlTag);
-        this.htmlTag.remove();
-
-        this.uiEvents.unregister_handler(this);
-        this.uiEvents.fire("notify_destroy");
-        this.uiEvents.destroy();
+        super.destroy();
     }
 
-    selectedConversation() {
-        return this.selectedConversation_;
+    findConversation(channelId: number) : ChannelConversation {
+        return this.findConversationById(channelId.toString());
     }
 
-    setSelectedConversation(id: number) {
-        if(id >= 0)
-            this.findOrCreateConversation(id);
-
-        this.uiEvents.fire("notify_selected_chat", { chatId: id.toString() });
-    }
-
-    @EventHandler<ConversationUIEvents>("action_select_chat")
-    private handleActionSelectChat(event: ConversationUIEvents["action_select_chat"]) {
-        this.setSelectedConversation(parseInt(event.chatId));
-    }
-
-    findConversation(id: number) : Conversation {
-        for(const conversation of Object.values(this.conversations))
-            if(conversation.conversationId === id)
-                return conversation;
-        return undefined;
-    }
-
-    protected findChat(id: string): AbstractChat<ConversationUIEvents> {
-        return this.findConversation(parseInt(id));
-    }
-
-    findOrCreateConversation(id: number) {
-        let conversation = this.findConversation(id);
+    findOrCreateConversation(channelId: number) {
+        let conversation = this.findConversation(channelId);
         if(!conversation) {
-            conversation = new Conversation(this, this.uiEvents, id);
-            this.conversations[id] = conversation;
+            conversation = new ChannelConversation(this, channelId);
+            this.registerConversation(conversation);
         }
 
         return conversation;
     }
 
     destroyConversation(id: number) {
-        delete this.conversations[id];
+        const conversation = this.findConversation(id);
+        if(!conversation) {
+            return;
+        }
 
-        if(id === this.selectedConversation_)
-            this.uiEvents.fire("action_select_chat", { chatId: "unselected" });
+        this.unregisterConversation(conversation);
+        conversation.destroy();
     }
 
     queryUnreadFlags() {
         const commandData = this.connection.channelTree.channels.map(e => { return { cid: e.channelId, cpw: e.cached_password() }});
         this.connection.serverConnection.send_command("conversationfetch", commandData).catch(error => {
-            log.warn(LogCategory.CHAT, tr("Failed to query conversation indexes: %o"), error);
+            logWarn(LogCategory.CHAT, tr("Failed to query conversation indexes: %o"), error);
         });
     }
 
     private handleConversationHistory(command: ServerCommand) {
         const conversation = this.findConversation(parseInt(command.arguments[0]["cid"]));
         if(!conversation) {
-            log.warn(LogCategory.NETWORKING, tr("Received conversation history for an unknown conversation: %o"), command.arguments[0]["cid"]);
+            logWarn(LogCategory.NETWORKING, tr("Received conversation history for an unknown conversation: %o"), command.arguments[0]["cid"]);
             return;
         }
 
@@ -444,8 +415,9 @@ export class ConversationManager extends AbstractChatManager<ConversationUIEvent
     private handleConversationMessageDelete(command: ServerCommand) {
         const data = command.arguments[0];
         const conversation = this.findConversation(parseInt(data["cid"]));
-        if(!conversation)
+        if(!conversation) {
             return;
+        }
 
         conversation.handleDeleteMessages({
             limit: parseInt(data["limit"]),
@@ -453,31 +425,5 @@ export class ConversationManager extends AbstractChatManager<ConversationUIEvent
             end: parseInt(data["timestamp_end"]),
             cldbid: parseInt(data["cldbid"])
         })
-    }
-
-    @EventHandler<ConversationUIEvents>("action_delete_message")
-    private handleMessageDelete(event: ConversationUIEvents["action_delete_message"]) {
-        const conversation = this.findConversation(parseInt(event.chatId));
-        if(!conversation) {
-            log.error(LogCategory.CLIENT, tr("Tried to delete a chat message from an unknown conversation with id %s"), event.chatId);
-            return;
-        }
-
-        conversation.deleteMessage(event.uniqueId);
-    }
-
-    @EventHandler<ConversationUIEvents>("query_selected_chat")
-    private handleQuerySelectedChat() {
-        this.uiEvents.fire_react("notify_selected_chat", { chatId: isNaN(this.selectedConversation_) ? "unselected" : this.selectedConversation_ + ""})
-    }
-
-    @EventHandler<ConversationUIEvents>("notify_selected_chat")
-    private handleNotifySelectedChat(event: ConversationUIEvents["notify_selected_chat"]) {
-        this.selectedConversation_ = parseInt(event.chatId);
-    }
-
-    @EventHandler<ConversationUIEvents>("action_clear_unread_flag")
-    protected handleClearUnreadFlag1(event: ConversationUIEvents["action_clear_unread_flag"]) {
-        this.connection.channelTree.findChannel(parseInt(event.chatId))?.setUnread(false);
     }
 }

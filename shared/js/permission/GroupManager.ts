@@ -164,7 +164,7 @@ export class GroupManager extends AbstractCommandHandler {
         this.connectionHandler = client;
 
         this.connectionStateListener = (event: ConnectionEvents["notify_connection_state_changed"]) => {
-            if(event.new_state === ConnectionState.DISCONNECTING || event.new_state === ConnectionState.UNCONNECTED || event.new_state === ConnectionState.CONNECTING) {
+            if(event.newState === ConnectionState.DISCONNECTING || event.newState === ConnectionState.UNCONNECTED || event.newState === ConnectionState.CONNECTING) {
                 this.reset();
             }
         };

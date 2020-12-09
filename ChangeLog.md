@@ -1,8 +1,14 @@
 # Changelog:
+* **09.12.20**
+    - Fixed the private messages unread indicator
+    - Properly updating the private message unread count
+    
 * **08.12.20**
     - Fixed the permission editor not resolving unique ids
     - Fixed client database info resolve
-    
+    - Improved the side header bar
+      All values are not updating accordingly to the connection state
+        
 * **07.12.20**
     - Fixed the Markdown to BBCode transpiler falsely emitting empty lines
     - Fixed invalid BBCode escaping

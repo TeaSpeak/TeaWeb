@@ -1,25 +1,15 @@
-import {ClientEntry} from "../../../tree/Client";
-import {ConnectionHandler, ConnectionState} from "../../../ConnectionHandler";
-import {EventHandler, Registry} from "../../../events";
 import {
-    PrivateConversationInfo,
-    PrivateConversationUIEvents
-} from "../../../ui/frames/side/PrivateConversationDefinitions";
-import * as ReactDOM from "react-dom";
-import * as React from "react";
-import {PrivateConversationsPanel} from "../../../ui/frames/side/PrivateConversationUI";
-import {
-    ChatEvent,
-    ChatMessage,
-    ConversationHistoryResponse,
-    ConversationUIEvents
-} from "../../../ui/frames/side/ConversationDefinitions";
-import * as log from "../../../log";
-import {LogCategory} from "../../../log";
-import {queryConversationEvents, registerConversationEvent} from "../../../ui/frames/side/PrivateConversationHistory";
-import {AbstractChat, AbstractChatManager} from "../../../ui/frames/side/AbstractConversion";
+    AbstractChat,
+    AbstractChatEvents,
+    AbstractChatManager,
+    AbstractChatManagerEvents
+} from "tc-shared/conversations/AbstractConversion";
+import {ClientEntry} from "tc-shared/tree/Client";
+import {ChatEvent, ChatMessage, ConversationHistoryResponse} from "tc-shared/ui/frames/side/ConversationDefinitions";
 import {ChannelTreeEvents} from "tc-shared/tree/ChannelTree";
-import { tr } from "tc-shared/i18n/localize";
+import {queryConversationEvents, registerConversationEvent} from "tc-shared/conversations/PrivateConversationHistory";
+import {LogCategory, logWarn} from "tc-shared/log";
+import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 
 export type OutOfViewClient = {
     nickname: string,
@@ -29,16 +19,29 @@ export type OutOfViewClient = {
 
 let receivingEventUniqueIdIndex = 0;
 
-export class PrivateConversation extends AbstractChat<PrivateConversationUIEvents> {
+export interface PrivateConversationEvents extends AbstractChatEvents {
+    notify_partner_typing: {},
+    notify_partner_changed: {
+        chatId: string,
+        clientId: number,
+        name: string
+    },
+    notify_partner_name_changed: {
+        chatId: string,
+        name: string
+    }
+}
+
+export class PrivateConversation extends AbstractChat<PrivateConversationEvents> {
     public readonly clientUniqueId: string;
 
     private activeClientListener: (() => void)[] | undefined = undefined;
     private activeClient: ClientEntry | OutOfViewClient | undefined = undefined;
-    private lastClientInfo: OutOfViewClient = undefined;
+    private lastClientInfo: OutOfViewClient;
     private conversationOpen: boolean = false;
 
-    constructor(manager: PrivateConversationManager, events: Registry<PrivateConversationUIEvents>, client: ClientEntry | OutOfViewClient) {
-        super(manager.connection, client instanceof ClientEntry ? client.clientUid() : client.uniqueId, events);
+    constructor(manager: PrivateConversationManager, client: ClientEntry | OutOfViewClient) {
+        super(manager.connection, client instanceof ClientEntry ? client.clientUid() : client.uniqueId);
 
         this.activeClient = client;
         if(client instanceof ClientEntry) {
@@ -48,11 +51,10 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
             this.clientUniqueId = client.uniqueId;
         }
         this.updateClientInfo();
-
-        this.events.on("notify_destroy", () => this.unregisterClientEvents());
     }
 
     destroy() {
+        super.destroy();
         this.unregisterClientEvents();
     }
 
@@ -62,10 +64,15 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
         return this.lastClientInfo.clientId;
     }
 
+    getLastClientInfo() : OutOfViewClient {
+        return this.lastClientInfo;
+    }
+
     /* A value of undefined means that the remote client has disconnected */
     setActiveClientEntry(client: ClientEntry | OutOfViewClient | undefined) {
-        if(this.activeClient === client)
+        if(this.activeClient === client) {
             return;
+        }
 
         if(this.activeClient instanceof ClientEntry) {
             this.activeClient.setUnread(false); /* clear the unread flag */
@@ -83,8 +90,9 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
 
         this.unregisterClientEvents();
         this.activeClient = client;
-        if(this.activeClient instanceof ClientEntry)
+        if(this.activeClient instanceof ClientEntry) {
             this.registerClientEvents(this.activeClient);
+        }
 
         this.updateClientInfo();
     }
@@ -100,11 +108,13 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
 
         this.conversationOpen = true;
         this.registerIncomingMessage(message, isOwnMessage, "m-" + this.clientUniqueId + "-" + message.timestamp + "-" + (++receivingEventUniqueIdIndex));
+        /* FIXME: notify_unread_count_changed */
     }
 
     handleChatRemotelyClosed(clientId: number) {
-        if(clientId !== this.lastClientInfo.clientId)
+        if(clientId !== this.lastClientInfo.clientId) {
             return;
+        }
 
         this.registerChatEvent({
             type: "partner-action",
@@ -133,47 +143,30 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
         this.setActiveClientEntry(client);
     }
 
-    handleRemoteComposing(clientId: number) {
-        this.events.fire("notify_partner_typing", { chatId: this.chatId });
-    }
-
-    generateUIInfo() : PrivateConversationInfo {
-        const lastMessage = this.presentEvents.last();
-        return {
-            nickname: this.lastClientInfo.nickname,
-            uniqueId: this.lastClientInfo.uniqueId,
-            clientId: this.lastClientInfo.clientId,
-            chatId: this.clientUniqueId,
-
-            lastMessage: lastMessage ? lastMessage.timestamp : 0,
-            unreadMessages: this.unreadTimestamp !== undefined
-        };
+    handleRemoteComposing(_clientId: number) {
+        this.events.fire("notify_partner_typing", { });
     }
 
     sendMessage(text: string) {
-        if(this.activeClient instanceof ClientEntry)
+        if(this.activeClient instanceof ClientEntry) {
             this.doSendMessage(text, 1, this.activeClient.clientId()).then(succeeded => succeeded && (this.conversationOpen = true));
-        else if(this.activeClient !== undefined && this.activeClient.clientId > 0)
+        } else if(this.activeClient !== undefined && this.activeClient.clientId > 0) {
             this.doSendMessage(text, 1, this.activeClient.clientId).then(succeeded => succeeded && (this.conversationOpen = true));
-        else {
-            this.presentEvents.push({
+        } else {
+            this.registerChatEvent({
                 type: "message-failed",
                 uniqueId: "msf-" + this.chatId + "-" + Date.now(),
                 timestamp: Date.now(),
                 error: "error",
                 errorMessage: tr("target client is offline/invisible")
-            });
-            this.events.fire_react("notify_chat_event", {
-                chatId: this.chatId,
-                triggerUnread: false,
-                event: this.presentEvents.last()
-            });
+            }, false);
         }
     }
 
     sendChatClose() {
-        if(!this.conversationOpen)
+        if(!this.conversationOpen) {
             return;
+        }
 
         this.conversationOpen = false;
         if(this.lastClientInfo.clientId > 0 && this.connection.connected) {
@@ -208,14 +201,16 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
     private registerClientEvents(client: ClientEntry) {
         this.activeClientListener = [];
         this.activeClientListener.push(client.events.on("notify_properties_updated", event => {
-            if('client_nickname' in event.updated_properties)
+            if('client_nickname' in event.updated_properties) {
                 this.updateClientInfo();
+            }
         }));
     }
 
     private unregisterClientEvents() {
-        if(this.activeClientListener === undefined)
+        if(this.activeClientListener === undefined) {
             return;
+        }
 
         this.activeClientListener.forEach(e => e());
         this.activeClientListener = undefined;
@@ -253,18 +248,16 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
         this.sendMessageSendingEnabled(this.lastClientInfo.clientId !== 0);
     }
 
-    setUnreadTimestamp(timestamp: number | undefined) {
+    setUnreadTimestamp(timestamp: number) {
         super.setUnreadTimestamp(timestamp);
 
         /* TODO: Move this somehow to the client itself? */
-        if(this.activeClient instanceof ClientEntry)
-            this.activeClient.setUnread(timestamp !== undefined);
-
-        /* TODO: Eliminate this cross reference? */
-        this.connection.side_bar.info_frame().update_chat_counter();
+        if(this.activeClient instanceof ClientEntry) {
+            this.activeClient.setUnread(this.isUnread());
+        }
     }
 
-    protected canClientAccessChat(): boolean {
+    public canClientAccessChat(): boolean {
         return true;
     }
 
@@ -282,24 +275,22 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
     }
 
     queryCurrentMessages() {
-        this.mode = "loading";
-        this.reportStateToUI();
+        this.setCurrentMode("loading");
 
         queryConversationEvents(this.clientUniqueId, { limit: 50, begin: Date.now(), end: 0, direction: "backwards" }).then(result => {
             this.presentEvents = result.events.filter(e => e.type !== "message") as any;
             this.presentMessages = result.events.filter(e => e.type === "message");
-            this.hasHistory = result.hasMore;
-            this.mode = "normal";
+            this.setHistory(!!result.hasMore);
 
-            this.reportStateToUI();
+            this.setCurrentMode("normal");
         });
     }
 
-    protected registerChatEvent(event: ChatEvent, triggerUnread: boolean) {
+    public registerChatEvent(event: ChatEvent, triggerUnread: boolean) {
         super.registerChatEvent(event, triggerUnread);
 
         registerConversationEvent(this.clientUniqueId, event).catch(error => {
-            log.warn(LogCategory.CHAT, tr("Failed to register private conversation chat event for %s: %o"), this.clientUniqueId, error);
+            logWarn(LogCategory.CHAT, tr("Failed to register private conversation chat event for %s: %o"), this.clientUniqueId, error);
         });
     }
 
@@ -320,164 +311,65 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
     }
 }
 
-export class PrivateConversationManager extends AbstractChatManager<PrivateConversationUIEvents> {
-    public readonly htmlTag: HTMLDivElement;
+export interface PrivateConversationManagerEvents extends AbstractChatManagerEvents<PrivateConversation> { }
+
+export class PrivateConversationManager extends AbstractChatManager<PrivateConversationManagerEvents, PrivateConversation, PrivateConversationEvents> {
     public readonly connection: ConnectionHandler;
-
-    private activeConversation: PrivateConversation | undefined = undefined;
-    private conversations: PrivateConversation[] = [];
-
     private channelTreeInitialized = false;
 
     constructor(connection: ConnectionHandler) {
-        super();
+        super(connection);
         this.connection = connection;
 
-        this.htmlTag = document.createElement("div");
-        this.htmlTag.style.display = "flex";
-        this.htmlTag.style.flexDirection = "row";
-        this.htmlTag.style.justifyContent = "stretch";
-        this.htmlTag.style.height = "100%";
-
-        this.uiEvents.register_handler(this, true);
-        this.uiEvents.enableDebug("private-conversations");
-
-        ReactDOM.render(React.createElement(PrivateConversationsPanel, { events: this.uiEvents, handler: this.connection }), this.htmlTag);
-
-        this.uiEvents.on("notify_destroy", connection.events().on("notify_visibility_changed", event => {
-            if(!event.visible)
-                return;
-
-            this.handlePanelShow();
-        }));
-
-        this.uiEvents.on("notify_destroy", connection.events().on("notify_connection_state_changed", event => {
-            if(ConnectionState.socketConnected(event.old_state) !== ConnectionState.socketConnected(event.new_state)) {
-                for(const chat of this.conversations) {
-                    chat.handleLocalClientDisconnect(event.old_state === ConnectionState.CONNECTED);
-                }
+        this.listenerConnection.push(connection.events().on("notify_connection_state_changed", event => {
+            if(ConnectionState.socketConnected(event.oldState) !== ConnectionState.socketConnected(event.newState)) {
+                this.getConversations().forEach(conversation => {
+                    conversation.handleLocalClientDisconnect(event.oldState === ConnectionState.CONNECTED);
+                });
 
                 this.channelTreeInitialized = false;
             }
         }));
 
-        this.uiEvents.on("notify_destroy", connection.channelTree.events.on("notify_client_enter_view", event => {
+        this.listenerConnection.push(connection.channelTree.events.on("notify_client_enter_view", event => {
             const conversation = this.findConversation(event.client);
             if(!conversation) return;
 
             conversation.handleClientEnteredView(event.client, this.channelTreeInitialized ? event.isServerJoin ? "server-join" : "appear" : "local-reconnect");
         }));
 
-        this.uiEvents.on("notify_destroy", connection.channelTree.events.on("notify_channel_list_received", event => {
+        this.listenerConnection.push(connection.channelTree.events.on("notify_channel_list_received", _event => {
             this.channelTreeInitialized = true;
         }));
     }
 
     destroy() {
-        ReactDOM.unmountComponentAtNode(this.htmlTag);
-        this.htmlTag.remove();
+        super.destroy();
 
-        this.uiEvents.unregister_handler(this);
-        this.uiEvents.fire("notify_destroy");
-        this.uiEvents.destroy();
+        this.listenerConnection.forEach(callback => callback());
+        this.listenerConnection.splice(0, this.listenerConnection.length);
     }
 
     findConversation(client: ClientEntry | string) {
         const uniqueId = client instanceof ClientEntry ? client.clientUid() : client;
-        return this.conversations.find(e => e.clientUniqueId === uniqueId);
-    }
-
-    protected findChat(id: string): AbstractChat<PrivateConversationUIEvents> {
-        return this.findConversation(id);
+        return this.getConversations().find(e => e.clientUniqueId === uniqueId);
     }
 
     findOrCreateConversation(client: ClientEntry | OutOfViewClient) {
         let conversation = this.findConversation(client instanceof ClientEntry ? client : client.uniqueId);
         if(!conversation) {
-            this.conversations.push(conversation = new PrivateConversation(this, this.uiEvents, client));
-            this.reportConversationList();
+            conversation = new PrivateConversation(this, client);
+            this.registerConversation(conversation);
         }
 
         return conversation;
     }
 
-    setActiveConversation(conversation: PrivateConversation | undefined) {
-        if(conversation === this.activeConversation)
-            return;
-
-        this.activeConversation = conversation;
-        /* fire this after all other events have been processed, maybe reportConversationList has been called before */
-        this.uiEvents.fire_react("notify_selected_chat", { chatId: this.activeConversation ? this.activeConversation.clientUniqueId : "unselected" });
-    }
-
-    @EventHandler<PrivateConversationUIEvents>("action_select_chat")
-    private handleActionSelectChat(event: PrivateConversationUIEvents["action_select_chat"]) {
-        this.setActiveConversation(this.findConversation(event.chatId));
-    }
-
-    getActiveConversation() {
-        return this.activeConversation;
-    }
-
-    getConversations() {
-        return this.conversations;
-    }
-
-    focusInput() {
-        this.uiEvents.fire("action_focus_chat");
-    }
-
     closeConversation(...conversations: PrivateConversation[]) {
         for(const conversation of conversations) {
             conversation.sendChatClose();
-            this.conversations.remove(conversation);
+            this.unregisterConversation(conversation);
             conversation.destroy();
-
-            if(this.activeConversation === conversation)
-                this.setActiveConversation(undefined);
         }
-        this.reportConversationList();
-    }
-
-    private reportConversationList() {
-        this.uiEvents.fire_react("notify_private_conversations", {
-            conversations: this.conversations.map(conversation => conversation.generateUIInfo()),
-            selected: this.activeConversation?.clientUniqueId || "unselected"
-        });
-    }
-
-    @EventHandler<PrivateConversationUIEvents>("query_private_conversations")
-    private handleQueryPrivateConversations() {
-        this.reportConversationList();
-    }
-
-    @EventHandler<PrivateConversationUIEvents>("action_close_chat")
-    private handleConversationClose(event: PrivateConversationUIEvents["action_close_chat"]) {
-        const conversation = this.findConversation(event.chatId);
-        if(!conversation) {
-            log.error(LogCategory.CLIENT, tr("Tried to close a not existing private conversation with id %s"), event.chatId);
-            return;
-        }
-
-        this.closeConversation(conversation);
-    }
-
-    @EventHandler<PrivateConversationUIEvents>("notify_partner_typing")
-    private handleNotifySelectChat(event: PrivateConversationUIEvents["notify_selected_chat"]) {
-        /* TODO, set active chat? */
-    }
-
-    @EventHandler<ConversationUIEvents>("action_self_typing")
-    protected handleActionSelfTyping1(event: ConversationUIEvents["action_self_typing"]) {
-        if(!this.activeConversation)
-            return;
-
-        const clientId = this.activeConversation.currentClientId();
-        if(!clientId)
-            return;
-
-        this.connection.serverConnection.send_command("clientchatcomposing", { clid: clientId }).catch(error => {
-            log.warn(LogCategory.CHAT, tr("Failed to send chat composing to server for chat %d: %o"), clientId, error);
-        });
     }
 }

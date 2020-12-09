@@ -20,10 +20,18 @@ export const CommandOptionDefaults: CommandOptions = {
     timeout: 10_000
 };
 
+export type ConnectionPing = {
+    javascript: number | undefined,
+    native: number
+};
+
 export interface ServerConnectionEvents {
     notify_connection_state_changed: {
         oldState: ConnectionState,
         newState: ConnectionState
+    },
+    notify_ping_updated: {
+        newPing: ConnectionPing
     }
 }
 
@@ -73,10 +81,7 @@ export abstract class AbstractServerConnection {
 
     getConnectionState() { return this.connectionState; }
 
-    abstract ping() : {
-        native: number,
-        javascript?: number
-    };
+    abstract ping() : ConnectionPing;
 }
 
 export class ServerCommand {

@@ -382,7 +382,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 type: contextmenu.MenuEntryType.ENTRY,
                 name: this.properties.client_type_exact === ClientType.CLIENT_MUSIC ? tr("Show bot info") : tr("Show client info"),
                 callback: () => {
-                    this.channelTree.client.side_bar.show_client_info(this);
+                    this.channelTree.client.side_bar.showClientInfo(this);
                 },
                 icon_class: "client-about",
                 visible: !settings.static_global(Settings.KEY_SWITCH_INSTANT_CLIENT)
@@ -518,12 +518,13 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
     }
 
     open_text_chat() {
-        const chat = this.channelTree.client.side_bar;
-        const conversation = chat.private_conversations().findOrCreateConversation(this);
+        const privateConversations = this.channelTree.client.getPrivateConversations();
+        const sideBar = this.channelTree.client.side_bar;
+        const conversation = privateConversations.findOrCreateConversation(this);
         conversation.setActiveClientEntry(this);
-        chat.private_conversations().setActiveConversation(conversation);
-        chat.show_private_conversations();
-        chat.private_conversations().focusInput();
+        privateConversations.setSelectedConversation(conversation);
+        sideBar.showPrivateConversations();
+        sideBar.private_conversations().focusInput();
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {

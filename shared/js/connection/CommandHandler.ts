@@ -17,7 +17,7 @@ import {formatMessage} from "../ui/frames/chat";
 import {spawnPoke} from "../ui/modal/ModalPoke";
 import {AbstractCommandHandler, AbstractCommandHandlerBoss} from "../connection/AbstractCommandHandler";
 import {batch_updates, BatchUpdateType, flush_batched_updates} from "../ui/react-elements/ReactComponentBase";
-import {OutOfViewClient} from "../ui/frames/side/PrivateConversationManager";
+import {OutOfViewClient} from "../ui/frames/side/PrivateConversationController";
 import {renderBBCodeAsJQuery} from "../text/bbcode";
 import {tr} from "../i18n/localize";
 import {EventClient, EventType} from "../ui/frames/log/Definitions";
@@ -73,9 +73,6 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
         this["notifychannelsubscribed"] = this.handleNotifyChannelSubscribed;
         this["notifychannelunsubscribed"] = this.handleNotifyChannelUnsubscribed;
-
-        //this["notifyconversationhistory"] = this.handleNotifyConversationHistory;
-        //this["notifyconversationmessagedelete"] = this.handleNotifyConversationMessageDelete;
 
         this["notifymusicstatusupdate"] = this.handleNotifyMusicStatusUpdate;
         this["notifymusicplayersongchange"] = this.handleMusicPlayerSongChange;
@@ -413,7 +410,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
     handleCommandChannelDelete(json) {
         let tree = this.connection.client.channelTree;
-        const conversations = this.connection.client.side_bar.channel_conversations();
+        const conversations = this.connection.client.getChannelConversations();
 
         let playSound = false;
 
@@ -448,7 +445,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
     handleCommandChannelHide(json) {
         let tree = this.connection.client.channelTree;
-        const conversations = this.connection.client.side_bar.channel_conversations();
+        const conversations = this.connection.client.getChannelConversations();
 
         log.info(LogCategory.NETWORKING, tr("Got %d channel hides"), json.length);
         for(let index = 0; index < json.length; index++) {
@@ -556,9 +553,8 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             if(client instanceof LocalClientEntry) {
                 client.initializeListener();
                 this.connection_handler.update_voice_status();
-                this.connection_handler.side_bar.info_frame().update_channel_talk();
-                const conversations = this.connection.client.side_bar.channel_conversations();
-                conversations.setSelectedConversation(client.currentChannel().channelId);
+                const conversations = this.connection.client.getChannelConversations();
+                conversations.setSelectedConversation(conversations.findOrCreateConversation(client.currentChannel().channelId));
             }
         }
     }
@@ -586,7 +582,6 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 } else {
                     this.connection.client.handleDisconnect(DisconnectReason.UNKNOWN, entry);
                 }
-                this.connection_handler.side_bar.info_frame().update_channel_talk();
                 return;
             }
 
@@ -673,9 +668,6 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             for(const entry of client.channelTree.clientsByChannel(channelFrom)) {
                 entry.getVoiceClient()?.abortReplay();
             }
-
-            const side_bar = this.connection_handler.side_bar;
-            side_bar.info_frame().update_channel_talk();
         } else {
             client.speaking = false;
         }
@@ -810,8 +802,8 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 uniqueId: targetIsOwn ? json["invokeruid"] : undefined
             } as OutOfViewClient;
 
-            const conversation_manager = this.connection_handler.side_bar.private_conversations();
-            const conversation = conversation_manager.findOrCreateConversation(chatPartner);
+            const conversationManager = this.connection_handler.getPrivateConversations();
+            const conversation = conversationManager.findOrCreateConversation(chatPartner);
 
             conversation.handleIncomingMessage(chatPartner, !targetIsOwn, {
                 sender_database_id: targetClientEntry ? targetClientEntry.properties.client_database_id : 0,
@@ -842,7 +834,6 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                     }
                 });
             }
-            this.connection_handler.side_bar.info_frame().update_chat_counter();
         } else if(mode == 2) {
             const invoker = this.connection_handler.channelTree.findClient(parseInt(json["invokerid"]));
             const own_channel_id = this.connection.client.getClient().currentChannel().channelId;
@@ -854,7 +845,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 this.connection_handler.sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});
             }
 
-            const conversations = this.connection_handler.side_bar.channel_conversations();
+            const conversations = this.connection_handler.getChannelConversations();
             conversations.findOrCreateConversation(channel_id).handleIncomingMessage({
                 sender_database_id: invoker ? invoker.properties.client_database_id : 0,
                 sender_name: json["invokername"],
@@ -865,7 +856,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             }, invoker instanceof LocalClientEntry);
         } else if(mode == 3) {
             const invoker = this.connection_handler.channelTree.findClient(parseInt(json["invokerid"]));
-            const conversations = this.connection_handler.side_bar.channel_conversations();
+            const conversations = this.connection_handler.getChannelConversations();
 
             this.connection_handler.log.log(EventType.GLOBAL_MESSAGE, {
                 isOwnMessage: invoker instanceof LocalClientEntry,
@@ -891,7 +882,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
     notifyClientChatComposing(json) {
         json = json[0];
 
-        const conversation_manager = this.connection_handler.side_bar.private_conversations();
+        const conversation_manager = this.connection_handler.getPrivateConversations();
         const conversation = conversation_manager.findConversation(json["cluid"]);
         conversation?.handleRemoteComposing(parseInt(json["clid"]));
     }
@@ -899,8 +890,8 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
     handleNotifyClientChatClosed(json) {
         json = json[0]; //Only one bulk
 
-        const conversation_manager = this.connection_handler.side_bar.private_conversations();
-        const conversation = conversation_manager.findConversation(json["cluid"]);
+        const conversationManager = this.connection_handler.getPrivateConversations();
+        const conversation = conversationManager.findConversation(json["cluid"]);
         if(!conversation) {
             log.warn(LogCategory.GENERAL, tr("Received chat close for client, but we haven't a chat open."));
             return;
@@ -1053,22 +1044,6 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             }
         }
     }
-
-    /*
-    handleNotifyConversationMessageDelete(json: any[]) {
-        let conversation: Conversation;
-        const conversations = this.connection.client.side_bar.channel_conversations();
-        for(const entry of json) {
-            if(typeof(entry["cid"]) !== "undefined")
-                conversation = conversations.conversation(parseInt(entry["cid"]), false);
-
-            if(!conversation)
-                continue;
-
-            conversation.delete_messages(parseInt(entry["timestamp_begin"]), parseInt(entry["timestamp_end"]), parseInt(entry["cldbid"]), parseInt(entry["limit"]));
-        }
-    }
-    */
 
     handleNotifyMusicStatusUpdate(json: any[]) {
         json = json[0];

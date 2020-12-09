@@ -192,8 +192,8 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
                 icon_class: "client-channel_switch",
                 name: tr("Join server text channel"),
                 callback: () => {
-                    this.channelTree.client.side_bar.channel_conversations().setSelectedConversation(0);
-                    this.channelTree.client.side_bar.show_channel_conversations();
+                    this.channelTree.client.getChannelConversations().setSelectedConversation(0);
+                    this.channelTree.client.side_bar.showChannelConversations();
                 },
                 visible: !settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)
             }, {

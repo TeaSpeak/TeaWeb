@@ -1,10 +1,10 @@
 import {Registry, RegistryMap} from "tc-shared/events";
 import {ConversationUIEvents} from "tc-shared/ui/frames/side/ConversationDefinitions";
-import {ConversationPanel} from "tc-shared/ui/frames/side/ConversationUI";
+import {ConversationPanel} from "./AbstractConversationRenderer";
 import * as React from "react";
 import {AbstractModal} from "tc-shared/ui/react-elements/ModalDefinitions";
 
-class PopoutConversationUI extends AbstractModal {
+class PopoutConversationRenderer extends AbstractModal {
     private readonly events: Registry<ConversationUIEvents>;
     private readonly userData: any;
 
@@ -28,4 +28,4 @@ class PopoutConversationUI extends AbstractModal {
     }
 }
 
-export = PopoutConversationUI;
+export = PopoutConversationRenderer;

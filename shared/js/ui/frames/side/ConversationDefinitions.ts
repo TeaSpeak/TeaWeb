@@ -9,6 +9,7 @@ export interface ChatMessage {
 
 /* ---------- Chat events ---------- */
 export type ChatEvent = { timestamp: number; uniqueId: string; } & (
+    ChatEventUnreadTrigger |
     ChatEventMessage |
     ChatEventMessageSendFailed |
     ChatEventLocalUserSwitch |
@@ -17,6 +18,10 @@ export type ChatEvent = { timestamp: number; uniqueId: string; } & (
     ChatEventLocalAction |
     ChatEventPartnerAction
 );
+
+export interface ChatEventUnreadTrigger {
+    type: "unread-trigger";
+}
 
 export interface ChatEventMessageSendFailed {
     type: "message-failed";
@@ -136,11 +141,11 @@ export interface ConversationUIEvents {
     },
     notify_chat_message_delete: {
         chatId: string,
-        criteria: { begin: number, end: number, cldbid: number, limit: number }
+        messageIds: string[]
     },
     notify_unread_timestamp_changed: {
         chatId: string,
-        timestamp: number | undefined
+        timestamp: number,
     }
     notify_private_state_changed: {
         chatId: string,

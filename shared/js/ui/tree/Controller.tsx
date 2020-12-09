@@ -134,7 +134,7 @@ class ChannelTreeController {
     }
 
     private handleConnectionStateChanged(event: ConnectionEvents["notify_connection_state_changed"]) {
-        if(event.new_state !== ConnectionState.CONNECTED) {
+        if(event.newState !== ConnectionState.CONNECTED) {
             this.channelTreeInitialized = false;
             this.sendChannelTreeEntries();
         }

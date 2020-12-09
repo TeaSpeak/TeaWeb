@@ -1,0 +1,186 @@
+@import "../../../../css/static/mixin";
+@import "../../../../css/static/properties";
+
+@import "./ClientInfoRenderer";
+
+.container {
+    user-select: none;
+
+    flex-grow: 0;
+    flex-shrink: 0;
+
+    height: 9em;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+
+    background-color: var(--side-info-background);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+
+    -moz-box-shadow: inset 0 0 5px var(--side-info-shadow);
+    -webkit-box-shadow: inset 0 0 5px var(--side-info-shadow);
+    box-shadow: inset 0 0 5px var(--side-info-shadow);
+
+    .lane {
+        padding-right: 10px;
+        padding-left: 10px;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        height: 3.25em;
+        max-width: 100%;
+
+        overflow: hidden;
+
+        .block, .button {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .block {
+            flex-shrink: 1;
+            flex-grow: 1;
+
+            min-width: 0;
+
+            &.right {
+                text-align: right;
+
+                &.mode-client_info {
+                    max-width: calc(50% - #{$client_info_avatar_size / 2});
+                    margin-left: calc(#{$client_info_avatar_size / 2});
+                }
+            }
+
+            &.left {
+                margin-right: .5em;
+                text-align: left;
+                padding-right: 10px;
+
+                &.mode-client_info {
+                    max-width: calc(50% - #{$client_info_avatar_size / 2});
+                    margin-right: calc(#{$client_info_avatar_size} / 2);
+                }
+            }
+
+            .title, .value, .smallValue {
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+
+                min-width: 0;
+                max-width: 100%;
+            }
+
+            .title {
+                display: block;
+                color: var(--side-info-title);
+
+                .containerIndicator {
+                    display: inline-flex;
+                    flex-direction: column;
+                    justify-content: space-around;
+
+                    background: var(--side-info-indicator-background);
+                    border: 1px solid var(--side-info-indicator-border);
+                    border-radius: 4px;
+
+                    text-align: center;
+
+                    vertical-align: text-top;
+
+                    color: var(--side-info-indicator);
+
+                    font-size: .66em;
+                    height: 1.3em;
+                    min-width: .9em;
+
+                    padding-right: 2px;
+                    padding-left: 2px;
+                }
+            }
+
+            .value {
+                color: var(--side-info-value);
+                background-color: var(--side-info-value-background);
+
+                display: inline-block;
+
+                border-radius: .18em;
+                padding-right: .31em;
+                padding-left: .31em;
+
+                > div {
+                    display: inline-block;
+                }
+
+                .icon {
+                    vertical-align: text-top;
+                    margin-right: .25em;
+                }
+
+                &.ping {
+                    &.veryGood {
+                        color: var(--side-info-ping-very-good);
+                    }
+                    &.good {
+                        color: var(--side-info-ping-good);
+                    }
+                    &.medium {
+                        color: var(--side-info-ping-medium);
+                    }
+                    &.poor {
+                        color: var(--side-info-ping-poor);
+                    }
+                    &.veryPoor {
+                        color: var(--side-info-ping-very-poor);
+                    }
+                }
+            }
+
+            .smallValue {
+                display: inline-block;
+                color: var(--side-info-value);
+                font-size: .66em;
+                vertical-align: top;
+                margin-top: -.2em;
+                margin-left: .25em;
+            }
+
+            .button {
+                color: var(--side-info-value);
+                background-color: var(--side-info-value-background);
+
+                display: inline-block;
+                cursor: pointer;
+
+                &.botAddSong {
+                    color: var(--side-info-bot-add-song);
+                }
+
+                &:hover {
+                    background-color: #4e4e4e; /* TODO: Evaluate color */
+                }
+
+                @include transition(background-color $button_hover_animation_time ease-in-out);
+            }
+        }
+
+        &.musicBotInfo {
+            .right {
+                margin-left: 8.5em;
+            }
+
+            .left {
+                margin-right: 8.5em;
+            }
+
+            width: 60em; /* same width  so flex-shrik applies equaly */
+        }
+    }
+}

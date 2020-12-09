@@ -6,7 +6,7 @@ import {
 } from "tc-shared/ui/frames/side/PrivateConversationDefinitions";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {ContextDivider} from "tc-shared/ui/react-elements/ContextDivider";
-import {ConversationPanel} from "tc-shared/ui/frames/side/ConversationUI";
+import {ConversationPanel} from "./AbstractConversationRenderer";
 import {useContext, useEffect, useState} from "react";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {AvatarRenderer} from "tc-shared/ui/react-elements/Avatar";
@@ -14,7 +14,7 @@ import {TimestampRenderer} from "tc-shared/ui/react-elements/TimestampRenderer";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {getGlobalAvatarManagerFactory} from "tc-shared/file/Avatars";
 
-const cssStyle = require("./PrivateConversationUI.scss");
+const cssStyle = require("./PrivateConversationRenderer.scss");
 const kTypingTimeout = 5000;
 
 const HandlerIdContext = React.createContext<string>(undefined);
@@ -119,22 +119,17 @@ const ConversationEntryUnreadMarker = React.memo((props: { chatId: string, initi
     const events = useContext(EventContext);
     const [ unread, setUnread ] = useState(props.initialUnread);
 
-    events.reactUse("notify_unread_timestamp_changed", event => {
-        if(event.chatId !== props.chatId)
+    events.reactUse("notify_unread_state_changed", event => {
+        if(event.chatId !== props.chatId) {
             return;
+        }
 
-        setUnread(event.timestamp !== undefined);
+        setUnread(event.unread);
     });
 
-    events.reactUse("notify_chat_event", event => {
-        if(event.chatId !== props.chatId || !event.triggerUnread)
-            return;
-
-        setUnread(true);
-    });
-
-    if(!unread)
+    if(!unread) {
         return null;
+    }
 
     return <div key={"unread-marker"} className={cssStyle.unread} />;
 });
