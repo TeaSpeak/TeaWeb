@@ -26,7 +26,7 @@ class IPCContextMenu implements ContextMenuFactory {
     private closeCallback: () => void;
 
     constructor() {
-        this.ipcChannel = ipc.getInstance().createChannel(undefined, kIPCContextMenuChannel);
+        this.ipcChannel = ipc.getIpcInstance().createChannel(undefined, kIPCContextMenuChannel);
         this.ipcChannel.messageHandler = this.handleIpcMessage.bind(this);
 
         /* if we're just created we're the focused window ;) */

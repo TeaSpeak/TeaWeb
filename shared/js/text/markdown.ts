@@ -14,7 +14,6 @@ import {
     TextToken,
     Token
 } from "remarkable/lib";
-import {escapeBBCode} from "../text/bbcode";
 import {tr} from "tc-shared/i18n/localize";
 
 const { Remarkable } = require("remarkable");
@@ -29,7 +28,7 @@ export class MD2BBCodeRenderer {
         "hardbreak": () => "\n",
 
         "paragraph_open": () => "",
-        "paragraph_close": (_, token: ParagraphCloseToken) => token.tight ? "" : "[br]",
+        "paragraph_close": (_, token: ParagraphCloseToken) => token.tight ? "" : "\n",
 
         "strong_open": () => "[b]",
         "strong_close": () => "[/b]",
@@ -119,7 +118,7 @@ export class MD2BBCodeRenderer {
             if(tokens[index].lines?.length) {
                 while(this.currentLineCount < tokens[index].lines[0]) {
                     this.currentLineCount += 1;
-                    result += "[br]";
+                    result += "\n";
                 }
             }
 

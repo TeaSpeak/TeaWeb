@@ -29,7 +29,7 @@ export abstract class AbstractExternalModalController extends EventControllerBas
         this.modalType = modal;
         this.userData = userData;
 
-        this.ipcChannel = ipc.getInstance().createChannel();
+        this.ipcChannel = ipc.getIpcInstance().createChannel();
         this.ipcChannel.messageHandler = this.handleIPCMessage.bind(this);
 
         this.documentUnloadListener = () => this.destroy();
@@ -109,7 +109,7 @@ export abstract class AbstractExternalModalController extends EventControllerBas
 
         this.doDestroyWindow();
         if(this.ipcChannel) {
-            ipc.getInstance().deleteChannel(this.ipcChannel);
+            ipc.getIpcInstance().deleteChannel(this.ipcChannel);
         }
 
         this.destroyIPC();

@@ -49,16 +49,16 @@ export abstract class BasicIPCHandler {
     protected static readonly BROADCAST_UNIQUE_ID = "00000000-0000-4000-0000-000000000000";
     protected static readonly PROTOCOL_VERSION = 1;
 
-    protected _channels: IPCChannel[] = [];
-    protected unique_id;
+    protected registeredChannels: IPCChannel[] = [];
+    protected localUniqueId: string;
 
     protected constructor() { }
 
     setup() {
-        this.unique_id = uuidv4(); /* lets get an unique identifier */
+        this.localUniqueId = uuidv4();
     }
 
-    getLocalAddress() { return this.unique_id; }
+    getLocalAddress() : string { return this.localUniqueId; }
 
     abstract sendMessage(type: string, data: any, target?: string);
 
@@ -72,12 +72,12 @@ export abstract class BasicIPCHandler {
                     request_query_id: (<ProcessQuery>message.data).query_id,
                     request_timestamp: (<ProcessQuery>message.data).timestamp,
 
-                    device_id: this.unique_id,
+                    device_id: this.localUniqueId,
                     protocol: BasicIPCHandler.PROTOCOL_VERSION
                 } as ProcessQueryResponse, message.sender);
                 return;
             }
-        } else if(message.receiver === this.unique_id) {
+        } else if(message.receiver === this.localUniqueId) {
             if(message.type == "process-query-response") {
                 const response: ProcessQueryResponse = message.data;
                 if(this._query_results[response.request_query_id])
@@ -114,7 +114,7 @@ export abstract class BasicIPCHandler {
             const data: ChannelMessage = message.data;
 
             let channel_invoked = false;
-            for(const channel of this._channels) {
+            for(const channel of this.registeredChannels) {
                 if(channel.channelId === data.channel_id && (typeof(channel.targetClientId) === "undefined" || channel.targetClientId === message.sender)) {
                     if(channel.messageHandler)
                         channel.messageHandler(message.sender, message.receiver === BasicIPCHandler.BROADCAST_UNIQUE_ID, data);
@@ -136,8 +136,9 @@ export abstract class BasicIPCHandler {
             messageHandler: undefined,
             sendMessage: (type: string, data: any, target?: string) => {
                 if(typeof target !== "undefined") {
-                    if(typeof channel.targetClientId === "string" && target != channel.targetClientId)
+                    if(typeof channel.targetClientId === "string" && target != channel.targetClientId) {
                         throw "target id does not match channel target";
+                    }
                 }
 
                 this.sendMessage("channel", {
@@ -148,14 +149,14 @@ export abstract class BasicIPCHandler {
             }
         };
 
-        this._channels.push(channel);
+        this.registeredChannels.push(channel);
         return channel;
     }
 
-    channels() : IPCChannel[] { return this._channels; }
+    channels() : IPCChannel[] { return this.registeredChannels; }
 
     deleteChannel(channel: IPCChannel) {
-        this._channels = this._channels.filter(e => e !== channel);
+        this.registeredChannels = this.registeredChannels.filter(e => e !== channel);
     }
 
     private _query_results: {[key: string]:ProcessQueryResponse[]} = {};
@@ -178,7 +179,7 @@ export abstract class BasicIPCHandler {
     register_certificate_accept_callback(callback: () => any) : string {
         const id = uuidv4();
         this._cert_accept_callbacks[id] = callback;
-        return this.unique_id + ":" + id;
+        return this.localUniqueId + ":" + id;
     }
 
     private _cert_accept_succeeded: {[sender: string]:(() => any)} = {};
@@ -250,13 +251,17 @@ class BroadcastChannelIPC extends BasicIPCHandler {
     sendMessage(type: string, data: any, target?: string) {
         const message: BroadcastMessage = {} as any;
 
-        message.sender = this.unique_id;
+        message.sender = this.localUniqueId;
         message.receiver = target ? target : BasicIPCHandler.BROADCAST_UNIQUE_ID;
         message.timestamp = Date.now();
         message.type = type;
         message.data = data;
 
-        this.channel.postMessage(JSON.stringify(message));
+        if(message.receiver === this.localUniqueId) {
+            this.handleMessage(message);
+        } else {
+            this.channel.postMessage(JSON.stringify(message));
+        }
     }
 }
 
@@ -277,7 +282,7 @@ export function setup() {
     connect_handler.setup();
 }
 
-export function getInstance() {
+export function getIpcInstance() {
     return handler;
 }
 

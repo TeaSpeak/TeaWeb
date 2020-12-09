@@ -352,7 +352,7 @@ class LocalAvatarManagerFactory extends AbstractAvatarManagerFactory {
     constructor() {
         super();
 
-        this.ipcChannel = ipc.getInstance().createChannel(undefined, kIPCAvatarChannel);
+        this.ipcChannel = ipc.getIpcInstance().createChannel(undefined, kIPCAvatarChannel);
         this.ipcChannel.messageHandler = this.handleIpcMessage.bind(this);
 
         server_connections.events().on("notify_handler_created", event => this.handleHandlerCreated(event.handler));

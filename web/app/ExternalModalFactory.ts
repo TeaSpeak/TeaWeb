@@ -87,7 +87,7 @@ export class ExternalModalController extends AbstractExternalModalController {
             "chunk": "modal-external",
             "modal-target": this.modalType,
             "ipc-channel": this.ipcChannel.channelId,
-            "ipc-address": ipc.getInstance().getLocalAddress(),
+            "ipc-address": ipc.getIpcInstance().getLocalAddress(),
             "disableGlobalContextMenu": __build.mode === "debug" ? 1 : 0,
             "loader-abort": __build.mode === "debug" ? 1 : 0,
         };

@@ -159,7 +159,7 @@ class RemoteAvatarManagerFactory extends AbstractAvatarManagerFactory {
     constructor() {
         super();
 
-        this.ipcChannel = ipc.getInstance().createChannel(Settings.instance.static(Settings.KEY_IPC_REMOTE_ADDRESS, "invalid"), kIPCAvatarChannel);
+        this.ipcChannel = ipc.getIpcInstance().createChannel(Settings.instance.static(Settings.KEY_IPC_REMOTE_ADDRESS, "invalid"), kIPCAvatarChannel);
         this.ipcChannel.messageHandler = this.handleIpcMessage.bind(this);
     }
 
