@@ -1,20 +1,20 @@
 import * as React from "react";
-import {ConnectionHandler} from "../../../ConnectionHandler";
+import {ConnectionHandler, ConnectionState} from "../../../ConnectionHandler";
 import {EventHandler} from "../../../events";
 import * as log from "../../../log";
 import {LogCategory} from "../../../log";
 import {tr} from "../../../i18n/localize";
-import ReactDOM = require("react-dom");
-import {
-    ConversationUIEvents
-} from "../../../ui/frames/side/ConversationDefinitions";
+import {ConversationUIEvents} from "../../../ui/frames/side/ConversationDefinitions";
 import {ConversationPanel} from "./AbstractConversationRenderer";
 import {AbstractConversationController} from "./AbstractConversationController";
 import {
-    ChannelConversation, ChannelConversationEvents,
+    ChannelConversation,
+    ChannelConversationEvents,
     ChannelConversationManager,
     ChannelConversationManagerEvents
 } from "tc-shared/conversations/ChannelConversationManager";
+import {ServerFeature} from "tc-shared/connection/ServerFeatures";
+import ReactDOM = require("react-dom");
 
 export class ChannelConversationController extends AbstractConversationController<
     ConversationUIEvents,
@@ -61,6 +61,18 @@ export class ChannelConversationController extends AbstractConversationControlle
         }));
 
         this.uiEvents.register_handler(this, true);
+
+        this.listenerManager.push(connection.events().on("notify_connection_state_changed", event => {
+            if(event.newState === ConnectionState.CONNECTED) {
+                connection.serverFeatures.awaitFeatures().then(success => {
+                    if(!success) { return; }
+
+                    this.setCrossChannelChatSupport(connection.serverFeatures.supportsFeature(ServerFeature.ADVANCED_CHANNEL_CHAT));
+                });
+            } else {
+                this.setCrossChannelChatSupport(true);
+            }
+        }));
     }
 
     destroy() {
@@ -84,8 +96,13 @@ export class ChannelConversationController extends AbstractConversationControlle
 
     protected registerConversationEvents(conversation: ChannelConversation) {
         super.registerConversationEvents(conversation);
+
         this.currentSelectedListener.push(conversation.events.on("notify_messages_deleted", event => {
             this.uiEvents.fire_react("notify_chat_message_delete", { messageIds: event.messages, chatId: conversation.getChatId() });
+        }));
+
+        this.currentSelectedListener.push(conversation.events.on("notify_conversation_mode_changed", () => {
+            this.reportStateToUI(conversation);
         }));
     }
 }

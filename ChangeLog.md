@@ -2,6 +2,7 @@
 * **09.12.20**
     - Fixed the private messages unread indicator
     - Properly updating the private message unread count
+    - Improved channel conversation mode detection support
     
 * **08.12.20**
     - Fixed the permission editor not resolving unique ids

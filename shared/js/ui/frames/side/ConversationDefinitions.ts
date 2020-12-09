@@ -16,7 +16,8 @@ export type ChatEvent = { timestamp: number; uniqueId: string; } & (
     ChatEventQueryFailed |
     ChatEventPartnerInstanceChanged |
     ChatEventLocalAction |
-    ChatEventPartnerAction
+    ChatEventPartnerAction |
+    ChatEventModeChanged
 );
 
 export interface ChatEventUnreadTrigger {
@@ -62,6 +63,11 @@ export interface ChatEventLocalAction {
 export interface ChatEventPartnerAction {
     type: "partner-action";
     action: "disconnect" | "close" | "reconnect";
+}
+
+export interface ChatEventModeChanged {
+    type: "mode-changed";
+    newMode: "normal" | "private" | "none"
 }
 
 /* ---------- Chat States ---------- */

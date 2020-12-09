@@ -15,6 +15,7 @@ import {traj} from "tc-shared/i18n/localize";
 import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {LocalClientEntry} from "tc-shared/tree/Client";
 import {ServerCommand} from "tc-shared/connection/ConnectionBase";
+import {ChannelConversationMode} from "tc-shared/tree/Channel";
 
 export interface ChannelConversationEvents extends AbstractChatEvents {
     notify_messages_deleted: { messages: string[] },
@@ -40,13 +41,12 @@ export class ChannelConversation extends AbstractChat<ChannelConversationEvents>
         this.conversationId = id;
 
         this.preventUnreadUpdate = true;
-        const dateNow = Date.now();
         const unreadTimestamp = handle.connection.settings.server(Settings.FN_CHANNEL_CHAT_READ(id), Date.now());
         this.setUnreadTimestamp(unreadTimestamp);
         this.preventUnreadUpdate = false;
 
-        this.events.on("notify_unread_state_changed", event => {
-            this.handle.connection.channelTree.findChannel(this.conversationId)?.setUnread(event.unread);
+        this.events.on(["notify_unread_state_changed", "notify_read_state_changed"], event => {
+            this.handle.connection.channelTree.findChannel(this.conversationId)?.setUnread(this.isReadable() && this.isUnread());
         });
     }
 
@@ -142,7 +142,6 @@ export class ChannelConversation extends AbstractChat<ChannelConversationEvents>
         this.setCurrentMode("loading");
 
         this.queryHistory({ end: 1, limit: kMaxChatFrameMessageSize }).then(history => {
-            this.conversationPrivate = false;
             this.conversationVolatile = false;
             this.failedPermission = undefined;
             this.errorMessage = undefined;
@@ -166,17 +165,18 @@ export class ChannelConversation extends AbstractChat<ChannelConversationEvents>
                     break;
 
                 case "private":
-                    this.conversationPrivate = true;
+                    this.setConversationMode(ChannelConversationMode.Private);
                     this.setCurrentMode("normal");
                     break;
 
                 case "success":
+                    this.setConversationMode(ChannelConversationMode.Public);
                     this.setCurrentMode("normal");
                     break;
 
                 case "unsupported":
                     this.crossChannelChatSupported = false;
-                    this.conversationPrivate = true;
+                    this.setConversationMode(ChannelConversationMode.Private);
                     this.setCurrentMode("normal");
                     break;
             }
@@ -295,6 +295,10 @@ export class ChannelConversation extends AbstractChat<ChannelConversationEvents>
         this.handle.connection.settings.changeServer(Settings.FN_CHANNEL_CHAT_READ(this.conversationId), timestamp);
     }
 
+    public setConversationMode(mode: ChannelConversationMode) {
+        super.setConversationMode(mode);
+    }
+
     public localClientSwitchedChannel(type: "join" | "leave") {
         this.registerChatEvent({
             type: "local-user-switch",
@@ -308,6 +312,14 @@ export class ChannelConversation extends AbstractChat<ChannelConversationEvents>
 
     sendMessage(text: string) {
         this.doSendMessage(text, this.conversationId ? 2 : 3, this.conversationId).then(() => {});
+    }
+
+    updateAccessState() {
+        if(this.isPrivate()) {
+            this.setReadable(this.connection.getClient().currentChannel()?.getChannelId() === this.conversationId);
+        } else {
+            this.setReadable(true);
+        }
     }
 }
 
@@ -336,6 +348,37 @@ export class ChannelConversationManager extends AbstractChatManager<ChannelConve
                 });
             }
         }));
+
+        this.listenerConnection.push(connection.channelTree.events.on("notify_channel_updated", event => {
+            const conversation = this.findConversation(event.channel.channelId);
+            if(!conversation) {
+                return;
+            }
+
+            if("channel_conversation_mode" in event.updatedProperties) {
+                conversation.setConversationMode(event.channel.properties.channel_conversation_mode);
+                conversation.updateAccessState();
+            }
+        }));
+
+        this.listenerConnection.push(connection.channelTree.events.on("notify_client_moved", event => {
+            if(event.client instanceof LocalClientEntry) {
+                const fromConversation = this.findConversation(event.oldChannel.channelId);
+                const targetConversation = this.findConversation(event.newChannel.channelId);
+
+                fromConversation?.updateAccessState();
+                targetConversation?.updateAccessState();
+            }
+        }));
+
+        this.listenerConnection.push(connection.channelTree.events.on("notify_client_enter_view", event => {
+            if(event.client instanceof LocalClientEntry) {
+                const targetConversation = this.findConversation(event.targetChannel.channelId);
+                targetConversation?.updateAccessState();
+            }
+        }));
+
+        /* TODO: Permission listener for text send power! */
 
         this.listenerConnection.push(connection.serverConnection.command_handler_boss().register_explicit_handler("notifyconversationhistory", this.handleConversationHistory.bind(this)));
         this.listenerConnection.push(connection.serverConnection.command_handler_boss().register_explicit_handler("notifyconversationindex", this.handleConversationIndex.bind(this)));
