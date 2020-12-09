@@ -4,7 +4,8 @@ const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 
 export = () => config_base.config("web").then(config => {
     Object.assign(config.entry, {
-        "shared-app": "./web/app/index.ts"
+        "shared-app": "./web/app/index.ts",
+        "modal-external": "./web/app/index-external.ts"
     });
 
     Object.assign(config.resolve.alias, {
