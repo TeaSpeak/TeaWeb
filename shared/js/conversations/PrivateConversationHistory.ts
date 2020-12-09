@@ -1,9 +1,8 @@
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
-import * as log from "../../../log";
-import {LogCategory} from "../../../log";
-import {ChatEvent} from "../../../ui/frames/side/ConversationDefinitions";
 import { tr } from "tc-shared/i18n/localize";
+import {LogCategory, logDebug, logError, logInfo, logWarn} from "tc-shared/log";
+import {ChatEvent} from "tc-shared/ui/frames/side/ConversationDefinitions";
 
 const clientUniqueId2StoreName = uniqueId => "conversation-" + uniqueId;
 
@@ -65,17 +64,18 @@ function fireDatabaseStateChanged() {
         try {
             databaseStateChangedCallbacks.pop()();
         } catch (error) {
-            log.error(LogCategory.CHAT, tr("Database ready callback throw an unexpected exception: %o"), error);
+            logError(LogCategory.CHAT, tr("Database ready callback throw an unexpected exception: %o"), error);
         }
     }
 }
 
 let cacheImportUniqueKeyId = 0;
 async function importChatsFromCacheStorage(database: IDBDatabase) {
-    if(!(await caches.has("chat_history")))
+    if(!(await caches.has("chat_history"))) {
         return;
+    }
 
-    log.info(LogCategory.CHAT, tr("Importing old chats saved via cache storage. This may take some moments."));
+    logInfo(LogCategory.CHAT, tr("Importing old chats saved via cache storage. This may take some moments."));
 
     let chatEvents = {};
     const cache = await caches.open("chat_history");
@@ -83,7 +83,7 @@ async function importChatsFromCacheStorage(database: IDBDatabase) {
     for(const chat of await cache.keys()) {
         try {
             if(!chat.url.startsWith("https://_local_cache/cache_request_")) {
-                log.warn(LogCategory.CHAT, tr("Skipping importing chat %s because URL does not match."), chat.url);
+                logWarn(LogCategory.CHAT, tr("Skipping importing chat %s because URL does not match."), chat.url);
                 continue;
             }
 
@@ -91,8 +91,9 @@ async function importChatsFromCacheStorage(database: IDBDatabase) {
             const events: ChatEvent[] = chatEvents[clientUniqueId] || (chatEvents[clientUniqueId] = []);
 
             const data = await (await cache.match(chat)).json();
-            if(!Array.isArray(data))
+            if(!Array.isArray(data)) {
                 throw tr("array expected");
+            }
 
             for(const event of data) {
                 events.push({
@@ -110,18 +111,20 @@ async function importChatsFromCacheStorage(database: IDBDatabase) {
                 });
             }
         } catch (error) {
-            log.warn(LogCategory.CHAT, tr("Skipping importing chat %s because of an error: %o"), chat?.url, error);
+            logWarn(LogCategory.CHAT, tr("Skipping importing chat %s because of an error: %o"), chat?.url, error);
         }
     }
 
     const clientUniqueIds = Object.keys(chatEvents);
-    if(clientUniqueIds.length === 0)
+    if(clientUniqueIds.length === 0) {
         return;
+    }
 
-    log.info(LogCategory.CHAT, tr("Found %d old chats. Importing."), clientUniqueIds.length);
+    logInfo(LogCategory.CHAT, tr("Found %d old chats. Importing."), clientUniqueIds.length);
     await requestDatabaseUpdate(database => {
-        for(const uniqueId of clientUniqueIds)
+        for(const uniqueId of clientUniqueIds) {
             doInitializeUser(uniqueId, database);
+        }
     });
     await requestDatabase();
 
@@ -134,7 +137,8 @@ async function importChatsFromCacheStorage(database: IDBDatabase) {
         });
         await new Promise(resolve => store.transaction.oncomplete = resolve);
     }
-    log.info(LogCategory.CHAT, tr("All old chats have been imported. Deleting old data."));
+
+    logInfo(LogCategory.CHAT, tr("All old chats have been imported. Deleting old data."));
     await caches.delete("chat_history");
 }
 
@@ -153,7 +157,7 @@ async function doOpenDatabase(forceUpgrade: boolean) {
             if(event.oldVersion === 0) {
                 /* database newly created */
                 importChatsFromCacheStorage(openRequest.result).catch(error => {
-                    log.warn(LogCategory.CHAT, tr("Failed to import old chats from cache storage: %o"), error);
+                    logWarn(LogCategory.CHAT, tr("Failed to import old chats from cache storage: %o"), error);
                 });
             }
             upgradePerformed = true;
@@ -161,7 +165,7 @@ async function doOpenDatabase(forceUpgrade: boolean) {
                 try {
                     databaseUpdateRequests.pop()(openRequest.result);
                 } catch (error) {
-                    log.error(LogCategory.CHAT, tr("Database update callback throw an unexpected exception: %o"), error);
+                    logError(LogCategory.CHAT, tr("Database update callback throw an unexpected exception: %o"), error);
                 }
             }
         };
@@ -181,14 +185,14 @@ async function doOpenDatabase(forceUpgrade: boolean) {
 
         localStorage.setItem("indexeddb-private-conversations-version", database.version.toString());
         if(!upgradePerformed && forceUpgrade) {
-            log.warn(LogCategory.CHAT, tr("Opened private conversations database, with an update, but update didn't happened. Trying again."));
+            logWarn(LogCategory.CHAT, tr("Opened private conversations database, with an update, but update didn't happened. Trying again."));
             database.close();
             await new Promise(resolve => database.onclose = resolve);
             continue;
         }
 
         database.onversionchange = () => {
-            log.debug(LogCategory.CHAT, tr("Received external database version change. Closing database."));
+            logDebug(LogCategory.CHAT, tr("Received external database version change. Closing database."));
             databaseMode = "closed";
             executeClose();
         };
@@ -233,10 +237,10 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
 
         try {
             await doOpenDatabase(false);
-            log.debug(LogCategory.CHAT, tr("Successfully initialized private conversation history database"));
+            logDebug(LogCategory.CHAT, tr("Successfully initialized private conversation history database"));
         } catch (error) {
-            log.error(LogCategory.CHAT, tr("Failed to initialize private conversation history database: %o"), error);
-            log.error(LogCategory.CHAT, tr("Do not saving the private conversation chat."));
+            logError(LogCategory.CHAT, tr("Failed to initialize private conversation history database: %o"), error);
+            logError(LogCategory.CHAT, tr("Do not saving the private conversation chat."));
         }
     }
 });

@@ -23,7 +23,7 @@ registerHandler({
 
 registerHandler({
     name: "conversation",
-    loadClass: async () => await import("tc-shared/ui/frames/side/PopoutConversationUI")
+    loadClass: async () => await import("../../frames/side/PopoutConversationRenderer")
 });
 
 

@@ -404,8 +404,9 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 icon_class: "client-channel_switch",
                 name: bold(tr("Join text channel")),
                 callback: () => {
-                    this.channelTree.client.side_bar.channel_conversations().setSelectedConversation(this.getChannelId());
-                    this.channelTree.client.side_bar.show_channel_conversations();
+                    const conversation = this.channelTree.client.getChannelConversations().findOrCreateConversation(this.getChannelId());
+                    this.channelTree.client.getChannelConversations().setSelectedConversation(conversation);
+                    this.channelTree.client.side_bar.showChannelConversations();
                 },
                 visible: !settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)
             }, {
@@ -563,7 +564,6 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         }
         /* devel-block-end */
 
-        let info_update = false;
         for(let variable of variables) {
             let key = variable.key;
             let value = variable.value;
@@ -571,7 +571,6 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
             if(key == "channel_name") {
                 this.parsed_channel_name = new ParsedChannelName(value, this.hasParent());
-                info_update = true;
             } else if(key == "channel_order") {
                 let order = this.channelTree.findChannel(this.properties.channel_order);
                 this.channelTree.moveChannel(this, order, this.parent, true);
@@ -598,13 +597,6 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
             for(const property of variables)
                 properties[property.key] = this.properties[property.key];
             this.events.fire("notify_properties_updated", { updated_properties: properties as any, channel_properties: this.properties });
-        }
-
-        if(info_update) {
-            const _client = this.channelTree.client.getClient();
-            if(_client.currentChannel() === this)
-                this.channelTree.client.side_bar.info_frame().update_channel_talk();
-            //TODO chat channel!
         }
     }
 

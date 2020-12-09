@@ -95,7 +95,7 @@ export class ClientInfoController {
         }));
 
         this.listenerConnection.push(this.connection.events().on("notify_connection_state_changed", event => {
-            if(event.new_state !== ConnectionState.CONNECTED && this.currentClientStatus) {
+            if(event.newState !== ConnectionState.CONNECTED && this.currentClientStatus) {
                 this.currentClient = undefined;
                 this.currentClientStatus.leaveTimestamp = Date.now() / 1000;
                 this.sendOnline();
@@ -196,7 +196,7 @@ export class ClientInfoController {
             microphoneMuted: client.properties.client_input_muted,
             microphoneDisabled: !client.properties.client_input_hardware,
             speakerMuted: client.properties.client_output_muted,
-            speakerDisabled: client.properties.client_output_hardware
+            speakerDisabled: !client.properties.client_output_hardware
         };
     }
 
@@ -250,6 +250,11 @@ export class ClientInfoController {
     }
 
     destroy() {
+        ReactDOM.unmountComponentAtNode(this.htmlContainer);
+
+        this.listenerClient.forEach(callback => callback());
+        this.listenerClient = [];
+
         this.listenerConnection.forEach(callback => callback());
         this.listenerConnection.splice(0, this.listenerConnection.length);
     }

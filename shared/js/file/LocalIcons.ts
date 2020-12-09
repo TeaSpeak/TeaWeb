@@ -99,7 +99,7 @@ class IconManager extends AbstractIconManager {
             return;
         }
 
-        if(event.new_state !== ConnectionState.CONNECTED) {
+        if(event.newState !== ConnectionState.CONNECTED) {
             return;
         }
 

@@ -98,7 +98,7 @@ class InfoController {
         const events = this.handlerRegisteredEvents;
 
         events.push(handler.events().on("notify_connection_state_changed", event => {
-            if(event.old_state === ConnectionState.CONNECTED || event.new_state === ConnectionState.CONNECTED) {
+            if(event.oldState === ConnectionState.CONNECTED || event.newState === ConnectionState.CONNECTED) {
                 this.sendHostButton();
                 this.sendVideoState("screen");
                 this.sendVideoState("camera");

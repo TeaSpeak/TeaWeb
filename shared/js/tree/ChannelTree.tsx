@@ -166,22 +166,23 @@ export class ChannelTree {
         if(this.selectedEntry instanceof ClientEntry) {
             if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CLIENT)) {
                 if(this.selectedEntry instanceof MusicClientEntry) {
-                    this.client.side_bar.show_music_player(this.selectedEntry);
+                    this.client.side_bar.showMusicPlayer(this.selectedEntry);
                 } else {
-                    this.client.side_bar.show_client_info(this.selectedEntry);
+                    this.client.side_bar.showClientInfo(this.selectedEntry);
                 }
             }
         } else if(this.selectedEntry instanceof ChannelEntry) {
             if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
-                this.client.side_bar.channel_conversations().setSelectedConversation(this.selectedEntry.channelId);
-                this.client.side_bar.show_channel_conversations();
+                const conversation = this.client.getChannelConversations().findOrCreateConversation(this.selectedEntry.channelId);
+                this.client.getChannelConversations().setSelectedConversation(conversation);
+                this.client.side_bar.showChannelConversations();
             }
         } else if(this.selectedEntry instanceof ServerEntry) {
             if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
                 const sidebar = this.client.side_bar;
-                sidebar.channel_conversations().findOrCreateConversation(0);
-                sidebar.channel_conversations().setSelectedConversation(0);
-                sidebar.show_channel_conversations();
+                const conversation = this.client.getChannelConversations().findOrCreateConversation(0);
+                this.client.getChannelConversations().setSelectedConversation(conversation);
+                sidebar.showChannelConversations();
             }
         }
     }
@@ -373,7 +374,6 @@ export class ChannelTree {
 
         if(oldChannel) {
             this.events.fire("notify_client_leave_view", { client: client, message: reason.message, reason: reason.reason, isServerLeave: reason.serverLeave, sourceChannel: oldChannel });
-            this.client.side_bar.info_frame().update_channel_client_count(oldChannel);
         } else {
             logWarn(LogCategory.CHANNEL, tr("Deleting client %s from channel tree which hasn't a channel."), client.clientId());
         }
@@ -457,14 +457,6 @@ export class ChannelTree {
             oldChannel?.unregisterClient(client);
             client["_channel"] = targetChannel;
             targetChannel?.registerClient(client);
-
-            if(oldChannel) {
-                this.client.side_bar.info_frame().update_channel_client_count(oldChannel);
-            }
-
-            if(targetChannel) {
-                this.client.side_bar.info_frame().update_channel_client_count(targetChannel);
-            }
 
             this.events.fire("notify_client_moved", { oldChannel: oldChannel, newChannel: targetChannel, client: client });
         } finally {

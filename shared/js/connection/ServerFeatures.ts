@@ -68,7 +68,7 @@ export class ServerFeatures {
         });
 
         this.connection.events().on("notify_connection_state_changed", this.stateChangeListener = event => {
-            if(event.new_state === ConnectionState.CONNECTED) {
+            if(event.newState === ConnectionState.CONNECTED) {
                 this.connection.getServerConnection().send_command("listfeaturesupport").catch(error => {
                     this.disableAllFeatures();
                     if(error instanceof CommandResult) {
@@ -84,7 +84,7 @@ export class ServerFeatures {
                         this.featureAwaitCallback(true);
                     }
                 });
-            } else if(event.new_state === ConnectionState.DISCONNECTING || event.new_state === ConnectionState.UNCONNECTED) {
+            } else if(event.newState === ConnectionState.DISCONNECTING || event.newState === ConnectionState.UNCONNECTED) {
                 this.disableAllFeatures();
                 this.featureAwait = undefined;
                 this.featureAwaitCallback = undefined;

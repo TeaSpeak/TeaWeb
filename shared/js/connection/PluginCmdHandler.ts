@@ -91,8 +91,9 @@ export class PluginCmdRegistry {
     }
 
     registerHandler(handler: PluginCmdHandler) {
-        if(this.handlerMap[handler.getChannel()] !== undefined)
+        if(this.handlerMap[handler.getChannel()] !== undefined) {
             throw tra("A handler for channel {} already exists", handler.getChannel());
+        }
 
         this.handlerMap[handler.getChannel()] = handler;
         handler["currentServerConnection"] = this.connection.serverConnection;
@@ -100,8 +101,9 @@ export class PluginCmdRegistry {
     }
 
     unregisterHandler(handler: PluginCmdHandler) {
-        if(this.handlerMap[handler.getChannel()] !== handler)
+        if(this.handlerMap[handler.getChannel()] !== handler) {
             return;
+        }
 
         handler["currentServerConnection"] = undefined;
         handler.handleHandlerUnregistered();

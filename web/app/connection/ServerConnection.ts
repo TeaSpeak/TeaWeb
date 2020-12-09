@@ -1,7 +1,7 @@
 import {
     AbstractServerConnection,
     CommandOptionDefaults,
-    CommandOptions,
+    CommandOptions, ConnectionPing,
     ConnectionStateListener,
     ConnectionStatistics,
 } from "tc-shared/connection/ConnectionBase";
@@ -378,6 +378,7 @@ export class ServerConnection extends AbstractServerConnection {
                     this.pingStatistics.lastResponseTimestamp = 'now' in performance ? performance.now() : Date.now();
                     this.pingStatistics.currentJsValue = this.pingStatistics.lastResponseTimestamp - this.pingStatistics.lastRequestTimestamp;
                     this.pingStatistics.currentNativeValue = parseInt(json["ping_native"]) / 1000; /* we're getting it in microseconds and not milliseconds */
+                    this.events.fire("notify_ping_updated", { newPing: this.ping() });
                     //log.debug(LogCategory.NETWORKING, tr("Received new pong. Updating ping to: JS: %o Native: %o"), this._ping.value.toFixed(3), this._ping.value_native.toFixed(3));
                 }
             } else if(json["type"] === "WebRTC") {
@@ -526,10 +527,11 @@ export class ServerConnection extends AbstractServerConnection {
         }
     }
 
-    ping(): { native: number; javascript?: number } {
+    ping(): ConnectionPing {
         return {
             javascript: this.pingStatistics.currentJsValue,
-            native: this.pingStatistics.currentNativeValue
+            /* if the native value is zero that means we don't have any */
+            native: this.pingStatistics.currentNativeValue === 0 ? this.pingStatistics.currentJsValue : this.pingStatistics.currentNativeValue
         };
     }
 

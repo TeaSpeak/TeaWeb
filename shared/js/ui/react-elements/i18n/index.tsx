@@ -1,6 +1,6 @@
 import * as React from "react";
 import {parseMessageWithArguments} from "tc-shared/ui/frames/chat";
-import {cloneElement, ReactNode} from "react";
+import {cloneElement} from "react";
 
 let instances = [];
 export class Translatable extends React.Component<{
@@ -51,7 +51,7 @@ export class Translatable extends React.Component<{
 }
 
 let renderBrElementIndex = 0;
-export type VariadicTranslatableChild = React.ReactElement | string;
+export type VariadicTranslatableChild = React.ReactElement | string | number;
 export const VariadicTranslatable = (props: { text: string, __cacheKey?: string, children?: VariadicTranslatableChild[] | VariadicTranslatableChild }) => {
     const args = Array.isArray(props.children) ? props.children : [props.children];
     const argsUseCount = [...new Array(args.length)].map(() => 0);
@@ -64,7 +64,7 @@ export const VariadicTranslatable = (props: { text: string, __cacheKey?: string,
                 if(typeof e === "string") {
                     return e.split("\n").reduce((result, element) => {
                         if(result.length > 0) {
-                            result.push(<br key={++this.renderBrElementIndex}/>);
+                            result.push(<br key={++renderBrElementIndex}/>);
                         }
                         result.push(element);
                         return result;
@@ -73,7 +73,7 @@ export const VariadicTranslatable = (props: { text: string, __cacheKey?: string,
 
                 let element = args[e];
                 if(argsUseCount[e]) {
-                    if(typeof element === "string") {
+                    if(typeof element === "string" || typeof element === "number") {
                         /* do nothing */
                     } else {
                         element = cloneElement(element);

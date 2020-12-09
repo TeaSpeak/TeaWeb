@@ -1,6 +1,5 @@
 import * as React from "react";
 import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
-import {ChatBox} from "tc-shared/ui/frames/side/ChatBox";
 import {Ref, useEffect, useRef, useState} from "react";
 import {AvatarRenderer} from "tc-shared/ui/react-elements/Avatar";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
@@ -23,8 +22,9 @@ import {BBCodeRenderer} from "tc-shared/text/bbcode";
 import {getGlobalAvatarManagerFactory} from "tc-shared/file/Avatars";
 import {ColloquialFormat, date_format, format_date_general, formatDayTime} from "tc-shared/utils/DateUtils";
 import {ClientTag} from "tc-shared/ui/tree/EntryTags";
+import {ChatBox} from "tc-shared/ui/react-elements/ChatBox";
 
-const cssStyle = require("./ConversationUI.scss");
+const cssStyle = require("./AbstractConversationRenderer.scss");
 
 const ChatMessageTextRenderer = React.memo((props: { text: string }) => {
     if(typeof props.text !== "string") { debugger; }
@@ -664,8 +664,9 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
 
     @EventHandler<ConversationUIEvents>("notify_selected_chat")
     private handleNotifySelectedChat(event: ConversationUIEvents["notify_selected_chat"]) {
-        if(this.currentChatId === event.chatId)
+        if(this.currentChatId === event.chatId) {
             return;
+        }
 
         this.currentChatId = event.chatId;
         this.chatEvents = [];
@@ -758,40 +759,33 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
 
     @EventHandler<ConversationUIEvents>("notify_chat_message_delete")
     private handleMessageDeleted(event: ConversationUIEvents["notify_chat_message_delete"]) {
-        if(event.chatId !== this.currentChatId)
+        if(event.chatId !== this.currentChatId) {
             return;
+        }
 
-        let limit = { current: event.criteria.limit };
-        this.chatEvents = this.chatEvents.filter(mEvent => {
-            if(mEvent.type !== "message")
-                return;
-
-            const message = mEvent.message;
-            if(message.sender_database_id !== event.criteria.cldbid)
-                return true;
-
-            if(event.criteria.end != 0 && message.timestamp > event.criteria.end)
-                return true;
-
-            if(event.criteria.begin != 0 && message.timestamp < event.criteria.begin)
-                return true;
-
-            return --limit.current < 0;
-        });
+        this.chatEvents = this.chatEvents.filter(mEvent => event.messageIds.indexOf(mEvent.uniqueId) === -1);
 
         this.buildView();
         this.forceUpdate(() => this.scrollToBottom());
     }
 
-    @EventHandler<ConversationUIEvents>("action_clear_unread_flag")
-    private handleMessageUnread(event: ConversationUIEvents["action_clear_unread_flag"]) {
-        if (event.chatId !== this.currentChatId || this.unreadTimestamp === undefined)
+    @EventHandler<ConversationUIEvents>("notify_unread_timestamp_changed")
+    private handleUnreadTimestampChanged(event: ConversationUIEvents["notify_unread_timestamp_changed"]) {
+        if (event.chatId !== this.currentChatId)
             return;
 
-        this.unreadTimestamp = undefined;
-        this.buildView();
-        this.forceUpdate();
-    };
+        const oldUnreadTimestamp = this.unreadTimestamp;
+        if(this.chatEvents.last()?.timestamp > event.timestamp) {
+            this.unreadTimestamp = event.timestamp;
+        } else {
+            this.unreadTimestamp = undefined;
+        }
+
+        if(oldUnreadTimestamp !== this.unreadTimestamp) {
+            this.buildView();
+            this.forceUpdate();
+        }
+    }
 
     @EventHandler<ConversationUIEvents>("notify_panel_show")
     private handlePanelShow() {

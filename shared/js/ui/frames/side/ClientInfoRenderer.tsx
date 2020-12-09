@@ -23,7 +23,7 @@ import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {getIconManager} from "tc-shared/file/Icons";
 import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 
-const cssStyle = require("./ClientInfo.scss");
+const cssStyle = require("./ClientInfoRenderer.scss");
 
 const EventsContext = React.createContext<Registry<ClientInfoEvents>>(undefined);
 const ClientContext = React.createContext<OptionalClientInfoInfo>(undefined);

@@ -141,8 +141,9 @@ export class MusicInfo {
         this._container_playlist = this._html_tag.find(".container-playlist");
 
         this._html_tag.find(".button-close").on('click', () => {
-            if(this.previous_frame_content === FrameContent.CLIENT_INFO)
+            if(this.previous_frame_content === FrameContent.CLIENT_INFO) {
                 this.previous_frame_content = FrameContent.NONE;
+            }
 
             this.handle.set_content(this.previous_frame_content);
         });

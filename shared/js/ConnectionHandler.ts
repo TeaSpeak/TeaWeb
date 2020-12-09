@@ -38,6 +38,9 @@ import {LocalClientEntry} from "./tree/Client";
 import {ServerAddress} from "./tree/Server";
 import {ChannelVideoFrame} from "tc-shared/ui/frames/video/Controller";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
+import {ChannelConversationManager} from "./conversations/ChannelConversationManager";
+import {PrivateConversationManager} from "tc-shared/conversations/PrivateConversationManager";
+import {ChannelConversationController} from "./ui/frames/side/ChannelConversationController";
 
 export enum InputHardwareState {
     MISSING,
@@ -154,6 +157,9 @@ export class ConnectionHandler {
 
     serverFeatures: ServerFeatures;
 
+    private channelConversations: ChannelConversationManager;
+    private privateConversations: PrivateConversationManager;
+
     private _clientId: number = 0;
     private localClient: LocalClientEntry;
 
@@ -205,6 +211,9 @@ export class ConnectionHandler {
         this.fileManager = new FileManager(this);
         this.permissions = new PermissionManager(this);
 
+        this.privateConversations = new PrivateConversationManager(this);
+        this.channelConversations = new ChannelConversationManager(this);
+
         this.pluginCmdRegistry = new PluginCmdRegistry(this);
         this.video_frame = new ChannelVideoFrame(this);
 
@@ -217,9 +226,9 @@ export class ConnectionHandler {
         this.localClient.channelTree = this.channelTree;
 
         this.event_registry.register_handler(this);
-        this.events().fire("notify_handler_initialized");
-
         this.pluginCmdRegistry.registerHandler(new W2GPluginCmdHandler());
+
+        this.events().fire("notify_handler_initialized");
     }
 
     initialize_client_state(source?: ConnectionHandler) {
@@ -341,6 +350,14 @@ export class ConnectionHandler {
     getClient() : LocalClientEntry { return this.localClient; }
     getClientId() { return this._clientId; }
 
+    getPrivateConversations() : PrivateConversationManager {
+        return this.privateConversations;
+    }
+
+    getChannelConversations() : ChannelConversationManager {
+        return this.channelConversations;
+    }
+
     initializeLocalClient(clientId: number, acceptedName: string) {
         this._clientId = clientId;
         this.localClient["_clientId"] = clientId;
@@ -354,8 +371,8 @@ export class ConnectionHandler {
 
     @EventHandler<ConnectionEvents>("notify_connection_state_changed")
     private handleConnectionStateChanged(event: ConnectionEvents["notify_connection_state_changed"]) {
-        this.connection_state = event.new_state;
-        if(event.new_state === ConnectionState.CONNECTED) {
+        this.connection_state = event.newState;
+        if(event.newState === ConnectionState.CONNECTED) {
             log.info(LogCategory.CLIENT, tr("Client connected"));
             this.log.log(EventType.CONNECTION_CONNECTED, {
                 serverAddress: {
@@ -679,8 +696,8 @@ export class ConnectionHandler {
     private on_connection_state_changed(old_state: ConnectionState, new_state: ConnectionState) {
         console.log("From %s to %s", ConnectionState[old_state], ConnectionState[new_state]);
         this.event_registry.fire("notify_connection_state_changed", {
-            old_state: old_state,
-            new_state: new_state
+            oldState: old_state,
+            newState: new_state
         });
     }
 
@@ -1016,6 +1033,12 @@ export class ConnectionHandler {
         }
         this.localClient = undefined;
 
+        this.privateConversations?.destroy();
+        this.privateConversations = undefined;
+
+        this.channelConversations?.destroy();
+        this.channelConversations = undefined;
+
         this.channelTree?.destroy();
         this.channelTree = undefined;
 
@@ -1194,8 +1217,8 @@ export interface ConnectionEvents {
     }
 
     notify_connection_state_changed: {
-        old_state: ConnectionState,
-        new_state: ConnectionState
+        oldState: ConnectionState,
+        newState: ConnectionState
     },
 
     /* the handler has become visible/invisible for the client */
