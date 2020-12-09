@@ -1,4 +1,3 @@
-import {RDPChannel, RDPChannelTree, RDPClient, RDPEntry, RDPServer} from "./RendererDataProvider";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {
@@ -9,7 +8,7 @@ import {
     spriteWidth as kClientSpriteWidth,
 } from "svg-sprites/client-icons";
 import {LogCategory, logDebug} from "tc-shared/log";
-import {ChannelTreeDragData} from "tc-shared/ui/tree/Definitions";
+import {ChannelTreeDragData, ChannelTreeDragEntry} from "tc-shared/ui/tree/Definitions";
 
 let spriteImage: HTMLImageElement;
 
@@ -29,7 +28,12 @@ function paintClientIcon(context: CanvasRenderingContext2D, icon: ClientIcon, of
     context.drawImage(spriteImage, sprite.xOffset, sprite.yOffset, sprite.width, sprite.height, offsetX, offsetY, width, height);
 }
 
-export function generateDragElement(entries: RDPEntry[]) : HTMLElement {
+export type DragImageEntryType = {
+    icon: ClientIcon,
+    name: string
+}
+
+export function generateDragElement(entries: DragImageEntryType[]) : HTMLElement {
     const totalHeight = entries.length * 18 + 2; /* the two extra for "low" letters like "gyj" etc. */
     const totalWidth = 250;
 
@@ -37,44 +41,19 @@ export function generateDragElement(entries: RDPEntry[]) : HTMLElement {
     let offsetX = 20;
 
     const canvas = document.createElement("canvas");
+    document.body.appendChild(canvas);
     canvas.height = totalHeight;
     canvas.width = totalWidth;
 
     /* TODO: With font size? */
+    const ctx = canvas.getContext("2d");
+
     {
-        const ctx = canvas.getContext("2d");
         ctx.textAlign = "left";
         ctx.textBaseline = "bottom";
         ctx.font = "700 16px Roboto, Helvetica, Arial, sans-serif";
 
         for(const entry of entries) {
-            let name: string;
-            let icon: ClientIcon;
-
-            if(entry instanceof RDPClient) {
-                name = entry.name.name;
-                icon = entry.status;
-            } else if(entry instanceof RDPChannel) {
-                name = entry.info?.name;
-                icon = entry.icon;
-            } else if(entry instanceof RDPServer) {
-                icon = ClientIcon.ServerGreen;
-
-                switch (entry.state.state) {
-                    case "connected":
-                        name = entry.state.name;
-                        break;
-
-                    case "disconnected":
-                        name = tr("Not connected");
-                        break;
-
-                    case "connecting":
-                        name = tr("Connecting");
-                        break;
-                }
-            }
-
             /*
             ctx.strokeStyle = "red";
             ctx.moveTo(offsetX, offsetY);
@@ -83,8 +62,8 @@ export function generateDragElement(entries: RDPEntry[]) : HTMLElement {
             */
 
             ctx.fillStyle = "black";
-            paintClientIcon(ctx, icon, offsetX + 1, offsetY + 1, 16, 16);
-            ctx.fillText(name, offsetX + 20, offsetY + 19);
+            paintClientIcon(ctx, entry.icon, offsetX + 1, offsetY + 1, 16, 16);
+            ctx.fillText(entry.name, offsetX + 20, offsetY + 19);
 
             offsetY += 18;
 
@@ -98,9 +77,9 @@ export function generateDragElement(entries: RDPEntry[]) : HTMLElement {
     }
 
     canvas.style.position = "absolute";
-    canvas.style.left = "-100000000px";
-    canvas.style.top = (Math.random() * 1000000).toFixed(0) + "px";
-    document.body.appendChild(canvas);
+    canvas.style.zIndex = "100000";
+    canvas.style.top = "0";
+    canvas.style.left = -canvas.width + "px";
 
     setTimeout(() => {
         canvas.remove();
@@ -113,43 +92,19 @@ const kDragDataType = "application/x-teaspeak-channel-move";
 const kDragHandlerPrefix = "application/x-teaspeak-handler-";
 const kDragTypePrefix = "application/x-teaspeak-type-";
 
-export function setupDragData(transfer: DataTransfer, tree: RDPChannelTree, entries: RDPEntry[], type: string) {
+export function setupDragData(transfer: DataTransfer, handlerId: string, entries: ChannelTreeDragEntry[], type: string) {
     let data: ChannelTreeDragData = {
         version: 1,
-        handlerId: tree.handlerId,
-        entryIds: entries.map(e => e.entryId),
-        entryTypes: entries.map(entry => {
-            if(entry instanceof RDPServer) {
-                return "server";
-            } else if(entry instanceof RDPClient) {
-                return "client";
-            } else {
-                return "channel";
-            }
-        }),
+        handlerId: handlerId,
+        entries: entries,
         type: type
     };
 
     transfer.effectAllowed = "all"
     transfer.dropEffect = "move";
-    transfer.setData(kDragHandlerPrefix + tree.handlerId, "");
+    transfer.setData(kDragHandlerPrefix + handlerId, "");
     transfer.setData(kDragTypePrefix + type, "");
     transfer.setData(kDragDataType, JSON.stringify(data));
-
-    {
-        let texts = [];
-        for(const entry of entries) {
-            if(entry instanceof RDPClient) {
-                texts.push(entry.name?.name);
-            } else if(entry instanceof RDPChannel) {
-                texts.push(entry.info?.name);
-            } else if(entry instanceof RDPServer) {
-                texts.push(entry.state.state === "connected" ? entry.state.name : undefined);
-            }
-        }
-        transfer.setData("text/plain", texts.filter(e => !!e).join(", "));
-    }
-    /* TODO: Other things as well! */
 }
 
 export function parseDragData(transfer: DataTransfer) : ChannelTreeDragData | undefined {

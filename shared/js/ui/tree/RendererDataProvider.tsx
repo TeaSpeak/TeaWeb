@@ -1,7 +1,7 @@
 import {EventHandler, Registry} from "tc-shared/events";
 import {
     ChannelEntryInfo,
-    ChannelIcons,
+    ChannelIcons, ChannelTreeDragEntry,
     ChannelTreeUIEvents,
     ClientIcons,
     ClientNameInfo,
@@ -22,7 +22,13 @@ import {
     RendererClient
 } from "tc-shared/ui/tree/RendererClient";
 import {ServerRenderer} from "tc-shared/ui/tree/RendererServer";
-import {generateDragElement, getDragInfo, parseDragData, setupDragData} from "tc-shared/ui/tree/DragHelper";
+import {
+    DragImageEntryType,
+    generateDragElement,
+    getDragInfo,
+    parseDragData,
+    setupDragData
+} from "tc-shared/ui/tree/DragHelper";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
 
 function isEquivalent(a, b) {
@@ -62,6 +68,25 @@ function isEquivalent(a, b) {
     } else {
         return a === b;
     }
+}
+
+function generateDragElementFromRdp(entries: RDPEntry[]) : HTMLElement {
+    return generateDragElement(entries.map<DragImageEntryType>(entry => {
+        if(entry instanceof RDPClient) {
+            return { name: entry.name?.name, icon: entry.status };
+        } else if(entry instanceof RDPChannel) {
+            return { name: entry.info?.name, icon: entry.icon };
+        } else if(entry instanceof RDPServer) {
+            switch (entry.state.state) {
+                case "connected":
+                    return { name: entry.state.name, icon: ClientIcon.ServerGreen };
+                case "disconnected":
+                    return { name: tr("Not connected"), icon: ClientIcon.ServerGreen };
+                case "connecting":
+                    return { name: tr("Connecting"), icon: ClientIcon.ServerGreen };
+            }
+        }
+    }));
 }
 
 /**
@@ -476,8 +501,38 @@ export class RDPChannelTree {
         }
 
         event.dataTransfer.dropEffect = "move";
-        event.dataTransfer.setDragImage(generateDragElement(entries), 0, 6);
-        setupDragData(event.dataTransfer, this, entries, dragType);
+        event.dataTransfer.setDragImage(generateDragElementFromRdp(entries), 0, 6);
+        setupDragData(event.dataTransfer, this.handlerId, entries.map<ChannelTreeDragEntry>(entry => {
+            if(entry instanceof RDPClient) {
+                return {
+                    type: "client",
+                    uniqueTreeId: entry.entryId
+                };
+            } else if(entry instanceof RDPChannel) {
+                return {
+                    type: "channel",
+                    uniqueTreeId: entry.entryId
+                };
+            }  else if(entry instanceof RDPServer) {
+                return {
+                    type: "server",
+                };
+            }
+        }).filter(entry => !!entry), dragType);
+
+        {
+            let texts = [];
+            for(const entry of entries) {
+                if(entry instanceof RDPClient) {
+                    texts.push(entry.name?.name);
+                } else if(entry instanceof RDPChannel) {
+                    texts.push(entry.info?.name);
+                } else if(entry instanceof RDPServer) {
+                    texts.push(entry.state.state === "connected" ? entry.state.name : undefined);
+                }
+            }
+            event.dataTransfer.setData("text/plain", texts.filter(e => !!e).join(", "));
+        }
     }
 
 
@@ -565,7 +620,7 @@ export class RDPChannelTree {
             }
 
             this.events.fire("action_move_clients", {
-                entries: data.entryIds,
+                entries: data.entries,
                 targetTreeEntry: target.entryId
             });
         } else if(data.type === "channel") {
@@ -577,14 +632,14 @@ export class RDPChannelTree {
                 return;
             }
 
-            if(data.entryIds.indexOf(target.entryId) !== -1) {
+            if(data.entries.findIndex(entry => entry.type === "channel" && "uniqueTreeId" in entry && entry.uniqueTreeId === target.entryId) !== -1) {
                 return;
             }
 
             this.events.fire("action_move_channels", {
                 targetTreeEntry: target.entryId,
                 mode: currentDragHint === "contain" ? "child" : currentDragHint === "top" ? "before" : "after",
-                entries: data.entryIds
+                entries: data.entries
             });
         }
     }
