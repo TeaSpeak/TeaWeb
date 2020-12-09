@@ -398,7 +398,7 @@ export class ChannelConversationManager extends AbstractChatManager<ChannelConve
     }
 
     findConversation(channelId: number) : ChannelConversation {
-        return this.findConversationById(channelId.toString());
+        return this.findConversationById(channelId?.toString());
     }
 
     findOrCreateConversation(channelId: number) {

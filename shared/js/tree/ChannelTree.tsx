@@ -26,6 +26,8 @@ import {ChannelTreePopoutController} from "tc-shared/ui/tree/popout/Controller";
 import {Settings, settings} from "tc-shared/settings";
 import {ClientIcon} from "svg-sprites/client-icons";
 
+import "./EntryTagsHandler";
+
 export interface ChannelTreeEvents {
     /* general tree notified */
     notify_tree_reset: {},

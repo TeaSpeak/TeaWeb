@@ -33,7 +33,7 @@ class RemoteIconManager extends AbstractIconManager {
     constructor() {
         super();
 
-        this.ipcChannel = ipc.getInstance().createChannel(Settings.instance.static(Settings.KEY_IPC_REMOTE_ADDRESS, "invalid"), kIPCIconChannel);
+        this.ipcChannel = ipc.getIpcInstance().createChannel(Settings.instance.static(Settings.KEY_IPC_REMOTE_ADDRESS, "invalid"), kIPCIconChannel);
         this.ipcChannel.messageHandler = this.handleIpcMessage.bind(this);
     }
 
