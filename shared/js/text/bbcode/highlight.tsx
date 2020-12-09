@@ -11,6 +11,7 @@ import {rendererReact, rendererText} from "tc-shared/text/bbcode/renderer";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 
 import '!style-loader!css-loader!highlight.js/styles/darcula.css';
+import {Settings, settings} from "tc-shared/settings";
 
 const registerLanguage = (name, language: Promise<any>) => {
     language.then(lan => hljs.registerLanguage(name, lan)).catch(error => {
@@ -86,6 +87,9 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     function: async () => {
         let reactId = 0;
 
+        if(!settings.static_global(Settings.KEY_CHAT_HIGHLIGHT_CODE)) {
+            return;
+        }
         /* override default parser */
         rendererReact.registerCustomRenderer(new class extends ElementRenderer<TagElement, React.ReactNode> {
             tags(): string | string[] {

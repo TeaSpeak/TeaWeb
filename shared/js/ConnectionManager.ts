@@ -32,8 +32,8 @@ export class ConnectionManager {
     private _container_log_server: JQuery;
     private _container_channel_tree: JQuery;
     private _container_hostbanner: JQuery;
-    private _container_chat: JQuery;
     private containerChannelVideo: ReplaceableContainer;
+    private containerSideBar: HTMLDivElement;
     private containerFooter: HTMLDivElement;
 
     constructor() {
@@ -41,10 +41,10 @@ export class ConnectionManager {
         this.event_registry.enableDebug("connection-manager");
 
         this.containerChannelVideo = new ReplaceableContainer(document.getElementById("channel-video") as HTMLDivElement);
+        this.containerSideBar = document.getElementById("chat") as HTMLDivElement;
         this._container_log_server = $("#server-log");
         this._container_channel_tree = $("#channelTree");
         this._container_hostbanner = $("#hostbanner");
-        this._container_chat = $("#chat");
         this.containerFooter = document.getElementById("container-footer") as HTMLDivElement;
 
         this.set_active_connection(undefined);
@@ -112,7 +112,6 @@ export class ConnectionManager {
 
     private set_active_connection_(handler: ConnectionHandler) {
         this._container_channel_tree.children().detach();
-        this._container_chat.children().detach();
         this._container_log_server.children().detach();
         this._container_hostbanner.children().detach();
         this.containerChannelVideo.replaceWith(handler?.video_frame.getContainer());
@@ -120,8 +119,8 @@ export class ConnectionManager {
         if(handler) {
             this._container_hostbanner.append(handler.hostbanner.html_tag);
             this._container_channel_tree.append(handler.channelTree.tag_tree());
-            this._container_chat.append(handler.side_bar.html_tag());
             this._container_log_server.append(handler.log.getHTMLTag());
+            handler.side_bar.renderInto(this.containerSideBar);
         }
         const old_handler = this.active_handler;
         this.active_handler = handler;

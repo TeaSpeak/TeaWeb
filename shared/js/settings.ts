@@ -369,6 +369,13 @@ export class Settings extends StaticSettings {
         valueType: "boolean",
     };
 
+    static readonly KEY_CHAT_HIGHLIGHT_CODE: ValuedSettingsKey<boolean> = {
+        key: 'chat_highlight_code',
+        defaultValue: true,
+        description: 'Enables code highlighting within the chat (Client restart required)',
+        valueType: "boolean",
+    };
+
     static readonly KEY_CHAT_TAG_URLS: ValuedSettingsKey<boolean> = {
         key: 'chat_tag_urls',
         defaultValue: true,

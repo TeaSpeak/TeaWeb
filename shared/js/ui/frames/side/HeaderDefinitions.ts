@@ -12,7 +12,6 @@ export type SideHeaderStateConversation = {
 
 export type SideHeaderStateClient = {
     state: "client",
-    ownClient: boolean
 }
 
 export type SideHeaderStateMusicBot = {
@@ -46,12 +45,10 @@ export interface SideHeaderEvents {
     action_open_conversation: {},
 
     query_current_channel_state: { mode: "voice" | "text" },
-    query_ping: {},
     query_private_conversations: {},
+    query_client_info_own_client: {},
+    query_ping: {},
 
-    notify_header_state: {
-        state: SideHeaderState
-    },
     notify_current_channel_state: {
         mode: "voice" | "text",
         state: SideHeaderChannelState
@@ -61,5 +58,8 @@ export interface SideHeaderEvents {
     },
     notify_private_conversations: {
         info: PrivateConversationInfo
+    },
+    notify_client_info_own_client: {
+        isOwnClient: boolean
     }
 }

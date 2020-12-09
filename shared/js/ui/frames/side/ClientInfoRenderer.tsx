@@ -439,7 +439,10 @@ const ServerGroupRenderer = () => {
 const ClientInfoProvider = () => {
     const events = useContext(EventsContext);
 
-    const [ client, setClient ] = useState<OptionalClientInfoInfo>({ type: "none", contextHash: guid() });
+    const [ client, setClient ] = useState<OptionalClientInfoInfo>(() => {
+        events.fire("query_client");
+        return { type: "none", contextHash: guid() };
+    });
     events.reactUse("notify_client", event => {
         if(event.info) {
             setClient({

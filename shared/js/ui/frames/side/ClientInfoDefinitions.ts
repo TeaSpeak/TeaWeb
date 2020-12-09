@@ -61,6 +61,7 @@ export interface ClientInfoEvents {
     action_show_full_info: {},
     action_edit_avatar: {},
 
+    query_client: {},
     query_channel_group: {},
     query_server_groups: {},
     query_client_name: {},
@@ -83,7 +84,6 @@ export interface ClientInfoEvents {
     notify_version: { version: ClientVersionInfo },
     notify_forum: { forum: ClientForumInfo },
 
-    /* reset all fields into "loading" state */
     notify_client: {
         info: ClientInfoInfo | undefined
     }

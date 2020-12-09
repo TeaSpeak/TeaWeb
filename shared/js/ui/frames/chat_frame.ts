@@ -1,35 +1,40 @@
-import {ClientEntry, LocalClientEntry, MusicClientEntry} from "../../tree/Client";
+import {ClientEntry, MusicClientEntry} from "../../tree/Client";
 import {ConnectionHandler} from "../../ConnectionHandler";
 import {MusicInfo} from "../../ui/frames/side/music_info";
 import {ChannelConversationController} from "./side/ChannelConversationController";
 import {PrivateConversationController} from "./side/PrivateConversationController";
 import {ClientInfoController} from "tc-shared/ui/frames/side/ClientInfoController";
 import {SideHeader} from "tc-shared/ui/frames/side/HeaderController";
+import * as ReactDOM from "react-dom";
+import {SideBarRenderer} from "tc-shared/ui/frames/SideBarRenderer";
+import * as React from "react";
+import {SideBarEvents, SideBarType} from "tc-shared/ui/frames/SideBarDefinitions";
+import {Registry} from "tc-shared/events";
 
-export enum FrameContent {
-    NONE,
-    PRIVATE_CHAT,
-    CHANNEL_CHAT,
-    CLIENT_INFO,
-    MUSIC_BOT
-}
+const cssStyle = require("./SideBar.scss");
 
 export class Frame {
     readonly handle: ConnectionHandler;
-    private htmlTag: JQuery;
-    private containerChannelChat: JQuery;
-    private _content_type: FrameContent;
+    private htmlTag: HTMLDivElement;
 
+    private currentType: SideBarType;
+
+    private uiEvents: Registry<SideBarEvents>;
     private header: SideHeader;
-    private clientInfo: ClientInfoController;
+
     private musicInfo: MusicInfo;
+    private clientInfo: ClientInfoController;
     private channelConversations: ChannelConversationController;
     private privateConversations: PrivateConversationController;
 
     constructor(handle: ConnectionHandler) {
         this.handle = handle;
 
-        this._content_type = FrameContent.NONE;
+        this.currentType = "none";
+        this.uiEvents = new Registry<SideBarEvents>();
+        this.uiEvents.on("query_content", () => this.uiEvents.fire_react("notify_content", { content: this.currentType }));
+        this.uiEvents.on("query_content_data", event => this.sendContentData(event.content));
+
         this.privateConversations = new PrivateConversationController(handle);
         this.channelConversations = new ChannelConversationController(handle);
         this.clientInfo = new ClientInfoController(handle);
@@ -42,9 +47,7 @@ export class Frame {
         this.showChannelConversations();
     }
 
-    html_tag() : JQuery { return this.htmlTag; }
-
-    content_type() : FrameContent { return this._content_type; }
+    html_tag() : HTMLDivElement { return this.htmlTag; }
 
     destroy() {
         this.header?.destroy();
@@ -56,6 +59,12 @@ export class Frame {
         this.clientInfo?.destroy();
         this.clientInfo = undefined;
 
+        this.privateConversations?.destroy();
+        this.privateConversations = undefined;
+
+        this.channelConversations?.destroy();
+        this.channelConversations = undefined;
+
         this.musicInfo && this.musicInfo.destroy();
         this.musicInfo = undefined;
 
@@ -64,19 +73,24 @@ export class Frame {
 
         this.channelConversations && this.channelConversations.destroy();
         this.channelConversations = undefined;
+    }
 
-        this.containerChannelChat && this.containerChannelChat.remove();
-        this.containerChannelChat = undefined;
+    renderInto(container: HTMLDivElement) {
+        ReactDOM.render(React.createElement(SideBarRenderer, {
+            key: this.handle.handlerId,
+            handlerId: this.handle.handlerId,
+            events: this.uiEvents,
+            eventsHeader: this.header["uiEvents"],
+        }), container);
     }
 
     private createHtmlTag() {
-        this.htmlTag = $("#tmpl_frame_chat").renderTag();
-        this.htmlTag.find(".container-info").replaceWith(this.header.getHtmlTag());
-        this.containerChannelChat = this.htmlTag.find(".container-chat");
+        this.htmlTag = document.createElement("div");
+        this.htmlTag.classList.add(cssStyle.container);
     }
 
 
-    private_conversations() : PrivateConversationController {
+    privateConversationsController() : PrivateConversationController {
         return this.privateConversations;
     }
 
@@ -88,73 +102,81 @@ export class Frame {
         return this.musicInfo;
     }
 
-    private clearSideBar() {
-        this._content_type = FrameContent.NONE;
-        this.containerChannelChat.children().detach();
+    private setCurrentContent(type: SideBarType) {
+        if(this.currentType === type) {
+            return;
+        }
+
+        this.currentType = type;
+        this.uiEvents.fire_react("notify_content", { content: this.currentType });
+    }
+
+    private sendContentData(content: SideBarType) {
+        switch (content) {
+            case "none":
+                this.uiEvents.fire_react("notify_content_data", {
+                    content: "none",
+                    data: {}
+                });
+                break;
+
+            case "channel-chat":
+                this.uiEvents.fire_react("notify_content_data", {
+                    content: "channel-chat",
+                    data: {
+                        events: this.channelConversations["uiEvents"],
+                        handlerId: this.handle.handlerId
+                    }
+                });
+                break;
+
+            case "private-chat":
+                this.uiEvents.fire_react("notify_content_data", {
+                    content: "private-chat",
+                    data: {
+                        events: this.privateConversations["uiEvents"],
+                        handlerId: this.handle.handlerId
+                    }
+                });
+                break;
+
+            case "client-info":
+                this.uiEvents.fire_react("notify_content_data", {
+                    content: "client-info",
+                    data: {
+                        events: this.clientInfo["uiEvents"],
+                    }
+                });
+                break;
+
+            case "music-manage":
+                this.uiEvents.fire_react("notify_content_data", {
+                    content: "music-manage",
+                    data: { }
+                });
+                break;
+        }
     }
 
     showPrivateConversations() {
-        if(this._content_type === FrameContent.PRIVATE_CHAT)
-            return;
-
-        this.header.setState({ state: "conversation", mode: "private" });
-
-        this.clearSideBar();
-        this._content_type = FrameContent.PRIVATE_CHAT;
-        this.containerChannelChat.append(this.privateConversations.htmlTag);
-        this.privateConversations.handlePanelShow();
+        this.setCurrentContent("private-chat");
     }
 
     showChannelConversations() {
-        if(this._content_type === FrameContent.CHANNEL_CHAT)
-            return;
-
-        this.header.setState({ state: "conversation", mode: "channel" });
-
-        this.clearSideBar();
-        this._content_type = FrameContent.CHANNEL_CHAT;
-        this.containerChannelChat.append(this.channelConversations.htmlTag);
-        this.channelConversations.handlePanelShow();
+        this.setCurrentContent("channel-chat");
     }
 
     showClientInfo(client: ClientEntry) {
         this.clientInfo.setClient(client);
-        this.header.setState({ state: "client", ownClient: client instanceof LocalClientEntry });
-
-        if(this._content_type === FrameContent.CLIENT_INFO)
-            return;
-
-        this.clearSideBar();
-        this._content_type = FrameContent.CLIENT_INFO;
-        this.containerChannelChat.append(this.clientInfo.getHtmlTag());
+        this.setCurrentContent("client-info");
     }
 
     showMusicPlayer(client: MusicClientEntry) {
         this.musicInfo.set_current_bot(client);
-
-        if(this._content_type === FrameContent.MUSIC_BOT)
-            return;
-
-        this.header.setState({ state: "music-bot" });
-        this.musicInfo.previous_frame_content = this._content_type;
-        this.clearSideBar();
-        this._content_type = FrameContent.MUSIC_BOT;
-        this.containerChannelChat.append(this.musicInfo.html_tag());
+        this.setCurrentContent("music-manage");
     }
 
-    set_content(type: FrameContent) {
-        if(this._content_type === type) {
-            return;
-        }
-
-        if(type === FrameContent.CHANNEL_CHAT) {
-            this.showChannelConversations();
-        } else if(type === FrameContent.PRIVATE_CHAT) {
-            this.showPrivateConversations();
-        } else {
-            this.header.setState({ state: "none" });
-            this.clearSideBar();
-            this._content_type = FrameContent.NONE;
-        }
+    clearSideBar() {
+        this.setCurrentContent("none");
     }
 }
