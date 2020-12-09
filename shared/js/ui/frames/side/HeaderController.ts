@@ -1,12 +1,8 @@
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import * as ReactDOM from "react-dom";
-import {SideHeaderRenderer} from "./HeaderRenderer";
-import * as React from "react";
-import {SideHeaderEvents, SideHeaderState} from "tc-shared/ui/frames/side/HeaderDefinitions";
-import * as _ from "lodash";
+import {SideHeaderEvents} from "tc-shared/ui/frames/side/HeaderDefinitions";
 import {Registry} from "tc-shared/events";
 import {ChannelEntry, ChannelProperties} from "tc-shared/tree/Channel";
-import {ClientEntry, LocalClientEntry} from "tc-shared/tree/Client";
+import {LocalClientEntry} from "tc-shared/tree/Client";
 import {openMusicManage} from "tc-shared/ui/modal/ModalMusicManage";
 
 const ChannelInfoUpdateProperties: (keyof ChannelProperties)[] = [
@@ -21,9 +17,8 @@ const ChannelInfoUpdateProperties: (keyof ChannelProperties)[] = [
     "channel_maxfamilyclients"
 ];
 
-/* TODO: Remove the ping interval handler. It's currently still there since the clients are not emiting the event yet */
+/* TODO: Remove the ping interval handler. It's currently still there since the clients are not emitting the event yet */
 export class SideHeader {
-    private readonly htmlTag: HTMLDivElement;
     private readonly uiEvents: Registry<SideHeaderEvents>;
 
     private connection: ConnectionHandler;
@@ -32,7 +27,6 @@ export class SideHeader {
     private listenerVoiceChannel: (() => void)[];
     private listenerTextChannel: (() => void)[];
 
-    private currentState: SideHeaderState;
     private currentVoiceChannel: ChannelEntry;
     private currentTextChannel: ChannelEntry;
 
@@ -44,13 +38,6 @@ export class SideHeader {
         this.listenerVoiceChannel = [];
         this.listenerTextChannel = [];
 
-        this.htmlTag = document.createElement("div");
-        this.htmlTag.style.display = "flex";
-        this.htmlTag.style.flexDirection = "column";
-        this.htmlTag.style.flexShrink = "0";
-        this.htmlTag.style.flexGrow = "0";
-
-        ReactDOM.render(React.createElement(SideHeaderRenderer, { events: this.uiEvents }), this.htmlTag);
         this.initialize();
     }
 
@@ -75,8 +62,9 @@ export class SideHeader {
             openMusicManage(this.connection, bot);
         });
 
-        this.uiEvents.on("action_bot_manage", () => this.connection.side_bar.music_info().events.fire("action_song_add"));
+        this.uiEvents.on("action_bot_add_song", () => this.connection.side_bar.music_info().events.fire("action_song_add"));
 
+        this.uiEvents.on("query_client_info_own_client", () => this.sendClientInfoOwnClient());
         this.uiEvents.on("query_current_channel_state", event => this.sendChannelState(event.mode));
         this.uiEvents.on("query_private_conversations", () => this.sendPrivateConversationInfo());
         this.uiEvents.on("query_ping", () => this.sendPing());
@@ -110,6 +98,7 @@ export class SideHeader {
         this.listenerConnection.push(this.connection.serverConnection.events.on("notify_ping_updated", () => this.sendPing()));
         this.listenerConnection.push(this.connection.getPrivateConversations().events.on("notify_unread_count_changed", () => this.sendPrivateConversationInfo()));
         this.listenerConnection.push(this.connection.getPrivateConversations().events.on(["notify_conversation_destroyed", "notify_conversation_destroyed"], () => this.sendPrivateConversationInfo()));
+        this.listenerConnection.push(this.connection.side_bar.getClientInfo().events.on("notify_client_changed", () => this.sendClientInfoOwnClient()));
     }
 
     setConnectionHandler(connection: ConnectionHandler) {
@@ -123,23 +112,18 @@ export class SideHeader {
         this.connection = connection;
         if(connection) {
             this.initializeConnection();
-            /* TODO: Update state! */
-        } else {
-            this.setState({ state: "none" });
         }
+        this.sendPing();
+        this.sendPrivateConversationInfo();
+        this.sendChannelState("voice");
+        this.sendChannelState("text");
     }
 
     getConnectionHandler() : ConnectionHandler | undefined {
         return this.connection;
     }
 
-    getHtmlTag() : HTMLDivElement {
-        return this.htmlTag;
-    }
-
     destroy() {
-        ReactDOM.unmountComponentAtNode(this.htmlTag);
-
         this.listenerConnection.forEach(callback => callback());
         this.listenerConnection = [];
 
@@ -151,15 +135,6 @@ export class SideHeader {
 
         clearInterval(this.pingUpdateInterval);
         this.pingUpdateInterval = undefined;
-    }
-
-    setState(state: SideHeaderState) {
-        if(_.isEqual(this.currentState, state)) {
-            return;
-        }
-
-        this.currentState = state;
-        this.uiEvents.fire_react("notify_header_state", { state: state });
     }
 
     private sendChannelState(mode: "voice" | "text") {
@@ -258,12 +233,29 @@ export class SideHeader {
     }
 
     private sendPrivateConversationInfo() {
-        const conversations = this.connection.getPrivateConversations();
-        this.uiEvents.fire_react("notify_private_conversations", {
-            info: {
-                open: conversations.getConversations().length,
-                unread: conversations.getUnreadCount()
-            }
-        });
+        if(this.connection) {
+            const conversations = this.connection.getPrivateConversations();
+            this.uiEvents.fire_react("notify_private_conversations", {
+                info: {
+                    open: conversations.getConversations().length,
+                    unread: conversations.getUnreadCount()
+                }
+            });
+        } else {
+            this.uiEvents.fire_react("notify_private_conversations", {
+                info: {
+                    open: 0,
+                    unread: 0
+                }
+            });
+        }
+    }
+
+    private sendClientInfoOwnClient() {
+        if(this.connection) {
+            this.uiEvents.fire_react("notify_client_info_own_client", { isOwnClient: this.connection.side_bar.getClientInfo().getClient() instanceof LocalClientEntry });
+        } else {
+            this.uiEvents.fire_react("notify_client_info_own_client", { isOwnClient: false });
+        }
     }
 }

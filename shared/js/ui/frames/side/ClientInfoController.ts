@@ -3,20 +3,22 @@ import {ClientEntry, ClientType, LocalClientEntry} from "tc-shared/tree/Client";
 import {
     ClientForumInfo,
     ClientGroupInfo,
-    ClientInfoEvents,
+    ClientInfoEvents, ClientInfoType,
     ClientStatusInfo,
     ClientVersionInfo
 } from "tc-shared/ui/frames/side/ClientInfoDefinitions";
 
-import * as ReactDOM from "react-dom";
-import {ClientInfoRenderer} from "tc-shared/ui/frames/side/ClientInfoRenderer";
 import {Registry} from "tc-shared/events";
-import * as React from "react";
 import * as i18nc from "../../../i18n/country";
 import {openClientInfo} from "tc-shared/ui/modal/ModalClientInfo";
 
 type CurrentClientInfo = {
+    type: ClientInfoType;
     name: string,
+    uniqueId: string,
+    databaseId: number,
+    clientId: number,
+
     description: string,
     joinTimestamp: number,
     leaveTimestamp: number,
@@ -29,12 +31,19 @@ type CurrentClientInfo = {
     version: ClientVersionInfo
 }
 
+export interface ClientInfoControllerEvents {
+    notify_client_changed: {
+        newClient: ClientEntry | undefined
+    }
+}
+
 export class ClientInfoController {
+    readonly events: Registry<ClientInfoControllerEvents>;
+
     private readonly connection: ConnectionHandler;
     private readonly listenerConnection: (() => void)[];
 
     private readonly uiEvents: Registry<ClientInfoEvents>;
-    private readonly htmlContainer: HTMLDivElement;
 
     private listenerClient: (() => void)[];
     private currentClient: ClientEntry | undefined;
@@ -42,6 +51,7 @@ export class ClientInfoController {
 
     constructor(connection: ConnectionHandler) {
         this.connection = connection;
+        this.events = new Registry<ClientInfoControllerEvents>();
         this.uiEvents = new Registry<ClientInfoEvents>();
         this.uiEvents.enableDebug("client-info");
 
@@ -49,17 +59,6 @@ export class ClientInfoController {
         this.listenerClient = [];
 
         this.initialize();
-
-        this.htmlContainer = document.createElement("div");
-        this.htmlContainer.style.display = "flex";
-        this.htmlContainer.style.flexDirection = "column";
-        this.htmlContainer.style.justifyContent = "strech";
-        this.htmlContainer.style.height = "100%";
-        ReactDOM.render(React.createElement(ClientInfoRenderer, { events: this.uiEvents }), this.htmlContainer);
-    }
-
-    getHtmlTag() : HTMLDivElement {
-        return this.htmlContainer;
     }
 
     private initialize() {
@@ -89,6 +88,7 @@ export class ClientInfoController {
             }
 
             this.currentClientStatus.leaveTimestamp = Date.now() / 1000;
+            this.currentClientStatus.clientId = 0;
             this.currentClient = undefined;
             this.unregisterClientEvents();
             this.sendOnline();
@@ -102,6 +102,7 @@ export class ClientInfoController {
             }
         }))
 
+        this.uiEvents.on("query_client", () => this.sendClient());
         this.uiEvents.on("query_client_name", () => this.sendClientName());
         this.uiEvents.on("query_client_description", () => this.sendClientDescription());
         this.uiEvents.on("query_channel_group", () => this.sendChannelGroup());
@@ -228,7 +229,12 @@ export class ClientInfoController {
 
     private initializeClientInfo(client: ClientEntry) {
         this.currentClientStatus = {
+            type: client instanceof LocalClientEntry ? "self" : client.properties.client_type === ClientType.CLIENT_QUERY ? "query" : "voice",
             name: client.properties.client_nickname,
+            databaseId: client.properties.client_database_id,
+            uniqueId: client.properties.client_unique_identifier,
+            clientId: client.clientId(),
+
             description: client.properties.client_description,
             channelGroup: client.properties.client_channel_group_id,
             serverGroups: client.assignedServerGroupIds(),
@@ -250,8 +256,6 @@ export class ClientInfoController {
     }
 
     destroy() {
-        ReactDOM.unmountComponentAtNode(this.htmlContainer);
-
         this.listenerClient.forEach(callback => callback());
         this.listenerClient = [];
 
@@ -266,25 +270,14 @@ export class ClientInfoController {
 
         this.unregisterClientEvents();
         this.currentClient = client;
+        this.currentClientStatus = undefined;
         if(this.currentClient) {
             this.currentClient.updateClientVariables().then(undefined);
             this.registerClientEvents(this.currentClient);
             this.initializeClientInfo(this.currentClient);
-            this.uiEvents.fire("notify_client", {
-                info: {
-                    handlerId: this.connection.handlerId,
-                    type: client instanceof LocalClientEntry ? "self" : client.properties.client_type === ClientType.CLIENT_QUERY ? "query" : "voice",
-                    clientDatabaseId: client.properties.client_database_id,
-                    clientId: client.clientId(),
-                    clientUniqueId: client.properties.client_unique_identifier
-                }
-            });
-        } else {
-            this.currentClientStatus = undefined;
-            this.uiEvents.fire("notify_client", {
-                info: undefined
-            });
         }
+        this.sendClient();
+        this.events.fire("notify_client_changed", { newClient: client });
     }
 
     getClient() : ClientEntry | undefined {
@@ -313,6 +306,24 @@ export class ClientInfoController {
                 },
                 groupSortOrder: group.properties.sortid
             };
+        }
+    }
+
+    private sendClient() {
+        if(this.currentClientStatus) {
+            this.uiEvents.fire_react("notify_client", {
+                info: {
+                    handlerId: this.connection.handlerId,
+                    type: this.currentClientStatus.type,
+                    clientDatabaseId: this.currentClientStatus.databaseId,
+                    clientId: this.currentClientStatus.clientId,
+                    clientUniqueId: this.currentClientStatus.uniqueId
+                }
+            });
+        } else {
+            this.uiEvents.fire_react("notify_client", {
+                info: undefined
+            });
         }
     }
 

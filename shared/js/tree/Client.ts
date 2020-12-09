@@ -524,7 +524,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
         conversation.setActiveClientEntry(this);
         privateConversations.setSelectedConversation(conversation);
         sideBar.showPrivateConversations();
-        sideBar.private_conversations().focusInput();
+        sideBar.privateConversationsController().focusInput();
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {

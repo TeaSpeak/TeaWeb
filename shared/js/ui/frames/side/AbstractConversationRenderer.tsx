@@ -895,10 +895,12 @@ export const ConversationPanel = React.memo((props: { events: Registry<Conversat
         currentChat.current.id = event.chatId;
         updateChatBox();
     });
+
     props.events.reactUse("notify_conversation_state", event => {
         chatEnabled.current = event.state === "normal" && event.sendEnabled;
         updateChatBox();
     });
+    
     props.events.reactUse("notify_send_enabled", event => {
         if(event.chatId !== currentChat.current.id)
             return;

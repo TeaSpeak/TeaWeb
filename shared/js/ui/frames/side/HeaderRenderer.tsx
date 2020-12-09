@@ -236,11 +236,19 @@ const BlockBottomLeft = () => {
 }
 
 const BlockBottomRight = () => {
+    const events = useContext(EventsContext);
     const state = useContext(StateContext);
+
+    const [ ownClient, setOwnClient ] = useState(() => {
+        events.fire("query_client_info_own_client");
+        return false;
+    });
+
+    events.reactUse("notify_client_info_own_client", event => setOwnClient(event.isOwnClient));
 
     switch (state.state) {
         case "client":
-            if(state.ownClient) {
+            if(ownClient) {
                 return null;
             } else {
                 return <BlockButtonOpenConversation key={"button-open-conversation"} />;
@@ -258,19 +266,16 @@ const BlockBottomRight = () => {
     }
 }
 
-export const SideHeaderRenderer = (props: { events: Registry<SideHeaderEvents> }) => {
-    const [ state, setState ] = useState<SideHeaderState>({ state: "none" });
-    props.events.reactUse("notify_header_state", event => setState(event.state));
-
+export const SideHeaderRenderer = React.memo((props: { events: Registry<SideHeaderEvents>, state: SideHeaderState }) => {
     return (
         <EventsContext.Provider value={props.events}>
-            <StateContext.Provider value={state}>
+            <StateContext.Provider value={props.state}>
                 <div className={cssStyle.container}>
                     <div className={cssStyle.lane}>
                         <BlockTopLeft />
                         <BlockTopRight />
                     </div>
-                    <div className={cssStyle.lane + " " + (state.state === "music-bot" ? cssStyle.musicBotInfo : "")}>
+                    <div className={cssStyle.lane + " " + (props.state.state === "music-bot" ? cssStyle.musicBotInfo : "")}>
                         <BlockBottomLeft />
                         <BlockBottomRight />
                     </div>
@@ -278,4 +283,4 @@ export const SideHeaderRenderer = (props: { events: Registry<SideHeaderEvents> }
             </StateContext.Provider>
         </EventsContext.Provider>
     );
-}
+})
