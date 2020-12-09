@@ -781,7 +781,26 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
         }
 
         const clients = event.entries.map(entryId => {
-            const entry = channelTree.findEntryId(entryId);
+            if(entryId.type !== "client") { return; }
+
+            let entry: ServerEntry | ChannelEntry | ClientEntry;
+            if("uniqueTreeId" in entryId) {
+                entry = channelTree.findEntryId(entryId.uniqueTreeId);
+            } else {
+                let clients = channelTree.clients.filter(client => client.properties.client_unique_identifier === entryId.clientUniqueId);
+                if(entryId.clientId) {
+                    clients = clients.filter(client => client.clientId() === entryId.clientId);
+                }
+
+                if(entryId.clientDatabaseId) {
+                    clients = clients.filter(client => client.properties.client_database_id === entryId.clientDatabaseId);
+                }
+
+                if(clients.length === 1) {
+                    entry = clients[0];
+                }
+            }
+
             if(!entry || !(entry instanceof ClientEntry)) {
                 logWarn(LogCategory.CHANNEL, tr("Received client move notify with an entry id which isn't a client. Entry id: %o"), entryId);
                 return undefined;
@@ -808,7 +827,15 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
         }
 
         let channels = event.entries.map(entryId => {
-            const entry = channelTree.findEntryId(entryId);
+            if(entryId.type !== "channel") { return; }
+
+            let entry: ServerEntry | ChannelEntry | ClientEntry;
+            if("uniqueTreeId" in entryId) {
+                entry = channelTree.findEntryId(entryId.uniqueTreeId);
+            } else {
+                entry = channelTree.findChannel(entryId.channelId);
+            }
+
             if(!entry || !(entry instanceof ChannelEntry)) {
                 logWarn(LogCategory.CHANNEL, tr("Received channel move notify with a channel id which isn't a channel. Entry id: %o"), entryId);
                 return undefined;

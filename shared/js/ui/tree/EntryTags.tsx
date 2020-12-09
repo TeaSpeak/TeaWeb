@@ -3,6 +3,8 @@ import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {getIpcInstance, IPCChannel} from "tc-shared/ipc/BrowserIPC";
 import {Settings} from "tc-shared/settings";
+import {generateDragElement, setupDragData} from "tc-shared/ui/tree/DragHelper";
+import {ClientIcon} from "svg-sprites/client-icons";
 
 const kIpcChannel = "entry-tags";
 const cssStyle = require("./EntryTags.scss");
@@ -24,6 +26,22 @@ export const ClientTag = (props: { clientName: string, clientUniqueId: string, h
                  pageY: event.pageY
              });
          }}
+         draggable={true}
+         onDragStart={event => {
+             /* clients only => move */
+             event.dataTransfer.effectAllowed = "move"; /* prohibit copying */
+             event.dataTransfer.dropEffect = "move";
+             event.dataTransfer.setDragImage(generateDragElement([{ icon: ClientIcon.PlayerOn, name: props.clientName }]), 0, 6);
+             setupDragData(event.dataTransfer, props.handlerId, [
+                 {
+                     type: "client",
+                     clientUniqueId: props.clientUniqueId,
+                     clientId: props.clientId,
+                     clientDatabaseId: props.clientDatabaseId
+                 }
+             ], "client");
+             event.dataTransfer.setData("text/plain", props.clientName);
+         }}
     >
         {props.clientName}
     </div>
@@ -42,6 +60,19 @@ export const ChannelTag = (props: { channelName: string, channelId: number, hand
                 pageX: event.pageX,
                 pageY: event.pageY
             });
+        }}
+        draggable={true}
+        onDragStart={event => {
+            event.dataTransfer.effectAllowed = "all";
+            event.dataTransfer.dropEffect = "move";
+            event.dataTransfer.setDragImage(generateDragElement([{ icon: ClientIcon.ChannelGreen, name: props.channelName }]), 0, 6);
+            setupDragData(event.dataTransfer, props.handlerId, [
+                {
+                    type: "channel",
+                    channelId: props.channelId
+                }
+            ], "channel");
+            event.dataTransfer.setData("text/plain", props.channelName);
         }}
     >
         {props.channelName}

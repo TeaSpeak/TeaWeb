@@ -37,8 +37,8 @@ export interface ChannelTreeUIEvents {
     action_channel_open_file_browser: { treeEntryId: number },
     action_client_double_click: { treeEntryId: number },
     action_client_name_submit: { treeEntryId: number, name: string },
-    action_move_clients: { targetTreeEntry: number, entries: number[] },
-    action_move_channels: { targetTreeEntry: number, mode: "before" | "after" | "child", entries: number[] },
+    action_move_clients: { targetTreeEntry: number, entries: ChannelTreeDragEntry[] },
+    action_move_channels: { targetTreeEntry: number, mode: "before" | "after" | "child", entries: ChannelTreeDragEntry[] },
 
     /* queries */
     query_tree_entries: {},
@@ -82,11 +82,30 @@ export interface ChannelTreeUIEvents {
     notify_destroy: {}
 }
 
+export type ChannelTreeDragEntry = {
+    type: "channel",
+    uniqueTreeId: number,
+} | {
+    type: "channel",
+    channelId: number
+} | {
+    type: "server"
+} | {
+    type: "client",
+
+    uniqueTreeId: number,
+} | {
+    type: "client",
+
+    clientUniqueId: string,
+    clientId?: number,
+    clientDatabaseId?: number
+};
+
 export type ChannelTreeDragData = {
     version: 1,
     handlerId: string,
     type: string,
 
-    entryIds: number[],
-    entryTypes: ("server" | "channel" | "client")[]
+    entries: ChannelTreeDragEntry[],
 };

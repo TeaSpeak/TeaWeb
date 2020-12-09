@@ -215,17 +215,19 @@ export abstract class AbstractChat<Events extends AbstractChatEvents> {
         return this.conversationMode === ChannelConversationMode.Private;
     }
 
-    protected setConversationMode(mode: ChannelConversationMode) {
+    protected setConversationMode(mode: ChannelConversationMode, logChange: boolean) {
         if(this.conversationMode === mode) {
             return;
         }
 
-        this.registerChatEvent({
-            type: "mode-changed",
-            uniqueId: guid() + "-mode-change",
-            timestamp: Date.now(),
-            newMode: mode === ChannelConversationMode.Public ? "normal" : mode === ChannelConversationMode.Private ? "private" : "none"
-        }, true);
+        if(logChange) {
+            this.registerChatEvent({
+                type: "mode-changed",
+                uniqueId: guid() + "-mode-change",
+                timestamp: Date.now(),
+                newMode: mode === ChannelConversationMode.Public ? "normal" : mode === ChannelConversationMode.Private ? "private" : "none"
+            }, true);
+        }
 
         this.conversationMode = mode;
         this.events.fire("notify_conversation_mode_changed", { newMode: mode });

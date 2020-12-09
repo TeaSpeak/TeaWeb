@@ -165,18 +165,18 @@ export class ChannelConversation extends AbstractChat<ChannelConversationEvents>
                     break;
 
                 case "private":
-                    this.setConversationMode(ChannelConversationMode.Private);
+                    this.setConversationMode(ChannelConversationMode.Private, true);
                     this.setCurrentMode("normal");
                     break;
 
                 case "success":
-                    this.setConversationMode(ChannelConversationMode.Public);
+                    this.setConversationMode(ChannelConversationMode.Public, true);
                     this.setCurrentMode("normal");
                     break;
 
                 case "unsupported":
                     this.crossChannelChatSupported = false;
-                    this.setConversationMode(ChannelConversationMode.Private);
+                    this.setConversationMode(ChannelConversationMode.Private, true);
                     this.setCurrentMode("normal");
                     break;
             }
@@ -295,8 +295,8 @@ export class ChannelConversation extends AbstractChat<ChannelConversationEvents>
         this.handle.connection.settings.changeServer(Settings.FN_CHANNEL_CHAT_READ(this.conversationId), timestamp);
     }
 
-    public setConversationMode(mode: ChannelConversationMode) {
-        super.setConversationMode(mode);
+    public setConversationMode(mode: ChannelConversationMode, logChange: boolean) {
+        super.setConversationMode(mode, logChange);
     }
 
     public localClientSwitchedChannel(type: "join" | "leave") {
@@ -356,7 +356,7 @@ export class ChannelConversationManager extends AbstractChatManager<ChannelConve
             }
 
             if("channel_conversation_mode" in event.updatedProperties) {
-                conversation.setConversationMode(event.channel.properties.channel_conversation_mode);
+                conversation.setConversationMode(event.channel.properties.channel_conversation_mode, true);
                 conversation.updateAccessState();
             }
         }));
@@ -405,6 +405,10 @@ export class ChannelConversationManager extends AbstractChatManager<ChannelConve
         let conversation = this.findConversation(channelId);
         if(!conversation) {
             conversation = new ChannelConversation(this, channelId);
+            const channel = this.connection.channelTree.findChannel(channelId);
+            if(channel) {
+                conversation.setConversationMode(channel.properties.channel_conversation_mode, false);
+            }
             this.registerConversation(conversation);
         }
 

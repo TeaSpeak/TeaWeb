@@ -5,6 +5,7 @@
     - Improved channel conversation mode detection support
     - Added support for HTML encoded links (Example would be when copying from Edge the URL)
     - Enabled context menus for all clickable client tags
+    - Allowing to drag client tags
     
 * **08.12.20**
     - Fixed the permission editor not resolving unique ids
