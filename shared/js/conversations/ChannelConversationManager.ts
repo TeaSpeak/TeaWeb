@@ -363,8 +363,8 @@ export class ChannelConversationManager extends AbstractChatManager<ChannelConve
 
         this.listenerConnection.push(connection.channelTree.events.on("notify_client_moved", event => {
             if(event.client instanceof LocalClientEntry) {
-                const fromConversation = this.findConversation(event.oldChannel.channelId);
-                const targetConversation = this.findConversation(event.newChannel.channelId);
+                const fromConversation = this.findConversation(event.oldChannel?.channelId);
+                const targetConversation = this.findConversation(event.newChannel?.channelId);
 
                 fromConversation?.updateAccessState();
                 targetConversation?.updateAccessState();

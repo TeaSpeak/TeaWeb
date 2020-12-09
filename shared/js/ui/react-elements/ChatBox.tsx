@@ -89,6 +89,30 @@ const nodeToText = (element: Node) => {
             return element.alt || element.title;
         } else if(element instanceof HTMLBRElement) {
             return '\n';
+        } else if(element instanceof HTMLAnchorElement) {
+            const content = [...element.childNodes].map(nodeToText).join("");
+
+            if(element.href) {
+                if(settings.static_global(Settings.KEY_CHAT_ENABLE_MARKDOWN)) {
+                    if(content && element.title) {
+                        return `[${content}](${element.href} "${element.title}")`;
+                    } else if(content) {
+                        return `[${content}](${element.href})`;
+                    } else {
+                        return `[${element.href}](${element.href})`;
+                    }
+                } else if(settings.static_global(Settings.KEY_CHAT_ENABLE_BBCODE)) {
+                    if(content) {
+                        return `[url=${element.href}]${content}"[/url]`;
+                    } else {
+                        return `[url]${element.href}"[/url]`;
+                    }
+                } else {
+                    return element.href;
+                }
+            } else {
+                return content;
+            }
         }
 
         if(element.children.length > 0) {
@@ -143,8 +167,9 @@ const TextInput = (props: { events: Registry<ChatBoxEvents>, enabled?: boolean, 
 
         const rawText = clipboard.getData('text/plain');
         const selection = window.getSelection();
-        if (!selection.rangeCount)
+        if (!selection.rangeCount) {
             return false;
+        }
 
         let htmlXML = clipboard.getData('text/html');
         if(!htmlXML) {
