@@ -3,7 +3,13 @@ import {useCallback, useContext, useEffect, useRef, useState} from "react";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {Registry} from "tc-shared/events";
-import {ChannelVideo, ChannelVideoEvents, ChannelVideoInfo, kLocalVideoId} from "tc-shared/ui/frames/video/Definitions";
+import {
+    ChannelVideo,
+    ChannelVideoEvents,
+    ChannelVideoInfo,
+    ChannelVideoStream,
+    kLocalVideoId
+} from "tc-shared/ui/frames/video/Definitions";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {ClientTag} from "tc-shared/ui/tree/EntryTags";
@@ -88,20 +94,43 @@ const VideoStreamReplay = React.memo((props: { stream: MediaStream | undefined, 
             video.autoplay = true;
             video.muted = true;
 
-            video.play().then(undefined).catch(() => {
-                logWarn(LogCategory.VIDEO, tr("Failed to start video replay. Retrying in 500ms intervals."));
-                refReplayTimeout.current = setInterval(() => {
-                    video.play().then(() => {
-                        clearInterval(refReplayTimeout.current);
-                        refReplayTimeout.current = undefined;
-                    }).catch(() => {});
+            const executePlay = () => {
+                if(refReplayTimeout.current) {
+                    return;
+                }
+
+                video.play().then(undefined).catch(() => {
+                    logWarn(LogCategory.VIDEO, tr("Failed to start video replay. Retrying in 500ms intervals."));
+                    refReplayTimeout.current = setInterval(() => {
+                        video.play().then(() => {
+                            clearInterval(refReplayTimeout.current);
+                            refReplayTimeout.current = undefined;
+                        }).catch(() => {});
+                    });
                 });
-            });
+            };
+
+            video.onpause = () => {
+                logWarn(LogCategory.VIDEO, tr("Video replay paused. Executing play again."));
+                executePlay();
+            }
+
+            video.onended = () => {
+                logWarn(LogCategory.VIDEO, tr("Video replay ended. Executing play again."));
+                executePlay();
+            }
+            executePlay();
         } else {
             video.style.opacity = "0";
         }
 
         return () => {
+            const video = refVideo.current;
+            if(video) {
+                video.onpause = undefined;
+                video.onended = undefined;
+            }
+
             clearInterval(refReplayTimeout.current);
             refReplayTimeout.current = undefined;
         }
@@ -112,12 +141,45 @@ const VideoStreamReplay = React.memo((props: { stream: MediaStream | undefined, 
     )
 });
 
+const VideoAvailableRenderer = (props: {  callbackEnable: () => void, callbackIgnore?: () => void, className?: string }) => (
+    <div className={cssStyle.text + " " + props.className} key={"video-muted"}>
+        <div className={cssStyle.videoAvailable}>
+            <Translatable>Video available</Translatable>
+            <div className={cssStyle.buttons}>
+                <div className={cssStyle.button2} onClick={props.callbackEnable}>
+                    <Translatable>Watch</Translatable>
+                </div>
+                {!props.callbackIgnore ? undefined :
+                    <div className={cssStyle.button2} key={"ignore"} onClick={props.callbackIgnore}>
+                        <Translatable>Ignore</Translatable>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+);
+
+const VideoStreamRenderer = (props: { stream: ChannelVideoStream, callbackEnable: () => void, callbackIgnore: () => void, videoTitle: string, className?: string }) => {
+    if(props.stream === "available") {
+        return <VideoAvailableRenderer callbackEnable={props.callbackEnable} callbackIgnore={props.callbackIgnore} className={props.className} key={"available"} />;
+    } else if(props.stream === undefined) {
+        return (
+            <div className={cssStyle.text} key={"no-video-stream"}>
+                <div><Translatable>No Video</Translatable></div>
+            </div>
+        );
+    } else {
+        return <VideoStreamReplay stream={props.stream} className={props.className} title={props.videoTitle} key={"video-renderer"} />;
+    }
+}
+
 const VideoPlayer = React.memo((props: { videoId: string }) => {
     const events = useContext(EventContext);
     const [ state, setState ] = useState<"loading" | ChannelVideo>(() => {
         events.fire("query_video", { videoId: props.videoId });
         return "loading";
     });
+
     events.reactUse("notify_video", event => {
         if(event.videoId === props.videoId) {
             setState(event.status);
@@ -143,40 +205,83 @@ const VideoPlayer = React.memo((props: { videoId: string }) => {
             </div>
         );
     } else if(state.status === "connected") {
-        const desktopStream = state.desktopStream === "muted" ? undefined : state.desktopStream;
-        const cameraStream = state.cameraStream === "muted" ? undefined : state.cameraStream;
+        const streamElements = [];
+        const streamClasses = [cssStyle.videoPrimary, cssStyle.videoSecondary];
 
-        if(desktopStream && cameraStream) {
-            return (
-                <React.Fragment key={"replay-multi"}>
-                    <VideoStreamReplay stream={desktopStream} className={cssStyle.videoPrimary} title={tr("Screen")} />
-                    <VideoStreamReplay stream={cameraStream} className={cssStyle.videoSecondary} title={tr("Camera")} />
-                </React.Fragment>
+        if(state.desktopStream === "available" && (state.cameraStream === "available" || state.cameraStream === undefined) ||
+            state.cameraStream === "available" && (state.desktopStream === "available" || state.desktopStream === undefined)
+        ) {
+            /* One or both streams are available. Showing just one box. */
+            streamElements.push(
+                <VideoAvailableRenderer
+                    key={"video-available"}
+                    callbackEnable={() => {
+                        if(state.desktopStream === "available") {
+                            events.fire("action_toggle_mute", { broadcastType: "screen", muted: false, videoId: props.videoId })
+                        }
+
+                        if(state.cameraStream === "available") {
+                            events.fire("action_toggle_mute", { broadcastType: "camera", muted: false, videoId: props.videoId })
+                        }
+                    }}
+                    className={streamClasses.pop_front()}
+                />
             );
         } else {
-            const stream = desktopStream || cameraStream;
-            if(stream) {
-                return (
-                    <VideoStreamReplay stream={stream} key={"replay-single"} className={cssStyle.videoPrimary} title={desktopStream ? tr("Screen") : tr("Camera")} />
-                );
-            } else if(state.desktopStream || state.cameraStream) {
-                return (
-                    <div className={cssStyle.text} key={"video-muted"}>
-                        <div><Translatable>Video muted</Translatable></div>
-                    </div>
-                );
-            } else {
-                return (
-                    <div className={cssStyle.text} key={"no-video-stream"}>
-                        <div><Translatable>No Video</Translatable></div>
-                    </div>
-                );
+            if(state.desktopStream) {
+                if(!state.dismissed["screen"] || state.desktopStream !== "available") {
+                    streamElements.push(
+                        <VideoStreamRenderer
+                            key={"screen"}
+                            stream={state.desktopStream}
+                            callbackEnable={() => events.fire("action_toggle_mute", { broadcastType: "screen", muted: false, videoId: props.videoId })}
+                            callbackIgnore={() => events.fire("action_dismiss", { broadcastType: "screen", videoId: props.videoId })}
+                            videoTitle={tr("Screen")}
+                            className={streamClasses.pop_front()}
+                        />
+                    );
+                }
+            }
+
+            if(state.cameraStream) {
+                if(!state.dismissed["camera"] || state.cameraStream !== "available") {
+                    streamElements.push(
+                        <VideoStreamRenderer
+                            key={"camera"}
+                            stream={state.cameraStream}
+                            callbackEnable={() => events.fire("action_toggle_mute", { broadcastType: "camera", muted: false, videoId: props.videoId })}
+                            callbackIgnore={() => events.fire("action_dismiss", { broadcastType: "camera", videoId: props.videoId })}
+                            videoTitle={tr("Camera")}
+                            className={streamClasses.pop_front()}
+                        />
+                    );
+                }
             }
         }
+
+        if(streamElements.length === 0){
+            return (
+                <div className={cssStyle.text} key={"no-video-stream"}>
+                    <div>
+                        {props.videoId === kLocalVideoId ?
+                            <Translatable key={"own"}>You're not broadcasting video</Translatable> :
+                            <Translatable key={"general"}>No Video</Translatable>
+                        }
+                    </div>
+                </div>
+            );
+        }
+
+        return <>{streamElements}</>;
     } else if(state.status === "no-video") {
         return (
             <div className={cssStyle.text} key={"no-video"}>
-                <div><Translatable>No Video</Translatable></div>
+                <div>
+                    {props.videoId === kLocalVideoId ?
+                        <Translatable key={"own"}>You're not broadcasting video</Translatable> :
+                        <Translatable key={"general"}>No Video</Translatable>
+                    }
+                </div>
             </div>
         );
     }
@@ -288,18 +393,11 @@ const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolea
             <VideoPlayer videoId={props.videoId} />
             <VideoInfo videoId={props.videoId} />
             <div className={cssStyle.actionIcons}>
-                <div className={cssStyle.iconContainer + " " + (!fullscreenCapable ? cssStyle.hidden : "")}
-                     onClick={() => {
-                        if(props.isSpotlight) {
-                            events.fire("action_set_fullscreen", { videoId: isFullscreen ? undefined : props.videoId });
-                        } else {
-                            events.fire("action_set_spotlight", { videoId: props.videoId, expend: true });
-                            events.fire("action_focus_spotlight", { });
-                        }
-                     }}
-                     title={props.isSpotlight ? tr("Toggle fullscreen") : tr("Toggle spotlight")}
+                <div className={cssStyle.iconContainer + " " + cssStyle.toggle + " " + toggleClass("screen")}
+                     onClick={() => events.fire("action_toggle_mute", { videoId: props.videoId, broadcastType: "screen", muted: muteState.screen === "available" })}
+                     title={muteState["screen"] === "muted" ? tr("Unmute screen video") : tr("Mute screen video")}
                 >
-                    <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.Fullscreen} />
+                    <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.ShareScreen} />
                 </div>
                 <div className={cssStyle.iconContainer + " " + cssStyle.toggle + " " + toggleClass("camera")}
                      onClick={() => events.fire("action_toggle_mute", { videoId: props.videoId, broadcastType: "camera", muted: muteState.camera === "available" })}
@@ -307,11 +405,18 @@ const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolea
                 >
                     <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.VideoMuted} />
                 </div>
-                <div className={cssStyle.iconContainer + " " + cssStyle.toggle + " " + toggleClass("screen")}
-                     onClick={() => events.fire("action_toggle_mute", { videoId: props.videoId, broadcastType: "screen", muted: muteState.screen === "available" })}
-                     title={muteState["screen"] === "muted" ? tr("Unmute screen video") : tr("Mute screen video")}
+                <div className={cssStyle.iconContainer + " " + (!fullscreenCapable ? cssStyle.hidden : "")}
+                     onClick={() => {
+                         if(props.isSpotlight) {
+                             events.fire("action_set_fullscreen", { videoId: isFullscreen ? undefined : props.videoId });
+                         } else {
+                             events.fire("action_set_spotlight", { videoId: props.videoId, expend: true });
+                             events.fire("action_focus_spotlight", { });
+                         }
+                     }}
+                     title={props.isSpotlight ? tr("Toggle fullscreen") : tr("Toggle spotlight")}
                 >
-                    <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.ShareScreen} />
+                    <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.Fullscreen} />
                 </div>
             </div>
         </div>

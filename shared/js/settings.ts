@@ -520,6 +520,27 @@ export class Settings extends StaticSettings {
         valueType: "boolean",
     };
 
+    static readonly KEY_VIDEO_SHOW_ALL_CLIENTS: ValuedSettingsKey<boolean> = {
+        key: 'video_show_all_clients',
+        defaultValue: false,
+        description: "Show all clients within the video frame, even if they're not broadcasting video",
+        valueType: "boolean",
+    };
+
+    static readonly KEY_VIDEO_FORCE_SHOW_OWN_VIDEO: ValuedSettingsKey<boolean> = {
+        key: 'video_force_show_own_video',
+        defaultValue: true,
+        description: "Show own video preview even if you're not broadcasting any video",
+        valueType: "boolean",
+    };
+
+    static readonly KEY_VIDEO_AUTO_SUBSCRIBE_MODE: ValuedSettingsKey<number> = {
+        key: 'video_auto_subscribe_mode',
+        defaultValue: 1,
+        description: "Auto subscribe to incoming videos.\n0 := Do not auto subscribe.\n1 := Auto subscribe to the first video.\n2 := Subscribe to all incoming videos.",
+        valueType: "number",
+    };
+
     static readonly FN_LOG_ENABLED: (category: string) => SettingsKey<boolean> = category => {
         return {
             key: "log." + category.toLowerCase() + ".enabled",

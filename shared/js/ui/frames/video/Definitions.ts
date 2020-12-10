@@ -4,14 +4,17 @@ import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
 export const kLocalVideoId = "__local__video__";
 
 export type ChannelVideoInfo = { clientName: string, clientUniqueId: string, clientId: number, statusIcon: ClientIcon };
+export type ChannelVideoStream = "available" | MediaStream | undefined;
 
 export type ChannelVideo ={
     status: "initializing",
 } | {
     status: "connected",
 
-    cameraStream: "muted" | MediaStream | undefined,
-    desktopStream: "muted" | MediaStream | undefined
+    cameraStream: ChannelVideoStream,
+    desktopStream: ChannelVideoStream,
+
+    dismissed: {[T in VideoBroadcastType]: boolean}
 } | {
     status: "error",
     message: string
@@ -61,6 +64,7 @@ export interface ChannelVideoEvents {
     action_focus_spotlight: {},
     action_set_fullscreen: { videoId: string | undefined },
     action_toggle_mute: { videoId: string, broadcastType: VideoBroadcastType, muted: boolean },
+    action_dismiss: { videoId: string, broadcastType: VideoBroadcastType },
 
     query_expended: {},
     query_videos: {},
