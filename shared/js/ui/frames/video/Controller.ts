@@ -6,8 +6,9 @@ import {Registry} from "tc-shared/events";
 import {ChannelVideoEvents, kLocalVideoId} from "tc-shared/ui/frames/video/Definitions";
 import {VideoBroadcastState, VideoBroadcastType, VideoConnection} from "tc-shared/connection/VideoConnection";
 import {ClientEntry, ClientType, LocalClientEntry, MusicClientEntry} from "tc-shared/tree/Client";
-import {LogCategory, logWarn} from "tc-shared/log";
-import { tr } from "tc-shared/i18n/localize";
+import {LogCategory, logError, logWarn} from "tc-shared/log";
+import {tr} from "tc-shared/i18n/localize";
+import {Settings, settings} from "tc-shared/settings";
 
 const cssStyle = require("./Renderer.scss");
 
@@ -15,6 +16,7 @@ let videoIdIndex = 0;
 interface ClientVideoController {
     destroy();
     toggleMuteState(type: VideoBroadcastType, state: boolean);
+    dismissVideo(type: VideoBroadcastType);
 
     notifyVideoInfo();
     notifyVideo();
@@ -30,12 +32,11 @@ class RemoteClientVideoController implements ClientVideoController {
     protected eventListener: (() => void)[];
     protected eventListenerVideoClient: (() => void)[];
 
-    protected mutedState: {[T in VideoBroadcastType]: boolean} = {
+    private currentBroadcastState: boolean;
+    private dismissed: {[T in VideoBroadcastType]: boolean} = {
         screen: false,
         camera: false
     };
-
-    private currentBroadcastState: boolean;
 
     constructor(client: ClientEntry, eventRegistry: Registry<ChannelVideoEvents>, videoId?: string) {
         this.client = client;
@@ -54,7 +55,10 @@ class RemoteClientVideoController implements ClientVideoController {
             this.events.fire_react("notify_video_info_status", { videoId: this.videoId, statusIcon: event.newIcon });
         }));
 
-        events.push(client.events.on("notify_video_handle_changed", () => this.updateVideoClient()));
+        events.push(client.events.on("notify_video_handle_changed", () => {
+            Object.keys(this.dismissed).forEach(key => this.dismissed[key] = false);
+            this.updateVideoClient();
+        }));
 
         this.updateVideoClient();
     }
@@ -65,7 +69,12 @@ class RemoteClientVideoController implements ClientVideoController {
 
         const videoClient = this.client.getVideoClient();
         if(videoClient) {
-            events.push(videoClient.getEvents().on("notify_broadcast_state_changed", () => {
+            events.push(videoClient.getEvents().on("notify_broadcast_state_changed", event => {
+                console.error("Broadcast state changed: %o - %o - %o", event.broadcastType, VideoBroadcastState[event.oldState], VideoBroadcastState[event.newState]);
+                if(event.newState === VideoBroadcastState.Stopped || event.oldState === VideoBroadcastState.Stopped) {
+                    /* we've a new broadcast which hasn't been dismissed yet */
+                    this.dismissed[event.broadcastType] = false;
+                }
                 this.notifyVideo();
                 this.notifyMuteState();
             }));
@@ -85,12 +94,27 @@ class RemoteClientVideoController implements ClientVideoController {
         return videoClient && (videoClient.getVideoState("camera") !== VideoBroadcastState.Stopped || videoClient.getVideoState("screen") !== VideoBroadcastState.Stopped);
     }
 
-    toggleMuteState(type: VideoBroadcastType, state: boolean) {
-        if(this.mutedState[type] === state) { return; }
+    toggleMuteState(type: VideoBroadcastType, muted: boolean) {
+        if(muted) {
+            this.client.getVideoClient().leaveBroadcast(type);
+        } else {
+            /* we explicitly specified that we don't want to have that */
+            this.dismissed[type] = true;
 
-        this.mutedState[type] = state;
+            this.client.getVideoClient().joinBroadcast(type).catch(error => {
+                logError(LogCategory.VIDEO, tr("Failed to join video broadcast: %o"), error);
+                /* TODO: Propagate error? */
+            });
+        }
+    }
+
+    dismissVideo(type: VideoBroadcastType) {
+        if(this.dismissed[type] === true) {
+            return;
+        }
+
+        this.dismissed[type] = true;
         this.notifyVideo();
-        this.notifyMuteState();
     }
 
     notifyVideoInfo() {
@@ -113,21 +137,19 @@ class RemoteClientVideoController implements ClientVideoController {
             let cameraStream, desktopStream;
 
             const stateCamera = this.getBroadcastState("camera");
-            if(stateCamera === VideoBroadcastState.Running) {
+            if(stateCamera === VideoBroadcastState.Available) {
+                cameraStream = "available";
+            } else if(stateCamera === VideoBroadcastState.Running) {
                 cameraStream = this.getBroadcastStream("camera")
-                if(cameraStream && this.mutedState["camera"]) {
-                    cameraStream = "muted";
-                }
             } else if(stateCamera === VideoBroadcastState.Initializing) {
                 initializing = true;
             }
 
             const stateScreen = this.getBroadcastState("screen");
-            if(stateScreen === VideoBroadcastState.Running) {
+            if(stateScreen === VideoBroadcastState.Available) {
+                desktopStream = "available";
+            } else if(stateScreen === VideoBroadcastState.Running) {
                 desktopStream = this.getBroadcastStream("screen");
-                if(desktopStream && this.mutedState["screen"]) {
-                    desktopStream = "muted";
-                }
             } else if(stateScreen === VideoBroadcastState.Initializing) {
                 initializing = true;
             }
@@ -141,6 +163,8 @@ class RemoteClientVideoController implements ClientVideoController {
 
                         desktopStream: desktopStream,
                         cameraStream: cameraStream,
+
+                        dismissed: this.dismissed
                     }
                 });
             } else if(initializing) {
@@ -156,7 +180,9 @@ class RemoteClientVideoController implements ClientVideoController {
                         status: "connected",
 
                         cameraStream: undefined,
-                        desktopStream: undefined
+                        desktopStream: undefined,
+
+                        dismissed: this.dismissed
                     }
                 });
             }
@@ -179,8 +205,8 @@ class RemoteClientVideoController implements ClientVideoController {
         this.events.fire_react("notify_video_mute_status", {
             videoId: this.videoId,
             status: {
-                camera: this.getBroadcastStream("camera") ? this.mutedState["camera"] ? "muted" : "available" : "unset",
-                screen: this.getBroadcastStream("screen") ? this.mutedState["screen"] ? "muted" : "available" : "unset",
+                camera: this.getBroadcastState("camera") === VideoBroadcastState.Available ? "muted" : this.getBroadcastState("camera") === VideoBroadcastState.Stopped ? "unset" : "available",
+                screen: this.getBroadcastState("screen") === VideoBroadcastState.Available ? "muted" : this.getBroadcastState("screen") === VideoBroadcastState.Stopped ? "unset" : "available",
             }
         });
     }
@@ -305,6 +331,16 @@ class ChannelVideoController {
             controller.toggleMuteState(event.broadcastType, event.muted);
         });
 
+        this.events.on("action_dismiss", event => {
+            const controller = this.findVideoById(event.videoId);
+            if(!controller) {
+                logWarn(LogCategory.VIDEO, tr("Tried to dismiss video for a non existing video id (%s)."), event.videoId);
+                return;
+            }
+
+            controller.dismissVideo(event.broadcastType);
+        });
+
         this.events.on("query_expended", () => this.events.fire_react("notify_expended", { expended: this.expended }));
         this.events.on("query_videos", () => this.notifyVideoList());
         this.events.on("query_spotlight", () => this.notifySpotlight());
@@ -398,6 +434,9 @@ class ChannelVideoController {
                 this.notifyVideoList();
             }
         }));
+
+        events.push(settings.globalChangeListener(Settings.KEY_VIDEO_SHOW_ALL_CLIENTS, () => this.notifyVideoList()));
+        events.push(settings.globalChangeListener(Settings.KEY_VIDEO_FORCE_SHOW_OWN_VIDEO, () => this.notifyVideoList()));
     }
 
     setSpotlight(videoId: string | undefined) {
@@ -486,10 +525,15 @@ class ChannelVideoController {
     private notifyVideoList() {
         const videoIds = [];
 
-        let videoCount = 0;
+        let videoStreamingCount = 0;
         if(this.localVideoController) {
-            videoIds.push(this.localVideoController.videoId);
-            if(this.localVideoController.isBroadcasting()) { videoCount++; }
+            const localBroadcasting = this.localVideoController.isBroadcasting();
+            if(localBroadcasting || settings.static_global(Settings.KEY_VIDEO_FORCE_SHOW_OWN_VIDEO)) {
+                videoIds.push(this.localVideoController.videoId);
+                if(localBroadcasting) {
+                    videoStreamingCount++;
+                }
+            }
         }
 
         const channel = this.connection.channelTree.findChannel(this.currentChannelId);
@@ -503,15 +547,15 @@ class ChannelVideoController {
 
                 const controller = this.clientVideos[client.clientId()];
                 if(controller.isBroadcasting()) {
-                    videoCount++;
-                } else {
-                    /* TODO: Filter if video is active */
+                    videoStreamingCount++;
+                } else if(!settings.static_global(Settings.KEY_VIDEO_SHOW_ALL_CLIENTS)) {
+                    continue;
                 }
                 videoIds.push(controller.videoId);
             }
         }
 
-        this.updateVisibility(videoCount !== 0);
+        this.updateVisibility(videoStreamingCount !== 0);
         if(this.expended) {
             videoIds.remove(this.currentSpotlight);
         }

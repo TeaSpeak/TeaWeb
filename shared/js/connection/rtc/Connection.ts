@@ -291,6 +291,8 @@ class CommandHandler extends AbstractCommandHandler {
             } else {
                 logWarn(LogCategory.WEBRTC, tr("Received unknown/invalid rtc track state: %d"), state);
             }
+        } else if(command.command === "notifybroadcastvideo") {
+            /* FIXME: TODO! */
         }
         return false;
     }
@@ -920,8 +922,12 @@ export class RTCConnection {
 
     private handleLocalIceCandidate(candidate: RTCIceCandidate | undefined) {
         if(candidate) {
+            console.error(candidate.candidate);
             if(candidate.address?.endsWith(".local")) {
                 logTrace(LogCategory.WEBRTC, tr("Skipping local fqdn ICE candidate %s"), candidate.toJSON().candidate);
+                return;
+            }
+            if(candidate.protocol !== "tcp") {
                 return;
             }
             this.localCandidateCount++;

@@ -27,9 +27,7 @@ type VideoBroadcast = {
 export class RtpVideoConnection implements VideoConnection {
     private readonly rtcConnection: RTCConnection;
     private readonly events: Registry<VideoConnectionEvent>;
-    private readonly listenerClientMoved;
-    private readonly listenerRtcStateChanged;
-    private readonly listenerConnectionStateChanged;
+    private readonly listener: (() => void)[];
     private connectionState: VideoConnectionStatus;
 
     private broadcasts: {[T in VideoBroadcastType]: VideoBroadcast} = {
@@ -43,10 +41,19 @@ export class RtpVideoConnection implements VideoConnection {
         this.events = new Registry<VideoConnectionEvent>();
         this.setConnectionState(VideoConnectionStatus.Disconnected);
 
-        this.listenerClientMoved = this.rtcConnection.getConnection().command_handler_boss().register_explicit_handler("notifyclientmoved", event => {
-            const localClientId = this.rtcConnection.getConnection().client.getClientId();
+        this.listener = [];
+
+        /* We only have to listen for move events since if the client is leaving the broadcast will be terminated anyways */
+        this.listener.push(this.rtcConnection.getConnection().command_handler_boss().register_explicit_handler("notifyclientmoved", event => {
+            const localClient = this.rtcConnection.getConnection().client.getClient();
             for(const data of event.arguments) {
-                if(parseInt(data["clid"]) === localClientId) {
+                const clientId = parseInt(data["clid"]);
+                if(clientId === localClient.clientId()) {
+                    Object.values(this.registeredClients).forEach(client => {
+                        client.setBroadcastId("screen", undefined);
+                        client.setBroadcastId("camera", undefined);
+                    });
+
                     if(settings.static_global(Settings.KEY_STOP_VIDEO_ON_SWITCH)) {
                         this.stopBroadcasting("camera", true);
                         this.stopBroadcasting("screen", true);
@@ -55,18 +62,72 @@ export class RtpVideoConnection implements VideoConnection {
                         this.restartBroadcast("screen");
                         this.restartBroadcast("camera");
                     }
+                } else if(parseInt("scid") === localClient.currentChannel().channelId) {
+                    const broadcast = this.registeredClients[clientId];
+                    broadcast?.setBroadcastId("screen", undefined);
+                    broadcast?.setBroadcastId("camera", undefined);
                 }
             }
-        });
-        this.listenerConnectionStateChanged = this.rtcConnection.getConnection().events.on("notify_connection_state_changed", event => {
+        }));
+
+        this.listener.push(this.rtcConnection.getConnection().command_handler_boss().register_explicit_handler("notifybroadcastvideo", event => {
+            const assignedClients: { clientId: number, broadcastType: VideoBroadcastType }[] = [];
+            for(const data of event.arguments) {
+                if(!("bid" in data)) {
+                    continue;
+                }
+
+                const broadcastId = parseInt(data["bid"]);
+                const broadcastType = parseInt(data["bt"]);
+                const sourceClientId = parseInt(data["sclid"]);
+
+                if(!this.registeredClients[sourceClientId]) {
+                    logWarn(LogCategory.VIDEO, tr("Received video broadcast info about a not registered client (%d)"), sourceClientId);
+                    /* TODO: Cache the value! */
+                    continue;
+                }
+
+                let videoBroadcastType: VideoBroadcastType;
+                switch(broadcastType) {
+                    case 0x00:
+                        videoBroadcastType = "camera";
+                        break;
+
+                    case 0x01:
+                        videoBroadcastType = "screen";
+                        break;
+
+                    default:
+                        logWarn(LogCategory.VIDEO, tr("Received video broadcast info with an invalid video broadcast type: %d."), broadcastType);
+                        continue;
+                }
+
+                this.registeredClients[sourceClientId].setBroadcastId(videoBroadcastType, broadcastId);
+                assignedClients.push({ broadcastType: videoBroadcastType, clientId: sourceClientId });
+            }
+
+            const broadcastTypes: VideoBroadcastType[] = ["screen", "camera"];
+            Object.values(this.registeredClients).forEach(client => {
+                for(const type of broadcastTypes) {
+                    if(assignedClients.findIndex(assignment => assignment.broadcastType === type && assignment.clientId === client.getClientId()) !== -1) {
+                        continue;
+                    }
+
+                    client.setBroadcastId(type, undefined);
+                }
+            });
+        }));
+
+        this.listener.push(this.rtcConnection.getConnection().events.on("notify_connection_state_changed", event => {
             if(event.newState !== ConnectionState.CONNECTED) {
                 this.stopBroadcasting("camera");
                 this.stopBroadcasting("screen");
             }
-        });
+        }));
 
-        this.listenerRtcStateChanged = this.rtcConnection.getEvents().on("notify_state_changed", event => this.handleRtcConnectionStateChanged(event));
-        this.rtcConnection.getEvents().on("notify_video_assignment_changed", event => {
+        this.listener.push(this.rtcConnection.getEvents().on("notify_state_changed", event => this.handleRtcConnectionStateChanged(event)));
+
+        this.listener.push(this.rtcConnection.getEvents().on("notify_video_assignment_changed", event => {
             if(event.info) {
                 switch (event.info.media) {
                     case 2:
@@ -86,7 +147,7 @@ export class RtpVideoConnection implements VideoConnection {
                 this.handleVideoAssignmentChanged("screen", event);
                 this.handleVideoAssignmentChanged("camera", event);
             }
-        });
+        }));
     }
 
     private setConnectionState(state: VideoConnectionStatus) {
@@ -121,9 +182,10 @@ export class RtpVideoConnection implements VideoConnection {
     }
 
     destroy() {
-        this.listenerClientMoved();
-        this.listenerRtcStateChanged();
-        this.listenerConnectionStateChanged();
+        this.listener.forEach(callback => callback());
+        this.listener.splice(0, this.listener.length);
+
+        this.events.destroy();
     }
 
     getEvents(): Registry<VideoConnectionEvent> {
@@ -229,7 +291,7 @@ export class RtpVideoConnection implements VideoConnection {
             throw tr("a video client with this id has already been registered");
         }
 
-        return this.registeredClients[clientId] = new RtpVideoClient(clientId);
+        return this.registeredClients[clientId] = new RtpVideoClient(this.rtcConnection, clientId);
     }
 
     registeredVideoClients(): VideoClient[] {

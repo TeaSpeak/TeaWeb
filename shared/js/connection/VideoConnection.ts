@@ -41,9 +41,12 @@ export enum VideoConnectionStatus {
 }
 
 export enum VideoBroadcastState {
+    Stopped,
+    Available, /* A stream is available but we've not joined it */
     Initializing,
     Running,
-    Stopped,
+    /* We've a stream but the stream does not replays anything */
+    Buffering,
 }
 
 export interface VideoClientEvents {
@@ -56,6 +59,9 @@ export interface VideoClient {
 
     getVideoState(broadcastType: VideoBroadcastType) : VideoBroadcastState;
     getVideoStream(broadcastType: VideoBroadcastType) : MediaStream;
+
+    joinBroadcast(broadcastType: VideoBroadcastType) : Promise<void>;
+    leaveBroadcast(broadcastType: VideoBroadcastType);
 }
 
 export interface VideoConnection {
