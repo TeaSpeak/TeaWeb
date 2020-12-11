@@ -29,7 +29,13 @@ export interface ClientGlobalControlEvents {
         videoUrl: string,
         handlerId: string
     },
-    action_toggle_video_broadcasting: { connection: ConnectionHandler, enabled: boolean, broadcastType: VideoBroadcastType, quickSelect?: boolean }
+    action_toggle_video_broadcasting: {
+        connection: ConnectionHandler,
+        enabled: boolean,
+        broadcastType: VideoBroadcastType,
+        quickSelect?: boolean,
+        defaultDevice?: string
+    }
 
     /* some more specific window openings */
     action_open_window_connect: {

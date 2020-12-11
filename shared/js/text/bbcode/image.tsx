@@ -7,11 +7,12 @@ import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import * as image_preview from "tc-shared/ui/frames/image_preview";
 
-const regexImage = /^(?:https?):(?:\/{1,3}|\\)[-a-zA-Z0-9:;,@#%&()~_?+=\/\\.]*$/g;
+export const regexImage = /^(?:https?):(?:\/{1,3}|\\)[-a-zA-Z0-9:;,@#%&()~_?+=\/\\.]*$/g;
 
 function loadImageForElement(element: HTMLImageElement) {
-    if(!element.hasAttribute("x-image-url"))
+    if(!element.hasAttribute("x-image-url")) {
         return;
+    }
 
     const url = decodeURIComponent(element.getAttribute("x-image-url") || "");
     element.removeAttribute("x-image-url");
@@ -65,13 +66,15 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
                 let target;
                 let content = rendererText.render(element);
                 if (!element.options) {
-                    target = content;
-                } else
-                    target = element.options;
+                    target = content?.trim();
+                } else {
+                    target = element.options?.trim();
+                }
 
                 regexImage.lastIndex = 0;
-                if (!regexImage.test(target))
+                if (!regexImage.test(target)) {
                     return <React.Fragment key={"er-" + ++reactId}>{"[img]" + content + "[/img]"}</React.Fragment>;
+                }
 
                 return (
                     <div key={"irc-" + ++reactId} className={"xbbcode-tag-img"}>

@@ -1,4 +1,9 @@
 # Changelog:
+* **12.12.20**
+    - Improved screen sharing and camara selection
+    - Showing the echoed own stream from the server instead of the local one
+    - Fixed a few minor issues with the auto url tokenizer
+    
 * **09.12.20**
     - Fixed the private messages unread indicator
     - Properly updating the private message unread count

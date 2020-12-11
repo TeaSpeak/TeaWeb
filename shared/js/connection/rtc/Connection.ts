@@ -11,6 +11,7 @@ import {SdpCompressor, SdpProcessor} from "./SdpUtils";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {WhisperTarget} from "tc-shared/voice/VoiceWhisper";
 import {globalAudioContext} from "tc-backend/audio/player";
+import * as sdpTransform from "sdp-transform";
 
 const kSdpCompressionMode = 1;
 
@@ -200,6 +201,7 @@ class CommandHandler extends AbstractCommandHandler {
                     sdp: sdp,
                     type: "answer"
                 }).then(() => {
+                    this.handle["cachedRemoteSessionDescription"] = sdp;
                     this.handle["peerRemoteDescriptionReceived"] = true;
                     this.handle.applyCachedRemoteIceCandidates();
                 }).catch(error => {
@@ -207,6 +209,7 @@ class CommandHandler extends AbstractCommandHandler {
                     this.handle["handleFatalError"](tr("Failed to set the remote description (answer)"), true);
                 });
             } else if(data.mode === "offer") {
+                this.handle["cachedRemoteSessionDescription"] = sdp;
                 this.handle["peer"].setRemoteDescription({
                     sdp: sdp,
                     type: "offer"
@@ -498,6 +501,8 @@ export class RTCConnection {
     private peerRemoteDescriptionReceived: boolean;
     private cachedRemoteIceCandidates: { candidate: RTCIceCandidate, mediaLine: number }[];
 
+    private cachedRemoteSessionDescription: string;
+
     private currentTracks: {[T in RTCSourceTrackType]: MediaStreamTrack | undefined} = {
         "audio-whisper": undefined,
         "video-screen": undefined,
@@ -592,6 +597,7 @@ export class RTCConnection {
         }
         this.peerRemoteDescriptionReceived = false;
         this.cachedRemoteIceCandidates = [];
+        this.cachedRemoteSessionDescription = undefined;
 
         clearTimeout(this.connectTimeout);
         Object.keys(this.currentTransceiver).forEach(key => this.currentTransceiver[key] = undefined);
@@ -625,7 +631,7 @@ export class RTCConnection {
         }
     }
 
-    async setTrackSource(type: RTCSourceTrackType, source: MediaStreamTrack | null) {
+    async setTrackSource(type: RTCSourceTrackType, source: MediaStreamTrack | null) : Promise<MediaStreamTrack> {
         switch (type) {
             case "audio":
             case "audio-whisper":
@@ -642,8 +648,9 @@ export class RTCConnection {
             return;
         }
 
-        this.currentTracks[type] = source;
+        const oldTrack = this.currentTracks[type] = source;
         await this.updateTracks();
+        return oldTrack;
     }
 
     /**
@@ -791,13 +798,17 @@ export class RTCConnection {
             iceServers: [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }]
         });
 
+        const kAddGenericTransceiver = false;
+
         if(this.audioSupport) {
             this.currentTransceiver["audio"] = this.peer.addTransceiver("audio");
             this.currentTransceiver["audio-whisper"] = this.peer.addTransceiver("audio");
 
             /* add some other transceivers for later use */
-            for(let i = 0; i < 8; i++) {
-                this.peer.addTransceiver("audio");
+            for(let i = 0; i < 8 && kAddGenericTransceiver; i++) {
+                const transceiver = this.peer.addTransceiver("audio");
+                /* we only want to received on that and don't share any bandwidth limits */
+                transceiver.direction = "recvonly";
             }
         }
 
@@ -805,8 +816,10 @@ export class RTCConnection {
         this.currentTransceiver["video-screen"] = this.peer.addTransceiver("video");
 
         /* add some other transceivers for later use */
-        for(let i = 0; i < 4; i++) {
-            this.peer.addTransceiver("video");
+        for(let i = 0; i < 4 && kAddGenericTransceiver; i++) {
+            const transceiver = this.peer.addTransceiver("video");
+            /* we only want to received on that and don't share any bandwidth limits */
+            transceiver.direction = "recvonly";
         }
 
         this.peer.onicecandidate = event => this.handleLocalIceCandidate(event.candidate);
@@ -855,6 +868,20 @@ export class RTCConnection {
             }
 
             await this.currentTransceiver[type].sender.replaceTrack(target);
+            if(target) {
+                console.error("Setting sendrecv from %o", this.currentTransceiver[type].direction, this.currentTransceiver[type].currentDirection);
+                this.currentTransceiver[type].direction = "sendrecv";
+            } else if(type === "video" || type === "video-screen") {
+                /*
+                 * We don't need to stop & start the audio transceivers every time we're toggling the stream state.
+                 * This would be a much overall cost than just keeping it going.
+                 *
+                 * The video streams instead are not toggling that much and since they split up the bandwidth between them,
+                 * we've to shut them down if they're no needed. This not only allows the one stream to take full advantage
+                 * of the bandwidth it also reduces resource usage.
+                 */
+                //this.currentTransceiver[type].direction = "recvonly";
+            }
             logTrace(LogCategory.WEBRTC, "Replaced track for %o (Fallback: %o)", type, target === fallback);
         }
     }
@@ -1005,7 +1032,7 @@ export class RTCConnection {
         logTrace(LogCategory.WEBRTC, tr("Peer signalling state changed to %s"), this.peer.signalingState);
     }
     private handleNegotiationNeeded() {
-        logWarn(LogCategory.WEBRTC, tr("Local peer needs negotiation, but we don't support client sideded negotiation."));
+        logWarn(LogCategory.WEBRTC, tr("Local peer needs negotiation, but that's not supported that."));
     }
     private handlePeerConnectionStateChanged() {
         logTrace(LogCategory.WEBRTC, tr("Peer connection state changed to %s"), this.peer.connectionState);

@@ -1,5 +1,4 @@
 import * as sdpTransform from "sdp-transform";
-import {MediaDescription} from "sdp-transform";
 import { tr } from "tc-shared/i18n/localize";
 
 interface SdpCodec {
@@ -49,9 +48,10 @@ export class SdpProcessor {
             rtcpFb: [ "nack", "nack pli", "ccm fir", "transport-cc" ],
             //42001f | Original: 42e01f
             fmtp: {
-                "level-asymmetry-allowed": 1, "packetization-mode": 1, "profile-level-id": "42e01f", "max-br": 25000, "max-fr": 30,
-                "x-google-max-bitrate": 22 * 1000,
-                "x-google-start-bitrate": 22 * 1000,
+                "level-asymmetry-allowed": 1,
+                "packetization-mode": 1,
+                "profile-level-id": "42e01f",
+                "max-fr": 30,
             }
         }
     ];
@@ -83,27 +83,10 @@ export class SdpProcessor {
         const sdp = sdpTransform.parse(sdpString);
         this.rtpRemoteChannelMapping = SdpProcessor.generateRtpSSrcMapping(sdp);
 
-        /* Fix for Firefox to acknowledge the max bandwidth */
-        for(const media of sdp.media) {
-            if(media.type !== "video") { continue; }
-            if(media.bandwidth?.length > 0) { continue; }
-
-            const config = media.fmtp.find(e => e.config.indexOf("x-google-start-bitrate") !== -1);
-            if(!config) { continue; }
-
-            const bitrate = config.config.split(";").find(e => e.startsWith("x-google-start-bitrate="))?.substr(23);
-            if(!bitrate) { continue; }
-
-            media.bandwidth = [{
-                type: "AS",
-                limit: bitrate
-            }];
-        }
-
         return sdpTransform.write(sdp);
     }
 
-    processOutgoingSdp(sdpString: string, mode: "offer" | "answer") : string {
+    processOutgoingSdp(sdpString: string, _mode: "offer" | "answer") : string {
         const sdp = sdpTransform.parse(sdpString);
 
         /* apply the "root" fingerprint to each media, FF fix */
@@ -195,10 +178,6 @@ export class SdpProcessor {
             }
 
             media.payloads = media.rtp.map(e => e.payload).join(" ");
-            media.bandwidth = [{
-                type: "AS",
-                limit: 12000
-            }]
         }
     }
 }

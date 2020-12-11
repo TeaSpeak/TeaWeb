@@ -321,17 +321,16 @@ class PermissionEditorModal extends InternalModal {
     renderBody() {
         return (
             <div className={cssStyle.container}>
-                <ContextDivider id={"permission-editor"} defaultValue={25} direction={"horizontal"}>
-                    <div className={cssStyle.contextContainer + " " + cssStyle.left}>
-                        <ActiveTabInfo events={this.modalEvents}/>
-                        <SideBar modalEvents={this.modalEvents} editorEvents={this.editorEvents}
-                                 connection={this.connection}/>
-                    </div>
-                    <div className={cssStyle.contextContainer + " " + cssStyle.right}>
-                        <TabSelector events={this.modalEvents}/>
-                        <PermissionEditor events={this.editorEvents} connection={this.connection}/>
-                    </div>
-                </ContextDivider>
+                <div className={cssStyle.contextContainer + " " + cssStyle.left}>
+                    <ActiveTabInfo events={this.modalEvents}/>
+                    <SideBar modalEvents={this.modalEvents} editorEvents={this.editorEvents}
+                             connection={this.connection}/>
+                </div>
+                <ContextDivider id={"permission-editor"} defaultValue={25} direction={"horizontal"} />
+                <div className={cssStyle.contextContainer + " " + cssStyle.right}>
+                    <TabSelector events={this.modalEvents}/>
+                    <PermissionEditor events={this.editorEvents} connection={this.connection}/>
+                </div>
             </div>
         );
     }

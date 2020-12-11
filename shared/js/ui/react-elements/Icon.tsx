@@ -12,7 +12,7 @@ export const IconRenderer = (props: {
     if(!props.icon) {
         return <div className={cssStyle.container + " icon-container icon-empty " + props.className} title={props.title} />;
     } else if(typeof props.icon === "string") {
-        return <div className={cssStyle.container + " icon " + props.icon + " " + props.className} title={props.title} />;
+        return <div className={cssStyle.container + " icon_em " + props.icon + " " + props.className} title={props.title} />;
     } else {
         throw "JQuery icons are not longer supported";
     }

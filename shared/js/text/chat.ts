@@ -4,6 +4,8 @@ import {renderMarkdownAsBBCode} from "../text/markdown";
 import {escapeBBCode} from "../text/bbcode";
 import {parse as parseBBCode} from "vendor/xbbcode/parser";
 import {TagElement} from "vendor/xbbcode/elements";
+import * as React from "react";
+import {regexImage} from "tc-shared/text/bbcode/image";
 
 interface UrlKnifeUrl {
     value: {
@@ -26,6 +28,7 @@ function bbcodeLinkUrls(message: string, ignore: { start: number, end: number }[
 
     /* we want to go through the urls from the back to the front */
     urls.sort((a, b) => b.index.start - a.index.start);
+    outerLoop:
     for(const url of urls) {
         if(ignore.findIndex(range => range.start <= url.index.start && range.end >= url.index.end) !== -1) {
             continue;
@@ -35,6 +38,23 @@ function bbcodeLinkUrls(message: string, ignore: { start: number, end: number }[
         const suffix = message.substr(url.index.end);
         const urlPath = message.substring(url.index.start, url.index.end);
         let bbcodeUrl;
+
+        regexImage.lastIndex = 0;
+        if (regexImage.test(urlPath)) {
+            for(const suffix of [
+                ".jpeg", ".jpg",
+                ".png", ".gif", ".tiff",
+                ".bmp",
+                ".webp",
+                ".svg"
+            ]) {
+                if(urlPath.endsWith(suffix)) {
+                    /* It's an image. Images will be rendered by the client automatically. */
+                    continue outerLoop;
+                }
+            }
+        }
+
 
         let colonIndex = urlPath.indexOf(":");
         if(colonIndex === -1 || colonIndex + 2 < urlPath.length || urlPath[colonIndex + 1] !== "/" || urlPath[colonIndex + 2] !== "/") {
@@ -89,6 +109,7 @@ export function preprocessChatMessageForSend(message: string) : string {
                     break;
             }
         }
+        console.error("Message: %s; No Parse: %s", message, noParseRanges);
 
         message = bbcodeLinkUrls(message, noParseRanges);
     }

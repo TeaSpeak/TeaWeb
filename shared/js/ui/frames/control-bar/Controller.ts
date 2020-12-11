@@ -3,7 +3,7 @@ import {
     Bookmark,
     ControlBarEvents,
     ControlBarMode,
-    HostButtonInfo,
+    HostButtonInfo, VideoDeviceInfo,
     VideoState
 } from "tc-shared/ui/frames/control-bar/Definitions";
 import {server_connections} from "tc-shared/ConnectionManager";
@@ -24,6 +24,7 @@ import {LogCategory, logWarn} from "tc-shared/log";
 import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import {VideoBroadcastState, VideoBroadcastType, VideoConnectionStatus} from "tc-shared/connection/VideoConnection";
 import { tr } from "tc-shared/i18n/localize";
+import {getVideoDriver} from "tc-shared/video/VideoSource";
 
 class InfoController {
     private readonly mode: ControlBarMode;
@@ -61,7 +62,7 @@ class InfoController {
             this.sendVideoState("camera");
         }));
         events.push(bookmarkEvents.on("notify_bookmarks_updated", () => this.sendBookmarks()));
-
+        events.push(getVideoDriver().getEvents().on("notify_device_list_changed", () => this.sendCameraList()))
         if(this.mode === "main") {
             events.push(server_connections.events().on("notify_active_handler_changed", event => this.setConnectionHandler(event.newHandler)));
         }
@@ -268,6 +269,26 @@ class InfoController {
 
         this.events.fire_react("notify_video_state", { state: state, broadcastType: type });
     }
+
+    public sendCameraList() {
+        let devices: VideoDeviceInfo[] = [];
+        const driver = getVideoDriver();
+        driver.getDevices().then(result => {
+            if(result === false || result.length === 0) {
+                return;
+            }
+
+            this.events.fire_react("notify_camera_list", {
+                devices: result.map(e => {
+                    return {
+                        name: e.name,
+                        id: e.id
+                    };
+                })
+            });
+        })
+        this.events.fire_react("notify_camera_list", { devices: devices });
+    }
 }
 
 export function initializePopoutControlBarController(events: Registry<ControlBarEvents>, handler: ConnectionHandler) {
@@ -294,6 +315,7 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
     events.on("query_subscribe_state", () => infoHandler.sendSubscribeState());
     events.on("query_host_button", () => infoHandler.sendHostButton());
     events.on("query_video_state", event => infoHandler.sendVideoState(event.broadcastType));
+    events.on("query_camera_list", () => infoHandler.sendCameraList());
 
     events.on("action_connection_connect", event => global_client_actions.fire("action_open_window_connect", { newTab: event.newTab }));
     events.on("action_connection_disconnect", event => {
@@ -378,7 +400,14 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
     });
     events.on("action_toggle_video", event => {
         if(infoHandler.getCurrentHandler()) {
-            global_client_actions.fire("action_toggle_video_broadcasting", { connection: infoHandler.getCurrentHandler(), broadcastType: event.broadcastType, enabled: event.enable });
+            /* TODO: Just update the stream and don't "rebroadcast" */
+            global_client_actions.fire("action_toggle_video_broadcasting", {
+                connection: infoHandler.getCurrentHandler(),
+                broadcastType: event.broadcastType,
+                enabled: event.enable,
+                quickSelect: event.quickStart,
+                defaultDevice: event.deviceId
+            });
         } else {
             createErrorModal(tr("Missing connection handler"), tr("Cannot start video broadcasting with a missing connection handler")).open();
         }
