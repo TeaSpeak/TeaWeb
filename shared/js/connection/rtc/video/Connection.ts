@@ -222,10 +222,6 @@ export class RtpVideoConnection implements VideoConnection {
     }
 
     async startBroadcasting(type: VideoBroadcastType, source: VideoSource) : Promise<void> {
-        if(this.broadcasts[type]) {
-            this.stopBroadcasting(type);
-        }
-
         const videoTracks = source.getStream().getVideoTracks();
         if(videoTracks.length === 0) {
             throw tr("missing video stream track");
@@ -237,7 +233,7 @@ export class RtpVideoConnection implements VideoConnection {
             failedReason: undefined,
             active: true
         };
-        this.events.fire("notify_local_broadcast_state_changed", { oldState: VideoBroadcastState.Stopped, newState: VideoBroadcastState.Initializing, broadcastType: type });
+        this.events.fire("notify_local_broadcast_state_changed", { oldState: this.broadcasts[type].state || VideoBroadcastState.Stopped, newState: VideoBroadcastState.Initializing, broadcastType: type });
 
         try {
             await this.rtcConnection.setTrackSource(type === "camera" ? "video" : "video-screen", videoTracks[0]);

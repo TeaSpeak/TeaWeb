@@ -394,21 +394,20 @@ export class ChannelTree {
             client.channelTree = this;
         }
 
-        /* for debug purposes, the server might send back the own audio/video stream */
-        if(!isLocalClient || __build.mode === "debug") {
+        if(!isLocalClient) {
             const voiceConnection = this.client.serverConnection.getVoiceConnection();
             try {
                 client.setVoiceClient(voiceConnection.registerVoiceClient(client.clientId()));
             } catch (error) {
                 logError(LogCategory.AUDIO, tr("Failed to register a voice client for %d: %o"), client.clientId(), error);
             }
+        }
 
-            const videoConnection = this.client.serverConnection.getVideoConnection();
-            try {
-                client.setVideoClient(videoConnection.registerVideoClient(client.clientId()));
-            } catch (error) {
-                logError(LogCategory.VIDEO, tr("Failed to register a video client for %d: %o"), client.clientId(), error);
-            }
+        const videoConnection = this.client.serverConnection.getVideoConnection();
+        try {
+            client.setVideoClient(videoConnection.registerVideoClient(client.clientId()));
+        } catch (error) {
+            logError(LogCategory.VIDEO, tr("Failed to register a video client for %d: %o"), client.clientId(), error);
         }
     }
 

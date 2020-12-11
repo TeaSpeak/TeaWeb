@@ -6,7 +6,7 @@ import {
     ControlBarEvents,
     ControlBarMode,
     HostButtonInfo,
-    MicrophoneState,
+    MicrophoneState, VideoDeviceInfo,
     VideoState
 } from "tc-shared/ui/frames/control-bar/Definitions";
 import * as React from "react";
@@ -205,6 +205,32 @@ const AwayButton = () => {
     );
 };
 
+const VideoDeviceList = React.memo(() => {
+    const events = useContext(Events);
+    const [ devices, setDevices ] = useState<VideoDeviceInfo[]>(() => {
+        events.fire("query_camera_list");
+        return [];
+    });
+    events.reactUse("notify_camera_list", event => setDevices(event.devices));
+
+    if(devices.length === 0) {
+        return null;
+    }
+
+    return (
+        <>
+            <hr key={"hr"} />
+            {devices.map(device => (
+                <DropdownEntry
+                    text={device.name || tr("Unknown device name")}
+                    key={device.id}
+                    onClick={() => events.fire("action_toggle_video", {enable: true, broadcastType: "camera", deviceId: device.id, quickStart: true})}
+                />
+            ))}
+        </>
+    );
+});
+
 const VideoButton = (props: { type: VideoBroadcastType }) => {
     const events = useContext(Events);
 
@@ -221,34 +247,59 @@ const VideoButton = (props: { type: VideoBroadcastType }) => {
             let tooltip = props.type === "camera" ? tr("Video broadcasting not supported") : tr("Screen sharing not supported");
             let modalTitle = props.type === "camera" ? tr("Video broadcasting unsupported") : tr("Screen sharing unsupported");
             let modalBody = props.type === "camera" ? tr("Video broadcasting isn't supported by the target server.") : tr("Screen sharing isn't supported by the target server.");
-            return <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={icon} tooltip={tooltip}
-                           key={"unsupported"}
-                           onToggle={() => createErrorModal(modalTitle, modalBody).open()}
-            />;
+            let dropdownText = props.type === "camera" ? tr("Start screen sharing") : tr("Start video broadcasting");
+            return (
+                <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={icon} tooltip={tooltip}
+                        key={"unsupported"}
+                        onToggle={() => createErrorModal(modalTitle, modalBody).open()}
+                >
+                    <DropdownEntry text={dropdownText} onClick={() => createErrorModal(modalTitle, modalBody).open()} />
+                </Button>
+            );
         }
 
         case "unavailable": {
             let tooltip = props.type === "camera" ? tr("Video broadcasting not available") : tr("Screen sharing not available");
             let modalTitle = props.type === "camera" ? tr("Video broadcasting unavailable") : tr("Screen sharing unavailable");
             let modalBody = props.type === "camera" ? tr("Video broadcasting isn't available right now.") : tr("Screen sharing isn't available right now.");
-            return <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={icon} tooltip={tooltip}
-                           key={"unavailable"}
-                           onToggle={() => createErrorModal(modalTitle, modalBody).open()}/>;
+            let dropdownText = props.type === "camera" ? tr("Start screen sharing") : tr("Start video broadcasting");
+            return (
+                <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={icon} tooltip={tooltip}
+                        key={"unavailable"}
+                        onToggle={() => createErrorModal(modalTitle, modalBody).open()} >
+                    <DropdownEntry text={dropdownText} onClick={() => createErrorModal(modalTitle, modalBody).open()} />
+                </Button>
+            );
         }
 
         case "disconnected":
         case "disabled": {
             let tooltip = props.type === "camera" ? tr("Start video broadcasting") : tr("Start screen sharing");
-            return <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={icon}
-                           onToggle={() => events.fire("action_toggle_video", {enable: true, broadcastType: props.type})}
-                           tooltip={tooltip} key={"enable"}/>;
+            let dropdownText = props.type === "camera" ? tr("Start screen sharing") : tr("Start video broadcasting");
+            return (
+                <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={icon}
+                        onToggle={() => events.fire("action_toggle_video", {enable: true, broadcastType: props.type, quickStart: true})}
+                        tooltip={tooltip} key={"enable"}>
+                    <DropdownEntry icon={icon} text={dropdownText} onClick={() => events.fire("action_toggle_video", {enable: true, broadcastType: props.type})} />
+                    {props.type === "camera" ? <VideoDeviceList key={"list"} /> : null}
+                </Button>
+            );
         }
 
         case "enabled": {
             let tooltip = props.type === "camera" ? tr("Stop video broadcasting") : tr("Stop screen sharing");
-            return <Button switched={false} colorTheme={"red"} autoSwitch={false} iconNormal={icon}
-                           onToggle={() => events.fire("action_toggle_video", {enable: false, broadcastType: props.type})}
-                           tooltip={tooltip} key={"disable"}/>;
+            let dropdownTextManage = props.type === "camera" ? tr("Configure/change screen sharing") : tr("Configure/change video broadcasting");
+            let dropdownTextStop = props.type === "camera" ? tr("Stop screen sharing") : tr("Stop video broadcasting");
+            return (
+                <Button switched={false} colorTheme={"red"} autoSwitch={false} iconNormal={icon}
+                            onToggle={() => events.fire("action_toggle_video", {enable: false, broadcastType: props.type})}
+                            tooltip={tooltip} key={"disable"}>
+                    {/* <DropdownEntry icon={icon} text={dropdownTextManage} onClick={() => events.fire("action_manage_video", { broadcastType: props.type })} /> TODO! */}
+                    <DropdownEntry icon={icon} text={dropdownTextStop} onClick={() => events.fire("action_toggle_video", {enable: false, broadcastType: props.type})} />
+                    <VideoDeviceList />
+                    {props.type === "camera" ? <VideoDeviceList key={"list"} /> : null}
+                </Button>
+            );
         }
     }
 }
@@ -403,12 +454,12 @@ export const ControlBar2 = (props: { events: Registry<ControlBarEvents>, classNa
         items.push(<BookmarkButton key={"bookmarks"} />);
         items.push(<div className={cssStyle.divider + " "  + cssStyle.hideSmallPopout} key={"divider-1"} />);
     }
-    items.push(<AwayButton key={"away"} />);
     items.push(<VideoButton key={"video"} type={"camera"} />);
     items.push(<VideoButton key={"screen"} type={"screen"} />);
     items.push(<MicrophoneButton key={"microphone"} />);
     items.push(<SpeakerButton key={"speaker"} />);
     items.push(<div className={cssStyle.divider + " "  + cssStyle.hideSmallPopout} key={"divider-2"} />);
+    items.push(<AwayButton key={"away"} />);
     items.push(<SubscribeButton key={"subscribe"} />);
     items.push(<QueryButton key={"query"} />);
     items.push(<div className={cssStyle.spacer} key={"spacer"} />);

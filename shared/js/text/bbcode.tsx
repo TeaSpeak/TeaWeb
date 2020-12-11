@@ -14,7 +14,7 @@ export const allowedBBCodes = [
     "u", "underlined",
     "s", "strikethrough",
     "color", "bgcolor",
-    "url",
+    "url", "img",
     "code",
     "i-code", "icode",
     "sub", "sup",
@@ -31,7 +31,6 @@ export const allowedBBCodes = [
     "tr", "td", "th",
 
     "yt", "youtube",
-    "img",
 
     "quote"
 ];

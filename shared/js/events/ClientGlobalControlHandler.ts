@@ -192,7 +192,8 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                 createErrorModal(tr("You're not connected"), tr("You're not connected to any server!")).open();
                 return;
             }
-            spawnVideoSourceSelectModal(event.broadcastType, true, !!event.quickSelect).then(async source => {
+
+            spawnVideoSourceSelectModal(event.broadcastType, event.quickSelect ? "quick" : "default", event.defaultDevice).then(async source => {
                 if(!source) { return; }
 
                 try {

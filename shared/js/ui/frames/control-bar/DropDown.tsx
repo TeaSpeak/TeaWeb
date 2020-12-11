@@ -15,11 +15,11 @@ export interface DropdownEntryProperties {
     children?: React.ReactElement<DropdownEntry>[]
 }
 
-const LocalIconRenderer = (props: { icon?: string | RemoteIconInfo }) => {
+const LocalIconRenderer = (props: { icon?: string | RemoteIconInfo, className?: string }) => {
     if(!props.icon || typeof props.icon === "string") {
-        return <IconRenderer icon={props.icon as any} key={"fixed-icon"} />
+        return <IconRenderer icon={props.icon as any} key={"fixed-icon"} className={props.className} />
     } else {
-        return <RemoteIconRenderer icon={getIconManager().resolveIcon(props.icon.iconId, props.icon.serverUniqueId)} key={"remote-icon"} />;
+        return <RemoteIconRenderer icon={getIconManager().resolveIcon(props.icon.iconId, props.icon.serverUniqueId)} key={"remote-icon"} className={props.className} />;
     }
 }
 
@@ -30,7 +30,7 @@ export class DropdownEntry extends ReactComponentBase<DropdownEntryProperties, {
         if(this.props.children) {
             return (
                 <div className={cssStyle.dropdownEntry} onClick={this.props.onClick} onAuxClick={this.props.onAuxClick} onContextMenu={this.props.onContextMenu}>
-                    <LocalIconRenderer icon={this.props.icon} />
+                    <LocalIconRenderer icon={this.props.icon} className={cssStyle.iconContainer} />
                     <a className={cssStyle.entryName}>{this.props.text}</a>
                     <div className={cssStyle.arrow + " " + cssStyle.right} />
                     <DropdownContainer>
@@ -41,7 +41,7 @@ export class DropdownEntry extends ReactComponentBase<DropdownEntryProperties, {
         } else {
             return (
                 <div className={cssStyle.dropdownEntry} onClick={this.props.onClick} onAuxClick={this.props.onAuxClick} onContextMenu={this.props.onContextMenu}>
-                    <LocalIconRenderer icon={this.props.icon} />
+                    <LocalIconRenderer icon={this.props.icon} className={cssStyle.iconContainer} />
                     <a className={cssStyle.entryName}>{this.props.text}</a>
                 </div>
             );

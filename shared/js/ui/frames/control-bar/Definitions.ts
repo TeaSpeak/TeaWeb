@@ -8,6 +8,7 @@ export type AwayState = { locallyAway: boolean, globallyAway: "partial" | "full"
 export type MicrophoneState = "enabled" | "disabled" | "muted";
 export type VideoState = "enabled" | "disabled" | "unavailable" | "unsupported" | "disconnected";
 export type HostButtonInfo = { title?: string, target?: string, url: string };
+export type VideoDeviceInfo = { name: string, id: string };
 
 export interface ControlBarEvents {
     action_connection_connect: { newTab: boolean },
@@ -21,7 +22,8 @@ export interface ControlBarEvents {
     action_toggle_subscribe: { subscribe: boolean },
     action_toggle_query: { show: boolean },
     action_query_manage: {},
-    action_toggle_video: { broadcastType: VideoBroadcastType, enable: boolean }
+    action_toggle_video: { broadcastType: VideoBroadcastType, enable: boolean, quickStart?: boolean, deviceId?: string },
+    action_manage_video: { broadcastType: VideoBroadcastType }
 
     query_mode: {},
     query_connection_state: {},
@@ -33,6 +35,7 @@ export interface ControlBarEvents {
     query_query_state: {},
     query_host_button: {},
     query_video_state: { broadcastType: VideoBroadcastType },
+    query_camera_list: {}
 
     notify_mode: { mode: ControlBarMode }
     notify_connection_state: { state: ConnectionState },
@@ -44,6 +47,7 @@ export interface ControlBarEvents {
     notify_query_state: { shown: boolean },
     notify_host_button: { button: HostButtonInfo | undefined },
     notify_video_state: { broadcastType: VideoBroadcastType, state: VideoState },
+    notify_camera_list: { devices: VideoDeviceInfo[] }
 
     notify_destroy: {}
 }

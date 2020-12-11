@@ -4,7 +4,12 @@ import * as ReactDOM from "react-dom";
 import {ChannelVideoRenderer} from "tc-shared/ui/frames/video/Renderer";
 import {Registry} from "tc-shared/events";
 import {ChannelVideoEvents, kLocalVideoId} from "tc-shared/ui/frames/video/Definitions";
-import {VideoBroadcastState, VideoBroadcastType, VideoConnection} from "tc-shared/connection/VideoConnection";
+import {
+    VideoBroadcastState,
+    VideoBroadcastType,
+    VideoClient,
+    VideoConnection
+} from "tc-shared/connection/VideoConnection";
 import {ClientEntry, ClientType, LocalClientEntry, MusicClientEntry} from "tc-shared/tree/Client";
 import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
@@ -69,6 +74,7 @@ class RemoteClientVideoController implements ClientVideoController {
 
         const videoClient = this.client.getVideoClient();
         if(videoClient) {
+            this.initializeVideoClient(videoClient);
             events.push(videoClient.getEvents().on("notify_broadcast_state_changed", event => {
                 console.error("Broadcast state changed: %o - %o - %o", event.broadcastType, VideoBroadcastState[event.oldState], VideoBroadcastState[event.newState]);
                 if(event.newState === VideoBroadcastState.Stopped || event.oldState === VideoBroadcastState.Stopped) {
@@ -79,6 +85,18 @@ class RemoteClientVideoController implements ClientVideoController {
                 this.notifyMuteState();
             }));
         }
+    }
+
+    protected initializeVideoClient(videoClient: VideoClient) {
+        this.eventListenerVideoClient.push(videoClient.getEvents().on("notify_broadcast_state_changed", event => {
+            console.error("Broadcast state changed: %o - %o - %o", event.broadcastType, VideoBroadcastState[event.oldState], VideoBroadcastState[event.newState]);
+            if(event.newState === VideoBroadcastState.Stopped || event.oldState === VideoBroadcastState.Stopped) {
+                /* we've a new broadcast which hasn't been dismissed yet */
+                this.dismissed[event.broadcastType] = false;
+            }
+            this.notifyVideo();
+            this.notifyMuteState();
+        }));
     }
 
     destroy() {
@@ -231,7 +249,20 @@ class LocalVideoController extends RemoteClientVideoController {
         super(client, eventRegistry, kLocalVideoId);
 
         const videoConnection = client.channelTree.client.serverConnection.getVideoConnection();
-        this.eventListener.push(videoConnection.getEvents().on("notify_local_broadcast_state_changed", () => this.notifyVideo()));
+        this.eventListener.push(videoConnection.getEvents().on("notify_local_broadcast_state_changed", () => {
+            this.notifyVideo();
+        }));
+    }
+
+    protected initializeVideoClient(videoClient: VideoClient) {
+        super.initializeVideoClient(videoClient);
+
+        this.eventListenerVideoClient.push(videoClient.getEvents().on("notify_broadcast_state_changed", event => {
+            if(event.newState === VideoBroadcastState.Available) {
+                /* we want to watch our own broadcast */
+                videoClient.joinBroadcast(event.broadcastType).then(undefined);
+            }
+        }))
     }
 
     isBroadcasting() {
@@ -239,14 +270,11 @@ class LocalVideoController extends RemoteClientVideoController {
         return videoConnection.isBroadcasting("camera") || videoConnection.isBroadcasting("screen");
     }
 
-    async getStatistics(target: VideoBroadcastType) {
-
-    }
-
     protected isVideoActive(): boolean {
         return true;
     }
 
+    /*
     protected getBroadcastState(target: VideoBroadcastType): VideoBroadcastState {
         const videoConnection = this.client.channelTree.client.serverConnection.getVideoConnection();
         return videoConnection.getBroadcastingState(target);
@@ -256,6 +284,7 @@ class LocalVideoController extends RemoteClientVideoController {
         const videoConnection = this.client.channelTree.client.serverConnection.getVideoConnection();
         return videoConnection.getBroadcastingSource(target)?.getStream();
     }
+    */
 }
 
 class ChannelVideoController {
@@ -540,6 +569,10 @@ class ChannelVideoController {
         if(channel) {
             const clients = channel.channelClientsOrdered();
             for(const client of clients) {
+                if(client instanceof LocalClientEntry) {
+                    continue;
+                }
+
                 if(!this.clientVideos[client.clientId()]) {
                     /* should not be possible (Is only possible for the local client) */
                     continue;
