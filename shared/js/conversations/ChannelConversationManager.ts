@@ -297,6 +297,7 @@ export class ChannelConversation extends AbstractChat<ChannelConversationEvents>
 
     public setConversationMode(mode: ChannelConversationMode, logChange: boolean) {
         super.setConversationMode(mode, logChange);
+        this.updateAccessState();
     }
 
     public localClientSwitchedChannel(type: "join" | "leave") {
