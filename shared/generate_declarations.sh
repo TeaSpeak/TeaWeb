@@ -24,7 +24,7 @@ function generate_declaration() {
 
 #Generate the loader definitions first
 app_declaration="../declarations/shared-app/"
-generate_declaration dtsconfig_app.json ${app_declaration}
+generate_declaration tsconfig.declarations.json ${app_declaration}
 
 cp -r svg-sprites "../declarations/svg-sprites"
 exit 0

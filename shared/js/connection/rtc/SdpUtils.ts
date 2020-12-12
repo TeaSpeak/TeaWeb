@@ -81,21 +81,10 @@ export class SdpProcessor {
         sdpString = sdpString.replace(/profile-level-id=4325407/g, "profile-level-id=42e01f");
 
         const sdp = sdpTransform.parse(sdpString);
-        //sdp.media.forEach(media => media.candidates = []);
-        //sdp.origin.address = "127.0.0.1";
         this.rtpRemoteChannelMapping = SdpProcessor.generateRtpSSrcMapping(sdp);
 
         return sdpTransform.write(sdp);
     }
-
-    /*
-    getCandidates(sdpString: string) : string[] {
-        const sdp = sdpTransform.parse(sdpString);
-        sdp.media = [sdp.media[0]];
-        sdpTransform.write(sdp).split("\r\n")
-            .filter(line => line.startsWith("a"))
-    }
-     */
 
     processOutgoingSdp(sdpString: string, _mode: "offer" | "answer") : string {
         const sdp = sdpTransform.parse(sdpString);

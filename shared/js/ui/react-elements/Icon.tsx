@@ -37,7 +37,7 @@ export const RemoteIconRenderer = (props: { icon: RemoteIcon, className?: string
                 return <div key={"loaded"} className={cssStyle.container + " icon_em client-group_" + props.icon.iconId + " " + props.className} title={props.title} />;
             }
             return (
-                <div key={"icon-" + props.icon.iconId} className={cssStyle.container + "icon-container " + props.className}>
+                <div key={"icon-" + props.icon.iconId} className={cssStyle.container + " icon-container " + props.className}>
                     <img style={{ maxWidth: "100%", maxHeight: "100%" }} src={props.icon.getImageUrl()} alt={props.title || ("icon " + props.icon.iconId)} draggable={false} />
                 </div>
             );
