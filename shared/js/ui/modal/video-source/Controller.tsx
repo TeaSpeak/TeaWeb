@@ -16,6 +16,7 @@ type SourceConstraints = { width?: number, height?: number, frameRate?: number }
 export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, selectMode: "quick" | "default" | "none", defaultDeviceId?: string) : Promise<VideoSource> {
     const controller = new VideoSourceController(type);
 
+    let defaultSelectSource = selectMode === "default";
     if(selectMode === "quick") {
         /* We need the modal itself for the native client in order to present the window selector */
         if(type === "camera" || __build.target === "web") {
@@ -26,6 +27,8 @@ export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, sele
 
                 return source;
             }
+        } else {
+            defaultSelectSource = true;
         }
     }
 
@@ -33,7 +36,7 @@ export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, sele
     controller.events.on(["action_start", "action_cancel"], () => modal.destroy());
 
     modal.show().then(() => {
-        if(selectMode === "default" || selectMode === "quick") {
+        if(defaultSelectSource) {
             if(type === "screen" && getVideoDriver().screenQueryAvailable()) {
                 controller.events.fire_react("action_toggle_screen_capture_device_select", { shown: true });
             } else {
@@ -46,8 +49,8 @@ export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, sele
     controller.events.on("action_start", () => refSource.source = controller.getCurrentSource()?.ref());
 
     await new Promise(resolve => {
-        if(type === "screen" && selectMode === "quick") {
-            controller.events.on("notify_video_preview", event => {
+        if(defaultSelectSource && selectMode === "quick") {
+            controller.events.one("notify_video_preview", event => {
                 if(event.status.status === "preview") {
                     /* we've successfully selected something */
                     modal.destroy();

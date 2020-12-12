@@ -42,7 +42,7 @@
             margin-left: 1em;
             width: 20em;
 
-            .body .title {
+            .sectionBody .title {
                 display: flex;
                 flex-direction: row;
                 justify-content: space-between;
@@ -245,7 +245,7 @@
     .bpsInfo {
         margin-top: auto;
 
-        .body {
+        .sectionBody {
             font-size: .8em;
         }
     }

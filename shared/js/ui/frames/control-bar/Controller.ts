@@ -22,9 +22,10 @@ import {
 } from "tc-shared/bookmarks";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
-import {VideoBroadcastState, VideoBroadcastType, VideoConnectionStatus} from "tc-shared/connection/VideoConnection";
+import {VideoBroadcastType, VideoConnectionStatus} from "tc-shared/connection/VideoConnection";
 import { tr } from "tc-shared/i18n/localize";
 import {getVideoDriver} from "tc-shared/video/VideoSource";
+import {kLocalBroadcastChannels} from "tc-shared/ui/frames/video/Definitions";
 
 class InfoController {
     private readonly mode: ControlBarMode;
@@ -127,7 +128,11 @@ class InfoController {
         }));
 
         const videoConnection = handler.getServerConnection().getVideoConnection();
-        events.push(videoConnection.getEvents().on(["notify_local_broadcast_state_changed", "notify_status_changed"], () => {
+        for(const channel of kLocalBroadcastChannels) {
+            const broadcast = videoConnection.getLocalBroadcast(channel);
+            events.push(broadcast.getEvents().on("notify_state_changed", () => this.sendVideoState(channel)));
+        }
+        events.push(videoConnection.getEvents().on("notify_status_changed", () => {
             this.sendVideoState("screen");
             this.sendVideoState("camera");
         }));
@@ -253,7 +258,8 @@ class InfoController {
         if(this.currentHandler?.connected) {
             const videoConnection = this.currentHandler.getServerConnection().getVideoConnection();
             if(videoConnection.getStatus() === VideoConnectionStatus.Connected) {
-                if(videoConnection.getBroadcastingState(type) === VideoBroadcastState.Running) {
+                const broadcast = videoConnection.getLocalBroadcast(type);
+                if(broadcast.getState().state === "broadcasting" || broadcast.getState().state === "initializing") {
                     state = "enabled";
                 } else {
                     state = "disabled";
