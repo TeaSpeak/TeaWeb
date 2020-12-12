@@ -82,6 +82,7 @@ export class ClientInfoController {
         }));
 
         this.listenerConnection.push(connection.getSelectedClientInfo().events.on("notify_client_changed", () => {
+            this.sendClient();
             this.sendClientName();
             this.sendCountry();
             this.sendClientDescription();
