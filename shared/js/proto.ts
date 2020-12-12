@@ -131,22 +131,24 @@ if(!JSON.map_to) {
 
 if(!JSON.map_field_to) {
     JSON.map_field_to = function<T>(object: T, value: any, field: string) : boolean {
-        let field_type = typeof(object[field]);
-        let new_object;
-        if(field_type == "string" || field_type == "object" || field_type == "undefined")
-            new_object = value;
-        else if(field_type == "number")
-            new_object = parseFloat(value);
-        else if(field_type == "boolean")
-            new_object = value == "1" || value == "true";
-        else {
-            console.warn(tr("Invalid object type %s for entry %s"), field_type, field);
+        let fieldType = typeof object[field];
+        let newValue;
+        if(fieldType == "string" || fieldType == "object" || fieldType == "undefined") {
+            newValue = value;
+        } else if(fieldType == "number") {
+            newValue = parseFloat(value);
+        } else if(fieldType == "boolean") {
+            newValue = typeof value === "boolean" && value || value === "1" || value === "true";
+        } else {
+            console.warn(tr("Invalid object type %s for entry %s"), fieldType, field);
             return false;
         }
 
-        if(new_object === object[field as string]) return false;
+        if(newValue === object[field]) {
+            return false;
+        }
 
-        object[field as string] = new_object;
+        object[field] = newValue;
         return true;
     }
 }

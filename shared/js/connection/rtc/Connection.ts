@@ -1,7 +1,7 @@
 import {AbstractServerConnection, ServerCommand, ServerConnectionEvents} from "tc-shared/connection/ConnectionBase";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
 import * as log from "tc-shared/log";
-import {LogCategory, logDebug, logError, logTrace, logWarn} from "tc-shared/log";
+import {group, LogCategory, logDebug, logError, logGroupNative, logTrace, LogType, logWarn} from "tc-shared/log";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {tr, tra} from "tc-shared/i18n/localize";
@@ -11,7 +11,6 @@ import {SdpCompressor, SdpProcessor} from "./SdpUtils";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {WhisperTarget} from "tc-shared/voice/VoiceWhisper";
 import {globalAudioContext} from "tc-backend/audio/player";
-import * as sdpTransform from "sdp-transform";
 
 const kSdpCompressionMode = 1;
 
@@ -185,7 +184,10 @@ class CommandHandler extends AbstractCommandHandler {
                 return;
             }
             if(RTCConnection.kEnableSdpTrace) {
-                logTrace(LogCategory.WEBRTC, tr("Received remote %s:\n%s"), data.mode, data.sdp);
+                const gr = logGroupNative(LogType.TRACE, LogCategory.WEBRTC, tra("Original remote SDP ({})", data.mode as string));
+                gr.collapsed(true);
+                gr.log("%s", data.sdp);
+                gr.end();
             }
             try {
                 sdp = this.sdpProcessor.processIncomingSdp(sdp, data.mode);
@@ -195,7 +197,10 @@ class CommandHandler extends AbstractCommandHandler {
                 return;
             }
             if(RTCConnection.kEnableSdpTrace) {
-                logTrace(LogCategory.WEBRTC, tr("Patched remote %s:\n%s"), data.mode, sdp);
+                const gr = logGroupNative(LogType.TRACE, LogCategory.WEBRTC, tra("Patched remote SDP ({})", data.mode as string));
+                gr.collapsed(true);
+                gr.log("%s", sdp);
+                gr.end();
             }
             if(data.mode === "answer") {
                 this.handle["peer"].setRemoteDescription({
@@ -217,7 +222,10 @@ class CommandHandler extends AbstractCommandHandler {
                 }).then(() => this.handle["peer"].createAnswer())
                 .then(async answer => {
                     if(RTCConnection.kEnableSdpTrace) {
-                        logTrace(LogCategory.WEBRTC, tr("Generated local answer due to remote %s:\n%s"), data.mode, answer.sdp);
+                        const gr = logGroupNative(LogType.TRACE, LogCategory.WEBRTC, tra("Original local SDP ({})", data.mode as string));
+                        gr.collapsed(true);
+                        gr.log("%s", answer.sdp);
+                        gr.end();
                     }
                     answer.sdp = this.sdpProcessor.processOutgoingSdp(answer.sdp, "answer");
 
@@ -227,7 +235,10 @@ class CommandHandler extends AbstractCommandHandler {
                 .then(answer => {
                     answer.sdp = SdpCompressor.compressSdp(answer.sdp, kSdpCompressionMode);
                     if(RTCConnection.kEnableSdpTrace) {
-                        logTrace(LogCategory.WEBRTC, tr("Patched answer to remote %s:\n%s"), data.mode, answer.sdp);
+                        const gr = logGroupNative(LogType.TRACE, LogCategory.WEBRTC, tra("Patched local SDP ({})", data.mode as string));
+                        gr.collapsed(true);
+                        gr.log("%s", answer.sdp);
+                        gr.end();
                     }
 
                     return this.connection.send_command("rtcsessiondescribe", {
@@ -898,11 +909,17 @@ export class RTCConnection {
         if(this.peer !== peer) { return; }
 
         if(RTCConnection.kEnableSdpTrace) {
-            logTrace(LogCategory.WEBRTC, tr("Generated initial local offer:\n%s"), offer.sdp);
+            const gr = logGroupNative(LogType.TRACE, LogCategory.WEBRTC, tra("Original initial local SDP (offer)"));
+            gr.collapsed(true);
+            gr.log("%s", offer.sdp);
+            gr.end();
         }
         try {
             offer.sdp = this.sdpProcessor.processOutgoingSdp(offer.sdp, "offer");
-            logTrace(LogCategory.WEBRTC, tr("Patched initial local offer:\n%s"), offer.sdp);
+            const gr = logGroupNative(LogType.TRACE, LogCategory.WEBRTC, tra("Patched initial local SDP (offer)"));
+            gr.collapsed(true);
+            gr.log("%s", offer.sdp);
+            gr.end();
         } catch (error) {
             logError(LogCategory.WEBRTC, tr("Failed to preprocess outgoing initial offer: %o"), error);
             this.handleFatalError(tr("Failed to preprocess outgoing initial offer"), true);

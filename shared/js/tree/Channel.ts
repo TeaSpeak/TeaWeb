@@ -194,8 +194,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         this.properties = new ChannelProperties();
         this.channelId = channelId;
         this.properties.channel_name = channelName;
-
-        this.parsed_channel_name = new ParsedChannelName("undefined", false);
+        this.parsed_channel_name = new ParsedChannelName(channelName, false);
 
         this.clientPropertyChangedListener = (event: ClientEvents["notify_properties_updated"]) => {
             if("client_nickname" in event.updated_properties || "client_talk_power" in event.updated_properties) {
@@ -575,6 +574,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         for(const variable of variables) {
             let key = variable.key;
             let value = variable.value;
+
             if(!JSON.map_field_to(this.properties, value, variable.key)) {
                 /* no update */
                 continue;
@@ -584,7 +584,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 this.parsed_channel_name = new ParsedChannelName(value, this.hasParent());
             } else if(key == "channel_order") {
                 let order = this.channelTree.findChannel(this.properties.channel_order);
-                this.channelTree.moveChannel(this, order, this.parent, true);
+                this.channelTree.moveChannel(this, order, this.parent, false);
             } else if(key === "channel_icon_id") {
                 this.properties.channel_icon_id = variable.value as any >>> 0; /* unsigned 32 bit number! */
             } else if(key == "channel_description") {
