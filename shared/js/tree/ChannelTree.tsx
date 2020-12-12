@@ -251,7 +251,7 @@ export class ChannelTree {
     handleChannelCreated(previous: ChannelEntry, parent: ChannelEntry, channelId: number, channelName: string) : ChannelEntry {
         const channel = new ChannelEntry(this, channelId, channelName);
         this.channels.push(channel);
-        this.moveChannel(channel, previous, parent, false);
+        this.moveChannel(channel, previous, parent, true);
         this.events.fire("notify_channel_created", { channel: channel });
         return channel;
     }
@@ -300,9 +300,13 @@ export class ChannelTree {
         channel.parent = undefined;
     }
 
-    moveChannel(channel: ChannelEntry, channelPrevious: ChannelEntry, parent: ChannelEntry, triggerMoveEvent: boolean) {
+    moveChannel(channel: ChannelEntry, channelPrevious: ChannelEntry, parent: ChannelEntry, isInsertMove: boolean) {
         if(channelPrevious != null && channelPrevious.parent != parent) {
             console.error(tr("Invalid channel move (different parents! (%o|%o)"), channelPrevious.parent, parent);
+            return;
+        }
+
+        if(!isInsertMove && channel.channel_previous === channelPrevious && channel.parent === parent) {
             return;
         }
 
@@ -355,13 +359,15 @@ export class ChannelTree {
             debugger;
         }
 
-        if(triggerMoveEvent) {
+        if(!isInsertMove) {
             this.events.fire("notify_channel_moved", {
                 channel: channel,
                 previousOrder: previousOrder,
                 previousParent: previousParent
             });
         }
+
+        channel.properties.channel_order = previousOrder ? previousOrder.channelId : 0;
     }
 
     deleteClient(client: ClientEntry, reason: { reason: ViewReasonId, message?: string, serverLeave: boolean }) {

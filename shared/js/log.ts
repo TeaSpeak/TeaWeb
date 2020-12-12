@@ -33,7 +33,7 @@ export enum LogType {
     ERROR
 }
 
-let category_mapping = new Map<number, string>([
+let categoryMapping = new Map<number, string>([
     [LogCategory.CHANNEL,                   "Channel       "],
     [LogCategory.CHANNEL_PROPERTIES,        "Channel       "],
     [LogCategory.CLIENT,                    "Client        "],
@@ -92,7 +92,7 @@ enum GroupMode {
     NATIVE,
     PREFIX
 }
-const group_mode: GroupMode = GroupMode.PREFIX;
+const defaultGroupMode: GroupMode = GroupMode.PREFIX;
 
 //Category Example: <url>?log.i18n.enabled=0
 //Level Example A: <url>?log.level.trace.enabled=0
@@ -134,7 +134,7 @@ function logDirect(type: LogType, message: string, ...optionalParams: any[]) {
 export function log(type: LogType, category: LogCategory, message: string, ...optionalParams: any[]) {
     if(!enabled_mapping.get(category)) return;
 
-    optionalParams.unshift(category_mapping.get(category));
+    optionalParams.unshift(categoryMapping.get(category));
     message = "[%s] " + message;
     logDirect(type, message, ...optionalParams);
 }
@@ -182,13 +182,20 @@ export function logError(category: LogCategory, message: string, ...optionalPara
 
 export function group(level: LogType, category: LogCategory, name: string, ...optionalParams: any[]) : Group {
     name = "[%s] " + name;
-    optionalParams.unshift(category_mapping.get(category));
+    optionalParams.unshift(categoryMapping.get(category));
 
-    return new Group(group_mode, level, category, name, optionalParams);
+    return new Group(defaultGroupMode, level, category, name, optionalParams);
+}
+
+export function logGroupNative(level: LogType, category: LogCategory, name: string, ...optionalParams: any[]) : Group {
+    name = "[%s] " + name;
+    optionalParams.unshift(categoryMapping.get(category));
+
+    return new Group(GroupMode.NATIVE, level, category, name, optionalParams);
 }
 
 export function table(level: LogType, category: LogCategory, title: string, args: any) {
-    if(group_mode == GroupMode.NATIVE) {
+    if(defaultGroupMode == GroupMode.NATIVE) {
         console.groupCollapsed(title);
         console.table(args);
         console.groupEnd();
@@ -209,9 +216,9 @@ export class Group {
 
     private readonly name: string;
     private readonly optionalParams: any[][];
-    private _collapsed: boolean = false;
+    private isCollapsed: boolean = false;
     private initialized = false;
-    private _log_prefix: string;
+    private logPrefix: string;
 
     constructor(mode: GroupMode, level: LogType, category: LogCategory, name: string, optionalParams: any[][], owner: Group = undefined) {
         this.level = level;
@@ -227,7 +234,7 @@ export class Group {
     }
 
     collapsed(flag: boolean = true) : this {
-        this._collapsed = flag;
+        this.isCollapsed = flag;
         return this;
     }
 
@@ -238,17 +245,17 @@ export class Group {
 
         if(!this.initialized) {
             if(this.mode == GroupMode.NATIVE) {
-                if(this._collapsed && console.groupCollapsed) {
+                if(this.isCollapsed && console.groupCollapsed) {
                     console.groupCollapsed(this.name, ...this.optionalParams);
                 } else {
                     console.group(this.name, ...this.optionalParams);
                 }
             } else {
-                this._log_prefix = "  ";
+                this.logPrefix = "  ";
                 let parent = this.owner;
                 while(parent) {
                     if(parent.mode == GroupMode.PREFIX) {
-                        this._log_prefix = this._log_prefix + parent._log_prefix;
+                        this.logPrefix = this.logPrefix + parent.logPrefix;
                     } else {
                         break;
                     }
@@ -259,7 +266,7 @@ export class Group {
         if(this.mode == GroupMode.NATIVE) {
             logDirect(this.level, message, ...optionalParams);
         } else {
-            logDirect(this.level, "[%s] " + this._log_prefix + message, category_mapping.get(this.category), ...optionalParams);
+            logDirect(this.level, "[%s] " + this.logPrefix + message, categoryMapping.get(this.category), ...optionalParams);
         }
         return this;
     }
@@ -272,11 +279,11 @@ export class Group {
     }
 
     get prefix() : string {
-        return this._log_prefix;
+        return this.logPrefix;
     }
 
     set prefix(prefix: string) {
-        this._log_prefix = prefix;
+        this.logPrefix = prefix;
     }
 }
 

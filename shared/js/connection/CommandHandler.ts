@@ -746,7 +746,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             return 0;
         }
 
-        tree.moveChannel(channel, prev, parent, true);
+        tree.moveChannel(channel, prev, parent, false);
     }
 
     handleNotifyChannelEdited(json) {
