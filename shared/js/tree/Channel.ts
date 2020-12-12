@@ -572,10 +572,13 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
         /* TODO: Validate values. Example: channel_conversation_mode */
 
-        for(let variable of variables) {
+        for(const variable of variables) {
             let key = variable.key;
             let value = variable.value;
-            JSON.map_field_to(this.properties, value, variable.key);
+            if(!JSON.map_field_to(this.properties, value, variable.key)) {
+                /* no update */
+                continue;
+            }
 
             if(key == "channel_name") {
                 this.parsed_channel_name = new ParsedChannelName(value, this.hasParent());
