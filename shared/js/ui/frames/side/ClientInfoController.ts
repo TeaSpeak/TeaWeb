@@ -81,6 +81,19 @@ export class ClientInfoController {
             }
         }));
 
+        this.listenerConnection.push(connection.getSelectedClientInfo().events.on("notify_client_changed", () => {
+            this.sendClientName();
+            this.sendCountry();
+            this.sendClientDescription();
+            this.sendForum();
+            this.sendChannelGroup();
+            this.sendServerGroups();
+            this.sendOnline();
+            this.sendClientStatus();
+            this.sendVolume();
+            this.sendVersion();
+        }));
+
         this.listenerConnection.push(connection.getSelectedClientInfo().events.on("notify_cache_changed", event => {
             switch (event.category) {
                 case "name":
