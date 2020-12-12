@@ -247,7 +247,7 @@ const VideoButton = (props: { type: VideoBroadcastType }) => {
             let tooltip = props.type === "camera" ? tr("Video broadcasting not supported") : tr("Screen sharing not supported");
             let modalTitle = props.type === "camera" ? tr("Video broadcasting unsupported") : tr("Screen sharing unsupported");
             let modalBody = props.type === "camera" ? tr("Video broadcasting isn't supported by the target server.") : tr("Screen sharing isn't supported by the target server.");
-            let dropdownText = props.type === "camera" ? tr("Start screen sharing") : tr("Start video broadcasting");
+            let dropdownText = props.type === "camera" ? tr("Start video broadcasting") : tr("Start screen sharing");
             return (
                 <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={icon} tooltip={tooltip}
                         key={"unsupported"}
@@ -262,7 +262,7 @@ const VideoButton = (props: { type: VideoBroadcastType }) => {
             let tooltip = props.type === "camera" ? tr("Video broadcasting not available") : tr("Screen sharing not available");
             let modalTitle = props.type === "camera" ? tr("Video broadcasting unavailable") : tr("Screen sharing unavailable");
             let modalBody = props.type === "camera" ? tr("Video broadcasting isn't available right now.") : tr("Screen sharing isn't available right now.");
-            let dropdownText = props.type === "camera" ? tr("Start screen sharing") : tr("Start video broadcasting");
+            let dropdownText = props.type === "camera" ? tr("Start video broadcasting") : tr("Start screen sharing");
             return (
                 <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={icon} tooltip={tooltip}
                         key={"unavailable"}
@@ -275,7 +275,7 @@ const VideoButton = (props: { type: VideoBroadcastType }) => {
         case "disconnected":
         case "disabled": {
             let tooltip = props.type === "camera" ? tr("Start video broadcasting") : tr("Start screen sharing");
-            let dropdownText = props.type === "camera" ? tr("Start screen sharing") : tr("Start video broadcasting");
+            let dropdownText = props.type === "camera" ? tr("Start video broadcasting") : tr("Start screen sharing");
             return (
                 <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={icon}
                         onToggle={() => events.fire("action_toggle_video", {enable: true, broadcastType: props.type, quickStart: true})}
@@ -288,15 +288,14 @@ const VideoButton = (props: { type: VideoBroadcastType }) => {
 
         case "enabled": {
             let tooltip = props.type === "camera" ? tr("Stop video broadcasting") : tr("Stop screen sharing");
-            let dropdownTextManage = props.type === "camera" ? tr("Configure/change screen sharing") : tr("Configure/change video broadcasting");
-            let dropdownTextStop = props.type === "camera" ? tr("Stop screen sharing") : tr("Stop video broadcasting");
+            let dropdownTextManage = props.type === "camera" ? tr("Configure/change video broadcasting") : tr("Configure/change screen sharing");
+            let dropdownTextStop = props.type === "camera" ? tr("Stop video broadcasting") : tr("Stop screen sharing");
             return (
                 <Button switched={false} colorTheme={"red"} autoSwitch={false} iconNormal={icon}
                             onToggle={() => events.fire("action_toggle_video", {enable: false, broadcastType: props.type})}
                             tooltip={tooltip} key={"disable"}>
                     {/* <DropdownEntry icon={icon} text={dropdownTextManage} onClick={() => events.fire("action_manage_video", { broadcastType: props.type })} /> TODO! */}
                     <DropdownEntry icon={icon} text={dropdownTextStop} onClick={() => events.fire("action_toggle_video", {enable: false, broadcastType: props.type})} />
-                    <VideoDeviceList />
                     {props.type === "camera" ? <VideoDeviceList key={"list"} /> : null}
                 </Button>
             );

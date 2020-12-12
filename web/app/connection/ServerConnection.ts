@@ -27,6 +27,7 @@ import {ServerFeature} from "tc-shared/connection/ServerFeatures";
 import {RTCConnection} from "tc-shared/connection/rtc/Connection";
 import {RtpVideoConnection} from "tc-shared/connection/rtc/video/Connection";
 import { tr } from "tc-shared/i18n/localize";
+import {createErrorModal} from "tc-shared/ui/elements/Modal";
 
 class ReturnListener<T> {
     resolve: (value?: T | PromiseLike<T>) => void;

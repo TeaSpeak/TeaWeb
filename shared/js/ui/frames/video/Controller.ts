@@ -3,8 +3,9 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {ChannelVideoRenderer} from "tc-shared/ui/frames/video/Renderer";
 import {Registry} from "tc-shared/events";
-import {ChannelVideoEvents, kLocalVideoId} from "tc-shared/ui/frames/video/Definitions";
+import {ChannelVideo, ChannelVideoEvents, kLocalVideoId} from "tc-shared/ui/frames/video/Definitions";
 import {
+    LocalVideoBroadcastState,
     VideoBroadcastState,
     VideoBroadcastType,
     VideoClient,
@@ -14,6 +15,7 @@ import {ClientEntry, ClientType, LocalClientEntry, MusicClientEntry} from "tc-sh
 import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
 import {Settings, settings} from "tc-shared/settings";
+import * as _ from "lodash";
 
 const cssStyle = require("./Renderer.scss");
 
@@ -24,7 +26,7 @@ interface ClientVideoController {
     dismissVideo(type: VideoBroadcastType);
 
     notifyVideoInfo();
-    notifyVideo();
+    notifyVideo(forceSend: boolean);
     notifyMuteState();
 }
 
@@ -42,6 +44,8 @@ class RemoteClientVideoController implements ClientVideoController {
         screen: false,
         camera: false
     };
+
+    private cachedVideoStatus: ChannelVideo;
 
     constructor(client: ClientEntry, eventRegistry: Registry<ChannelVideoEvents>, videoId?: string) {
         this.client = client;
@@ -70,20 +74,11 @@ class RemoteClientVideoController implements ClientVideoController {
 
     private updateVideoClient() {
         this.eventListenerVideoClient?.forEach(callback => callback());
-        const events = this.eventListenerVideoClient = [];
+        this.eventListenerVideoClient = [];
 
         const videoClient = this.client.getVideoClient();
         if(videoClient) {
             this.initializeVideoClient(videoClient);
-            events.push(videoClient.getEvents().on("notify_broadcast_state_changed", event => {
-                console.error("Broadcast state changed: %o - %o - %o", event.broadcastType, VideoBroadcastState[event.oldState], VideoBroadcastState[event.newState]);
-                if(event.newState === VideoBroadcastState.Stopped || event.oldState === VideoBroadcastState.Stopped) {
-                    /* we've a new broadcast which hasn't been dismissed yet */
-                    this.dismissed[event.broadcastType] = false;
-                }
-                this.notifyVideo();
-                this.notifyMuteState();
-            }));
         }
     }
 
@@ -94,7 +89,7 @@ class RemoteClientVideoController implements ClientVideoController {
                 /* we've a new broadcast which hasn't been dismissed yet */
                 this.dismissed[event.broadcastType] = false;
             }
-            this.notifyVideo();
+            this.notifyVideo(false);
             this.notifyMuteState();
         }));
     }
@@ -132,7 +127,7 @@ class RemoteClientVideoController implements ClientVideoController {
         }
 
         this.dismissed[type] = true;
-        this.notifyVideo();
+        this.notifyVideo(false);
     }
 
     notifyVideoInfo() {
@@ -147,9 +142,10 @@ class RemoteClientVideoController implements ClientVideoController {
         });
     }
 
-    notifyVideo() {
+    notifyVideo(forceSend: boolean) {
         let broadcasting = false;
-        if(this.isVideoActive()) {
+        let status: ChannelVideo;
+        if(this.hasVideoSupport()) {
             let initializing = false;
 
             let cameraStream, desktopStream;
@@ -174,41 +170,34 @@ class RemoteClientVideoController implements ClientVideoController {
 
             if(cameraStream || desktopStream) {
                 broadcasting = true;
-                this.events.fire_react("notify_video", {
-                    videoId: this.videoId,
-                    status: {
-                        status: "connected",
+                status = {
+                    status: "connected",
 
-                        desktopStream: desktopStream,
-                        cameraStream: cameraStream,
+                    desktopStream: desktopStream,
+                    cameraStream: cameraStream,
 
-                        dismissed: this.dismissed
-                    }
-                });
+                    dismissed: this.dismissed
+                };
             } else if(initializing) {
                 broadcasting = true;
-                this.events.fire_react("notify_video", {
-                    videoId: this.videoId,
-                    status: { status: "initializing" }
-                });
+                status = { status: "initializing" };
             } else {
-                this.events.fire_react("notify_video", {
-                    videoId: this.videoId,
-                    status: {
-                        status: "connected",
+                status = {
+                    status: "connected",
 
-                        cameraStream: undefined,
-                        desktopStream: undefined,
+                    cameraStream: undefined,
+                    desktopStream: undefined,
 
-                        dismissed: this.dismissed
-                    }
-                });
+                    dismissed: this.dismissed
+                };
             }
         } else {
-            this.events.fire_react("notify_video", {
-                videoId: this.videoId,
-                status: { status: "no-video" }
-            });
+            status = { status: "no-video" };
+        }
+
+        if(forceSend || !_.isEqual(this.cachedVideoStatus, status)) {
+            this.cachedVideoStatus = status;
+            this.events.fire_react("notify_video", { videoId: this.videoId, status: status });
         }
 
         if(broadcasting !== this.currentBroadcastState) {
@@ -229,7 +218,7 @@ class RemoteClientVideoController implements ClientVideoController {
         });
     }
 
-    protected isVideoActive() : boolean {
+    protected hasVideoSupport() : boolean {
         return typeof this.client.getVideoClient() !== "undefined";
     }
 
@@ -244,14 +233,19 @@ class RemoteClientVideoController implements ClientVideoController {
     }
 }
 
+const kLocalBroadcastChannels: VideoBroadcastType[] = ["screen", "camera"];
 class LocalVideoController extends RemoteClientVideoController {
     constructor(client: ClientEntry, eventRegistry: Registry<ChannelVideoEvents>) {
         super(client, eventRegistry, kLocalVideoId);
 
         const videoConnection = client.channelTree.client.serverConnection.getVideoConnection();
-        this.eventListener.push(videoConnection.getEvents().on("notify_local_broadcast_state_changed", () => {
-            this.notifyVideo();
-        }));
+
+        for(const broadcastType of kLocalBroadcastChannels) {
+            const broadcast = videoConnection.getLocalBroadcast(broadcastType);
+            this.eventListener.push(broadcast.getEvents().on("notify_state_changed", () => {
+                this.notifyVideo(false);
+            }));
+        }
     }
 
     protected initializeVideoClient(videoClient: VideoClient) {
@@ -267,19 +261,52 @@ class LocalVideoController extends RemoteClientVideoController {
 
     isBroadcasting() {
         const videoConnection = this.client.channelTree.client.serverConnection.getVideoConnection();
-        return videoConnection.isBroadcasting("camera") || videoConnection.isBroadcasting("screen");
+        const isBroadcasting = (state: LocalVideoBroadcastState) => state.state === "initializing" || state.state === "broadcasting";
+
+        for(const broadcastType of kLocalBroadcastChannels) {
+            const broadcast = videoConnection.getLocalBroadcast(broadcastType);
+            if(isBroadcasting(broadcast.getState())) {
+                return true;
+            }
+        }
+
+        /* the super should return false as well but just in case something went wrong we want to give the user the visual feedback */
+        return super.isBroadcasting();
     }
 
-    protected isVideoActive(): boolean {
+    protected hasVideoSupport(): boolean {
         return true;
     }
 
-    /*
     protected getBroadcastState(target: VideoBroadcastType): VideoBroadcastState {
         const videoConnection = this.client.channelTree.client.serverConnection.getVideoConnection();
-        return videoConnection.getBroadcastingState(target);
+        const broadcast = videoConnection.getLocalBroadcast(target);
+
+        const receivingState = super.getBroadcastState(target);
+        switch (broadcast.getState().state) {
+            case "stopped":
+            case "failed":
+                if(receivingState !== VideoBroadcastState.Stopped) {
+                    /* this should never happen but just in case give the client a visual feedback */
+                    return receivingState;
+                }
+                return VideoBroadcastState.Stopped;
+
+            case "initializing":
+                return VideoBroadcastState.Initializing;
+
+            case "broadcasting":
+                const state = super.getBroadcastState(target);
+                if(state === VideoBroadcastState.Stopped) {
+                    /* we should receive a stream in a few seconds */
+                    return VideoBroadcastState.Initializing;
+                } else {
+                    return state;
+                }
+        }
     }
 
+    /*
     protected getBroadcastStream(target: VideoBroadcastType) : MediaStream | undefined {
         const videoConnection = this.client.channelTree.client.serverConnection.getVideoConnection();
         return videoConnection.getBroadcastingSource(target)?.getStream();
@@ -391,7 +418,7 @@ class ChannelVideoController {
                 return;
             }
 
-            controller.notifyVideo();
+            controller.notifyVideo(true);
         });
 
         this.events.on("query_video_mute_status", event => {

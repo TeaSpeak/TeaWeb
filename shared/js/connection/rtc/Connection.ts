@@ -64,6 +64,7 @@ class RetryTimeCalculator {
     }
 
     calculateRetryTime() {
+        return 0;
         if(this.retryCount >= 5) {
             /* no more retries */
             return 0;
@@ -203,7 +204,7 @@ class CommandHandler extends AbstractCommandHandler {
                 }).then(() => {
                     this.handle["cachedRemoteSessionDescription"] = sdp;
                     this.handle["peerRemoteDescriptionReceived"] = true;
-                    this.handle.applyCachedRemoteIceCandidates();
+                    setTimeout(() => this.handle.applyCachedRemoteIceCandidates(), 50);
                 }).catch(error => {
                     logError(LogCategory.WEBRTC, tr("Failed to set the remote description: %o"), error);
                     this.handle["handleFatalError"](tr("Failed to set the remote description (answer)"), true);
@@ -954,9 +955,6 @@ export class RTCConnection {
                 logTrace(LogCategory.WEBRTC, tr("Skipping local fqdn ICE candidate %s"), candidate.toJSON().candidate);
                 return;
             }
-            if(candidate.protocol !== "tcp") {
-                return;
-            }
             this.localCandidateCount++;
 
             const json = candidate.toJSON();
@@ -1009,6 +1007,7 @@ export class RTCConnection {
             this.handleRemoteIceCandidate(candidate, mediaLine);
         }
 
+        this.handleRemoteIceCandidate(undefined, 0);
         this.cachedRemoteIceCandidates = [];
     }
 

@@ -24,7 +24,6 @@ export type VideoBroadcastStatistics = {
 
 export interface VideoConnectionEvent {
     notify_status_changed: { oldState: VideoConnectionStatus, newState: VideoConnectionStatus },
-    notify_local_broadcast_state_changed: { broadcastType: VideoBroadcastType, oldState: VideoBroadcastState, newState: VideoBroadcastState },
 }
 
 export enum VideoConnectionStatus {
@@ -64,6 +63,44 @@ export interface VideoClient {
     leaveBroadcast(broadcastType: VideoBroadcastType);
 }
 
+export interface LocalVideoBroadcastEvents {
+    notify_state_changed: { oldState: LocalVideoBroadcastState, newState: LocalVideoBroadcastState },
+}
+
+export type LocalVideoBroadcastState = {
+    state: "stopped",
+} | {
+    state: "initializing"
+} | {
+    state: "failed",
+    reason: string
+} | {
+    state: "broadcasting"
+}
+
+export interface LocalVideoBroadcast {
+    getEvents() : Registry<LocalVideoBroadcastEvents>;
+
+    getState() : LocalVideoBroadcastState;
+    getSource() : VideoSource | undefined;
+    getStatistics() : Promise<VideoBroadcastStatistics | undefined>;
+
+    //getBandwidthLimit() : number | undefined;
+    //setBandwidthLimit(value: number);
+
+    /**
+     * @param source The source of the broadcast (No ownership will be taken. The voice connection must ref the source by itself!)
+     */
+    startBroadcasting(source: VideoSource) : Promise<void>;
+
+    /**
+     * @param source The source of the broadcast (No ownership will be taken. The voice connection must ref the source by itself!)
+     */
+    changeSource(source: VideoSource) : Promise<void>;
+
+    stopBroadcasting();
+}
+
 export interface VideoConnection {
     getEvents() : Registry<VideoConnectionEvent>;
 
@@ -73,17 +110,7 @@ export interface VideoConnection {
 
     getConnectionStats() : Promise<ConnectionStatistics>;
 
-    isBroadcasting(type: VideoBroadcastType);
-    getBroadcastingSource(type: VideoBroadcastType) : VideoSource | undefined;
-    getBroadcastingState(type: VideoBroadcastType) : VideoBroadcastState;
-    getBroadcastStatistics(type: VideoBroadcastType) : Promise<VideoBroadcastStatistics | undefined>;
-
-    /**
-     * @param type
-     * @param source The source of the broadcast (No ownership will be taken. The voice connection must ref the source by itself!)
-     */
-    startBroadcasting(type: VideoBroadcastType, source: VideoSource) : Promise<void>;
-    stopBroadcasting(type: VideoBroadcastType);
+    getLocalBroadcast(channel: VideoBroadcastType) : LocalVideoBroadcast;
 
     registerVideoClient(clientId: number);
     registeredVideoClients() : VideoClient[];

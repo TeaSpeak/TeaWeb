@@ -420,3 +420,9 @@ $small_height: 10em;
         }
     }
 }
+
+/* Opera popout button fix (we've our own?) */
+html > div {
+    display: none;
+    pointer-events: none;
+}

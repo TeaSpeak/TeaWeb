@@ -197,8 +197,24 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                 if(!source) { return; }
 
                 try {
-                    connection.getServerConnection().getVideoConnection().startBroadcasting(event.broadcastType, source)
-                        .catch(error => {
+                    const broadcast = connection.getServerConnection().getVideoConnection().getLocalBroadcast(event.broadcastType);
+                    if(broadcast.getState().state === "initializing" || broadcast.getState().state === "broadcasting") {
+                        console.error("Change source");
+                        broadcast.changeSource(source).catch(error => {
+                            logError(LogCategory.VIDEO, tr("Failed to change broadcast source: %o"), event.broadcastType, error);
+                            if(typeof error !== "string") {
+                                error = tr("lookup the console for detail");
+                            }
+
+                            if(event.broadcastType === "camera") {
+                                createErrorModal(tr("Failed to change video source"), tra("Failed to change video broadcasting source:\n{}", error)).open();
+                            } else {
+                                createErrorModal(tr("Failed to change screen sharing source"), tra("Failed to change screen sharing source:\n{}", error)).open();
+                            }
+                        });
+                    } else {
+                        console.error("Start broadcast");
+                        broadcast.startBroadcasting(source).catch(error => {
                             logError(LogCategory.VIDEO, tr("Failed to start %s broadcasting: %o"), event.broadcastType, error);
                             if(typeof error !== "string") {
                                 error = tr("lookup the console for detail");
@@ -210,12 +226,15 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                                 createErrorModal(tr("Failed to start screen sharing"), tra("Failed to start screen sharing:\n{}", error)).open();
                             }
                         });
+                    }
                 } finally {
                     source.deref();
                 }
             });
         } else {
-            event.connection.getServerConnection().getVideoConnection().stopBroadcasting(event.broadcastType);
+            const connection = event.connection;
+            const broadcast = connection.getServerConnection().getVideoConnection().getLocalBroadcast(event.broadcastType);
+            broadcast.stopBroadcasting();
         }
     });
 }

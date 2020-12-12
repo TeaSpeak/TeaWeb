@@ -2,6 +2,7 @@ import {ClientIcon} from "svg-sprites/client-icons";
 import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
 
 export const kLocalVideoId = "__local__video__";
+export const kLocalBroadcastChannels: VideoBroadcastType[] = ["screen", "camera"];
 
 export type ChannelVideoInfo = { clientName: string, clientUniqueId: string, clientId: number, statusIcon: ClientIcon };
 export type ChannelVideoStream = "available" | MediaStream | undefined;
