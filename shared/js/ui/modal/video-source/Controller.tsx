@@ -46,13 +46,22 @@ export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, sele
     });
 
     let refSource: { source: VideoSource } = { source: undefined };
-    controller.events.on("action_start", () => refSource.source = controller.getCurrentSource()?.ref());
+    controller.events.on("action_start", () => {
+        refSource.source?.deref();
+        refSource.source = controller.getCurrentSource()?.ref();
+    });
 
     await new Promise(resolve => {
         if(defaultSelectSource && selectMode === "quick") {
-            controller.events.one("notify_video_preview", event => {
+            const callbackRemove = controller.events.on("notify_video_preview", event => {
+                if(event.status.status === "error") {
+                    callbackRemove();
+                }
+
                 if(event.status.status === "preview") {
                     /* we've successfully selected something */
+                    refSource.source = controller.getCurrentSource()?.ref();
+                    modal.hide();
                     modal.destroy();
                 }
             });
