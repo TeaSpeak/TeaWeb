@@ -1,4 +1,7 @@
 # Changelog:
+* **13.12.20**
+    - Directly connection when hitting enter on the address line
+    
 * **12.12.20**
     - Improved screen sharing and camara selection
     - Showing the echoed own stream from the server instead of the local one

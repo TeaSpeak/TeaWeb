@@ -176,7 +176,7 @@ export class ChannelConversation extends AbstractChat<ChannelConversationEvents>
 
                 case "unsupported":
                     this.crossChannelChatSupported = false;
-                    this.setConversationMode(ChannelConversationMode.Private, true);
+                    this.setConversationMode(ChannelConversationMode.Private, false);
                     this.setCurrentMode("normal");
                     break;
             }
