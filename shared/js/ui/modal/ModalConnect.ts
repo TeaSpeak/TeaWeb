@@ -193,12 +193,13 @@ export function spawnConnectModal(options: {
         };
 
         input_address.val(defaultHost.enforce ? defaultHost.url : settings.static_global(Settings.KEY_CONNECT_ADDRESS, defaultHost.url));
-        input_address
-            .on("keyup", () => updateFields(true))
-            .on('keydown', event => {
-                if (event.keyCode == KeyCode.KEY_ENTER && !event.shiftKey)
-                    button_connect.trigger('click');
-            });
+        input_address.on("keyup", () => updateFields(true));
+        input_address.on("keypress", event => {
+            if (event.key === "Enter" && !event.shiftKey) {
+                button_connect.trigger('click');
+            }
+        });
+
         button_manage.on('click', event => {
             const modal = spawnSettingsModal("identity-profiles");
             modal.close_listener.push(() => {
