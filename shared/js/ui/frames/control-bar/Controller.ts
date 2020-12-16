@@ -418,6 +418,16 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
             createErrorModal(tr("Missing connection handler"), tr("Cannot start video broadcasting with a missing connection handler")).open();
         }
     });
+    events.on("action_manage_video", event => {
+        if(infoHandler.getCurrentHandler()) {
+            global_client_actions.fire("action_edit_video_broadcasting", {
+                connection: infoHandler.getCurrentHandler(),
+                broadcastType: event.broadcastType
+            });
+        } else {
+            createErrorModal(tr("Missing connection handler"), tr("Cannot start video broadcasting with a missing connection handler")).open();
+        }
+    });
 
     return infoHandler;
 }

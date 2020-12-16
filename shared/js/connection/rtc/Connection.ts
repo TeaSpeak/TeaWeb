@@ -222,7 +222,7 @@ class CommandHandler extends AbstractCommandHandler {
                 }).then(() => this.handle["peer"].createAnswer())
                 .then(async answer => {
                     if(RTCConnection.kEnableSdpTrace) {
-                        const gr = logGroupNative(LogType.TRACE, LogCategory.WEBRTC, tra("Original local SDP ({})", data.mode as string));
+                        const gr = logGroupNative(LogType.TRACE, LogCategory.WEBRTC, tra("Original local SDP ({})", answer.type as string));
                         gr.collapsed(true);
                         gr.log("%s", answer.sdp);
                         gr.end();
@@ -235,7 +235,7 @@ class CommandHandler extends AbstractCommandHandler {
                 .then(answer => {
                     answer.sdp = SdpCompressor.compressSdp(answer.sdp, kSdpCompressionMode);
                     if(RTCConnection.kEnableSdpTrace) {
-                        const gr = logGroupNative(LogType.TRACE, LogCategory.WEBRTC, tra("Patched local SDP ({})", data.mode as string));
+                        const gr = logGroupNative(LogType.TRACE, LogCategory.WEBRTC, tra("Patched local SDP ({})", answer.type as string));
                         gr.collapsed(true);
                         gr.log("%s", answer.sdp);
                         gr.end();
@@ -810,7 +810,8 @@ export class RTCConnection {
             iceServers: [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }]
         });
 
-        const kAddGenericTransceiver = false;
+        /* If set to false FF failed: FIXME! */
+        const kAddGenericTransceiver = true;
 
         if(this.audioSupport) {
             this.currentTransceiver["audio"] = this.peer.addTransceiver("audio");
@@ -880,19 +881,23 @@ export class RTCConnection {
             }
 
             await this.currentTransceiver[type].sender.replaceTrack(target);
-            if(target) {
-                console.error("Setting sendrecv from %o", this.currentTransceiver[type].direction, this.currentTransceiver[type].currentDirection);
-                this.currentTransceiver[type].direction = "sendrecv";
-            } else if(type === "video" || type === "video-screen") {
-                /*
-                 * We don't need to stop & start the audio transceivers every time we're toggling the stream state.
-                 * This would be a much overall cost than just keeping it going.
-                 *
-                 * The video streams instead are not toggling that much and since they split up the bandwidth between them,
-                 * we've to shut them down if they're no needed. This not only allows the one stream to take full advantage
-                 * of the bandwidth it also reduces resource usage.
-                 */
-                //this.currentTransceiver[type].direction = "recvonly";
+
+            /* Firefox has some crazy issues */
+            if(window.detectedBrowser.name !== "firefox") {
+                if(target) {
+                    console.error("Setting sendrecv from %o", this.currentTransceiver[type].direction, this.currentTransceiver[type].currentDirection);
+                    this.currentTransceiver[type].direction = "sendrecv";
+                } else if(type === "video" || type === "video-screen") {
+                    /*
+                     * We don't need to stop & start the audio transceivers every time we're toggling the stream state.
+                     * This would be a much overall cost than just keeping it going.
+                     *
+                     * The video streams instead are not toggling that much and since they split up the bandwidth between them,
+                     * we've to shut them down if they're no needed. This not only allows the one stream to take full advantage
+                     * of the bandwidth it also reduces resource usage.
+                     */
+                    //this.currentTransceiver[type].direction = "recvonly";
+                }
             }
             logTrace(LogCategory.WEBRTC, "Replaced track for %o (Fallback: %o)", type, target === fallback);
         }
@@ -1108,8 +1113,9 @@ export class RTCConnection {
                 logWarn(LogCategory.WEBRTC, tr("Received remote audio track %d but audio has been disabled. Dropping track."), ssrc);
                 return;
             }
+
             const track = new InternalRemoteRTPAudioTrack(ssrc, event.transceiver);
-            logDebug(LogCategory.WEBRTC, tr("Received remote audio track on ssrc %d"), ssrc);
+            logDebug(LogCategory.WEBRTC, tr("Received remote audio track on ssrc %o"), ssrc);
             if(tempInfo?.info !== undefined) {
                 track.handleAssignment(tempInfo.info);
                 this.events.fire("notify_audio_assignment_changed", {
@@ -1123,7 +1129,7 @@ export class RTCConnection {
             this.remoteAudioTracks[ssrc] = track;
         } else if(event.track.kind === "video") {
             const track = new InternalRemoteRTPVideoTrack(ssrc, event.transceiver);
-            logDebug(LogCategory.WEBRTC, tr("Received remote video track on ssrc %d"), ssrc);
+            logDebug(LogCategory.WEBRTC, tr("Received remote video track on ssrc %o"), ssrc);
             if(tempInfo?.info !== undefined) {
                 track.handleAssignment(tempInfo.info);
                 this.events.fire("notify_video_assignment_changed", {

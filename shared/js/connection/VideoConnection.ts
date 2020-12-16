@@ -1,6 +1,5 @@
 import {VideoSource} from "tc-shared/video/VideoSource";
 import {Registry} from "tc-shared/events";
-import {ConnectionStatus} from "tc-shared/ui/frames/footer/StatusDefinitions";
 import {ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
 
 export type VideoBroadcastType = "camera" | "screen";
@@ -78,6 +77,39 @@ export type LocalVideoBroadcastState = {
     state: "broadcasting"
 }
 
+export interface BroadcastConstraints {
+    /**
+     * Ideal and max video width
+     */
+    width: number,
+
+    /**
+     * Ideal and max video height
+     */
+    height: number,
+
+    /**
+     * Dynamically change the video quality related to bandwidth constraints.
+     */
+    dynamicQuality: boolean,
+
+    /**
+     * Max bandwidth which should be used (in bits/second)
+     */
+    maxBandwidth: number,
+
+    /**
+     * Maximal frame rate for the video.
+     * This might be ignored by some browsers.
+     */
+    maxFrameRate: number,
+
+    /**
+     * The maximal
+     */
+    dynamicFrameRate: boolean
+}
+
 export interface LocalVideoBroadcast {
     getEvents() : Registry<LocalVideoBroadcastEvents>;
 
@@ -90,13 +122,18 @@ export interface LocalVideoBroadcast {
 
     /**
      * @param source The source of the broadcast (No ownership will be taken. The voice connection must ref the source by itself!)
+     * @param constraints
      */
-    startBroadcasting(source: VideoSource) : Promise<void>;
+    startBroadcasting(source: VideoSource, constraints: BroadcastConstraints) : Promise<void>;
 
     /**
      * @param source The source of the broadcast (No ownership will be taken. The voice connection must ref the source by itself!)
+     * @param constraints
      */
-    changeSource(source: VideoSource) : Promise<void>;
+    changeSource(source: VideoSource, constraints: BroadcastConstraints) : Promise<void>;
+
+    getConstraints() : BroadcastConstraints | undefined;
+    applyConstraints(constraints: BroadcastConstraints) : Promise<void>;
 
     stopBroadcasting();
 }

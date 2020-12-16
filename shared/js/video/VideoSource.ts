@@ -1,11 +1,30 @@
 import {Registry} from "tc-shared/events";
 import { tr } from "tc-shared/i18n/localize";
 
+export interface VideoSourceCapabilities {
+    minWidth: number,
+    maxWidth: number,
+
+    minHeight: number,
+    maxHeight: number,
+
+    minFrameRate: number,
+    maxFrameRate: number
+}
+
+export interface VideoSourceInitialSettings {
+    width: number,
+    height: number,
+    frameRate: number
+}
+
 export interface VideoSource {
     getId() : string;
     getName() : string;
 
     getStream() : MediaStream;
+    getCapabilities() : VideoSourceCapabilities;
+    getInitialSettings() : VideoSourceInitialSettings;
 
     /** Add a new reference to this stream */
     ref() : this;
