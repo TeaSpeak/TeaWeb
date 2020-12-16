@@ -21,12 +21,14 @@ import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
 import {Settings, settings} from "tc-shared/settings";
 import * as _ from "lodash";
+import PermissionType from "tc-shared/permission/PermissionType";
 
 const cssStyle = require("./Renderer.scss");
 
 let videoIdIndex = 0;
 interface ClientVideoController {
     destroy();
+    isSubscribed(type: VideoBroadcastType);
     toggleMuteState(type: VideoBroadcastType, state: boolean);
     dismissVideo(type: VideoBroadcastType);
 
@@ -39,12 +41,18 @@ class RemoteClientVideoController implements ClientVideoController {
     readonly videoId: string;
     readonly client: ClientEntry;
     callbackBroadcastStateChanged: (broadcasting: boolean) => void;
+    callbackSubscriptionStateChanged: () => void;
 
     protected readonly events: Registry<ChannelVideoEvents>;
     protected eventListener: (() => void)[];
     protected eventListenerVideoClient: (() => void)[];
 
     private currentBroadcastState: boolean;
+    private currentSubscriptionState: {[T in VideoBroadcastType]: boolean} = {
+        screen: false,
+        camera: false
+    };
+
     private dismissed: {[T in VideoBroadcastType]: boolean} = {
         screen: false,
         camera: false
@@ -113,12 +121,33 @@ class RemoteClientVideoController implements ClientVideoController {
         return videoClient && (videoClient.getVideoState("camera") !== VideoBroadcastState.Stopped || videoClient.getVideoState("screen") !== VideoBroadcastState.Stopped);
     }
 
+    isSubscribed(type: VideoBroadcastType) {
+        const videoClient = this.client.getVideoClient();
+        const videoState = videoClient?.getVideoState(type);
+        return typeof videoState !== "undefined" && videoState !== VideoBroadcastState.Stopped && videoState !== VideoBroadcastState.Available;
+    }
+
     toggleMuteState(type: VideoBroadcastType, muted: boolean) {
+        const videoClient = this.client.getVideoClient();
+        if(!videoClient) {
+            return;
+        }
+
+        const videoState = videoClient.getVideoState(type);
+
         if(muted) {
+            if(videoState ===VideoBroadcastState.Stopped || videoState === VideoBroadcastState.Available) {
+                return;
+            }
+
             this.client.getVideoClient().leaveBroadcast(type);
         } else {
             /* we explicitly specified that we don't want to have that */
             this.dismissed[type] = true;
+
+            if(videoState !== VideoBroadcastState.Available) {
+                return;
+            }
 
             this.client.getVideoClient().joinBroadcast(type).catch(error => {
                 logError(LogCategory.VIDEO, tr("Failed to join video broadcast: %o"), error);
@@ -155,12 +184,16 @@ class RemoteClientVideoController implements ClientVideoController {
         let screenState: ChannelVideoStreamState = "none";
 
         let broadcasting = false;
+
+        let cameraSubscribed = false, screenSubscribed = false;
+
         if(this.hasVideoSupport()) {
             const stateCamera = this.getBroadcastState("camera");
             if(stateCamera === VideoBroadcastState.Available) {
                 cameraState = this.dismissed["camera"] ? "ignored" : "available";
             } else if(stateCamera === VideoBroadcastState.Running || stateCamera === VideoBroadcastState.Initializing) {
                 cameraState = "streaming";
+                cameraSubscribed = true;
             }
 
             const stateScreen = this.getBroadcastState("screen");
@@ -168,6 +201,7 @@ class RemoteClientVideoController implements ClientVideoController {
                 screenState = this.dismissed["screen"] ? "ignored" : "available";
             } else if(stateScreen === VideoBroadcastState.Running || stateScreen === VideoBroadcastState.Initializing) {
                 screenState = "streaming";
+                screenSubscribed = true;
             }
 
             broadcasting = cameraState !== "none" || screenState !== "none";
@@ -187,6 +221,17 @@ class RemoteClientVideoController implements ClientVideoController {
             this.currentBroadcastState = broadcasting;
             if(this.callbackBroadcastStateChanged) {
                 this.callbackBroadcastStateChanged(broadcasting);
+            }
+        }
+
+        if(this.currentSubscriptionState.camera !== cameraSubscribed || this.currentSubscriptionState.screen !== screenSubscribed) {
+            this.currentSubscriptionState = {
+                screen: screenSubscribed,
+                camera: cameraSubscribed
+            };
+
+            if(this.callbackSubscriptionStateChanged) {
+                this.callbackSubscriptionStateChanged();
             }
         }
     }
@@ -383,7 +428,12 @@ class ChannelVideoController {
                 return;
             }
 
-            controller.toggleMuteState(event.broadcastType, event.muted);
+            if(event.broadcastType === undefined) {
+                controller.toggleMuteState("camera", event.muted);
+                controller.toggleMuteState("screen", event.muted);
+            } else {
+                controller.toggleMuteState(event.broadcastType, event.muted);
+            }
         });
 
         this.events.on("action_dismiss", event => {
@@ -399,6 +449,7 @@ class ChannelVideoController {
         this.events.on("query_expended", () => this.events.fire_react("notify_expended", { expended: this.expended }));
         this.events.on("query_videos", () => this.notifyVideoList());
         this.events.on("query_spotlight", () => this.notifySpotlight());
+        this.events.on("query_subscribe_info", () => this.notifySubscribeInfo());
 
         this.events.on("query_video_info", event => {
             const controller = this.findVideoById(event.videoId);
@@ -490,6 +541,11 @@ class ChannelVideoController {
             }
         }));
 
+        /* TODO: Unify update if all three changed? */
+        events.push(this.connection.permissions.register_needed_permission(PermissionType.I_VIDEO_MAX_STREAMS, () => this.notifySubscribeInfo()));
+        events.push(this.connection.permissions.register_needed_permission(PermissionType.I_VIDEO_MAX_CAMERA_STREAMS, () => this.notifySubscribeInfo()));
+        events.push(this.connection.permissions.register_needed_permission(PermissionType.I_VIDEO_MAX_SCREEN_STREAMS, () => this.notifySubscribeInfo()));
+
         events.push(settings.globalChangeListener(Settings.KEY_VIDEO_SHOW_ALL_CLIENTS, () => this.notifyVideoList()));
         events.push(settings.globalChangeListener(Settings.KEY_VIDEO_FORCE_SHOW_OWN_VIDEO, () => this.notifyVideoList()));
     }
@@ -551,6 +607,7 @@ class ChannelVideoController {
         if(this.clientVideos[clientId]) {
             const video = this.clientVideos[clientId];
             video.callbackBroadcastStateChanged = undefined;
+            video.callbackSubscriptionStateChanged = undefined;
             video.destroy();
             delete this.clientVideos[clientId];
 
@@ -570,6 +627,7 @@ class ChannelVideoController {
         const controller = new RemoteClientVideoController(client, this.events);
         /* update our video list and the visibility */
         controller.callbackBroadcastStateChanged = () => this.notifyVideoList();
+        controller.callbackSubscriptionStateChanged = () => this.notifySubscribeInfo();
         this.clientVideos[client.clientId()] = controller;
     }
 
@@ -621,6 +679,37 @@ class ChannelVideoController {
 
         this.events.fire_react("notify_videos", {
             videoIds: videoIds
+        });
+    }
+
+    private notifySubscribeInfo() {
+        const permissionMaxStreams = this.connection.permissions.neededPermission(PermissionType.I_VIDEO_MAX_STREAMS);
+        const permissionMaxScreenStreams = this.connection.permissions.neededPermission(PermissionType.I_VIDEO_MAX_SCREEN_STREAMS);
+        const permissionMaxCameraStreams = this.connection.permissions.neededPermission(PermissionType.I_VIDEO_MAX_CAMERA_STREAMS);
+
+        let subscriptionsCamera = 0, subscriptionsScreen = 0;
+        for(const client of Object.values(this.clientVideos)) {
+            if(client.isSubscribed("screen")) {
+                subscriptionsScreen++;
+            }
+            if(client.isSubscribed("camera")) {
+                subscriptionsCamera++;
+            }
+        }
+
+        this.events.fire_react("notify_subscribe_info", {
+            info: {
+                totalSubscriptions: subscriptionsCamera + subscriptionsScreen,
+                maxSubscriptions: permissionMaxStreams.valueOr(undefined),
+                subscribeLimits: {
+                    screen: permissionMaxScreenStreams.valueOr(undefined),
+                    camera: permissionMaxCameraStreams.valueOr(undefined)
+                },
+                subscribedStreams: {
+                    camera: subscriptionsCamera,
+                    screen: subscriptionsScreen,
+                }
+            }
         });
     }
 

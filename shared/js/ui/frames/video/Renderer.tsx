@@ -7,7 +7,7 @@ import {
     ChannelVideoEvents,
     ChannelVideoInfo,
     ChannelVideoStreamState,
-    kLocalVideoId, VideoStreamState
+    kLocalVideoId, VideoStreamState, VideoSubscribeInfo
 } from "tc-shared/ui/frames/video/Definitions";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
@@ -17,6 +17,7 @@ import {LogCategory, logWarn} from "tc-shared/log";
 import {spawnContextMenu} from "tc-shared/ui/ContextMenu";
 import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
 
+const SubscribeContext = React.createContext<VideoSubscribeInfo>(undefined);
 const EventContext = React.createContext<Registry<ChannelVideoEvents>>(undefined);
 const HandlerIdContext = React.createContext<string>(undefined);
 
@@ -140,23 +141,98 @@ const VideoStreamReplay = React.memo((props: { stream: MediaStream | undefined, 
     )
 });
 
-const VideoAvailableRenderer = (props: {  callbackEnable: () => void, callbackIgnore?: () => void, className?: string }) => (
-    <div className={cssStyle.text + " " + props.className} key={"video-muted"}>
-        <div className={cssStyle.videoAvailable}>
-            <Translatable>Video available</Translatable>
-            <div className={cssStyle.buttons}>
-                <div className={cssStyle.button2} onClick={props.callbackEnable}>
-                    <Translatable>Watch</Translatable>
-                </div>
-                {!props.callbackIgnore ? undefined :
-                    <div className={cssStyle.button2} key={"ignore"} onClick={props.callbackIgnore}>
-                        <Translatable>Ignore</Translatable>
+const VideoSubscribeContextProvider = (props: { children?: React.ReactElement | React.ReactElement[] }) => {
+    const events = useContext(EventContext);
+
+    const [ subscribeInfo, setSubscribeInfo ] = useState<VideoSubscribeInfo>(() => {
+        events.fire("query_subscribe_info");
+        return {
+            totalSubscriptions: 0,
+            subscribedStreams: {
+                screen: 0,
+                camera: 0
+            },
+            subscribeLimits: {},
+            maxSubscriptions: undefined
+        };
+    });
+    events.reactUse("notify_subscribe_info", event => setSubscribeInfo(event.info));
+
+    return (
+        <SubscribeContext.Provider value={subscribeInfo}>
+            {props.children}
+        </SubscribeContext.Provider>
+    );
+}
+
+const canSubscribe = (subscribeInfo: VideoSubscribeInfo, target: VideoBroadcastType) : boolean => {
+    if(typeof subscribeInfo.maxSubscriptions === "number" && subscribeInfo.maxSubscriptions <= subscribeInfo.totalSubscriptions) {
+        return false;
+    }
+
+    return typeof subscribeInfo.subscribeLimits[target] !== "number" || subscribeInfo.subscribeLimits[target] > subscribeInfo.subscribedStreams[target];
+};
+
+const VideoGeneralAvailableRenderer = (props: { videoId: string, haveScreen: boolean, haveCamera: boolean, className?: string }) => {
+    const events = useContext(EventContext);
+
+    const subscribeInfo = useContext(SubscribeContext);
+    if(props.haveCamera && canSubscribe(subscribeInfo, "camera") || props.haveScreen && canSubscribe(subscribeInfo, "screen")) {
+        return (
+            <div className={cssStyle.text + " " + props.className} key={"video-muted"}>
+                <div className={cssStyle.videoAvailable}>
+                    <Translatable>Video available</Translatable>
+                    <div className={cssStyle.buttons}>
+                        <div className={cssStyle.button2} onClick={() => events.fire("action_toggle_mute", { videoId: props.videoId, broadcastType: undefined, muted: false })}>
+                            <Translatable>Watch</Translatable>
+                        </div>
                     </div>
-                }
+                </div>
             </div>
-        </div>
-    </div>
-);
+        );
+    } else {
+        return (
+            <div className={cssStyle.text + " " + props.className} key={"limit-reached"}>
+                <div className={cssStyle.videoAvailable}>
+                    <Translatable>Stream subscribe limit reached</Translatable>
+                    {/* TODO: Name the failed permission */}
+                </div>
+            </div>
+        );
+    }
+};
+
+const VideoStreamAvailableRenderer = (props: { videoId: string, mode: VideoBroadcastType , className?: string }) => {
+    const events = useContext(EventContext);
+
+    const subscribeInfo = useContext(SubscribeContext);
+    if(canSubscribe(subscribeInfo, props.mode)) {
+        return (
+            <div className={cssStyle.text + " " + props.className} key={"video-muted"}>
+                <div className={cssStyle.videoAvailable}>
+                    <Translatable>Video available</Translatable>
+                    <div className={cssStyle.buttons}>
+                        <div className={cssStyle.button2} onClick={() => events.fire("action_toggle_mute", { videoId: props.videoId, broadcastType: props.mode, muted: false })}>
+                            <Translatable>Watch</Translatable>
+                        </div>
+                        <div className={cssStyle.button2} key={"ignore"} onClick={() => events.fire("action_dismiss", { videoId: props.videoId, broadcastType: props.mode })}>
+                            <Translatable>Ignore</Translatable>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    } else {
+        return (
+            <div className={cssStyle.text + " " + props.className} key={"limit-reached"}>
+                <div className={cssStyle.videoAvailable}>
+                    <Translatable>Stream subscribe limit reached</Translatable>
+                    {/* TODO: Name the failed permission */}
+                </div>
+            </div>
+        );
+    }
+};
 
 const VideoStreamRenderer = (props: { videoId: string, streamType: VideoBroadcastType, className?: string }) => {
     const events = useContext(EventContext);
@@ -207,8 +283,6 @@ const VideoStreamRenderer = (props: { videoId: string, streamType: VideoBroadcas
 }
 
 const VideoPlayer = React.memo((props: { videoId: string, cameraState: ChannelVideoStreamState, screenState: ChannelVideoStreamState }) => {
-    const events = useContext(EventContext);
-
     const streamElements = [];
     const streamClasses = [cssStyle.videoPrimary, cssStyle.videoSecondary];
 
@@ -217,27 +291,21 @@ const VideoPlayer = React.memo((props: { videoId: string, cameraState: ChannelVi
     } else if(props.cameraState !== "streaming" && props.screenState !== "streaming") {
         /* We're not streaming any video nor we don't have any video. Show general show video button. */
         streamElements.push(
-            <VideoAvailableRenderer
+            <VideoGeneralAvailableRenderer
                 key={"video-available"}
-                callbackEnable={() => {
-                    if(props.screenState !== "streaming" && props.screenState !== "none") {
-                        events.fire("action_toggle_mute", { broadcastType: "screen", muted: false, videoId: props.videoId })
-                    }
-
-                    if(props.cameraState !== "streaming" && props.cameraState !== "none") {
-                        events.fire("action_toggle_mute", { broadcastType: "camera", muted: false, videoId: props.videoId })
-                    }
-                }}
+                videoId={props.videoId}
+                haveCamera={props.cameraState !== "none"}
+                haveScreen={props.screenState !== "none"}
                 className={streamClasses.pop_front()}
             />
         );
     } else {
         if(props.screenState === "available") {
             streamElements.push(
-                <VideoAvailableRenderer
+                <VideoStreamAvailableRenderer
                     key={"video-available-screen"}
-                    callbackEnable={() => events.fire("action_toggle_mute", { broadcastType: "screen", muted: false, videoId: props.videoId })}
-                    callbackIgnore={() => events.fire("action_dismiss", { broadcastType: "screen", videoId: props.videoId })}
+                    videoId={props.videoId}
+                    mode={"screen"}
                     className={streamClasses.pop_front()}
                 />
             );
@@ -250,10 +318,10 @@ const VideoPlayer = React.memo((props: { videoId: string, cameraState: ChannelVi
 
         if(props.cameraState === "available") {
             streamElements.push(
-                <VideoAvailableRenderer
+                <VideoStreamAvailableRenderer
                     key={"video-available-camera"}
-                    callbackEnable={() => events.fire("action_toggle_mute", { broadcastType: "camera", muted: false, videoId: props.videoId })}
-                    callbackIgnore={() => events.fire("action_dismiss", { broadcastType: "camera", videoId: props.videoId })}
+                    videoId={props.videoId}
+                    mode={"camera"}
                     className={streamClasses.pop_front()}
                 />
             );
@@ -570,7 +638,9 @@ export const ChannelVideoRenderer = (props: { handlerId: string, events: Registr
         <EventContext.Provider value={props.events}>
             <HandlerIdContext.Provider value={props.handlerId}>
                 <div className={cssStyle.panel}>
-                    <VideoBar />
+                    <VideoSubscribeContextProvider>
+                        <VideoBar />
+                    </VideoSubscribeContextProvider>
                     <ExpendArrow />
                     <Spotlight />
                 </div>
