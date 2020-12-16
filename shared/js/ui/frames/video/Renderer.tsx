@@ -4,11 +4,10 @@ import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {Registry} from "tc-shared/events";
 import {
-    ChannelVideo,
     ChannelVideoEvents,
     ChannelVideoInfo,
-    ChannelVideoStream,
-    kLocalVideoId
+    ChannelVideoStreamState,
+    kLocalVideoId, VideoStreamState
 } from "tc-shared/ui/frames/video/Definitions";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
@@ -159,123 +158,115 @@ const VideoAvailableRenderer = (props: {  callbackEnable: () => void, callbackIg
     </div>
 );
 
-const VideoStreamRenderer = (props: { stream: ChannelVideoStream, callbackEnable: () => void, callbackIgnore: () => void, videoTitle: string, className?: string }) => {
-    if(props.stream === "available") {
-        return <VideoAvailableRenderer callbackEnable={props.callbackEnable} callbackIgnore={props.callbackIgnore} className={props.className} key={"available"} />;
-    } else if(props.stream === undefined) {
-        return (
-            <div className={cssStyle.text} key={"no-video-stream"}>
-                <div><Translatable>No Video</Translatable></div>
-            </div>
-        );
-    } else {
-        return <VideoStreamReplay stream={props.stream} className={props.className} title={props.videoTitle} key={"video-renderer"} />;
+const VideoStreamRenderer = (props: { videoId: string, streamType: VideoBroadcastType, className?: string }) => {
+    const events = useContext(EventContext);
+    const [ state, setState ] = useState<VideoStreamState>(() => {
+        events.fire("query_video_stream", { videoId: props.videoId, broadcastType: props.streamType });
+        return {
+            state: "disconnected",
+        }
+    });
+    events.reactUse("notify_video_stream", event => {
+        if(event.videoId === props.videoId && event.broadcastType === props.streamType) {
+            setState(event.state);
+        }
+    });
+
+    switch (state.state) {
+        case "disconnected":
+            return (
+                <div className={cssStyle.text} key={"no-video-stream"}>
+                    <div><Translatable>No video stream</Translatable></div>
+                </div>
+            );
+
+        case "connecting":
+            return (
+                <div className={cssStyle.text} key={"info-initializing"}>
+                    <div><Translatable>connecting</Translatable> <LoadingDots /></div>
+                </div>
+            );
+
+        case "connected":
+            return <VideoStreamReplay stream={state.stream} className={props.className} title={props.streamType === "camera" ? tr("Camera") : tr("Screen")} key={"connected"} />;
+
+        case "failed":
+            return (
+                <div className={cssStyle.text + " " + cssStyle.error} key={"error"}>
+                    <div><Translatable>Stream replay failed</Translatable></div>
+                </div>
+            );
+
+        case "available":
+            return (
+                <div className={cssStyle.text} key={"no-video-stream"}>
+                    <div><Translatable>Video available</Translatable></div>
+                </div>
+            );
     }
 }
 
-const VideoPlayer = React.memo((props: { videoId: string }) => {
+const VideoPlayer = React.memo((props: { videoId: string, cameraState: ChannelVideoStreamState, screenState: ChannelVideoStreamState }) => {
     const events = useContext(EventContext);
-    const [ state, setState ] = useState<"loading" | ChannelVideo>(() => {
-        events.fire("query_video", { videoId: props.videoId });
-        return "loading";
-    });
 
-    events.reactUse("notify_video", event => {
-        if(event.videoId === props.videoId) {
-            setState(event.status);
-        }
-    });
+    const streamElements = [];
+    const streamClasses = [cssStyle.videoPrimary, cssStyle.videoSecondary];
 
-    if(state === "loading") {
-        return (
-            <div className={cssStyle.text} key={"info-loading"}>
-                <div><Translatable>loading</Translatable> <LoadingDots /></div>
-            </div>
-        );
-    } else if(state.status === "initializing") {
-        return (
-            <div className={cssStyle.text} key={"info-initializing"}>
-                <div><Translatable>connecting</Translatable> <LoadingDots /></div>
-            </div>
-        );
-    } else if(state.status === "error") {
-        return (
-            <div className={cssStyle.error + " " + cssStyle.text} key={"info-error"}>
-                <div>{state.message}</div>
-            </div>
-        );
-    } else if(state.status === "connected") {
-        const streamElements = [];
-        const streamClasses = [cssStyle.videoPrimary, cssStyle.videoSecondary];
+    if(props.cameraState === "none" && props.screenState === "none") {
+        /* No video available. Will be handled bellow */
+    } else if(props.cameraState !== "streaming" && props.screenState !== "streaming") {
+        /* We're not streaming any video nor we don't have any video. Show general show video button. */
+        streamElements.push(
+            <VideoAvailableRenderer
+                key={"video-available"}
+                callbackEnable={() => {
+                    if(props.screenState !== "streaming" && props.screenState !== "none") {
+                        events.fire("action_toggle_mute", { broadcastType: "screen", muted: false, videoId: props.videoId })
+                    }
 
-        if(state.desktopStream === "available" && (state.cameraStream === "available" || state.cameraStream === undefined) ||
-            state.cameraStream === "available" && (state.desktopStream === "available" || state.desktopStream === undefined)
-        ) {
-            /* One or both streams are available. Showing just one box. */
+                    if(props.cameraState !== "streaming" && props.cameraState !== "none") {
+                        events.fire("action_toggle_mute", { broadcastType: "camera", muted: false, videoId: props.videoId })
+                    }
+                }}
+                className={streamClasses.pop_front()}
+            />
+        );
+    } else {
+        if(props.screenState === "available") {
             streamElements.push(
                 <VideoAvailableRenderer
-                    key={"video-available"}
-                    callbackEnable={() => {
-                        if(state.desktopStream === "available") {
-                            events.fire("action_toggle_mute", { broadcastType: "screen", muted: false, videoId: props.videoId })
-                        }
-
-                        if(state.cameraStream === "available") {
-                            events.fire("action_toggle_mute", { broadcastType: "camera", muted: false, videoId: props.videoId })
-                        }
-                    }}
+                    key={"video-available-screen"}
+                    callbackEnable={() => events.fire("action_toggle_mute", { broadcastType: "screen", muted: false, videoId: props.videoId })}
+                    callbackIgnore={() => events.fire("action_dismiss", { broadcastType: "screen", videoId: props.videoId })}
                     className={streamClasses.pop_front()}
                 />
             );
-        } else {
-            if(state.desktopStream) {
-                if(!state.dismissed["screen"] || state.desktopStream !== "available") {
-                    streamElements.push(
-                        <VideoStreamRenderer
-                            key={"screen"}
-                            stream={state.desktopStream}
-                            callbackEnable={() => events.fire("action_toggle_mute", { broadcastType: "screen", muted: false, videoId: props.videoId })}
-                            callbackIgnore={() => events.fire("action_dismiss", { broadcastType: "screen", videoId: props.videoId })}
-                            videoTitle={tr("Screen")}
-                            className={streamClasses.pop_front()}
-                        />
-                    );
-                }
-            }
-
-            if(state.cameraStream) {
-                if(!state.dismissed["camera"] || state.cameraStream !== "available") {
-                    streamElements.push(
-                        <VideoStreamRenderer
-                            key={"camera"}
-                            stream={state.cameraStream}
-                            callbackEnable={() => events.fire("action_toggle_mute", { broadcastType: "camera", muted: false, videoId: props.videoId })}
-                            callbackIgnore={() => events.fire("action_dismiss", { broadcastType: "camera", videoId: props.videoId })}
-                            videoTitle={tr("Camera")}
-                            className={streamClasses.pop_front()}
-                        />
-                    );
-                }
-            }
-        }
-
-        if(streamElements.length === 0){
-            return (
-                <div className={cssStyle.text} key={"no-video-stream"}>
-                    <div>
-                        {props.videoId === kLocalVideoId ?
-                            <Translatable key={"own"}>You're not broadcasting video</Translatable> :
-                            <Translatable key={"general"}>No Video</Translatable>
-                        }
-                    </div>
-                </div>
+        } else if(props.screenState === "streaming") {
+            streamElements.push(
+                <VideoStreamRenderer key={"stream-screen"} videoId={props.videoId} streamType={"screen"} className={streamClasses.pop_front()} />
             );
         }
 
-        return <>{streamElements}</>;
-    } else if(state.status === "no-video") {
+
+        if(props.cameraState === "available") {
+            streamElements.push(
+                <VideoAvailableRenderer
+                    key={"video-available-camera"}
+                    callbackEnable={() => events.fire("action_toggle_mute", { broadcastType: "camera", muted: false, videoId: props.videoId })}
+                    callbackIgnore={() => events.fire("action_dismiss", { broadcastType: "camera", videoId: props.videoId })}
+                    className={streamClasses.pop_front()}
+                />
+            );
+        } else if(props.cameraState === "streaming") {
+            streamElements.push(
+                <VideoStreamRenderer key={"stream-camera"} videoId={props.videoId} streamType={"camera"} className={streamClasses.pop_front()} />
+            );
+        }
+    }
+
+    if(streamElements.length === 0){
         return (
-            <div className={cssStyle.text} key={"no-video"}>
+            <div className={cssStyle.text} key={"no-video-stream"}>
                 <div>
                     {props.videoId === kLocalVideoId ?
                         <Translatable key={"own"}>You're not broadcasting video</Translatable> :
@@ -286,7 +277,53 @@ const VideoPlayer = React.memo((props: { videoId: string }) => {
         );
     }
 
-    return null;
+    return <>{streamElements}</>;
+});
+
+const VideoControlButtons = React.memo((props: {
+    videoId: string,
+    cameraState: ChannelVideoStreamState,
+    screenState: ChannelVideoStreamState,
+    isSpotlight: boolean,
+    fullscreenMode: "none" | "unavailable" | "set"
+}) => {
+    const events = useContext(EventContext);
+
+    const screenShown = props.screenState !== "none" && props.videoId !== kLocalVideoId;
+    const cameraShown = props.cameraState !== "none" && props.videoId !== kLocalVideoId;
+
+    const screenDisabled = props.screenState === "ignored" || props.screenState === "muted" || props.screenState === "available";
+    const cameraDisabled = props.cameraState === "ignored" || props.cameraState === "muted" || props.cameraState === "available";
+
+    return (
+        <div className={cssStyle.actionIcons}>
+            <div className={cssStyle.iconContainer + " " + cssStyle.toggle + " " + (screenShown ? "" : cssStyle.hidden) + " " + (screenDisabled ? cssStyle.disabled : "")}
+                 onClick={() => events.fire("action_toggle_mute", { videoId: props.videoId, broadcastType: "screen", muted: !screenDisabled })}
+                 title={props.screenState === "muted" ? tr("Unmute screen video") : tr("Mute screen video")}
+            >
+                <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.ShareScreen} />
+            </div>
+            <div className={cssStyle.iconContainer + " " + cssStyle.toggle + " " + (cameraShown ? "" : cssStyle.hidden) + " " + (cameraDisabled ? cssStyle.disabled : "")}
+                 onClick={() => events.fire("action_toggle_mute", { videoId: props.videoId, broadcastType: "camera", muted: !cameraDisabled })}
+                 title={props.cameraState === "muted" ? tr("Unmute camera video") : tr("Mute camera video")}
+            >
+                <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.VideoMuted} />
+            </div>
+            <div className={cssStyle.iconContainer + " " + (props.fullscreenMode === "unavailable" ? cssStyle.hidden : "")}
+                 onClick={() => {
+                     if(props.isSpotlight) {
+                         events.fire("action_set_fullscreen", { videoId: props.fullscreenMode === "set" ? undefined : props.videoId });
+                     } else {
+                         events.fire("action_set_spotlight", { videoId: props.videoId, expend: true });
+                         events.fire("action_focus_spotlight", { });
+                     }
+                 }}
+                 title={props.isSpotlight ? tr("Toggle fullscreen") : tr("Toggle spotlight")}
+            >
+                <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.Fullscreen} />
+            </div>
+        </div>
+    );
 });
 
 const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolean }) => {
@@ -295,14 +332,17 @@ const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolea
     const fullscreenCapable = "requestFullscreen" in HTMLElement.prototype;
 
     const [ isFullscreen, setFullscreen ] = useState(false);
-    const [ muteState, setMuteState ] = useState<{[T in VideoBroadcastType]: "muted" | "available" | "unset"}>(() => {
-        events.fire("query_video_mute_status", { videoId: props.videoId });
-        return { camera: "unset", screen: "unset" };
+
+    const [ cameraState, setCameraState ] = useState<ChannelVideoStreamState>("none");
+    const [ screenState, setScreenState ] = useState<ChannelVideoStreamState>(() => {
+        events.fire("query_video", { videoId: props.videoId });
+        return "none";
     });
 
-    events.reactUse("notify_video_mute_status", event => {
+    events.reactUse("notify_video", event => {
         if(event.videoId === props.videoId) {
-            setMuteState(event.status);
+            setCameraState(event.cameraStream);
+            setScreenState(event.screenStream);
         }
     });
 
@@ -341,14 +381,6 @@ const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolea
             setFullscreen(false);
         }
     });
-
-    const toggleClass = (type: VideoBroadcastType) => {
-        if(props.videoId === kLocalVideoId || muteState[type] === "unset") {
-            return cssStyle.hidden;
-        }
-
-        return muteState[type] === "muted" ? cssStyle.disabled : "";
-    }
 
     return (
         <div
@@ -390,35 +422,15 @@ const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolea
             }}
             ref={refContainer}
         >
-            <VideoPlayer videoId={props.videoId} />
+            <VideoPlayer videoId={props.videoId} cameraState={cameraState} screenState={screenState} />
             <VideoInfo videoId={props.videoId} />
-            <div className={cssStyle.actionIcons}>
-                <div className={cssStyle.iconContainer + " " + cssStyle.toggle + " " + toggleClass("screen")}
-                     onClick={() => events.fire("action_toggle_mute", { videoId: props.videoId, broadcastType: "screen", muted: muteState.screen === "available" })}
-                     title={muteState["screen"] === "muted" ? tr("Unmute screen video") : tr("Mute screen video")}
-                >
-                    <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.ShareScreen} />
-                </div>
-                <div className={cssStyle.iconContainer + " " + cssStyle.toggle + " " + toggleClass("camera")}
-                     onClick={() => events.fire("action_toggle_mute", { videoId: props.videoId, broadcastType: "camera", muted: muteState.camera === "available" })}
-                     title={muteState["camera"] === "muted" ? tr("Unmute camera video") : tr("Mute camera video")}
-                >
-                    <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.VideoMuted} />
-                </div>
-                <div className={cssStyle.iconContainer + " " + (!fullscreenCapable ? cssStyle.hidden : "")}
-                     onClick={() => {
-                         if(props.isSpotlight) {
-                             events.fire("action_set_fullscreen", { videoId: isFullscreen ? undefined : props.videoId });
-                         } else {
-                             events.fire("action_set_spotlight", { videoId: props.videoId, expend: true });
-                             events.fire("action_focus_spotlight", { });
-                         }
-                     }}
-                     title={props.isSpotlight ? tr("Toggle fullscreen") : tr("Toggle spotlight")}
-                >
-                    <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.Fullscreen} />
-                </div>
-            </div>
+            <VideoControlButtons
+                videoId={props.videoId}
+                cameraState={cameraState}
+                screenState={screenState}
+                isSpotlight={props.isSpotlight}
+                fullscreenMode={fullscreenCapable ? isFullscreen ? "set" : "none" : "unavailable"}
+            />
         </div>
     );
 });

@@ -3,7 +3,12 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {ChannelVideoRenderer} from "tc-shared/ui/frames/video/Renderer";
 import {Registry} from "tc-shared/events";
-import {ChannelVideo, ChannelVideoEvents, kLocalVideoId} from "tc-shared/ui/frames/video/Definitions";
+import {
+    ChannelVideoEvents,
+    ChannelVideoStreamState,
+    kLocalVideoId,
+    VideoStreamState
+} from "tc-shared/ui/frames/video/Definitions";
 import {
     LocalVideoBroadcastState,
     VideoBroadcastState,
@@ -27,7 +32,7 @@ interface ClientVideoController {
 
     notifyVideoInfo();
     notifyVideo(forceSend: boolean);
-    notifyMuteState();
+    notifyVideoStream(type: VideoBroadcastType);
 }
 
 class RemoteClientVideoController implements ClientVideoController {
@@ -45,7 +50,8 @@ class RemoteClientVideoController implements ClientVideoController {
         camera: false
     };
 
-    private cachedVideoStatus: ChannelVideo;
+    private cachedCameraState: ChannelVideoStreamState;
+    private cachedScreenState: ChannelVideoStreamState;
 
     constructor(client: ClientEntry, eventRegistry: Registry<ChannelVideoEvents>, videoId?: string) {
         this.client = client;
@@ -90,7 +96,7 @@ class RemoteClientVideoController implements ClientVideoController {
                 this.dismissed[event.broadcastType] = false;
             }
             this.notifyVideo(false);
-            this.notifyMuteState();
+            this.notifyVideoStream(event.broadcastType);
         }));
     }
 
@@ -119,6 +125,8 @@ class RemoteClientVideoController implements ClientVideoController {
                 /* TODO: Propagate error? */
             });
         }
+
+        this.notifyVideo(false);
     }
 
     dismissVideo(type: VideoBroadcastType) {
@@ -143,61 +151,36 @@ class RemoteClientVideoController implements ClientVideoController {
     }
 
     notifyVideo(forceSend: boolean) {
+        let cameraState: ChannelVideoStreamState = "none";
+        let screenState: ChannelVideoStreamState = "none";
+
         let broadcasting = false;
-        let status: ChannelVideo;
         if(this.hasVideoSupport()) {
-            let initializing = false;
-
-            let cameraStream, desktopStream;
-
             const stateCamera = this.getBroadcastState("camera");
             if(stateCamera === VideoBroadcastState.Available) {
-                cameraStream = "available";
-            } else if(stateCamera === VideoBroadcastState.Running) {
-                cameraStream = this.getBroadcastStream("camera")
-            } else if(stateCamera === VideoBroadcastState.Initializing) {
-                initializing = true;
+                cameraState = this.dismissed["camera"] ? "ignored" : "available";
+            } else if(stateCamera === VideoBroadcastState.Running || stateCamera === VideoBroadcastState.Initializing) {
+                cameraState = "streaming";
             }
 
             const stateScreen = this.getBroadcastState("screen");
             if(stateScreen === VideoBroadcastState.Available) {
-                desktopStream = "available";
-            } else if(stateScreen === VideoBroadcastState.Running) {
-                desktopStream = this.getBroadcastStream("screen");
-            } else if(stateScreen === VideoBroadcastState.Initializing) {
-                initializing = true;
+                screenState = this.dismissed["screen"] ? "ignored" : "available";
+            } else if(stateScreen === VideoBroadcastState.Running || stateScreen === VideoBroadcastState.Initializing) {
+                screenState = "streaming";
             }
 
-            if(cameraStream || desktopStream) {
-                broadcasting = true;
-                status = {
-                    status: "connected",
-
-                    desktopStream: desktopStream,
-                    cameraStream: cameraStream,
-
-                    dismissed: this.dismissed
-                };
-            } else if(initializing) {
-                broadcasting = true;
-                status = { status: "initializing" };
-            } else {
-                status = {
-                    status: "connected",
-
-                    cameraStream: undefined,
-                    desktopStream: undefined,
-
-                    dismissed: this.dismissed
-                };
-            }
-        } else {
-            status = { status: "no-video" };
+            broadcasting = cameraState !== "none" || screenState !== "none";
         }
 
-        if(forceSend || !_.isEqual(this.cachedVideoStatus, status)) {
-            this.cachedVideoStatus = status;
-            this.events.fire_react("notify_video", { videoId: this.videoId, status: status });
+        if(forceSend || !_.isEqual(this.cachedCameraState, cameraState) || !_.isEqual(this.cachedScreenState, screenState)) {
+            this.cachedCameraState = cameraState;
+            this.cachedScreenState = screenState;
+            this.events.fire_react("notify_video", {
+                videoId: this.videoId,
+                cameraStream: cameraState,
+                screenStream: screenState
+            });
         }
 
         if(broadcasting !== this.currentBroadcastState) {
@@ -208,13 +191,29 @@ class RemoteClientVideoController implements ClientVideoController {
         }
     }
 
-    notifyMuteState() {
-        this.events.fire_react("notify_video_mute_status", {
-            videoId: this.videoId,
-            status: {
-                camera: this.getBroadcastState("camera") === VideoBroadcastState.Available ? "muted" : this.getBroadcastState("camera") === VideoBroadcastState.Stopped ? "unset" : "available",
-                screen: this.getBroadcastState("screen") === VideoBroadcastState.Available ? "muted" : this.getBroadcastState("screen") === VideoBroadcastState.Stopped ? "unset" : "available",
+    notifyVideoStream(type: VideoBroadcastType) {
+        let state: VideoStreamState;
+
+        const streamState = this.getBroadcastState(type);
+        if(streamState === VideoBroadcastState.Stopped) {
+            state = { state: "disconnected" };
+        } else if(streamState === VideoBroadcastState.Initializing) {
+            state = { state: "connecting" };
+        } else if(streamState === VideoBroadcastState.Available) {
+            state = { state: "available" };
+        } else if(streamState === VideoBroadcastState.Buffering || streamState === VideoBroadcastState.Running) {
+            const stream = this.getBroadcastStream(type);
+            if(!stream) {
+                state = { state: "failed", reason: tr("Missing video stream") };
+            } else {
+                state = { state: "connected", stream: stream };
             }
+        }
+
+        this.events.fire_react("notify_video_stream", {
+            videoId: this.videoId,
+            broadcastType: type,
+            state: state
         });
     }
 
@@ -421,14 +420,14 @@ class ChannelVideoController {
             controller.notifyVideo(true);
         });
 
-        this.events.on("query_video_mute_status", event => {
+        this.events.on("query_video_stream", event => {
             const controller = this.findVideoById(event.videoId);
             if(!controller) {
-                logWarn(LogCategory.VIDEO, tr("Tried to query mute state for a non existing video id (%s)."), event.videoId);
+                logWarn(LogCategory.VIDEO, tr("Tried to query video stream for a non existing video id (%s)."), event.videoId);
                 return;
             }
 
-            controller.notifyMuteState();
+            controller.notifyVideoStream(event.broadcastType);
         });
 
         const channelTree = this.connection.channelTree;
