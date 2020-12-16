@@ -5,23 +5,7 @@ export const kLocalVideoId = "__local__video__";
 export const kLocalBroadcastChannels: VideoBroadcastType[] = ["screen", "camera"];
 
 export type ChannelVideoInfo = { clientName: string, clientUniqueId: string, clientId: number, statusIcon: ClientIcon };
-export type ChannelVideoStream = "available" | MediaStream | undefined;
-
-export type ChannelVideo ={
-    status: "initializing",
-} | {
-    status: "connected",
-
-    cameraStream: ChannelVideoStream,
-    desktopStream: ChannelVideoStream,
-
-    dismissed: {[T in VideoBroadcastType]: boolean}
-} | {
-    status: "error",
-    message: string
-} | {
-    status: "no-video"
-};
+export type ChannelVideoStreamState = "available" | "streaming" | "ignored" | "muted" | "none";
 
 export type VideoStatistics = {
     type: "sender",
@@ -51,6 +35,21 @@ export type VideoStatistics = {
     codec: { name: string, payloadType: number }
 };
 
+export type VideoStreamState = {
+    state: "disconnected"
+} | {
+    state: "available"
+} | {
+    state: "connecting"
+} | {
+    /* like join failed or whatever */
+    state: "failed",
+    reason?: string
+} | {
+    state: "connected",
+    stream: MediaStream
+};
+
 /**
  * "muted": The video has been muted locally
  * "unset": The video will be normally played
@@ -73,7 +72,7 @@ export interface ChannelVideoEvents {
     query_video_info: { videoId: string },
     query_video_statistics: { videoId: string, broadcastType: VideoBroadcastType },
     query_spotlight: {},
-    query_video_mute_status: { videoId: string }
+    query_video_stream: { videoId: string, broadcastType: VideoBroadcastType },
 
     notify_expended: { expended: boolean },
     notify_videos: {
@@ -81,7 +80,9 @@ export interface ChannelVideoEvents {
     },
     notify_video: {
         videoId: string,
-        status: ChannelVideo
+
+        cameraStream: ChannelVideoStreamState,
+        screenStream: ChannelVideoStreamState,
     },
     notify_video_info: {
         videoId: string,
@@ -103,8 +104,9 @@ export interface ChannelVideoEvents {
         broadcastType: VideoBroadcastType,
         statistics: VideoStatistics
     },
-    notify_video_mute_status: {
+    notify_video_stream: {
         videoId: string,
-        status: {[T in VideoBroadcastType] : "muted" | "available" | "unset"}
+        broadcastType: VideoBroadcastType,
+        state: VideoStreamState
     }
 }
