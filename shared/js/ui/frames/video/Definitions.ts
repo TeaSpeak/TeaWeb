@@ -50,6 +50,14 @@ export type VideoStreamState = {
     stream: MediaStream
 };
 
+export type VideoSubscribeInfo = {
+    totalSubscriptions: number,
+    subscribedStreams: {[T in VideoBroadcastType]: number},
+
+    subscribeLimits: {[T in VideoBroadcastType]?: number},
+    maxSubscriptions: number | undefined
+};
+
 /**
  * "muted": The video has been muted locally
  * "unset": The video will be normally played
@@ -63,7 +71,7 @@ export interface ChannelVideoEvents {
     action_set_spotlight: { videoId: string | undefined, expend: boolean },
     action_focus_spotlight: {},
     action_set_fullscreen: { videoId: string | undefined },
-    action_toggle_mute: { videoId: string, broadcastType: VideoBroadcastType, muted: boolean },
+    action_toggle_mute: { videoId: string, broadcastType: VideoBroadcastType | undefined, muted: boolean },
     action_dismiss: { videoId: string, broadcastType: VideoBroadcastType },
 
     query_expended: {},
@@ -73,6 +81,7 @@ export interface ChannelVideoEvents {
     query_video_statistics: { videoId: string, broadcastType: VideoBroadcastType },
     query_spotlight: {},
     query_video_stream: { videoId: string, broadcastType: VideoBroadcastType },
+    query_subscribe_info: {}
 
     notify_expended: { expended: boolean },
     notify_videos: {
@@ -108,5 +117,8 @@ export interface ChannelVideoEvents {
         videoId: string,
         broadcastType: VideoBroadcastType,
         state: VideoStreamState
+    },
+    notify_subscribe_info: {
+        info: VideoSubscribeInfo
     }
 }

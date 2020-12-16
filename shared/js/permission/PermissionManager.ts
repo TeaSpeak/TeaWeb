@@ -154,7 +154,7 @@ export class PermissionManager extends AbstractCommandHandler {
     permissionGroups: PermissionGroup[] = [];
     neededPermissions: NeededPermissionValue[] = [];
 
-    needed_permission_change_listener: {[permission: string]:(() => any)[]} = {};
+    needed_permission_change_listener: {[permission: string]:((value?: PermissionValue) => void)[]} = {};
 
     requests_channel_permissions: PermissionRequest[] = [];
     requests_client_permissions: PermissionRequest[] = [];
@@ -415,10 +415,12 @@ export class PermissionManager extends AbstractCommandHandler {
         this.events.fire("client_permissions_changed");
     }
 
-    register_needed_permission(key: PermissionType, listener: () => any) {
+    register_needed_permission(key: PermissionType, listener: () => any) : () => void {
         const array = this.needed_permission_change_listener[key] || [];
         array.push(listener);
         this.needed_permission_change_listener[key] = array;
+
+        return () => this.needed_permission_change_listener[key]?.remove(listener);
     }
 
     unregister_needed_permission(key: PermissionType, listener: () => any) {
