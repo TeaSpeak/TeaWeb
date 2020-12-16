@@ -48,6 +48,7 @@ export type SettingFrameRate = {
     min: number,
     max: number,
     original: number,
+    current: number
 };
 
 export interface ModalVideoSourceEvents {

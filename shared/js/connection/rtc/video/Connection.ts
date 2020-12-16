@@ -1,4 +1,5 @@
 import {
+    BroadcastConstraints,
     LocalVideoBroadcast,
     LocalVideoBroadcastEvents,
     LocalVideoBroadcastState,
@@ -27,6 +28,7 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
 
     private state: LocalVideoBroadcastState;
     private currentSource: VideoSource;
+    private currentConstrints: BroadcastConstraints;
     private broadcastStartId: number;
 
     private localStartPromise: Promise<void>;
@@ -70,55 +72,66 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
         return Promise.resolve(undefined);
     }
 
-    async changeSource(source: VideoSource): Promise<void> {
-        const videoTracks = source.getStream().getVideoTracks();
-        if(videoTracks.length === 0) {
-            throw tr("missing video stream track");
-        }
-
+    async changeSource(source: VideoSource, constraints: BroadcastConstraints): Promise<void> {
         let sourceRef = source.ref();
-        while(this.localStartPromise) {
-            await this.localStartPromise;
-        }
-
-        if(this.state.state !== "broadcasting") {
-            sourceRef.deref();
-            throw tr("not broadcasting anything");
-        }
-
-        const startId = ++this.broadcastStartId;
-        let rtcBroadcastType: RTCBroadcastableTrackType = this.type === "camera" ? "video" : "video-screen";
         try {
-            await this.handle.getRTCConnection().setTrackSource(rtcBroadcastType, videoTracks[0]);
-        } catch (error) {
-            if(this.broadcastStartId !== startId) {
-                /* broadcast start has been canceled */
-                return;
+            if(this.currentSource !== source) {
+                console.error("Source changed");
+                const videoTracks = source.getStream().getVideoTracks();
+                if(videoTracks.length === 0) {
+                    throw tr("missing video stream track");
+                }
+
+                while(this.localStartPromise) {
+                    await this.localStartPromise;
+                }
+
+                if(this.state.state !== "broadcasting") {
+                    throw tr("not broadcasting anything");
+                }
+
+                /* Apply the constraints to the current source */
+                await this.doApplyConstraints(constraints, source);
+
+                const startId = ++this.broadcastStartId;
+                let rtcBroadcastType: RTCBroadcastableTrackType = this.type === "camera" ? "video" : "video-screen";
+                try {
+                    await this.handle.getRTCConnection().setTrackSource(rtcBroadcastType, videoTracks[0]);
+                } catch (error) {
+                    if(this.broadcastStartId !== startId) {
+                        /* broadcast start has been canceled */
+                        return;
+                    }
+
+                    logError(LogCategory.WEBRTC, tr("Failed to change video track for broadcast %s: %o"), this.type, error);
+                    throw tr("failed to change video track");
+                }
+
+                this.setCurrentSource(sourceRef);
+            } else if(!_.isEqual(this.currentConstrints, constraints)) {
+                console.error("Constraints changed");
+                await this.applyConstraints(constraints);
             }
-
+        } finally {
             sourceRef.deref();
-            logError(LogCategory.WEBRTC, tr("Failed to change video track for broadcast %s: %o"), this.type, error);
-            throw tr("failed to change video track");
         }
-
-        this.setCurrentSource(sourceRef);
-        sourceRef.deref();
     }
 
     private setCurrentSource(source: VideoSource | undefined) {
         if(this.currentSource) {
             this.currentSource.deref();
+            this.currentConstrints = undefined;
         }
         this.currentSource = source?.ref();
     }
 
-    async startBroadcasting(source: VideoSource): Promise<void> {
+    async startBroadcasting(source: VideoSource, constraints: BroadcastConstraints): Promise<void> {
         const sourceRef = source.ref();
         while(this.localStartPromise) {
             await this.localStartPromise;
         }
 
-        const promise = this.doStartBroadcast(source);
+        const promise = this.doStartBroadcast(source, constraints);
         this.localStartPromise = promise.catch(() => {});
         this.localStartPromise.then(() => this.localStartPromise = undefined);
         try {
@@ -128,7 +141,7 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
         }
     }
 
-    private async doStartBroadcast(source: VideoSource) {
+    private async doStartBroadcast(source: VideoSource, constraints: BroadcastConstraints) {
         const videoTracks = source.getStream().getVideoTracks();
         if(videoTracks.length === 0) {
             throw tr("missing video stream track");
@@ -138,6 +151,23 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
         this.setCurrentSource(source);
         this.setState({ state: "initializing" });
 
+        if(this.broadcastStartId !== startId) {
+            /* broadcast start has been canceled */
+            return;
+        }
+
+        try {
+            await this.applyConstraints(constraints);
+        } catch (error) {
+            if(this.broadcastStartId !== startId) {
+                /* broadcast start has been canceled */
+                return;
+            }
+
+            logError(LogCategory.WEBRTC, tr("Failed to apply video constraints for broadcast %s: %o"), this.type, error);
+            this.stopBroadcasting(true, { state: "failed", reason: tr("Failed to apply video constraints") });
+            throw tr("Failed to apply video constraints");
+        }
         if(this.broadcastStartId !== startId) {
             /* broadcast start has been canceled */
             return;
@@ -181,6 +211,47 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
         }
 
         this.setState({ state: "broadcasting" });
+    }
+
+    async applyConstraints(constraints: BroadcastConstraints): Promise<void> {
+        await this.doApplyConstraints(constraints, this.currentSource);
+    }
+
+    private async doApplyConstraints(constraints: BroadcastConstraints, source: VideoSource): Promise<void> {
+        const capabilities = source.getCapabilities();
+        const videoConstraints: MediaTrackConstraints = {};
+
+        if(constraints.dynamicQuality && capabilities) {
+            videoConstraints.width = {
+                min: capabilities.minWidth,
+                max: constraints.width,
+                ideal: constraints.width
+            };
+
+            videoConstraints.height = {
+                min: capabilities.minHeight,
+                max: constraints.height,
+                ideal: constraints.height
+            };
+        } else {
+            videoConstraints.width = constraints.width;
+            videoConstraints.height = constraints.height;
+        }
+
+        if(constraints.dynamicFrameRate && capabilities) {
+            videoConstraints.frameRate = {
+                min: capabilities.minFrameRate,
+                max: constraints.maxFrameRate,
+                ideal: constraints.maxFrameRate
+            };
+        } else {
+            videoConstraints.frameRate = constraints.maxFrameRate;
+        }
+
+        await source.getStream().getVideoTracks()[0]?.applyConstraints(constraints);
+        this.currentConstrints = constraints;
+
+        /* TODO: Bandwidth update? */
     }
 
     stopBroadcasting(skipRtcStop?: boolean, stopState?: LocalVideoBroadcastState) {
@@ -240,6 +311,10 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
                 throw error;
             }
         })();
+    }
+
+    getConstraints(): BroadcastConstraints | undefined {
+        return this.currentConstrints;
     }
 }
 

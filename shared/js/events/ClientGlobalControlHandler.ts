@@ -17,8 +17,7 @@ import {spawnModalCssVariableEditor} from "tc-shared/ui/modal/css-editor/Control
 import {server_connections} from "tc-shared/ConnectionManager";
 import {spawnAbout} from "tc-shared/ui/modal/ModalAbout";
 import {spawnVideoSourceSelectModal} from "tc-shared/ui/modal/video-source/Controller";
-import {LogCategory, logError} from "tc-shared/log";
-import {getVideoDriver} from "tc-shared/video/VideoSource";
+import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {spawnEchoTestModal} from "tc-shared/ui/modal/echo-test/Controller";
 
 /*
@@ -193,14 +192,15 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                 return;
             }
 
-            spawnVideoSourceSelectModal(event.broadcastType, event.quickSelect ? "quick" : "default", event.defaultDevice).then(async source => {
+            spawnVideoSourceSelectModal(event.broadcastType, event.quickSelect ? { mode: "select-quick", defaultDevice: event.defaultDevice } : { mode: "select-default", defaultDevice: event.defaultDevice })
+                .then(async ({ source, constraints }) => {
                 if(!source) { return; }
 
                 try {
                     const broadcast = connection.getServerConnection().getVideoConnection().getLocalBroadcast(event.broadcastType);
                     if(broadcast.getState().state === "initializing" || broadcast.getState().state === "broadcasting") {
                         console.error("Change source");
-                        broadcast.changeSource(source).catch(error => {
+                        broadcast.changeSource(source, constraints).catch(error => {
                             logError(LogCategory.VIDEO, tr("Failed to change broadcast source: %o"), event.broadcastType, error);
                             if(typeof error !== "string") {
                                 error = tr("lookup the console for detail");
@@ -214,7 +214,7 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                         });
                     } else {
                         console.error("Start broadcast");
-                        broadcast.startBroadcasting(source).catch(error => {
+                        broadcast.startBroadcasting(source, constraints).catch(error => {
                             logError(LogCategory.VIDEO, tr("Failed to start %s broadcasting: %o"), event.broadcastType, error);
                             if(typeof error !== "string") {
                                 error = tr("lookup the console for detail");
@@ -236,5 +236,36 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
             const broadcast = connection.getServerConnection().getVideoConnection().getLocalBroadcast(event.broadcastType);
             broadcast.stopBroadcasting();
         }
+    });
+
+    event_registry.on("action_edit_video_broadcasting", event => {
+        const connection = event.connection;
+        if(!connection.connected) {
+            createErrorModal(tr("You're not connected"), tr("You're not connected to any server!")).open();
+            return;
+        }
+
+        const broadcast = connection.getServerConnection().getVideoConnection().getLocalBroadcast(event.broadcastType);
+        if(!broadcast || (broadcast.getState().state !== "broadcasting" && broadcast.getState().state !== "initializing")) {
+            createErrorModal(tr("You're not broadcasting"), tr("You're not broadcasting any video!")).open();
+            return;
+        }
+
+        spawnVideoSourceSelectModal(event.broadcastType, { mode: "edit", source: broadcast.getSource(), broadcastConstraints: Object.assign({}, broadcast.getConstraints()) })
+        .then(async ({ source, constraints }) => {
+            if (!source) {
+                return;
+            }
+
+            if(broadcast.getState().state !== "broadcasting" && broadcast.getState().state !== "initializing") {
+                createErrorModal(tr("Video broadcast has ended"), tr("The video broadcast has ended.\nUpdate failed.")).open();
+                return;
+            }
+
+            await broadcast.changeSource(source, constraints);
+        }).catch(error => {
+            logWarn(LogCategory.VIDEO, tr("Failed to edit video broadcast: %o"), error);
+            createErrorModal(tr("Broadcast update failed"), tr("We failed to update the current video broadcast settings.\nThe old settings will be used.")).open();
+        });
     });
 }

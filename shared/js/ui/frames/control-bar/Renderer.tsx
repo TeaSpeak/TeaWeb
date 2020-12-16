@@ -294,7 +294,7 @@ const VideoButton = (props: { type: VideoBroadcastType }) => {
                 <Button switched={false} colorTheme={"red"} autoSwitch={false} iconNormal={icon}
                             onToggle={() => events.fire("action_toggle_video", {enable: false, broadcastType: props.type})}
                             tooltip={tooltip} key={"disable"}>
-                    {/* <DropdownEntry icon={icon} text={dropdownTextManage} onClick={() => events.fire("action_manage_video", { broadcastType: props.type })} /> TODO! */}
+                    <DropdownEntry icon={icon} text={dropdownTextManage} onClick={() => events.fire("action_manage_video", { broadcastType: props.type })} />
                     <DropdownEntry icon={icon} text={dropdownTextStop} onClick={() => events.fire("action_toggle_video", {enable: false, broadcastType: props.type})} />
                     {props.type === "camera" ? <VideoDeviceList key={"list"} /> : null}
                 </Button>

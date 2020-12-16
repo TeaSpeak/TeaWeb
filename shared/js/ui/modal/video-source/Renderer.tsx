@@ -233,7 +233,7 @@ const VideoPreview = () => {
     );
 }
 
-const ButtonStart = () => {
+const ButtonStart = (props: { editMode: boolean }) => {
     const events = useContext(ModalEvents);
     const [ enabled, setEnabled ] = useState(() => {
         events.fire("query_start_button");
@@ -248,7 +248,7 @@ const ButtonStart = () => {
             disabled={!enabled}
             onClick={() => enabled && events.fire("action_start")}
         >
-            <Translatable>Start</Translatable>
+            {props.editMode ? <Translatable key={"edit"}>Apply Changed</Translatable> : <Translatable key={"start"}>Start</Translatable>}
         </Button>
     );
 }
@@ -317,7 +317,7 @@ const SettingDimension = () => {
             setHeight(event.setting.currentHeight);
             refSliderWidth.current?.setState({ value: event.setting.currentWidth });
             refSliderHeight.current?.setState({ value: event.setting.currentHeight });
-            setSelectValue("original");
+            setSelectValue("current");
         } else {
             setSettings(undefined);
             setSelectValue("no-source");
@@ -419,6 +419,7 @@ const SettingDimension = () => {
                         <option value={dimensionId} key={dimensionId}>{DimensionPresets[dimensionId].name + " (" + boundsString(dimensionId as any) + ")"}</option>
                     )}
                     <option value={"original"} key={"original"}>{tr("Default")} ({(settings ? settings.originalWidth + "x" + settings.originalHeight : "0x0")})</option>
+                    <option value={"current"} key={"current"} style={{ display: "none" }}>{width + "x" + height}</option>
                     <option value={"custom"} key={"custom"} style={{ display: advanced ? undefined : "none" }}>{tr("Custom")}</option>
                     <option value={"no-source"} key={"no-source"} style={{ display: "none" }}>{tr("No source selected")}</option>
                 </Select>
@@ -486,7 +487,7 @@ const SettingFramerate = () => {
         setFrameRate(event.frameRate);
         setCurrentRate(event.frameRate ? event.frameRate.original : 1);
         if(event.frameRate) {
-            setSelectedValue(event.frameRate.original.toString());
+            setSelectedValue(event.frameRate.current.toString());
         } else {
             setSelectedValue("no-source");
         }
@@ -496,6 +497,9 @@ const SettingFramerate = () => {
     if(frameRate) {
         if(Object.keys(FrameRates).findIndex(key => FrameRates[key] === frameRate.original) === -1) {
             FrameRates[frameRate.original.toString()] = frameRate.original;
+        }
+        if(Object.keys(FrameRates).findIndex(key => FrameRates[key] === frameRate.current) === -1) {
+            FrameRates[frameRate.current.toString()] = frameRate.current;
         }
     }
 
@@ -758,12 +762,14 @@ const ScreenCaptureDeviceSelect = React.memo(() => {
 export class ModalVideoSource extends InternalModal {
     protected readonly events: Registry<ModalVideoSourceEvents>;
     private readonly sourceType: VideoBroadcastType;
+    private readonly editMode: boolean;
 
-    constructor(events: Registry<ModalVideoSourceEvents>, type: VideoBroadcastType) {
+    constructor(events: Registry<ModalVideoSourceEvents>, type: VideoBroadcastType, editMode: boolean) {
         super();
 
         this.sourceType = type;
         this.events = events;
+        this.editMode = editMode;
     }
 
     renderBody(): React.ReactElement {
@@ -793,7 +799,7 @@ export class ModalVideoSource extends InternalModal {
                         <Button type={"small"} color={"red"} onClick={() => this.events.fire("action_cancel")}>
                             <Translatable>Cancel</Translatable>
                         </Button>
-                        <ButtonStart />
+                        <ButtonStart editMode={this.editMode} />
                     </div>
                 </div>
                 <ScreenCaptureDeviceSelect />

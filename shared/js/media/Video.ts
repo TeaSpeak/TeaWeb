@@ -4,13 +4,13 @@ import {
     VideoDriver,
     VideoDriverEvents,
     VideoPermissionStatus,
-    VideoSource
+    VideoSource, VideoSourceCapabilities, VideoSourceInitialSettings
 } from "tc-shared/video/VideoSource";
 import {Registry} from "tc-shared/events";
 import {MediaStreamRequestResult} from "tc-shared/voice/RecorderBase";
 import {LogCategory, logDebug, logError, logWarn} from "tc-shared/log";
 import {queryMediaPermissions, requestMediaStream, stopMediaStream} from "tc-shared/media/Stream";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 declare global {
     interface MediaDevices {
@@ -225,7 +225,9 @@ export class WebVideoDriver implements VideoDriver {
         try {
             const source = await navigator.mediaDevices.getDisplayMedia({ audio: false, video: true });
             const videoTrack = source.getVideoTracks()[0];
-            if(!videoTrack) { throw tr("missing video track"); }
+            if(!videoTrack) {
+                throw tr("missing video track");
+            }
 
             logDebug(LogCategory.VIDEO, tr("Display media received with settings: %o"), videoTrack.getSettings());
             return new WebVideoSource(videoTrack.getSettings().deviceId, tr("Screen"), source);
@@ -248,10 +250,19 @@ export class WebVideoSource implements VideoSource {
     private readonly stream: MediaStream;
     private referenceCount = 1;
 
+    private initialSettings: VideoSourceInitialSettings;
+
     constructor(deviceId: string, displayName: string, stream: MediaStream) {
         this.deviceId = deviceId;
         this.displayName = displayName;
         this.stream = stream;
+
+        const settings = stream.getVideoTracks()[0].getSettings();
+        this.initialSettings = {
+            frameRate: settings.frameRate,
+            height: settings.height,
+            width: settings.width
+        };
     }
 
     destroy() {
@@ -268,6 +279,26 @@ export class WebVideoSource implements VideoSource {
 
     getStream(): MediaStream {
         return this.stream;
+    }
+
+    getInitialSettings(): VideoSourceInitialSettings {
+        return this.initialSettings;
+    }
+
+    getCapabilities(): VideoSourceCapabilities {
+        const videoTrack = this.stream.getVideoTracks()[0];
+        const capabilities = "getCapabilities" in videoTrack ? videoTrack.getCapabilities() : undefined;
+
+        return {
+            minWidth: capabilities?.width?.min || 1,
+            maxWidth: capabilities?.width?.max || this.initialSettings.width,
+
+            minHeight: capabilities?.height?.min || 1,
+            maxHeight: capabilities?.height?.max || this.initialSettings.height,
+
+            minFrameRate: capabilities?.frameRate?.min || 1,
+            maxFrameRate: capabilities?.frameRate?.max || this.initialSettings.frameRate
+        };
     }
 
     deref() {

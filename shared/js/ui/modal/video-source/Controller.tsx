@@ -3,56 +3,74 @@ import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import {ModalVideoSourceEvents} from "tc-shared/ui/modal/video-source/Definitions";
 import {ModalVideoSource} from "tc-shared/ui/modal/video-source/Renderer";
 import {getVideoDriver, VideoPermissionStatus, VideoSource} from "tc-shared/video/VideoSource";
-import {LogCategory, logError} from "tc-shared/log";
-import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
+import {LogCategory, logError, logWarn} from "tc-shared/log";
+import {BroadcastConstraints, VideoBroadcastType} from "tc-shared/connection/VideoConnection";
+import {Settings, settings} from "tc-shared/settings";
+import {tr} from "tc-shared/i18n/localize";
 
-type SourceConstraints = { width?: number, height?: number, frameRate?: number };
+export type VideoSourceModalAction = {
+    mode: "select-quick",
+    defaultDevice?: string
+} | {
+    mode: "select-default",
+    defaultDevice?: string
+} | {
+    mode: "new"
+} | {
+    mode: "edit",
+    source: VideoSource,
+    broadcastConstraints: BroadcastConstraints
+};
 
 /**
  * @param type The video type which should be prompted
- * @param selectMode
- * @param defaultDeviceId
+ * @param mode
  */
-export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, selectMode: "quick" | "default" | "none", defaultDeviceId?: string) : Promise<VideoSource> {
+export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, mode: VideoSourceModalAction) : Promise<{ source: VideoSource | undefined, constraints: BroadcastConstraints | undefined }> {
     const controller = new VideoSourceController(type);
 
-    let defaultSelectSource = selectMode === "default";
-    if(selectMode === "quick") {
+    let defaultSelectDevice: string | true;
+    if(mode.mode === "select-quick") {
         /* We need the modal itself for the native client in order to present the window selector */
         if(type === "camera" || __build.target === "web") {
             /* Try to get the default device. If we succeeded directly return that */
-            if(await controller.selectSource(defaultDeviceId)) {
-                const source = controller.getCurrentSource()?.ref();
+            if(await controller.selectSource(mode.defaultDevice)) {
+                /* select succeeded */
+                const resultSource = controller.getCurrentSource()?.ref();
+                const resultConstraints = controller.getBroadcastConstraints();
                 controller.destroy();
-
-                return source;
+                return {
+                    source: resultSource,
+                    constraints: resultConstraints
+                };
+            } else {
+                /* Select failed. We'll open the modal and show the error. */
             }
         } else {
-            defaultSelectSource = true;
+            defaultSelectDevice = mode.defaultDevice || true;
         }
+    } else if(mode.mode === "select-default") {
+        defaultSelectDevice = mode.defaultDevice || true;
+    } else if(mode.mode === "edit") {
+        await controller.useSettings(mode.source, mode.broadcastConstraints);
     }
 
-    const modal = spawnReactModal(ModalVideoSource, controller.events, type);
+    const modal = spawnReactModal(ModalVideoSource, controller.events, type, mode.mode === "edit");
     controller.events.on(["action_start", "action_cancel"], () => modal.destroy());
 
     modal.show().then(() => {
-        if(defaultSelectSource) {
+        if(defaultSelectDevice) {
             if(type === "screen" && getVideoDriver().screenQueryAvailable()) {
                 controller.events.fire_react("action_toggle_screen_capture_device_select", { shown: true });
             } else {
-                controller.selectSource(defaultDeviceId);
+                controller.selectSource(defaultSelectDevice === true ? undefined : defaultSelectDevice);
             }
         }
     });
 
-    let refSource: { source: VideoSource } = { source: undefined };
-    controller.events.on("action_start", () => {
-        refSource.source?.deref();
-        refSource.source = controller.getCurrentSource()?.ref();
-    });
-
     await new Promise(resolve => {
-        if(defaultSelectSource && selectMode === "quick") {
+        if(mode.mode === "select-quick" && __build.target !== "web") {
+            /* We need the modal event for quick select */
             const callbackRemove = controller.events.on("notify_video_preview", event => {
                 if(event.status.status === "error") {
                     callbackRemove();
@@ -60,8 +78,6 @@ export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, sele
 
                 if(event.status.status === "preview") {
                     /* we've successfully selected something */
-                    refSource.source = controller.getCurrentSource()?.ref();
-                    modal.hide();
                     modal.destroy();
                 }
             });
@@ -70,8 +86,96 @@ export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, sele
         modal.events.one(["destroy", "close"], resolve);
     });
 
+    const resultSource = controller.getCurrentSource()?.ref();
+    const resultConstraints = controller.getBroadcastConstraints();
     controller.destroy();
-    return refSource.source;
+    return {
+        source: resultSource,
+        constraints: resultConstraints
+    };
+}
+
+function updateBroadcastConstraintsFromSource(source: VideoSource, constraints: BroadcastConstraints) {
+    const videoTrack = source.getStream().getVideoTracks()[0];
+    const trackSettings = videoTrack.getSettings();
+
+    constraints.width = trackSettings.width;
+    constraints.height = trackSettings.height;
+    constraints.maxFrameRate = trackSettings.frameRate;
+}
+
+async function generateAndApplyDefaultConstraints(source: VideoSource) : Promise<BroadcastConstraints> {
+    const videoTrack = source.getStream().getVideoTracks()[0];
+
+    let maxHeight = settings.static_global(Settings.KEY_VIDEO_DEFAULT_MAX_HEIGHT);
+    let maxWidth = settings.static_global(Settings.KEY_VIDEO_DEFAULT_MAX_WIDTH);
+
+    const trackSettings = videoTrack.getSettings();
+    const capabilities = source.getCapabilities();
+
+    maxHeight = Math.min(maxHeight, capabilities.maxHeight);
+    maxWidth = Math.min(maxWidth, capabilities.maxWidth);
+
+    const broadcastConstraints: BroadcastConstraints = {} as any;
+    {
+        let ratio = 1;
+
+        if(trackSettings.height > maxHeight) {
+            ratio = Math.min(maxHeight / trackSettings.height, ratio);
+        }
+
+        if(trackSettings.width > maxWidth) {
+            ratio = Math.min(maxWidth / trackSettings.width, ratio);
+        }
+
+        if(ratio !== 1) {
+            broadcastConstraints.width = Math.ceil(ratio * trackSettings.width);
+            broadcastConstraints.height = Math.ceil(ratio * trackSettings.height);
+        } else {
+            broadcastConstraints.width = trackSettings.width;
+            broadcastConstraints.height = trackSettings.height;
+        }
+    }
+
+    broadcastConstraints.dynamicQuality = true;
+    broadcastConstraints.dynamicFrameRate = true;
+    broadcastConstraints.maxBandwidth = 10_000_000;
+
+    try {
+        await applyBroadcastConstraints(source, broadcastConstraints);
+    } catch (error) {
+        logWarn(LogCategory.VIDEO, tr("Failed to apply initial default broadcast constraints: %o"), error);
+    }
+
+    updateBroadcastConstraintsFromSource(source, broadcastConstraints);
+
+    return broadcastConstraints;
+}
+
+/* May throws an overconstraint error */
+async function applyBroadcastConstraints(source: VideoSource, constraints: BroadcastConstraints) {
+    const videoTrack = source.getStream().getVideoTracks()[0];
+    if(!videoTrack) { return; }
+
+    await videoTrack.applyConstraints({
+        frameRate: constraints.dynamicFrameRate ? {
+            min: 1,
+            max: constraints.maxFrameRate,
+            ideal: constraints.maxFrameRate
+        } : constraints.maxFrameRate,
+
+        width: constraints.dynamicQuality ? {
+            min: 1,
+            max: constraints.width,
+            ideal: constraints.width
+        } : constraints.width,
+
+        height: constraints.dynamicQuality ? {
+            min: 1,
+            max: constraints.height,
+            ideal: constraints.height
+        } : constraints.height
+    });
 }
 
 class VideoSourceController {
@@ -79,7 +183,7 @@ class VideoSourceController {
     private readonly type: VideoBroadcastType;
 
     private currentSource: VideoSource | string;
-    private currentConstraints: SourceConstraints;
+    private currentConstraints: BroadcastConstraints;
 
     /* preselected current source id */
     private currentSourceId: string;
@@ -177,24 +281,13 @@ class VideoSourceController {
             }));
         }
 
-        const applyConstraints = async () => {
-            if(typeof this.currentSource === "object") {
-                const videoTrack = this.currentSource.getStream().getVideoTracks()[0];
-                if(!videoTrack) { return; }
-
-                await videoTrack.applyConstraints(this.currentConstraints);
-            }
-        };
-
         this.events.on("action_setting_dimension", event => {
             this.currentConstraints.height = event.height;
             this.currentConstraints.width = event.width;
-            applyConstraints().then(undefined);
         });
 
         this.events.on("action_setting_framerate", event => {
-            this.currentConstraints.frameRate = event.frameRate;
-            applyConstraints().then(undefined);
+            this.currentConstraints.maxFrameRate = event.frameRate;
         });
     }
 
@@ -208,13 +301,42 @@ class VideoSourceController {
         this.events.destroy();
     }
 
-    setCurrentSource(source: VideoSource | string | undefined) {
+    async setCurrentSource(source: VideoSource | string | undefined) {
         if(typeof this.currentSource === "object") {
             this.currentSource.deref();
         }
 
-        this.currentConstraints = {};
+        if(typeof source === "object") {
+            if(this.currentConstraints) {
+                try {
+                    /* TODO: Automatically scale down resolution if new one isn't capable of supplying our current resolution */
+                    await applyBroadcastConstraints(source, this.currentConstraints);
+                } catch (error) {
+                    logWarn(LogCategory.VIDEO, tr("Failed to apply broadcast constraints to new source: %o"), error);
+                    this.currentConstraints = undefined;
+                }
+            }
+
+            if(!this.currentConstraints) {
+                this.currentConstraints = await generateAndApplyDefaultConstraints(source);
+            }
+        }
+
         this.currentSource = source;
+        this.notifyVideoPreview();
+        this.notifyStartButton();
+        this.notifyCurrentSource();
+        this.notifySettingDimension();
+        this.notifySettingFramerate();
+    }
+
+    async useSettings(source: VideoSource, constraints: BroadcastConstraints) {
+        if(typeof this.currentSource === "object") {
+            this.currentSource.deref();
+        }
+
+        this.currentSource = source.ref();
+        this.currentConstraints = constraints;
         this.notifyVideoPreview();
         this.notifyStartButton();
         this.notifyCurrentSource();
@@ -244,17 +366,17 @@ class VideoSourceController {
 
         try {
             const stream = await streamPromise;
-            this.setCurrentSource(stream);
+            await this.setCurrentSource(stream);
             this.fallbackCurrentSourceName = stream?.getName() || tr("No stream");
 
             return !!stream;
         } catch (error) {
             this.fallbackCurrentSourceName = tr("failed to attach to device");
             if(typeof error === "string") {
-                this.setCurrentSource(error);
+                await this.setCurrentSource(error);
             } else {
                 logError(LogCategory.GENERAL, tr("Failed to open capture device %s: %o"), sourceId, error);
-                this.setCurrentSource(tr("Failed to open capture device (Lookup the console)"));
+                await this.setCurrentSource(tr("Failed to open capture device (Lookup the console)"));
             }
 
             return false;
@@ -263,6 +385,10 @@ class VideoSourceController {
 
     getCurrentSource() : VideoSource | undefined {
         return typeof this.currentSource === "object" ? this.currentSource : undefined;
+    }
+
+    getBroadcastConstraints() : BroadcastConstraints {
+        return this.currentConstraints;
     }
 
     private notifyStartButton() {
@@ -291,7 +417,7 @@ class VideoSourceController {
         });
     }
 
-    private notifyScreenCaptureDevices(){
+    private notifyScreenCaptureDevices() {
         const driver = getVideoDriver();
         driver.queryScreenCaptureDevices().then(devices => {
             this.events.fire_react("notify_screen_capture_devices", { devices: { status: "success", devices: devices }});
@@ -305,7 +431,7 @@ class VideoSourceController {
         })
     }
 
-    private notifyVideoPreview(){
+    private notifyVideoPreview() {
         const driver = getVideoDriver();
         switch (driver.getPermissionStatus()) {
             case VideoPermissionStatus.SystemDenied:
@@ -333,7 +459,7 @@ class VideoSourceController {
         }
     };
 
-    private notifyCurrentSource(){
+    private notifyCurrentSource() {
         if(typeof this.currentSource === "object") {
             this.events.fire_react("notify_source", {
                 state: {
@@ -358,25 +484,25 @@ class VideoSourceController {
         }
     }
 
-    private notifySettingDimension(){
+    private notifySettingDimension() {
         if(typeof this.currentSource === "object") {
-            const videoTrack = this.currentSource.getStream().getVideoTracks()[0];
-            const settings = videoTrack.getSettings();
-            const capabilities = "getCapabilities" in videoTrack ? videoTrack.getCapabilities() : undefined;
+            const initialSettings = this.currentSource.getInitialSettings();
+            const capabilities = this.currentSource.getCapabilities();
+            const constraints = this.currentConstraints;
 
             this.events.fire_react("notify_setting_dimension", {
                 setting: {
-                    minWidth: capabilities?.width ? capabilities.width.min : 1,
-                    maxWidth: capabilities?.width ? capabilities.width.max : settings.width,
+                    minWidth: capabilities.minWidth,
+                    maxWidth: capabilities.maxWidth,
 
-                    minHeight: capabilities?.height ? capabilities.height.min : 1,
-                    maxHeight: capabilities?.height ? capabilities.height.max : settings.height,
+                    minHeight: capabilities.minHeight,
+                    maxHeight: capabilities.maxHeight,
 
-                    originalWidth: settings.width,
-                    originalHeight: settings.height,
+                    originalWidth: initialSettings.width,
+                    originalHeight: initialSettings.height,
 
-                    currentWidth: settings.width,
-                    currentHeight: settings.height
+                    currentWidth: constraints.width,
+                    currentHeight: constraints.height
                 }
             });
         } else {
@@ -386,16 +512,16 @@ class VideoSourceController {
 
     notifySettingFramerate() {
         if(typeof this.currentSource === "object") {
-            const videoTrack = this.currentSource.getStream().getVideoTracks()[0];
-            const settings = videoTrack.getSettings();
-            const capabilities = "getCapabilities" in videoTrack ? videoTrack.getCapabilities() : undefined;
+            const initialSettings = this.currentSource.getInitialSettings();
+            const capabilities = this.currentSource.getCapabilities();
 
             const round = (value: number) => Math.round(value * 100) / 100;
             this.events.fire_react("notify_settings_framerate", {
                 frameRate: {
-                    min: round(capabilities?.frameRate ? capabilities.frameRate.min : 1),
-                    max: round(capabilities?.frameRate ? capabilities.frameRate.max : settings.frameRate),
-                    original: round(settings.frameRate)
+                    min: round(capabilities.minFrameRate),
+                    max: round(capabilities.maxFrameRate),
+                    original: round(initialSettings.frameRate),
+                    current: round(this.currentConstraints.maxFrameRate)
                 }
             });
         } else {

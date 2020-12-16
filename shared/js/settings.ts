@@ -541,6 +541,20 @@ export class Settings extends StaticSettings {
         valueType: "number",
     };
 
+    static readonly KEY_VIDEO_DEFAULT_MAX_WIDTH: ValuedSettingsKey<number> = {
+        key: 'video_default_max_width',
+        defaultValue: 1280,
+        description: "The default maximal width of the video being crated.",
+        valueType: "number",
+    };
+
+    static readonly KEY_VIDEO_DEFAULT_MAX_HEIGHT: ValuedSettingsKey<number> = {
+        key: 'video_default_max_height',
+        defaultValue: 720,
+        description: "The default maximal height of the video being crated.",
+        valueType: "number",
+    };
+
     static readonly FN_LOG_ENABLED: (category: string) => SettingsKey<boolean> = category => {
         return {
             key: "log." + category.toLowerCase() + ".enabled",

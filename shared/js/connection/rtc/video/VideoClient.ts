@@ -78,8 +78,8 @@ export class RtpVideoClient implements VideoClient {
                 throw tr("failed to receive stream");
             }
         }).catch(error => {
-            this.updateBroadcastState(broadcastType);
             this.joinedStates[broadcastType] = false;
+            this.updateBroadcastState(broadcastType);
             logError(LogCategory.VIDEO, tr("Failed to join video broadcast: %o"), error);
             throw tr("failed to join broadcast");
         });
