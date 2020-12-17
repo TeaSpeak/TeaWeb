@@ -700,10 +700,10 @@ class ChannelVideoController {
         this.events.fire_react("notify_subscribe_info", {
             info: {
                 totalSubscriptions: subscriptionsCamera + subscriptionsScreen,
-                maxSubscriptions: permissionMaxStreams.valueOr(undefined),
+                maxSubscriptions: permissionMaxStreams.valueNormalOr(undefined),
                 subscribeLimits: {
-                    screen: permissionMaxScreenStreams.valueOr(undefined),
-                    camera: permissionMaxCameraStreams.valueOr(undefined)
+                    screen: permissionMaxScreenStreams.valueNormalOr(undefined),
+                    camera: permissionMaxCameraStreams.valueNormalOr(undefined)
                 },
                 subscribedStreams: {
                     camera: subscriptionsCamera,

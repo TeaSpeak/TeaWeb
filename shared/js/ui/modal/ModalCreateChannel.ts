@@ -705,10 +705,6 @@ function applyAudioListener(connection: ConnectionHandler, properties: ChannelPr
     }
 
     let codecs = tag.find(".voice_codec option");
-    codecs.eq(0).prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_SPEEX8).granted(1));
-    codecs.eq(1).prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_SPEEX16).granted(1));
-    codecs.eq(2).prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_SPEEX32).granted(1));
-    codecs.eq(3).prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_CELTMONO48).granted(1));
     codecs.eq(4).prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_OPUSVOICE).granted(1));
     codecs.eq(5).prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_OPUSMUSIC).granted(1));
     tag.find(".voice_codec").change(function (this: HTMLSelectElement) {
