@@ -500,17 +500,14 @@ export class ConnectionHandler {
             case DisconnectReason.CONNECT_FAILURE:
                 if(this._reconnect_attempt) {
                     auto_reconnect = true;
-                    this.log.log(EventType.CONNECTION_FAILED, { serverAddress: {
-                        server_port: this.channelTree.server.remote_address.port,
-                        server_hostname: this.channelTree.server.remote_address.host
-                    } });
                     break;
                 }
 
-                if(data)
+                if(data) {
                     log.error(LogCategory.CLIENT, tr("Could not connect to remote host! Extra data: %o"), data);
-                else
+                } else {
                     log.error(LogCategory.CLIENT, tr("Could not connect to remote host!"), data);
+                }
 
                 if(__build.target === "client" || !dns.resolve_address_ipv4) {
                     createErrorModal(
@@ -542,10 +539,12 @@ export class ConnectionHandler {
                         this._certificate_modal.open();
                     });
                 }
-                this.log.log(EventType.CONNECTION_FAILED, { serverAddress: {
-                    server_hostname: this.serverConnection.remote_address().host,
-                    server_port: this.serverConnection.remote_address().port
-                } });
+                this.log.log(EventType.CONNECTION_FAILED, {
+                    serverAddress: {
+                        server_hostname: this.serverConnection.remote_address().host,
+                        server_port: this.serverConnection.remote_address().port
+                    }
+                });
                 this.sound.play(Sound.CONNECTION_REFUSED);
                 break;
             case DisconnectReason.HANDSHAKE_FAILED:

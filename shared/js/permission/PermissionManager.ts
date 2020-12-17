@@ -72,6 +72,18 @@ export class PermissionValue {
     valueOr(fallback: number) {
         return this.hasValue() ? this.value : fallback;
     }
+
+    valueNormalOr(fallback: number) {
+        if(this.hasValue()) {
+            if(this.value === -1) {
+                return Number.MAX_SAFE_INTEGER;
+            }
+
+            return this.value;
+        } else {
+            return fallback;
+        }
+    }
 }
 
 export class NeededPermissionValue extends PermissionValue {
