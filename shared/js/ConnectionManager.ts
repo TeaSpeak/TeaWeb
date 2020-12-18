@@ -6,6 +6,8 @@ import {FooterRenderer} from "tc-shared/ui/frames/footer/Renderer";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {SideBarController} from "tc-shared/ui/frames/SideBarController";
+import {ServerEventLogController} from "tc-shared/ui/frames/log/Controller";
+import {ServerLogFrame} from "tc-shared/ui/frames/log/Renderer";
 
 export let server_connections: ConnectionManager;
 
@@ -30,33 +32,36 @@ export class ConnectionManager {
     private connection_handlers: ConnectionHandler[] = [];
     private active_handler: ConnectionHandler | undefined;
 
-    private _container_log_server: JQuery;
     private _container_channel_tree: JQuery;
     private _container_hostbanner: JQuery;
     private containerChannelVideo: ReplaceableContainer;
     private containerSideBar: HTMLDivElement;
     private containerFooter: HTMLDivElement;
+    private containerServerLog: HTMLDivElement;
 
     private sideBarController: SideBarController;
+    private serverLogController: ServerEventLogController;
 
     constructor() {
         this.event_registry = new Registry<ConnectionManagerEvents>();
         this.event_registry.enableDebug("connection-manager");
 
         this.sideBarController = new SideBarController();
+        this.serverLogController = new ServerEventLogController();
 
         this.containerChannelVideo = new ReplaceableContainer(document.getElementById("channel-video") as HTMLDivElement);
-        this._container_log_server = $("#server-log");
+        this.containerServerLog = document.getElementById("server-log") as HTMLDivElement;
+        this.containerFooter = document.getElementById("container-footer") as HTMLDivElement;
         this._container_channel_tree = $("#channelTree");
         this._container_hostbanner = $("#hostbanner");
-        this.containerFooter = document.getElementById("container-footer") as HTMLDivElement;
 
         this.sideBarController.renderInto(document.getElementById("chat") as HTMLDivElement);
         this.set_active_connection(undefined);
     }
 
-    initializeFooter() {
+    initializeReactComponents() {
         ReactDOM.render(React.createElement(FooterRenderer), this.containerFooter);
+        ReactDOM.render(React.createElement(ServerLogFrame, { events: this.serverLogController.events }), this.containerServerLog);
     }
 
     events() : Registry<ConnectionManagerEvents> {
@@ -117,16 +122,15 @@ export class ConnectionManager {
 
     private set_active_connection_(handler: ConnectionHandler) {
         this.sideBarController.setConnection(handler);
+        this.serverLogController.setConnectionHandler(handler);
 
         this._container_channel_tree.children().detach();
-        this._container_log_server.children().detach();
         this._container_hostbanner.children().detach();
         this.containerChannelVideo.replaceWith(handler?.video_frame.getContainer());
 
         if(handler) {
             this._container_hostbanner.append(handler.hostbanner.html_tag);
             this._container_channel_tree.append(handler.channelTree.tag_tree());
-            this._container_log_server.append(handler.log.getHTMLTag());
         }
 
         const old_handler = this.active_handler;
@@ -184,7 +188,7 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     name: "server manager init",
     function: async () => {
         server_connections = new ConnectionManager();
-        server_connections.initializeFooter();
+        server_connections.initializeReactComponents();
     },
     priority: 80
 });

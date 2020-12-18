@@ -1,4 +1,11 @@
 # Changelog:
+* **18.12.20**
+    - Added the ability to send private messages to multiple clients
+    - Channel client count now updates within the side bar header
+    - The client now supports the new server channel sidebar mode (File transfer is in progress)
+    - Correctly parsing and render `client://` urls
+    - Updating the client talk status if the client has been moved
+    
 * **13.12.20**
     - Directly connection when hitting enter on the address line
     

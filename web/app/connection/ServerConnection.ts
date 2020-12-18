@@ -14,7 +14,6 @@ import * as log from "tc-shared/log";
 import {LogCategory, logDebug, logError, logTrace} from "tc-shared/log";
 import {Regex} from "tc-shared/ui/modal/ModalConnect";
 import {AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
-import {EventType} from "tc-shared/ui/frames/log/Definitions";
 import {WrappedWebSocket} from "tc-backend/web/connection/WrappedWebSocket";
 import {AbstractVoiceConnection} from "tc-shared/connection/VoiceConnection";
 import {parseCommand} from "tc-backend/web/connection/CommandParser";
@@ -27,7 +26,6 @@ import {ServerFeature} from "tc-shared/connection/ServerFeatures";
 import {RTCConnection} from "tc-shared/connection/rtc/Connection";
 import {RtpVideoConnection} from "tc-shared/connection/rtc/video/Connection";
 import { tr } from "tc-shared/i18n/localize";
-import {createErrorModal} from "tc-shared/ui/elements/Modal";
 
 class ReturnListener<T> {
     resolve: (value?: T | PromiseLike<T>) => void;
@@ -286,7 +284,7 @@ export class ServerConnection extends AbstractServerConnection {
 
     private startHandshake() {
         this.updateConnectionState(ConnectionState.INITIALISING);
-        this.client.log.log(EventType.CONNECTION_LOGIN, {});
+        this.client.log.log("connection.login", {});
         this.handshakeHandler.initialize();
         this.handshakeHandler.startHandshake();
     }

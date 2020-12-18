@@ -11,7 +11,6 @@ import {
     ChannelConversationManager,
     ChannelConversationManagerEvents
 } from "tc-shared/conversations/ChannelConversationManager";
-import {ServerFeature} from "tc-shared/connection/ServerFeatures";
 import {ChannelConversationUiEvents} from "tc-shared/ui/frames/side/ChannelConversationDefinitions";
 
 export class ChannelConversationController extends AbstractConversationController<
@@ -74,18 +73,6 @@ export class ChannelConversationController extends AbstractConversationControlle
             }
 
             this.handlePanelShow();
-        }));
-
-        this.connectionListener.push(connection.events().on("notify_connection_state_changed", event => {
-            if(event.newState === ConnectionState.CONNECTED) {
-                connection.serverFeatures.awaitFeatures().then(success => {
-                    if(!success) { return; }
-
-                    this.setCrossChannelChatSupport(connection.serverFeatures.supportsFeature(ServerFeature.ADVANCED_CHANNEL_CHAT));
-                });
-            } else {
-                this.setCrossChannelChatSupport(true);
-            }
         }));
     }
 

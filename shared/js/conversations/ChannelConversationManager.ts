@@ -16,6 +16,7 @@ import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {LocalClientEntry} from "tc-shared/tree/Client";
 import {ServerCommand} from "tc-shared/connection/ConnectionBase";
 import {ChannelConversationMode} from "tc-shared/tree/Channel";
+import {ServerFeature} from "tc-shared/connection/ServerFeatures";
 
 export interface ChannelConversationEvents extends AbstractConversationEvents {
     notify_messages_deleted: { messages: string[] },
@@ -45,7 +46,7 @@ export class ChannelConversation extends AbstractChat<ChannelConversationEvents>
         this.setUnreadTimestamp(unreadTimestamp);
         this.preventUnreadUpdate = false;
 
-        this.events.on(["notify_unread_state_changed", "notify_read_state_changed"], event => {
+        this.events.on(["notify_unread_state_changed", "notify_read_state_changed"], () => {
             this.handle.connection.channelTree.findChannel(this.conversationId)?.setUnread(this.isReadable() && this.isUnread());
         });
     }
@@ -175,7 +176,6 @@ export class ChannelConversation extends AbstractChat<ChannelConversationEvents>
                     break;
 
                 case "unsupported":
-                    this.crossChannelChatSupported = false;
                     this.setConversationMode(ChannelConversationMode.Private, false);
                     this.setCurrentMode("normal");
                     break;
@@ -347,6 +347,16 @@ export class ChannelConversationManager extends AbstractChatManager<ChannelConve
                     this.unregisterConversation(conversation);
                     conversation.destroy();
                 });
+            }
+
+            if(event.newState === ConnectionState.CONNECTED) {
+                connection.serverFeatures.awaitFeatures().then(success => {
+                    if(!success) { return; }
+
+                    this.setCrossConversationSupport(connection.serverFeatures.supportsFeature(ServerFeature.ADVANCED_CHANNEL_CHAT));
+                });
+            } else {
+                this.setCrossConversationSupport(true);
             }
         }));
 

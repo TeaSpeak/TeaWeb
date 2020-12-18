@@ -3,15 +3,15 @@ import {useRef, useState} from "react";
 import {Registry} from "tc-shared/events";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {FlatInputField} from "tc-shared/ui/react-elements/InputField";
-import {EventType} from "tc-shared/ui/frames/log/Definitions";
-import {
-    getRegisteredNotificationDispatchers,
-    isNotificationEnabled
-} from "tc-shared/ui/frames/log/DispatcherNotifications";
 import {Settings, settings} from "tc-shared/settings";
 import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
 import {Tooltip} from "tc-shared/ui/react-elements/Tooltip";
-import {isFocusRequestEnabled} from "tc-shared/ui/frames/log/DispatcherFocus";
+import {TypeInfo} from "tc-shared/connectionlog/Definitions";
+import {
+    getRegisteredNotificationDispatchers,
+    isNotificationEnabled
+} from "tc-shared/connectionlog/DispatcherNotifications";
+import {isFocusRequestEnabled} from "tc-shared/connectionlog/DispatcherFocus";
 
 const cssStyle = require("./Notifications.scss");
 
@@ -21,7 +21,7 @@ interface EventGroup {
     key: string;
     name: string;
 
-    events?: string[];
+    events?: (keyof TypeInfo)[];
     subgroups?: EventGroup[];
 }
 
@@ -340,23 +340,23 @@ const knownEventGroups: EventGroup[] = [
                 key: "client-messages",
                 name: "Messages",
                 events: [
-                    EventType.CLIENT_POKE_RECEIVED,
-                    EventType.CLIENT_POKE_SEND,
-                    EventType.PRIVATE_MESSAGE_SEND,
-                    EventType.PRIVATE_MESSAGE_RECEIVED
+                    "client.poke.received",
+                    "client.poke.send",
+                    "private.message.send",
+                    "private.message.received"
                 ]
             },
             {
                 key: "client-view",
                 name: "View",
                 events: [
-                    EventType.CLIENT_VIEW_ENTER,
-                    EventType.CLIENT_VIEW_ENTER_OWN_CHANNEL,
-                    EventType.CLIENT_VIEW_MOVE,
-                    EventType.CLIENT_VIEW_MOVE_OWN,
-                    EventType.CLIENT_VIEW_MOVE_OWN_CHANNEL,
-                    EventType.CLIENT_VIEW_LEAVE,
-                    EventType.CLIENT_VIEW_LEAVE_OWN_CHANNEL
+                    "client.view.enter",
+                    "client.view.enter.own.channel",
+                    "client.view.move",
+                    "client.view.move.own",
+                    "client.view.move.own.channel",
+                    "client.view.leave",
+                    "client.view.leave.own.channel"
                 ]
             }
         ]
@@ -365,45 +365,45 @@ const knownEventGroups: EventGroup[] = [
         key: "server",
         name: "Server",
         events: [
-            EventType.GLOBAL_MESSAGE,
-            EventType.SERVER_CLOSED,
-            EventType.SERVER_BANNED,
+            "global.message",
+            "server.closed",
+            "server.banned",
         ]
     },
     {
         key: "connection",
         name: "Connection",
         events: [
-            EventType.CONNECTION_BEGIN,
-            EventType.CONNECTION_CONNECTED,
-            EventType.CONNECTION_FAILED
+            "connection.begin",
+            "connection.connected",
+            "connection.failed"
         ]
     }
 ];
 
-const groupNames: { [key: string]: string } = {};
-groupNames[EventType.CLIENT_POKE_RECEIVED] = tr("You received a poke");
-groupNames[EventType.CLIENT_POKE_SEND] = tr("You send a poke");
-groupNames[EventType.PRIVATE_MESSAGE_SEND] = tr("You received a private message");
-groupNames[EventType.PRIVATE_MESSAGE_RECEIVED] = tr("You send a private message");
+const groupNames: { [T in keyof TypeInfo]?: string } = {};
+groupNames["client.poke.received"] = tr("You received a poke");
+groupNames["client.poke.send"] = tr("You send a poke");
+groupNames["private.message.send"] = tr("You received a private message");
+groupNames["private.message.received"] = tr("You send a private message");
 
-groupNames[EventType.CLIENT_VIEW_ENTER] = tr("A client enters your view");
-groupNames[EventType.CLIENT_VIEW_ENTER_OWN_CHANNEL] = tr("A client enters your view and your channel");
+groupNames["client.view.enter"] = tr("A client enters your view");
+groupNames["client.view.enter.own.channel"] = tr("A client enters your view and your channel");
 
-groupNames[EventType.CLIENT_VIEW_MOVE] = tr("A client switches/gets moved/kicked");
-groupNames[EventType.CLIENT_VIEW_MOVE_OWN_CHANNEL] = tr("A client switches/gets moved/kicked in to/out of your channel");
-groupNames[EventType.CLIENT_VIEW_MOVE_OWN] = tr("You've been moved or kicked");
+groupNames["client.view.move"] = tr("A client switches/gets moved/kicked");
+groupNames["client.view.move.own.channel"] = tr("A client switches/gets moved/kicked in to/out of your channel");
+groupNames["client.view.move.own"] = tr("You've been moved or kicked");
 
-groupNames[EventType.CLIENT_VIEW_LEAVE] = tr("A client leaves/disconnects of your view");
-groupNames[EventType.CLIENT_VIEW_LEAVE_OWN_CHANNEL] = tr("A client leaves/disconnects of your channel");
+groupNames["client.view.leave"] = tr("A client leaves/disconnects of your view");
+groupNames["client.view.leave.own.channel"] = tr("A client leaves/disconnects of your channel");
 
-groupNames[EventType.GLOBAL_MESSAGE] = tr("A server message has been send");
-groupNames[EventType.SERVER_CLOSED] = tr("The server has been closed");
-groupNames[EventType.SERVER_BANNED] = tr("You've been banned from the server");
+groupNames["global.message"] = tr("A server message has been send");
+groupNames["server.closed"] = tr("The server has been closed");
+groupNames["server.banned"] = tr("You've been banned from the server");
 
-groupNames[EventType.CONNECTION_BEGIN] = tr("You're connecting to a server");
-groupNames[EventType.CONNECTION_CONNECTED] = tr("You've successfully connected to the server");
-groupNames[EventType.CONNECTION_FAILED] = tr("You're connect attempt failed");
+groupNames["connection.begin"] = tr("You're connecting to a server");
+groupNames["connection.connected"] = tr("You've successfully connected to the server");
+groupNames["connection.failed"] = tr("You're connect attempt failed");
 
 function initializeController(events: Registry<NotificationSettingsEvents>) {
     let filter = undefined;

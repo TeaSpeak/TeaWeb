@@ -16,7 +16,7 @@ export class SideBarManager {
     constructor(connection: ConnectionHandler) {
         this.events = new Registry<SideBarManagerEvents>();
         this.connection = connection;
-        this.currentType = "channel-chat";
+        this.currentType = "channel";
     }
 
     destroy() {}
@@ -38,8 +38,8 @@ export class SideBarManager {
         this.setSideBarContent("private-chat");
     }
 
-    showChannelConversations() {
-        this.setSideBarContent("channel-chat");
+    showChannel() {
+        this.setSideBarContent("channel");
     }
 
     showClientInfo(client: ClientEntry) {

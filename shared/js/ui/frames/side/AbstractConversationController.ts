@@ -29,8 +29,6 @@ export abstract class AbstractConversationController<
     protected currentSelectedConversation: ConversationType;
     protected currentSelectedListener: (() => void)[];
 
-    protected crossChannelChatSupported = true;
-
     protected constructor() {
         this.uiEvents = new Registry<Events>();
         this.currentSelectedListener = [];
@@ -68,6 +66,12 @@ export abstract class AbstractConversationController<
 
     protected registerConversationManagerEvents(manager: Manager) {
         this.listenerManager.push(manager.events.on("notify_selected_changed", event => this.setCurrentlySelected(event.newConversation)));
+        this.listenerManager.push(manager.events.on("notify_cross_conversation_support_changed", () => {
+            const currentConversation = this.getCurrentConversation();
+            if(currentConversation) {
+                this.reportStateToUI(currentConversation);
+            }
+        }));
     }
 
     protected registerConversationEvents(conversation: ConversationType) {
@@ -138,7 +142,7 @@ export abstract class AbstractConversationController<
                     this.uiEvents.fire_react("notify_conversation_state", {
                         chatId: conversation.getChatId(),
                         state: "private",
-                        crossChannelChatSupported: this.crossChannelChatSupported
+                        crossChannelChatSupported: this.conversationManager.hasCrossConversationSupport()
                     });
                     return;
                 }
@@ -154,7 +158,7 @@ export abstract class AbstractConversationController<
                     chatFrameMaxMessageCount: kMaxChatFrameMessageSize,
                     unreadTimestamp: conversation.getUnreadTimestamp(),
 
-                    showUserSwitchEvents: conversation.isPrivate() || !this.crossChannelChatSupported,
+                    showUserSwitchEvents: conversation.isPrivate() || !this.conversationManager.hasCrossConversationSupport(),
                     sendEnabled: conversation.isSendEnabled(),
 
                     events: [...conversation.getPresentEvents(), ...conversation.getPresentMessages()]
@@ -249,18 +253,6 @@ export abstract class AbstractConversationController<
 
     protected getCurrentConversation() : ConversationType | undefined {
         return this.currentSelectedConversation;
-    }
-
-    protected setCrossChannelChatSupport(flag: boolean) {
-        if(this.crossChannelChatSupported === flag) {
-            return;
-        }
-
-        this.crossChannelChatSupported = flag;
-        const currentConversation = this.getCurrentConversation();
-        if(currentConversation) {
-            this.reportStateToUI(currentConversation);
-        }
     }
 
     @EventHandler<AbstractConversationUiEvents>("query_conversation_state")

@@ -1,8 +1,8 @@
-import {EventType} from "../../../ui/frames/log/Definitions";
-import {Settings, settings} from "../../../settings";
+import {settings, Settings} from "tc-shared/settings";
+import {EventType, TypeInfo} from "tc-shared/connectionlog/Definitions";
 
-const focusDefaultStatus = {};
-focusDefaultStatus[EventType.CLIENT_POKE_RECEIVED] = true;
+const focusDefaultStatus: {[T in keyof TypeInfo]?: boolean} = {};
+focusDefaultStatus["client.poke.received"] = true;
 
 export function requestWindowFocus() {
     if(__build.target === "web") {

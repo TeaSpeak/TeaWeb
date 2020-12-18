@@ -1,0 +1,51 @@
+@import "../../../../css/static/mixin";
+@import "../../../../css/static/properties";
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    height: 100%;
+    width: 100%;
+
+    color: #999;
+
+    &.centeredText {
+        justify-content: center;
+        color: var(--chat-overlay);
+    }
+
+    &.error {
+        color: #ac5353;
+    }
+
+    code {
+        padding: 0;
+    }
+}
+
+.centeredText .text {
+    align-self: center;
+    text-align: center;
+}
+
+.descriptionContainer {
+    padding: .5em;
+
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+
+    color: #999;
+
+    overflow: auto;
+    @include chat-scrollbar();
+
+    font-size: 12px;
+
+    img {
+        max-width: 100%;
+    }
+}

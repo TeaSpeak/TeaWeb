@@ -56,6 +56,9 @@ html:root {
 
     position: relative;
 
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+
     .containerMessages {
         flex-grow: 1;
         flex-shrink: 1;

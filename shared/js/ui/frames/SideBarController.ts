@@ -9,6 +9,7 @@ import * as React from "react";
 import {SideBarEvents, SideBarType} from "tc-shared/ui/frames/SideBarDefinitions";
 import {Registry} from "tc-shared/events";
 import {LogCategory, logWarn} from "tc-shared/log";
+import {ChannelBarController} from "tc-shared/ui/frames/side/ChannelBarController";
 
 export class SideBarController {
     private readonly uiEvents: Registry<SideBarEvents>;
@@ -18,8 +19,8 @@ export class SideBarController {
 
     private header: SideHeaderController;
     private clientInfo: ClientInfoController;
-    private channelConversations: ChannelConversationController;
     private privateConversations: PrivateConversationController;
+    private channelBar: ChannelBarController;
 
     constructor() {
         this.listenerConnection = [];
@@ -28,8 +29,8 @@ export class SideBarController {
         this.uiEvents.on("query_content", () => this.sendContent());
         this.uiEvents.on("query_content_data", event => this.sendContentData(event.content));
 
+        this.channelBar = new ChannelBarController();
         this.privateConversations = new PrivateConversationController();
-        this.channelConversations = new ChannelConversationController();
         this.clientInfo = new ClientInfoController();
         this.header = new SideHeaderController();
     }
@@ -45,8 +46,8 @@ export class SideBarController {
         this.currentConnection = connection;
         this.header.setConnectionHandler(connection);
         this.clientInfo.setConnectionHandler(connection);
-        this.channelConversations.setConnectionHandler(connection);
         this.privateConversations.setConnectionHandler(connection);
+        this.channelBar.setConnectionHandler(connection);
 
         if(connection) {
             this.listenerConnection.push(connection.getSideBar().events.on("notify_content_type_changed", () => this.sendContent()));
@@ -59,14 +60,14 @@ export class SideBarController {
         this.header?.destroy();
         this.header = undefined;
 
+        this.channelBar?.destroy();
+        this.channelBar = undefined;
+
         this.clientInfo?.destroy();
         this.clientInfo = undefined;
 
         this.privateConversations?.destroy();
         this.privateConversations = undefined;
-
-        this.channelConversations?.destroy();
-        this.channelConversations = undefined;
     }
 
     renderInto(container: HTMLDivElement) {
@@ -93,17 +94,16 @@ export class SideBarController {
                 });
                 break;
 
-            case "channel-chat":
+            case "channel":
                 if(!this.currentConnection) {
                     logWarn(LogCategory.GENERAL, tr("Received channel chat content data request without an active connection."));
                     return;
                 }
 
                 this.uiEvents.fire_react("notify_content_data", {
-                    content: "channel-chat",
+                    content: "channel",
                     data: {
-                        events: this.channelConversations["uiEvents"],
-                        handlerId: this.currentConnection.handlerId
+                        events: this.channelBar.uiEvents,
                     }
                 });
                 break;

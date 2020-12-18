@@ -15,7 +15,6 @@ import {ConnectionStatistics, ServerConnectionEvents} from "tc-shared/connection
 import {ConnectionState} from "tc-shared/ConnectionHandler";
 import {VoiceBridge, VoicePacket, VoiceWhisperPacket} from "./bridge/VoiceBridge";
 import {NativeWebRTCVoiceBridge} from "./bridge/NativeWebRTCVoiceBridge";
-import {EventType} from "tc-shared/ui/frames/log/Definitions";
 import {
     kUnknownWhisperClientUniqueId,
     WhisperSession,
@@ -191,7 +190,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
             }, payload)))
         };
         this.voiceBridge.callbackDisconnect = () => {
-            this.connection.client.log.log(EventType.CONNECTION_VOICE_DROPPED, { });
+            this.connection.client.log.log("connection.voice.dropped", { });
             if(!this.connectionLostModalOpen) {
                 this.connectionLostModalOpen = true;
                 const modal =  createErrorModal(tr("Voice connection lost"), tr("Lost voice connection to the target server. Trying to reconnect..."));
@@ -202,14 +201,14 @@ export class VoiceConnection extends AbstractVoiceConnection {
             this.executeVoiceBridgeReconnect();
         }
 
-        this.connection.client.log.log(EventType.CONNECTION_VOICE_CONNECT, { attemptCount: this.connectAttemptCounter });
+        this.connection.client.log.log("connection.voice.connect", { attemptCount: this.connectAttemptCounter });
         this.setConnectionState(VoiceConnectionStatus.Connecting);
         this.voiceBridge.connect().then(result => {
             if(result.type === "success") {
                 this.lastConnectAttempt = 0;
                 this.connectAttemptCounter = 0;
 
-                this.connection.client.log.log(EventType.CONNECTION_VOICE_CONNECT_SUCCEEDED, { });
+                this.connection.client.log.log("connection.voice.connect.succeeded", { });
                 const currentInput = this.voiceRecorder()?.input;
                 if(currentInput) {
                     this.voiceBridge.setInput(currentInput).catch(error => {
@@ -226,7 +225,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
                 let doReconnect = result.allowReconnect && this.connectAttemptCounter < 5;
                 logWarn(LogCategory.VOICE, tr("Failed to setup voice bridge: %s. Reconnect: %o"), result.message, doReconnect);
 
-                this.connection.client.log.log(EventType.CONNECTION_VOICE_CONNECT_FAILED, {
+                this.connection.client.log.log("connection.voice.connect.failed", {
                     reason: result.message,
                     reconnect_delay: doReconnect ? 1 : 0
                 });

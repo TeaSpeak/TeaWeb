@@ -1,17 +1,16 @@
 import {Registry} from "tc-shared/events";
 import {PrivateConversationUIEvents} from "tc-shared/ui/frames/side/PrivateConversationDefinitions";
-import {AbstractConversationUiEvents} from "./side/AbstractConversationDefinitions";
 import {ClientInfoEvents} from "tc-shared/ui/frames/side/ClientInfoDefinitions";
 import {SideHeaderEvents} from "tc-shared/ui/frames/side/HeaderDefinitions";
+import {ChannelBarUiEvents} from "tc-shared/ui/frames/side/ChannelBarDefinitions";
 
 /* TODO: Somehow outsource the event registries to IPC? */
 
-export type SideBarType = "none" | "channel-chat" | "private-chat" | "client-info" | "music-manage";
+export type SideBarType = "none" | "channel" | "private-chat" | "client-info" | "music-manage";
 export interface SideBarTypeData {
     "none": {},
-    "channel-chat": {
-        events: Registry<AbstractConversationUiEvents>,
-        handlerId: string
+    "channel": {
+        events: Registry<ChannelBarUiEvents>
     },
     "private-chat": {
         events: Registry<PrivateConversationUIEvents>,
