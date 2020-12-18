@@ -53,7 +53,6 @@ const ContentRendererClientInfo = () => {
     const contentData = useContentData("client-info");
     if(!contentData) { return null; }
 
-    throw "XX";
     return (
         <ClientInfoRenderer
             events={contentData.events}
@@ -138,7 +137,9 @@ export const SideBarRenderer = (props: {
     return (
         <EventContent.Provider value={props.events}>
             <div className={cssStyle.container}>
-                <SideBarHeader eventsHeader={props.eventsHeader} type={content} />
+                <ErrorBoundary>
+                    <SideBarHeader eventsHeader={props.eventsHeader} type={content} />
+                </ErrorBoundary>
                 <div className={cssStyle.frameContainer}>
                     <SideBarFrame type={content} />
                 </div>

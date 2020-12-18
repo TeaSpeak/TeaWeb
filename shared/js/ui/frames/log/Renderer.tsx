@@ -6,6 +6,7 @@ import {findLogEventRenderer} from "./RendererEvent";
 import {LogMessage} from "tc-shared/connectionlog/Definitions";
 import {ServerEventLogUiEvents} from "tc-shared/ui/frames/log/Definitions";
 import {useDependentState} from "tc-shared/ui/react-elements/Helper";
+import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
 
 const cssStyle = require("./Renderer.scss");
 
@@ -111,7 +112,9 @@ export const ServerLogFrame = (props: { events: Registry<ServerEventLogUiEvents>
     return (
         <EventsContext.Provider value={props.events}>
             <HandlerIdContext.Provider value={handlerId}>
-                <ServerLogRenderer />
+                <ErrorBoundary>
+                    <ServerLogRenderer />
+                </ErrorBoundary>
             </HandlerIdContext.Provider>
         </EventsContext.Provider>
     );
