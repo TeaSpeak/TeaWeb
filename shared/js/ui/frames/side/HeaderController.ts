@@ -3,7 +3,6 @@ import {SideHeaderEvents} from "tc-shared/ui/frames/side/HeaderDefinitions";
 import {Registry} from "tc-shared/events";
 import {ChannelEntry, ChannelProperties} from "tc-shared/tree/Channel";
 import {LocalClientEntry} from "tc-shared/tree/Client";
-import {openMusicManage} from "tc-shared/ui/modal/ModalMusicManage";
 
 const ChannelInfoUpdateProperties: (keyof ChannelProperties)[] = [
     "channel_name",
@@ -80,11 +79,35 @@ export class SideHeaderController {
         this.listenerConnection.push(this.connection.channelTree.events.on("notify_client_moved", event => {
             if(event.client instanceof LocalClientEntry) {
                 this.updateVoiceChannel();
+            } else {
+                if(event.newChannel === this.currentVoiceChannel || event.oldChannel === this.currentVoiceChannel) {
+                    this.sendChannelState("voice");
+                }
+
+                if(event.newChannel === this.currentTextChannel || event.oldChannel === this.currentTextChannel) {
+                    this.sendChannelState("text");
+                }
             }
         }));
         this.listenerConnection.push(this.connection.channelTree.events.on("notify_client_enter_view", event => {
             if(event.client instanceof LocalClientEntry) {
                 this.updateVoiceChannel();
+            } else {
+                if(event.targetChannel === this.currentVoiceChannel) {
+                    this.sendChannelState("voice");
+                }
+                if(event.targetChannel === this.currentTextChannel) {
+                    this.sendChannelState("text");
+                }
+            }
+        }));
+        this.listenerConnection.push(this.connection.channelTree.events.on("notify_client_leave_view", event => {
+            if(event.sourceChannel === this.currentVoiceChannel) {
+                this.sendChannelState("voice");
+            }
+
+            if(event.sourceChannel === this.currentTextChannel) {
+                this.sendChannelState("text");
             }
         }));
         this.listenerConnection.push(this.connection.events().on("notify_connection_state_changed", () => {
