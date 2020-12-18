@@ -22,7 +22,6 @@ import * as hex from "../crypto/hex";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 import {spawnClientVolumeChange, spawnMusicBotVolumeChange} from "../ui/modal/ModalChangeVolumeNew";
 import {spawnPermissionEditorModal} from "../ui/modal/permission/ModalPermissionEditor";
-import {EventClient, EventType} from "../ui/frames/log/Definitions";
 import {W2GPluginCmdHandler} from "../video-viewer/W2GPlugin";
 import {global_client_actions} from "../events/GlobalEvents";
 import {ClientIcon} from "svg-sprites/client-icons";
@@ -31,6 +30,7 @@ import {VoicePlayerEvents, VoicePlayerState} from "../voice/VoicePlayer";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 import {VideoClient} from "tc-shared/connection/VideoConnection";
 import { tr } from "tc-shared/i18n/localize";
+import {EventClient} from "tc-shared/connectionlog/Definitions";
 
 export enum ClientType {
     CLIENT_VOICE,
@@ -573,7 +573,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                                 clid: this.clientId(),
                                 msg: result
                             }).then(() => {
-                                this.channelTree.client.log.log(EventType.CLIENT_POKE_SEND, {
+                                this.channelTree.client.log.log("client.poke.send", {
                                     target: this.log_data(),
                                     message: result
                                 });
@@ -771,7 +771,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
             if(variable.key == "client_nickname") {
                 if(variable.value !== old_value && typeof(old_value) === "string") {
                     if(!(this instanceof LocalClientEntry)) { /* own changes will be logged somewhere else */
-                        this.channelTree.client.log.log(EventType.CLIENT_NICKNAME_CHANGED, {
+                        this.channelTree.client.log.log("client.nickname.changed", {
                             client: this.log_data(),
                             new_name: variable.value,
                             old_name: old_value
@@ -996,7 +996,7 @@ export class LocalClientEntry extends ClientEntry {
         this.updateVariables({ key: "client_nickname", value: new_name }); /* change it locally */
         return this.handle.serverConnection.send_command("clientupdate", { client_nickname: new_name }).then(() => {
             settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, new_name);
-            this.channelTree.client.log.log(EventType.CLIENT_NICKNAME_CHANGED_OWN, {
+            this.channelTree.client.log.log("client.nickname.changed.own", {
                 client: this.log_data(),
                 old_name: old_name,
                 new_name: new_name,
@@ -1004,7 +1004,7 @@ export class LocalClientEntry extends ClientEntry {
             return true;
         }).catch((e: CommandResult) => {
             this.updateVariables({ key: "client_nickname", value: old_name }); /* change it back */
-            this.channelTree.client.log.log(EventType.CLIENT_NICKNAME_CHANGE_FAILED, {
+            this.channelTree.client.log.log("client.nickname.change.failed", {
                 reason: e.extra_message
             });
             return false;

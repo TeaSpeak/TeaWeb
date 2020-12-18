@@ -115,6 +115,12 @@ export class ChannelTree {
         this.tagContainer = $.spawn("div").addClass("channel-tree-container");
         renderChannelTree(this, this.tagContainer[0], { popoutButton: true });
 
+        this.events.on("notify_channel_list_received", () => {
+            if(!this.selectedEntry) {
+                this.setSelectedEntry(this.client.getClient().currentChannel());
+            }
+        });
+
         this.reset();
     }
 
@@ -177,13 +183,13 @@ export class ChannelTree {
             if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
                 const conversation = this.client.getChannelConversations().findOrCreateConversation(this.selectedEntry.channelId);
                 this.client.getChannelConversations().setSelectedConversation(conversation);
-                this.client.getSideBar().showChannelConversations();
+                this.client.getSideBar().showChannel();
             }
         } else if(this.selectedEntry instanceof ServerEntry) {
             if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
                 const conversation = this.client.getChannelConversations().findOrCreateConversation(0);
                 this.client.getChannelConversations().setSelectedConversation(conversation);
-                this.client.getSideBar().showChannelConversations()
+                this.client.getSideBar().showChannel()
             }
         }
     }
@@ -557,6 +563,24 @@ export class ChannelTree {
                                 }
                             }
                         }, {width: 400, maxLength: 512}).open();
+                    }
+                });
+                client_menu.push({
+                    type: contextmenu.MenuEntryType.ENTRY,
+                    icon_class: ClientIcon.ChangeNickname,
+                    name: tr("Send private message"),
+                    callback: () => {
+                        createInputModal(tr("Send private message"), tr("Message:<br>"), text => !!text, result => {
+                            if (typeof(result) === "string") {
+                                for (const client of clients) {
+                                    this.client.serverConnection.send_command("sendtextmessage", {
+                                        target: client.clientId(),
+                                        msg: result,
+                                        targetmode: 1
+                                    });
+                                }
+                            }
+                        }, {width: 400, maxLength: 1024 * 8}).open();
                     }
                 });
             }

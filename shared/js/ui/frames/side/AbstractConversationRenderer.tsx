@@ -26,9 +26,9 @@ import {ChatBox} from "tc-shared/ui/react-elements/ChatBox";
 
 const cssStyle = require("./AbstractConversationRenderer.scss");
 
-const ChatMessageTextRenderer = React.memo((props: { text: string }) => {
+const ChatMessageTextRenderer = React.memo((props: { text: string, handlerId: string }) => {
     if(typeof props.text !== "string") { debugger; }
-    return <BBCodeRenderer settings={{ convertSingleUrls: true }} message={props.text || ""} />;
+    return <BBCodeRenderer settings={{ convertSingleUrls: true }} message={props.text || ""} handlerId={props.handlerId} />;
 });
 
 const ChatEventMessageRenderer = React.memo((props: {
@@ -71,7 +71,7 @@ const ChatEventMessageRenderer = React.memo((props: {
                     <br /> { /* Only for copy purposes */ }
                 </div>
                 <div className={cssStyle.text}>
-                    <ChatMessageTextRenderer text={props.message.message} />
+                    <ChatMessageTextRenderer text={props.message.message} handlerId={props.handlerId} />
                 </div>
                 <br style={{ content: " ", display: "none" }} /> { /* Only for copy purposes */ }
             </div>

@@ -1,12 +1,13 @@
 import {SideHeaderEvents, SideHeaderState} from "tc-shared/ui/frames/side/HeaderDefinitions";
 import {Registry} from "tc-shared/events";
-import React = require("react");
 import {SideHeaderRenderer} from "tc-shared/ui/frames/side/HeaderRenderer";
-import {ConversationPanel} from "tc-shared/ui/frames/side/AbstractConversationRenderer";
 import {SideBarEvents, SideBarType, SideBarTypeData} from "tc-shared/ui/frames/SideBarDefinitions";
 import {useContext, useState} from "react";
 import {ClientInfoRenderer} from "tc-shared/ui/frames/side/ClientInfoRenderer";
 import {PrivateConversationsPanel} from "tc-shared/ui/frames/side/PrivateConversationRenderer";
+import {ChannelBarRenderer} from "tc-shared/ui/frames/side/ChannelBarRenderer";
+import {LogCategory, logWarn} from "tc-shared/log";
+import React = require("react");
 
 const cssStyle = require("./SideBarRenderer.scss");
 
@@ -23,17 +24,14 @@ function useContentData<T extends SideBarType>(type: T) : SideBarTypeData[T] {
     return contentData;
 }
 
-const ContentRendererChannelConversation = () => {
-    const contentData = useContentData("channel-chat");
+const ContentRendererChannel = () => {
+    const contentData = useContentData("channel");
     if(!contentData) { return null; }
 
     return (
-        <ConversationPanel
-            key={"channel-chat"}
+        <ChannelBarRenderer
+            key={"channel"}
             events={contentData.events}
-            handlerId={contentData.handlerId}
-            messagesDeletable={true}
-            noFirstMessageOverlay={false}
         />
     );
 };
@@ -63,8 +61,8 @@ const ContentRendererClientInfo = () => {
 
 const SideBarFrame = (props: { type: SideBarType }) => {
     switch (props.type) {
-        case "channel-chat":
-            return <ContentRendererChannelConversation key={props.type} />;
+        case "channel":
+            return <ContentRendererChannel key={props.type} />;
 
         case "private-chat":
             return <ContentRendererPrivateConversation key={props.type} />;
@@ -88,7 +86,7 @@ const SideBarHeader = (props: { type: SideBarType, eventsHeader: Registry<SideHe
             headerState = { state: "none" };
             break;
 
-        case "channel-chat":
+        case "channel":
             headerState = { state: "conversation", mode: "channel" };
             break;
 
@@ -102,6 +100,11 @@ const SideBarHeader = (props: { type: SideBarType, eventsHeader: Registry<SideHe
 
         case "music-manage":
             headerState = { state: "music-bot" };
+            break;
+
+        default:
+            logWarn(LogCategory.GENERAL, tr("Side bar header with invalid type: %s"), props.type);
+            headerState = { state: "none" };
             break;
     }
 

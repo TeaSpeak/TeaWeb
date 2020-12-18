@@ -51,7 +51,7 @@ export class SideHeaderController {
         });
 
         this.uiEvents.on("action_switch_channel_chat", () => {
-            this.connection.getSideBar().showChannelConversations();
+            this.connection.getSideBar().showChannel();
         });
 
         this.uiEvents.on("action_bot_manage", () => {

@@ -4,7 +4,6 @@ import {renderMarkdownAsBBCode} from "../text/markdown";
 import {escapeBBCode} from "../text/bbcode";
 import {parse as parseBBCode} from "vendor/xbbcode/parser";
 import {TagElement} from "vendor/xbbcode/elements";
-import * as React from "react";
 import {regexImage} from "tc-shared/text/bbcode/image";
 
 interface UrlKnifeUrl {

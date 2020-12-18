@@ -1,11 +1,16 @@
-import {LogMessage, ServerLogUIEvents} from "tc-shared/ui/frames/log/Definitions";
 import {VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {Registry} from "tc-shared/events";
-import {useEffect, useRef, useState} from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import * as React from "react";
-import {findLogDispatcher} from "tc-shared/ui/frames/log/DispatcherLog";
+import {findLogEventRenderer} from "./RendererEvent";
+import {LogMessage} from "tc-shared/connectionlog/Definitions";
+import {ServerEventLogUiEvents} from "tc-shared/ui/frames/log/Definitions";
+import {useDependentState} from "tc-shared/ui/react-elements/Helper";
 
 const cssStyle = require("./Renderer.scss");
+
+const HandlerIdContext = React.createContext<string>(undefined);
+const EventsContext = React.createContext<Registry<ServerEventLogUiEvents>>(undefined);
 
 const LogFallbackDispatcher = (_unused, __unused, eventType) => (
     <div className={cssStyle.errorMessage}>
@@ -15,12 +20,14 @@ const LogFallbackDispatcher = (_unused, __unused, eventType) => (
     </div>
 );
 
-const LogEntryRenderer = React.memo((props: { entry: LogMessage, handlerId: string }) => {
-    const dispatcher = findLogDispatcher(props.entry.type as any) || LogFallbackDispatcher;
-    const rendered = dispatcher(props.entry.data, props.handlerId, props.entry.type);
+const LogEntryRenderer = React.memo((props: { entry: LogMessage }) => {
+    const handlerId = useContext(HandlerIdContext);
+    const dispatcher = findLogEventRenderer(props.entry.type as any) || LogFallbackDispatcher;
+    const rendered = dispatcher(props.entry.data, handlerId, props.entry.type);
 
-    if(!rendered) /* hide message */
+    if(!rendered) { /* hide message */
         return null;
+    }
 
     const date = new Date(props.entry.timestamp);
     return (
@@ -35,25 +42,27 @@ const LogEntryRenderer = React.memo((props: { entry: LogMessage, handlerId: stri
     );
 });
 
-export const ServerLogRenderer = (props: { events: Registry<ServerLogUIEvents>, handlerId: string }) => {
-    const [ logs, setLogs ] = useState<LogMessage[] | "loading">(() => {
-        props.events.fire_react("query_log");
+const ServerLogRenderer = () => {
+    const handlerId = useContext(HandlerIdContext);
+    const events = useContext(EventsContext);
+    const [ logs, setLogs ] = useDependentState<LogMessage[] | "loading">(() => {
+        events.fire_react("query_log");
         return "loading";
-    });
+    }, [ handlerId ]);
 
     const [ revision, setRevision ] = useState(0);
 
     const refContainer = useRef<HTMLDivElement>();
     const scrollOffset = useRef<number | "bottom">("bottom");
 
-    props.events.reactUse("notify_log", event => {
-        const logs = event.log.slice(0);
+    events.reactUse("notify_log", event => {
+        const logs = event.events.slice(0);
         logs.splice(0, Math.max(0, logs.length - 100));
         logs.sort((a, b) => a.timestamp - b.timestamp);
         setLogs(logs);
     });
 
-    props.events.reactUse("notify_log_add", event => {
+    events.reactUse("notify_log_add", event => {
         if(logs === "loading") {
             return;
         }
@@ -72,10 +81,6 @@ export const ServerLogRenderer = (props: { events: Registry<ServerLogUIEvents>, 
         refContainer.current.scrollTop = scrollOffset.current === "bottom" ? refContainer.current.scrollHeight : scrollOffset.current;
     };
 
-    props.events.reactUse("notify_show", () => {
-        requestAnimationFrame(fixScroll);
-    });
-
     useEffect(() => {
         const id = requestAnimationFrame(fixScroll);
         return () => cancelAnimationFrame(id);
@@ -91,7 +96,23 @@ export const ServerLogRenderer = (props: { events: Registry<ServerLogUIEvents>, 
 
             scrollOffset.current = shouldFollow ? "bottom" : top;
         }}>
-            {logs === "loading" ? null : logs.map(e => <LogEntryRenderer key={e.uniqueId} entry={e} handlerId={props.handlerId} />)}
+            {logs === "loading" ? null : logs.map(e => <LogEntryRenderer key={e.uniqueId} entry={e} />)}
         </div>
     );
 };
+
+export const ServerLogFrame = (props: { events: Registry<ServerEventLogUiEvents> }) => {
+    const [ handlerId, setHandlerId ] = useState<string>(() => {
+        props.events.fire("query_handler_id");
+        return undefined;
+    });
+    props.events.reactUse("notify_handler_id", event => setHandlerId(event.handlerId));
+
+    return (
+        <EventsContext.Provider value={props.events}>
+            <HandlerIdContext.Provider value={handlerId}>
+                <ServerLogRenderer />
+            </HandlerIdContext.Provider>
+        </EventsContext.Provider>
+    );
+}

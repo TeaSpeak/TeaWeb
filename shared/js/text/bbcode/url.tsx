@@ -4,8 +4,10 @@ import * as loader from "tc-loader";
 import {ElementRenderer} from "vendor/xbbcode/renderer/base";
 import {TagElement} from "vendor/xbbcode/elements";
 import * as React from "react";
-import ReactRenderer from "vendor/xbbcode/renderer/react";
+import ReactRenderer, {BBCodeHandlerContext} from "vendor/xbbcode/renderer/react";
 import {rendererReact, rendererText} from "tc-shared/text/bbcode/renderer";
+import {ClientTag} from "tc-shared/ui/tree/EntryTags";
+import {useContext} from "react";
 
 function spawnUrlContextMenu(pageX: number, pageY: number, target: string) {
     contextmenu.spawn_context_menu(pageX, pageY, {
@@ -31,6 +33,8 @@ function spawnUrlContextMenu(pageX: number, pageY: number, target: string) {
     });
 }
 
+const ClientUrlRegex = /client:\/\/([0-9]+)\/([-A-Za-z0-9+/=]+)~/g;
+
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     name: "XBBCode code tag init",
     function: async () => {
@@ -39,17 +43,36 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
         const regexUrl = /^(?:[a-zA-Z]{1,16}):(?:\/{1,3}|\\)[-a-zA-Z0-9:;,@#%&()~_?+=\/\\.]*$/g;
         rendererReact.registerCustomRenderer(new class extends ElementRenderer<TagElement, React.ReactNode> {
             render(element: TagElement, renderer: ReactRenderer): React.ReactNode {
-                let target;
-                if (!element.options)
+                let target: string;
+                if (!element.options) {
                     target = rendererText.render(element);
-                else
+                } else {
                     target = element.options;
+                }
 
                 regexUrl.lastIndex = 0;
-                if (!regexUrl.test(target))
+                if (!regexUrl.test(target)) {
                     target = '#';
+                }
 
-                /* TODO: Implement client URLs */
+                const handlerId = useContext(BBCodeHandlerContext);
+
+                if(handlerId) {
+                    /* TS3-Protocol for a client */
+                    if(target.match(ClientUrlRegex)) {
+                        const clientData = target.match(ClientUrlRegex);
+                        const clientDatabaseId = parseInt(clientData[1]);
+                        const clientUniqueId = clientDatabaseId[2];
+
+                        return <ClientTag
+                            clientName={rendererText.renderContent(element).join("")}
+                            clientUniqueId={clientUniqueId}
+                            clientDatabaseId={clientDatabaseId > 0 ? clientDatabaseId : undefined}
+                            handlerId={handlerId}
+                        />;
+                    }
+                }
+
                 return <a key={"er-" + ++reactId} className={"xbbcode xbbcode-tag-url"} href={target} target={"_blank"} onContextMenu={event => {
                     event.preventDefault();
                     spawnUrlContextMenu(event.pageX, event.pageY, target);

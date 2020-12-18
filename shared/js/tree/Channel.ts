@@ -18,10 +18,10 @@ import {formatMessage} from "../ui/frames/chat";
 import {Registry} from "../events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 import {spawnFileTransferModal} from "../ui/modal/transfer/ModalFileTransfer";
-import {EventChannelData} from "../ui/frames/log/Definitions";
 import {ErrorCode} from "../connection/ErrorCode";
 import {ClientIcon} from "svg-sprites/client-icons";
 import { tr } from "tc-shared/i18n/localize";
+import {EventChannelData} from "tc-shared/connectionlog/Definitions";
 
 export enum ChannelType {
     PERMANENT,
@@ -45,7 +45,16 @@ export enum ChannelSubscribeMode {
 export enum ChannelConversationMode {
     Public = 0,
     Private = 1,
-    None = 2
+    None = 2,
+}
+
+export enum ChannelSidebarMode {
+    Conversation = 0,
+    Description = 1,
+    FileTransfer = 2,
+
+    /* Only used within client side */
+    Unknown = 0xFF
 }
 
 export class ChannelProperties {
@@ -79,8 +88,10 @@ export class ChannelProperties {
     //Only after request
     channel_description: string = "";
 
-    channel_conversation_mode: ChannelConversationMode = 0;
+    channel_conversation_mode: ChannelConversationMode = ChannelConversationMode.Public;
     channel_conversation_history_length: number = -1;
+
+    channel_sidebar_mode: ChannelSidebarMode = ChannelSidebarMode.Unknown;
 }
 
 export interface ChannelEvents extends ChannelTreeEntryEvents {
@@ -99,7 +110,8 @@ export interface ChannelEvents extends ChannelTreeEntryEvents {
     },
     notify_collapsed_state_changed: {
         collapsed: boolean
-    }
+    },
+    notify_description_changed: {}
 }
 
 export class ParsedChannelName {
@@ -173,10 +185,9 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     private _destroyed = false;
 
     private cachedPasswordHash: string;
-    private _cached_channel_description: string = undefined;
-    private _cached_channel_description_promise: Promise<string> = undefined;
-    private _cached_channel_description_promise_resolve: any = undefined;
-    private _cached_channel_description_promise_reject: any = undefined;
+    private channelDescriptionCached: boolean;
+    private channelDescriptionCallback: ((success: boolean) => void)[];
+    private channelDescriptionPromise: Promise<string>;
 
     private collapsed: boolean;
     private subscribed: boolean;
@@ -212,17 +223,19 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
         this.collapsed = this.channelTree.client.settings.server(Settings.FN_SERVER_CHANNEL_COLLAPSED(this.channelId));
         this.subscriptionMode = this.channelTree.client.settings.server(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId));
+
+        this.channelDescriptionCached = false;
+        this.channelDescriptionCallback = [];
     }
 
     destroy() {
         this._destroyed = true;
 
+        this.channelDescriptionCallback.forEach(callback => callback(false));
+        this.channelDescriptionCallback = [];
+
         this.client_list.forEach(e => this.unregisterClient(e, true));
         this.client_list = [];
-
-        this._cached_channel_description_promise = undefined;
-        this._cached_channel_description_promise_resolve = undefined;
-        this._cached_channel_description_promise_reject = undefined;
 
         this.channel_previous = undefined;
         this.parent = undefined;
@@ -248,18 +261,39 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         return this.parsed_channel_name.text;
     }
 
-    getChannelDescription() : Promise<string> {
-        if(this._cached_channel_description) return new Promise<string>(resolve => resolve(this._cached_channel_description));
-        if(this._cached_channel_description_promise) return this._cached_channel_description_promise;
+    async getChannelDescription() : Promise<string> {
+        if(this.channelDescriptionPromise) {
+            return this.channelDescriptionPromise;
+        }
 
-        this.channelTree.client.serverConnection.send_command("channelgetdescription", {cid: this.channelId}).catch(error => {
-            this._cached_channel_description_promise_reject(error);
-        });
+        const promise = this.doGetChannelDescription();
+        this.channelDescriptionPromise = promise;
+        promise
+            .then(() => this.channelDescriptionPromise = undefined)
+            .catch(() => this.channelDescriptionPromise = undefined);
+        return promise;
+    }
 
-        return this._cached_channel_description_promise = new Promise<string>((resolve, reject) => {
-            this._cached_channel_description_promise_resolve = resolve;
-            this._cached_channel_description_promise_reject = reject;
-        });
+    private async doGetChannelDescription() {
+        if(!this.channelDescriptionCached) {
+            await this.channelTree.client.serverConnection.send_command("channelgetdescription", {
+                cid: this.channelId
+            });
+
+            if(!this.channelDescriptionCached) {
+                /* since the channel description is a low command it will not be processed in sync */
+                await new Promise((resolve, reject) => {
+                    this.channelDescriptionCallback.push(succeeded => {
+                        if(succeeded) {
+                            resolve();
+                        } else {
+                            reject(tr("failed to receive description"));
+                        }
+                    })
+                });
+            }
+        }
+        return this.properties.channel_description;
     }
 
     registerClient(client: ClientEntry) {
@@ -411,7 +445,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 callback: () => {
                     const conversation = this.channelTree.client.getChannelConversations().findOrCreateConversation(this.getChannelId());
                     this.channelTree.client.getChannelConversations().setSelectedConversation(conversation);
-                    this.channelTree.client.getSideBar().showChannelConversations();
+                    this.channelTree.client.getSideBar().showChannel();
                 },
                 visible: !settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)
             }, {
@@ -575,29 +609,27 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
             let key = variable.key;
             let value = variable.value;
 
-            if(!JSON.map_field_to(this.properties, value, variable.key)) {
-                /* no update */
-                continue;
+            const hasUpdate = JSON.map_field_to(this.properties, value, variable.key);
+
+            if(key == "channel_description") {
+                this.channelDescriptionCached = true;
+                this.channelDescriptionCallback.forEach(callback => callback(true));
+                this.channelDescriptionCallback = [];
             }
 
-            if(key == "channel_name") {
-                this.parsed_channel_name = new ParsedChannelName(value, this.hasParent());
-            } else if(key == "channel_order") {
-                let order = this.channelTree.findChannel(this.properties.channel_order);
-                this.channelTree.moveChannel(this, order, this.parent, false);
-            } else if(key === "channel_icon_id") {
-                this.properties.channel_icon_id = variable.value as any >>> 0; /* unsigned 32 bit number! */
-            } else if(key == "channel_description") {
-                this._cached_channel_description = undefined;
-                if(this._cached_channel_description_promise_resolve)
-                    this._cached_channel_description_promise_resolve(value);
-                this._cached_channel_description_promise = undefined;
-                this._cached_channel_description_promise_resolve = undefined;
-                this._cached_channel_description_promise_reject = undefined;
-            } else if(key === "channel_flag_conversation_private") {
-                /* "fix" for older TeaSpeak server versions (pre. 1.4.22) */
-                this.properties.channel_conversation_mode = value === "1" ? 0 : 1;
-                variables.push({ key: "channel_conversation_mode", value: this.properties.channel_conversation_mode + "" });
+            if(hasUpdate) {
+                if(key == "channel_name") {
+                    this.parsed_channel_name = new ParsedChannelName(value, this.hasParent());
+                } else if(key == "channel_order") {
+                    let order = this.channelTree.findChannel(this.properties.channel_order);
+                    this.channelTree.moveChannel(this, order, this.parent, false);
+                } else if(key === "channel_icon_id") {
+                    this.properties.channel_icon_id = variable.value as any >>> 0; /* unsigned 32 bit number! */
+                } else if(key === "channel_flag_conversation_private") {
+                    /* "fix" for older TeaSpeak server versions (pre. 1.4.22) */
+                    this.properties.channel_conversation_mode = value === "1" ? 0 : 1;
+                    variables.push({ key: "channel_conversation_mode", value: this.properties.channel_conversation_mode + "" });
+                }
             }
         }
         /* devel-block(log-channel-property-updates) */
@@ -790,5 +822,15 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         } else {
             return subscribed ? ClientIcon.ChannelGreenSubscribed : ClientIcon.ChannelGreen;
         }
+    }
+
+    handleDescriptionChanged() {
+        if(!this.channelDescriptionCached) {
+            return;
+        }
+
+        this.channelDescriptionCached = false;
+        this.properties.channel_description = undefined;
+        this.events.fire("notify_description_changed");
     }
 }

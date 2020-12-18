@@ -1,29 +1,27 @@
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
-import * as log from "../../../log";
-import {LogCategory} from "../../../log";
-import {EventClient, EventServerAddress, EventType, TypeInfo} from "../../../ui/frames/log/Definitions";
-import {renderBBCodeAsText} from "../../../text/bbcode";
-import {format_time} from "../../../ui/frames/chat";
-import {ViewReasonId} from "../../../ConnectionHandler";
-import {findLogDispatcher} from "../../../ui/frames/log/DispatcherLog";
-import {formatDate} from "../../../MessageFormatter";
-import {Settings, settings} from "../../../settings";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {getIconManager} from "tc-shared/file/Icons";
 import { tra, tr } from "tc-shared/i18n/localize";
+import {EventClient, EventServerAddress, EventType, TypeInfo} from "tc-shared/connectionlog/Definitions";
+import {Settings, settings} from "tc-shared/settings";
+import {format_time} from "tc-shared/ui/frames/chat";
+import {ViewReasonId} from "tc-shared/ConnectionHandler";
+import {formatDate} from "tc-shared/MessageFormatter";
+import {renderBBCodeAsText} from "tc-shared/text/bbcode";
+import {LogCategory, logInfo} from "tc-shared/log";
 
 export type DispatcherLog<T extends keyof TypeInfo> = (data: TypeInfo[T], handlerId: string, eventType: T) => void;
 
-const notificationDefaultStatus = {};
-notificationDefaultStatus[EventType.CLIENT_POKE_RECEIVED] = true;
-notificationDefaultStatus[EventType.SERVER_BANNED] = true;
-notificationDefaultStatus[EventType.SERVER_CLOSED] = true;
-notificationDefaultStatus[EventType.SERVER_HOST_MESSAGE_DISCONNECT] = true;
-notificationDefaultStatus[EventType.GLOBAL_MESSAGE] = true;
-notificationDefaultStatus[EventType.CONNECTION_FAILED] = true;
-notificationDefaultStatus[EventType.PRIVATE_MESSAGE_RECEIVED] = true;
-notificationDefaultStatus[EventType.CONNECTION_VOICE_DROPPED] = true;
+const notificationDefaultStatus: {[T in keyof TypeInfo]?: boolean} = {};
+notificationDefaultStatus["client.poke.received"] = true;
+notificationDefaultStatus["server.banned"] = true;
+notificationDefaultStatus["server.closed"] = true;
+notificationDefaultStatus["server.host.message.disconnect"] = true;
+notificationDefaultStatus["global.message"] = true;
+notificationDefaultStatus["connection.failed"] = true;
+notificationDefaultStatus["private.message.received"] = true;
+notificationDefaultStatus["connection.voice.dropped"] = true;
 
 let windowFocused = false;
 
@@ -210,7 +208,7 @@ registerDispatcher(EventType.SERVER_BANNED, (data, handlerId) => {
 
     spawnServerNotification(handlerId, {
         body: data.invoker.client_id > 0 ? tra("You've been banned from the server by {0} for {1}.{2}", data.invoker.client_name, time, reason) :
-                                            tra("You've been banned from the server for {0}.{1}", time, reason)
+            tra("You've been banned from the server for {0}.{1}", time, reason)
     });
 });
 
@@ -320,7 +318,7 @@ registerDispatcher(EventType.CLIENT_VIEW_MOVE, (data, handlerId) => {
     });
 });
 
-registerDispatcher(EventType.CLIENT_VIEW_MOVE_OWN_CHANNEL, findLogDispatcher(EventType.CLIENT_VIEW_MOVE));
+registerDispatcher(EventType.CLIENT_VIEW_MOVE_OWN_CHANNEL, findNotificationDispatcher(EventType.CLIENT_VIEW_MOVE));
 
 registerDispatcher(EventType.CLIENT_VIEW_MOVE_OWN, (data, handlerId) => {
     let message;
@@ -406,7 +404,7 @@ registerDispatcher(EventType.CLIENT_VIEW_LEAVE_OWN_CHANNEL, (data, handlerId) =>
             break;
 
         default:
-            return findLogDispatcher(EventType.CLIENT_VIEW_LEAVE)(data, handlerId, EventType.CLIENT_VIEW_LEAVE);
+            return findNotificationDispatcher("client.view.leave")(data, handlerId, EventType.CLIENT_VIEW_LEAVE);
     }
 
     spawnClientNotification(handlerId, data.client, {
@@ -482,19 +480,19 @@ registerDispatcher(EventType.PRIVATE_MESSAGE_RECEIVED, (data, handlerId) => {
 });
 
 registerDispatcher(EventType.WEBRTC_FATAL_ERROR, (data, handlerId) => {
-   if(data.retryTimeout) {
-       let time = Math.ceil(data.retryTimeout / 1000);
-       let minutes = Math.floor(time / 60);
-       let seconds = time % 60;
+    if(data.retryTimeout) {
+        let time = Math.ceil(data.retryTimeout / 1000);
+        let minutes = Math.floor(time / 60);
+        let seconds = time % 60;
 
-       spawnServerNotification(handlerId, {
-           body: tra("WebRTC connection closed due to a fatal error:\n{}\nRetry scheduled in {}.", data.message, (minutes > 0 ? minutes + "m" : "") + seconds + "s")
-       });
-   } else {
-       spawnServerNotification(handlerId, {
-           body: tra("WebRTC connection closed due to a fatal error:\n{}\nNo retry scheduled.", data.message)
-       });
-   }
+        spawnServerNotification(handlerId, {
+            body: tra("WebRTC connection closed due to a fatal error:\n{}\nRetry scheduled in {}.", data.message, (minutes > 0 ? minutes + "m" : "") + seconds + "s")
+        });
+    } else {
+        spawnServerNotification(handlerId, {
+            body: tra("WebRTC connection closed due to a fatal error:\n{}\nNo retry scheduled.", data.message)
+        });
+    }
 });
 
 /* snipped PRIVATE_MESSAGE_SEND */
@@ -509,14 +507,14 @@ loader.register_task(Stage.LOADED, {
 
         /* yeahr fuck safari */
         const promise = Notification.requestPermission(result => {
-            log.info(LogCategory.GENERAL, tr("Notification permission request (callback) resulted in %s"), result);
+            logInfo(LogCategory.GENERAL, tr("Notification permission request (callback) resulted in %s"), result);
         })
 
         if(typeof promise !== "undefined" && 'then' in promise) {
             promise.then(result => {
-                log.info(LogCategory.GENERAL, tr("Notification permission request resulted in %s"), result);
+                logInfo(LogCategory.GENERAL, tr("Notification permission request resulted in %s"), result);
             }).catch(error => {
-                log.warn(LogCategory.GENERAL, tr("Failed to execute notification permission request: %O"), error);
+                logInfo(LogCategory.GENERAL, tr("Failed to execute notification permission request: %O"), error);
             });
         }
     },

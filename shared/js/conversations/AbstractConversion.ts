@@ -59,7 +59,6 @@ export abstract class AbstractChat<Events extends AbstractConversationEvents> {
     protected errorMessage: string;
 
     private conversationMode: ChannelConversationMode;
-    protected crossChannelChatSupported: boolean = true;
 
     protected unreadTimestamp: number;
     protected unreadState: boolean = false;
@@ -338,6 +337,9 @@ export interface AbstractChatManagerEvents<ConversationType> {
     },
     notify_unread_count_changed: {
         unreadConversations: number
+    },
+    notify_cross_conversation_support_changed: {
+        crossConversationSupported: boolean
     }
 }
 
@@ -351,17 +353,22 @@ export abstract class AbstractChatManager<ManagerEvents extends AbstractChatMana
     private selectedConversation: ConversationType;
 
     private currentUnreadCount: number;
+    private crossConversationSupport: boolean;
+
     /* FIXME: Access modifier */
     public historyUiStates: {[id: string]: {
-            executingUIHistoryQuery: boolean,
-            historyErrorMessage: string | undefined,
-            historyRetryTimestamp: number
-        }} = {};
+        executingUIHistoryQuery: boolean,
+        historyErrorMessage: string | undefined,
+        historyRetryTimestamp: number
+    }} = {};
 
     protected constructor(connection: ConnectionHandler) {
+        this.connection = connection;
         this.events = new Registry<ManagerEvents>();
         this.listenerConnection = [];
         this.currentUnreadCount = 0;
+
+        this.crossConversationSupport = true;
 
         this.listenerUnreadTimestamp = () => {
             let count = this.getConversations().filter(conversation => conversation.isUnread()).length;
@@ -385,6 +392,10 @@ export abstract class AbstractChatManager<ManagerEvents extends AbstractChatMana
 
     getUnreadCount() : number {
         return this.currentUnreadCount;
+    }
+
+    hasCrossConversationSupport() : boolean {
+        return this.crossConversationSupport;
     }
 
     getSelectedConversation() : ConversationType {
@@ -431,5 +442,14 @@ export abstract class AbstractChatManager<ManagerEvents extends AbstractChatMana
         this.events.fire("notify_conversation_destroyed", { conversation: conversation });
 
         this.listenerUnreadTimestamp();
+    }
+
+    protected setCrossConversationSupport(supported: boolean) {
+        if(this.crossConversationSupport === supported) {
+            return;
+        }
+
+        this.crossConversationSupport = supported;
+        this.events.fire("notify_cross_conversation_support_changed", { crossConversationSupported: supported });
     }
 }

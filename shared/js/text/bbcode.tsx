@@ -5,6 +5,7 @@ import {parse as parseBBCode} from "vendor/xbbcode/parser";
 import {fixupJQueryUrlTags} from "tc-shared/text/bbcode/url";
 import {fixupJQueryImageTags} from "tc-shared/text/bbcode/image";
 import "./bbcode.scss";
+import {BBCodeHandlerContext} from "vendor/xbbcode/renderer/react";
 
 export const escapeBBCode = (text: string) => text.replace(/(\[)/g, "\\$1");
 
@@ -80,11 +81,23 @@ function preprocessMessage(message: string, settings: BBCodeRenderOptions) : str
     return message;
 }
 
-export const BBCodeRenderer = (props: { message: string, settings: BBCodeRenderOptions }) => (
-    <XBBCodeRenderer options={{ tag_whitelist: allowedBBCodes }} renderer={rendererReact}>
-        {preprocessMessage(props.message, props.settings)}
-    </XBBCodeRenderer>
-);
+export const BBCodeRenderer = (props: { message: string, settings: BBCodeRenderOptions, handlerId?: string }) => {
+    if(props.handlerId) {
+        return (
+            <BBCodeHandlerContext.Provider value={props.handlerId} key={"handler-id"}>
+                <XBBCodeRenderer options={{ tag_whitelist: allowedBBCodes }} renderer={rendererReact}>
+                    {preprocessMessage(props.message, props.settings)}
+                </XBBCodeRenderer>
+            </BBCodeHandlerContext.Provider>
+        );
+    } else {
+        return (
+            <XBBCodeRenderer options={{ tag_whitelist: allowedBBCodes }} renderer={rendererReact} key={"no-handler-id"}>
+                {preprocessMessage(props.message, props.settings)}
+            </XBBCodeRenderer>
+        );
+    }
+}
 
 
 export function renderBBCodeAsJQuery(message: string, settings: BBCodeRenderOptions) : JQuery[] {

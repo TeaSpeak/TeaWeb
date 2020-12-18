@@ -258,6 +258,8 @@ class ChannelTreeController {
         this.sendChannelInfo(event.newChannel);
         this.sendChannelStatusIcon(event.newChannel);
         this.sendChannelTreeEntries();
+
+        this.sendClientTalkStatus(event.client);
     }
 
     @EventHandler<ChannelTreeEvents>("notify_selected_entry_changed")

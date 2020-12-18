@@ -1,5 +1,4 @@
 import {ViewReasonId} from "tc-shared/ConnectionHandler";
-import {EventChannelData, EventClient, EventType, TypeInfo} from "tc-shared/ui/frames/log/Definitions";
 import * as React from "react";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {formatDate} from "tc-shared/MessageFormatter";
@@ -8,22 +7,23 @@ import {format_time} from "tc-shared/ui/frames/chat";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {XBBCodeRenderer} from "vendor/xbbcode/react";
 import {ChannelTag, ClientTag} from "tc-shared/ui/tree/EntryTags";
+import {EventChannelData, EventClient, EventType, TypeInfo} from "tc-shared/connectionlog/Definitions";
 
 const cssStyle = require("./DispatcherLog.scss");
 const cssStyleRenderer = require("./Renderer.scss");
 
-export type DispatcherLog<T extends keyof TypeInfo> = (data: TypeInfo[T], handlerId: string, eventType: T) => React.ReactNode;
+export type RendererEvent<T extends keyof TypeInfo> = (data: TypeInfo[T], handlerId: string, eventType: T) => React.ReactNode;
 
-const dispatchers: {[key: string]: DispatcherLog<any>} = { };
-function registerDispatcher<T extends keyof TypeInfo>(key: T, builder: DispatcherLog<T>) {
-    dispatchers[key] = builder;
+const dispatchers: {[T in keyof TypeInfo]?: RendererEvent<T>} = { };
+function registerRenderer<T extends keyof TypeInfo>(key: T, builder: RendererEvent<T>) {
+    dispatchers[key] = builder as any;
 }
 
-export function findLogDispatcher<T extends keyof TypeInfo>(type: T) : DispatcherLog<T> {
-    return dispatchers[type];
+export function findLogEventRenderer<T extends keyof TypeInfo>(type: T) : RendererEvent<T> {
+    return dispatchers[type] as any;
 }
 
-export function getRegisteredLogDispatchers() : TypeInfo[] {
+export function getRegisteredLogEventRenderer() : TypeInfo[] {
     return Object.keys(dispatchers) as any;
 }
 
@@ -46,66 +46,66 @@ const ChannelRenderer = (props: { channel: EventChannelData, handlerId: string, 
     />
 );
 
-registerDispatcher(EventType.ERROR_CUSTOM, data => <div className={cssStyleRenderer.errorMessage}>{data.message}</div>);
+registerRenderer(EventType.ERROR_CUSTOM, data => <div className={cssStyleRenderer.errorMessage}>{data.message}</div>);
 
-registerDispatcher(EventType.CONNECTION_BEGIN, data => (
+registerRenderer(EventType.CONNECTION_BEGIN, data => (
     <VariadicTranslatable text={"Connecting to {0}{1}"}>
         <>{data.address.server_hostname}</>
         <>{data.address.server_port == 9987 ? "" : (":" + data.address.server_port)}</>
     </VariadicTranslatable>
 ));
 
-registerDispatcher(EventType.CONNECTION_HOSTNAME_RESOLVE, () => (
+registerRenderer(EventType.CONNECTION_HOSTNAME_RESOLVE, () => (
     <Translatable>Resolving hostname</Translatable>
 ));
 
-registerDispatcher(EventType.CONNECTION_HOSTNAME_RESOLVED, data => (
+registerRenderer(EventType.CONNECTION_HOSTNAME_RESOLVED, data => (
     <VariadicTranslatable text={"Hostname resolved successfully to {0}:{1}"}>
         <>{data.address.server_hostname}</>
         <>{data.address.server_port}</>
     </VariadicTranslatable>
 ));
 
-registerDispatcher(EventType.CONNECTION_HOSTNAME_RESOLVE_ERROR, data => (
+registerRenderer(EventType.CONNECTION_HOSTNAME_RESOLVE_ERROR, data => (
     <VariadicTranslatable text={"Failed to resolve hostname. Connecting to given hostname. Error: {0}"}>
         <>{data.message}</>
     </VariadicTranslatable>
 ));
 
-registerDispatcher(EventType.CONNECTION_LOGIN, () => (
+registerRenderer(EventType.CONNECTION_LOGIN, () => (
     <Translatable>Logging in...</Translatable>
 ));
 
-registerDispatcher(EventType.CONNECTION_FAILED, () => (
+registerRenderer(EventType.CONNECTION_FAILED, () => (
     <Translatable>Connect failed.</Translatable>
 ));
 
-registerDispatcher(EventType.CONNECTION_CONNECTED, (data,handlerId) => (
+registerRenderer(EventType.CONNECTION_CONNECTED, (data,handlerId) => (
     <VariadicTranslatable text={"Connected as {0}"}>
         <ClientRenderer client={data.own_client} handlerId={handlerId} />
     </VariadicTranslatable>
 ));
 
-registerDispatcher(EventType.CONNECTION_VOICE_CONNECT, () => (
+registerRenderer(EventType.CONNECTION_VOICE_CONNECT, () => (
     <Translatable>Connecting voice bridge.</Translatable>
 ));
 
-registerDispatcher(EventType.CONNECTION_VOICE_CONNECT_SUCCEEDED, () => (
+registerRenderer(EventType.CONNECTION_VOICE_CONNECT_SUCCEEDED, () => (
     <Translatable>Voice bridge successfully connected.</Translatable>
 ));
 
-registerDispatcher(EventType.CONNECTION_VOICE_CONNECT_FAILED, (data) => (
+registerRenderer(EventType.CONNECTION_VOICE_CONNECT_FAILED, (data) => (
     <VariadicTranslatable text={"Failed to setup voice bridge: {0}. Allow reconnect: {1}"}>
         <>{data.reason}</>
         {data.reconnect_delay > 0 ? <Translatable>Yes</Translatable> : <Translatable>No</Translatable>}
     </VariadicTranslatable>
 ));
 
-registerDispatcher(EventType.CONNECTION_VOICE_DROPPED, () => (
+registerRenderer(EventType.CONNECTION_VOICE_DROPPED, () => (
     <Translatable>Voice bridge has been dropped. Trying to reconnect.</Translatable>
 ));
 
-registerDispatcher(EventType.ERROR_PERMISSION, data => (
+registerRenderer(EventType.ERROR_PERMISSION, data => (
     <div className={cssStyleRenderer.errorMessage}>
         <VariadicTranslatable text={"Insufficient client permissions. Failed on permission {0}"}>
             <>{data.permission ? data.permission.name : <Translatable>unknown</Translatable>}</>
@@ -113,7 +113,7 @@ registerDispatcher(EventType.ERROR_PERMISSION, data => (
     </div>
 ));
 
-registerDispatcher(EventType.CLIENT_VIEW_ENTER, (data, handlerId) => {
+registerRenderer(EventType.CLIENT_VIEW_ENTER, (data, handlerId) => {
     switch (data.reason) {
         case ViewReasonId.VREASON_USER_ACTION:
             if(data.channel_from) {
@@ -189,7 +189,7 @@ registerDispatcher(EventType.CLIENT_VIEW_ENTER, (data, handlerId) => {
     }
 });
 
-registerDispatcher(EventType.CLIENT_VIEW_ENTER_OWN_CHANNEL, (data, handlerId) => {
+registerRenderer(EventType.CLIENT_VIEW_ENTER_OWN_CHANNEL, (data, handlerId) => {
     switch (data.reason) {
         case ViewReasonId.VREASON_USER_ACTION:
             if(data.channel_from) {
@@ -265,7 +265,7 @@ registerDispatcher(EventType.CLIENT_VIEW_ENTER_OWN_CHANNEL, (data, handlerId) =>
     }
 });
 
-registerDispatcher(EventType.CLIENT_VIEW_MOVE, (data, handlerId) => {
+registerRenderer(EventType.CLIENT_VIEW_MOVE, (data, handlerId) => {
     switch (data.reason) {
         case ViewReasonId.VREASON_MOVED:
             return (
@@ -308,9 +308,9 @@ registerDispatcher(EventType.CLIENT_VIEW_MOVE, (data, handlerId) => {
     }
 });
 
-registerDispatcher(EventType.CLIENT_VIEW_MOVE_OWN_CHANNEL, findLogDispatcher(EventType.CLIENT_VIEW_MOVE));
+registerRenderer(EventType.CLIENT_VIEW_MOVE_OWN_CHANNEL, findLogEventRenderer(EventType.CLIENT_VIEW_MOVE));
 
-registerDispatcher(EventType.CLIENT_VIEW_MOVE_OWN, (data, handlerId) => {
+registerRenderer(EventType.CLIENT_VIEW_MOVE_OWN, (data, handlerId) => {
     switch (data.reason) {
         case ViewReasonId.VREASON_MOVED:
             return (
@@ -353,7 +353,7 @@ registerDispatcher(EventType.CLIENT_VIEW_MOVE_OWN, (data, handlerId) => {
     }
 });
 
-registerDispatcher(EventType.CLIENT_VIEW_LEAVE, (data, handlerId) => {
+registerRenderer(EventType.CLIENT_VIEW_LEAVE, (data, handlerId) => {
     switch (data.reason) {
         case ViewReasonId.VREASON_USER_ACTION:
             return (
@@ -434,7 +434,7 @@ registerDispatcher(EventType.CLIENT_VIEW_LEAVE, (data, handlerId) => {
     }
 });
 
-registerDispatcher(EventType.CLIENT_VIEW_LEAVE_OWN_CHANNEL, (data, handlerId) => {
+registerRenderer(EventType.CLIENT_VIEW_LEAVE_OWN_CHANNEL, (data, handlerId) => {
     switch (data.reason) {
         case ViewReasonId.VREASON_USER_ACTION:
             return (
@@ -456,24 +456,24 @@ registerDispatcher(EventType.CLIENT_VIEW_LEAVE_OWN_CHANNEL, (data, handlerId) =>
             );
 
         default:
-            return findLogDispatcher(EventType.CLIENT_VIEW_LEAVE)(data, handlerId, EventType.CLIENT_VIEW_LEAVE);
+            return findLogEventRenderer(EventType.CLIENT_VIEW_LEAVE)(data, handlerId, EventType.CLIENT_VIEW_LEAVE);
     }
 });
 
-registerDispatcher(EventType.SERVER_WELCOME_MESSAGE,data => (
-    <BBCodeRenderer message={"[color=green]" + data.message + "[/color]"} settings={{convertSingleUrls: false}} />
+registerRenderer(EventType.SERVER_WELCOME_MESSAGE,(data, handlerId) => (
+    <BBCodeRenderer message={"[color=green]" + data.message + "[/color]"} settings={{convertSingleUrls: false}} handlerId={handlerId} />
 ));
 
-registerDispatcher(EventType.SERVER_HOST_MESSAGE,data => (
-    <BBCodeRenderer message={"[color=green]" + data.message + "[/color]"} settings={{convertSingleUrls: false}} />
+registerRenderer(EventType.SERVER_HOST_MESSAGE,(data, handlerId) => (
+    <BBCodeRenderer message={"[color=green]" + data.message + "[/color]"} settings={{convertSingleUrls: false}} handlerId={handlerId} />
 ));
 
-registerDispatcher(EventType.SERVER_HOST_MESSAGE_DISCONNECT,data => (
-    <BBCodeRenderer message={"[color=red]" + data.message + "[/color]"} settings={{convertSingleUrls: false}} />
+registerRenderer(EventType.SERVER_HOST_MESSAGE_DISCONNECT,(data, handlerId) => (
+    <BBCodeRenderer message={"[color=red]" + data.message + "[/color]"} settings={{convertSingleUrls: false}} handlerId={handlerId} />
 ));
 
 
-registerDispatcher(EventType.CLIENT_NICKNAME_CHANGED,(data, handlerId) => (
+registerRenderer(EventType.CLIENT_NICKNAME_CHANGED,(data, handlerId) => (
     <VariadicTranslatable text={"{0} changed his nickname from \"{1}\" to \"{2}\""}>
         <ClientRenderer client={data.client} handlerId={handlerId} />
         <>{data.old_name}</>
@@ -481,44 +481,44 @@ registerDispatcher(EventType.CLIENT_NICKNAME_CHANGED,(data, handlerId) => (
     </VariadicTranslatable>
 ));
 
-registerDispatcher(EventType.CLIENT_NICKNAME_CHANGED_OWN,() => (
+registerRenderer(EventType.CLIENT_NICKNAME_CHANGED_OWN,() => (
     <Translatable>Nickname successfully changed.</Translatable>
 ));
 
-registerDispatcher(EventType.CLIENT_NICKNAME_CHANGE_FAILED,(data) => (
+registerRenderer(EventType.CLIENT_NICKNAME_CHANGE_FAILED,(data) => (
     <VariadicTranslatable text={"Failed to change nickname: {0}"}>
         <>{data.reason}</>
     </VariadicTranslatable>
 ));
 
-registerDispatcher(EventType.GLOBAL_MESSAGE, (data, handlerId) => <>
+registerRenderer(EventType.GLOBAL_MESSAGE, (data, handlerId) => <>
     <VariadicTranslatable text={"{} send a server message: {1}"}>
         <ClientRenderer client={data.sender} handlerId={handlerId} />
-        <XBBCodeRenderer>{data.message}</XBBCodeRenderer>
+        <BBCodeRenderer settings={{ convertSingleUrls: false }} message={data.message} handlerId={handlerId} />
     </VariadicTranslatable>
 </>);
 
 
-registerDispatcher(EventType.DISCONNECTED,() => (
+registerRenderer(EventType.DISCONNECTED,() => (
     <Translatable>Disconnected from server</Translatable>
 ));
 
-registerDispatcher(EventType.RECONNECT_SCHEDULED,data => (
+registerRenderer(EventType.RECONNECT_SCHEDULED,data => (
     <VariadicTranslatable text={"Reconnecting in {0}."}>
         <>{format_time(data.timeout, tr("now"))}</>
     </VariadicTranslatable>
 ));
 
-registerDispatcher(EventType.RECONNECT_CANCELED,() => (
+registerRenderer(EventType.RECONNECT_CANCELED,() => (
     <Translatable>Reconnect canceled.</Translatable>
 ));
 
-registerDispatcher(EventType.RECONNECT_CANCELED,() => (
+registerRenderer(EventType.RECONNECT_CANCELED,() => (
     <Translatable>Reconnecting...</Translatable>
 ));
 
 
-registerDispatcher(EventType.SERVER_BANNED,(data, handlerId) => {
+registerRenderer(EventType.SERVER_BANNED,(data, handlerId) => {
     const time = data.time === 0 ? <Translatable>ever</Translatable> : <>{format_time(data.time * 1000, tr("one second"))}</>;
     const reason = data.message ? <> <Translatable>Reason:</Translatable>&nbsp;{data.message}</> : undefined;
 
@@ -544,11 +544,11 @@ registerDispatcher(EventType.SERVER_BANNED,(data, handlerId) => {
         );
 });
 
-registerDispatcher(EventType.SERVER_REQUIRES_PASSWORD,() => (
+registerRenderer(EventType.SERVER_REQUIRES_PASSWORD,() => (
     <Translatable>Server requires a password to connect.</Translatable>
 ));
 
-registerDispatcher(EventType.SERVER_CLOSED,data => {
+registerRenderer(EventType.SERVER_CLOSED,data => {
     if(data.message)
         return (
             <VariadicTranslatable text={"Server has been closed ({})."}>
@@ -558,7 +558,7 @@ registerDispatcher(EventType.SERVER_CLOSED,data => {
     return <Translatable>Server has been closed.</Translatable>;
 });
 
-registerDispatcher(EventType.CONNECTION_COMMAND_ERROR,data => {
+registerRenderer(EventType.CONNECTION_COMMAND_ERROR,data => {
     let message;
     if(typeof data.error === "string")
         message = data.error;
@@ -576,7 +576,7 @@ registerDispatcher(EventType.CONNECTION_COMMAND_ERROR,data => {
     )
 });
 
-registerDispatcher(EventType.CHANNEL_CREATE,(data, handlerId) => {
+registerRenderer(EventType.CHANNEL_CREATE,(data, handlerId) => {
     if(data.ownAction) {
         return (
             <VariadicTranslatable text={"Channel {} has been created."}>
@@ -593,13 +593,13 @@ registerDispatcher(EventType.CHANNEL_CREATE,(data, handlerId) => {
     }
 });
 
-registerDispatcher("channel.show",(data, handlerId) => (
+registerRenderer("channel.show",(data, handlerId) => (
     <VariadicTranslatable text={"Channel {} has appeared."}>
         <ChannelRenderer channel={data.channel} handlerId={handlerId} />
     </VariadicTranslatable>
 ));
 
-registerDispatcher(EventType.CHANNEL_DELETE,(data, handlerId) => {
+registerRenderer(EventType.CHANNEL_DELETE,(data, handlerId) => {
     if(data.ownAction) {
         return (
             <VariadicTranslatable text={"Channel {} has been deleted."}>
@@ -616,24 +616,24 @@ registerDispatcher(EventType.CHANNEL_DELETE,(data, handlerId) => {
     }
 });
 
-registerDispatcher("channel.hide",(data, handlerId) => (
+registerRenderer("channel.hide",(data, handlerId) => (
     <VariadicTranslatable text={"Channel {} has disappeared."}>
         <ChannelRenderer channel={data.channel} handlerId={handlerId} />
     </VariadicTranslatable>
 ));
 
-registerDispatcher(EventType.CLIENT_POKE_SEND,(data, handlerId) => (
+registerRenderer(EventType.CLIENT_POKE_SEND,(data, handlerId) => (
     <VariadicTranslatable text={"You poked {}."}>
         <ClientRenderer client={data.target} handlerId={handlerId} />
     </VariadicTranslatable>
 ));
 
-registerDispatcher(EventType.CLIENT_POKE_RECEIVED,(data, handlerId) => {
+registerRenderer(EventType.CLIENT_POKE_RECEIVED,(data, handlerId) => {
     if(data.message) {
         return (
             <VariadicTranslatable text={"You received a poke from {}: {}"}>
                 <ClientRenderer client={data.sender} handlerId={handlerId} />
-                <BBCodeRenderer message={data.message} settings={{ convertSingleUrls: false }} />
+                <BBCodeRenderer message={data.message} settings={{ convertSingleUrls: false }} handlerId={handlerId} />
             </VariadicTranslatable>
         );
     } else {
@@ -645,10 +645,10 @@ registerDispatcher(EventType.CLIENT_POKE_RECEIVED,(data, handlerId) => {
     }
 });
 
-registerDispatcher(EventType.PRIVATE_MESSAGE_RECEIVED, () => undefined);
-registerDispatcher(EventType.PRIVATE_MESSAGE_SEND, () => undefined);
+registerRenderer(EventType.PRIVATE_MESSAGE_RECEIVED, () => undefined);
+registerRenderer(EventType.PRIVATE_MESSAGE_SEND, () => undefined);
 
-registerDispatcher(EventType.WEBRTC_FATAL_ERROR, (data) => {
+registerRenderer(EventType.WEBRTC_FATAL_ERROR, (data) => {
     if(data.retryTimeout) {
         let time = Math.ceil(data.retryTimeout / 1000);
         let minutes = Math.floor(time / 60);
