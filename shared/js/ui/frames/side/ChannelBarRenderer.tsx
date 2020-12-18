@@ -5,6 +5,7 @@ import * as React from "react";
 import {ConversationPanel} from "tc-shared/ui/frames/side/AbstractConversationRenderer";
 import {useDependentState} from "tc-shared/ui/react-elements/Helper";
 import {ChannelDescriptionRenderer} from "tc-shared/ui/frames/side/ChannelDescriptionRenderer";
+import {ChannelFileBrowser} from "tc-shared/ui/frames/side/ChannelFileBrowserRenderer";
 
 const EventContext = React.createContext<Registry<ChannelBarUiEvents>>(undefined);
 const ChannelContext = React.createContext<{ channelId: number, handlerId: string }>(undefined);
@@ -37,8 +38,7 @@ const ModeRenderer = () => {
             return <ModeRendererDescription key={"description"} />;
 
         case "file-transfer":
-            /* TODO! */
-            return null;
+            return <ModeRendererFileTransfer key={"file"} />;
 
         case "none":
         default:
@@ -69,6 +69,16 @@ const ModeRendererDescription = React.memo(() => {
 
     return (
         <ChannelDescriptionRenderer events={data.events} />
+    );
+});
+
+const ModeRendererFileTransfer = React.memo(() => {
+    const channelContext = useContext(ChannelContext);
+    const data = useModeData("file-transfer", [ channelContext ]);
+    if(!data) { return null; }
+
+    return (
+        <ChannelFileBrowser events={data.events} />
     );
 });
 

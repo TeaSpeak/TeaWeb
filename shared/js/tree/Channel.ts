@@ -202,6 +202,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         this.channelTree = channelTree;
         this.events = new Registry<ChannelEvents>();
 
+        this.subscribed = false;
         this.properties = new ChannelProperties();
         this.channelId = channelId;
         this.properties.channel_name = channelName;
@@ -712,6 +713,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     cached_password() { return this.cachedPasswordHash; }
 
     async updateSubscribeMode() {
+        console.error("Update subscribe mode");
         let shouldBeSubscribed = false;
         switch (this.subscriptionMode) {
             case ChannelSubscribeMode.INHERITED:

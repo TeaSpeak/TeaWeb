@@ -1,5 +1,5 @@
 import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
-import {useEffect, useRef, useState} from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import {FileType} from "tc-shared/file/FileManager";
 import * as ppt from "tc-backend/ppt";
 import {SpecialKey} from "tc-shared/PPTListener";
@@ -12,21 +12,42 @@ import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import * as Moment from "moment";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 import {BoxedInputField} from "tc-shared/ui/react-elements/InputField";
+import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
+import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
+import React = require("react");
 import {
     FileBrowserEvents,
     FileTransferUrlMediaType,
     ListedFileInfo,
     TransferStatus
-} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
-import React = require("react");
+} from "tc-shared/ui/modal/transfer/FileDefinitions";
+import {joinClassList} from "tc-shared/ui/react-elements/Helper";
 
-const cssStyle = require("./ModalFileTransfer.scss");
+export interface FileBrowserRendererClasses {
+    navigation?: {
+        boxedInput?: string
+    },
+    fileTable?: {
+        table?: string,
+        header?: string,
+        body?: string
+    },
+    fileEntry?: {
+        entry?: string,
+        selected?: string,
+        dropHovered?: string
+    }
+}
+
+const EventsContext = React.createContext<Registry<FileBrowserEvents>>(undefined);
+const CustomClassContext = React.createContext<FileBrowserRendererClasses>(undefined);
+export const FileBrowserClassContext = CustomClassContext;
+
+const cssStyle = require("./FileBrowserRenderer.scss");
 
 interface NavigationBarProperties {
-    currentPath: string;
+    initialPath: string;
     events: Registry<FileBrowserEvents>;
 }
 
@@ -36,9 +57,11 @@ interface NavigationBarState {
     state: "editing" | "navigating" | "normal";
 }
 
-const ArrowRight = () => <div className={cssStyle.arrow}>
-    <div className={cssStyle.inner}/>
-</div>;
+const ArrowRight = () => (
+    <div className={cssStyle.arrow}>
+        <div className={cssStyle.inner}/>
+    </div>
+);
 
 const NavigationEntry = (props: { events: Registry<FileBrowserEvents>, path: string, name: string }) => {
     const [dragHovered, setDragHovered] = useState(false);
@@ -56,11 +79,15 @@ const NavigationEntry = (props: { events: Registry<FileBrowserEvents>, path: str
         <a
             className={(props.name.length > 9 ? cssStyle.pathShrink : "") + " " + (dragHovered ? cssStyle.hovered : "")}
             title={props.name}
-            onClick={() => props.events.fire("action_navigate_to", {path: props.path})}
+            onClick={event => {
+                event.preventDefault();
+                props.events.fire("action_navigate_to", {path: props.path});
+            }}
             onDragOver={event => {
                 const types = event.dataTransfer.types;
-                if (types.length !== 1)
+                if (types.length !== 1) {
                     return;
+                }
 
                 if (types[0] === FileTransferUrlMediaType) {
                     /* TODO: Detect if its remote move or internal move */
@@ -77,8 +104,9 @@ const NavigationEntry = (props: { events: Registry<FileBrowserEvents>, path: str
             onDragLeave={() => setDragHovered(false)}
             onDrop={event => {
                 const types = event.dataTransfer.types;
-                if (types.length !== 1)
+                if (types.length !== 1) {
                     return;
+                }
 
                 /* TODO: Fix this code duplicate! */
                 if (types[0] === FileTransferUrlMediaType) {
@@ -121,7 +149,7 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
 
     protected defaultState(): NavigationBarState {
         return {
-            currentPath: this.props.currentPath,
+            currentPath: this.props.initialPath,
             state: "normal",
         }
     }
@@ -134,67 +162,81 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
 
         if (this.state.state === "editing") {
             input = (
-                <BoxedInputField key={"nav-editing"}
-                                 ref={this.refInput}
-                                 defaultValue={path}
-                                 leftIcon={() =>
-                                     <div key={"left-icon"}
-                                          className={cssStyle.directoryIcon + " " + cssStyle.containerIcon}>
-                                         <div className={"icon_em client-file_home"}/>
-                                     </div>
-                                 }
+                <CustomClassContext.Consumer>
+                    {customClasses => (
+                        <BoxedInputField key={"nav-editing"}
+                                         ref={this.refInput}
+                                         defaultValue={path}
+                                         leftIcon={() =>
+                                             <div key={"left-icon"}
+                                                  className={cssStyle.directoryIcon + " " + cssStyle.containerIcon}>
+                                                 <div className={"icon_em client-file_home"}/>
+                                             </div>
+                                         }
 
-                                 rightIcon={() =>
-                                     <div key={"right-icon"}
-                                          className={cssStyle.refreshIcon + " " + cssStyle.containerIcon}>
-                                         <div className={"icon_em client-refresh"}/>
-                                     </div>
-                                 }
+                                         rightIcon={() =>
+                                             <div key={"right-icon"}
+                                                  className={cssStyle.refreshIcon + " " + cssStyle.containerIcon}>
+                                                 <div className={"icon_em client-refresh"}/>
+                                             </div>
+                                         }
 
-                                 onChange={path => this.onPathEntered(path)}
-                                 onBlur={() => this.onInputPathBluer()}
-                />
+                                         onChange={path => this.onPathEntered(path)}
+                                         onBlur={() => this.onInputPathBluer()}
+                                         className={customClasses?.navigation?.boxedInput}
+                        />
+                    )}
+                </CustomClassContext.Consumer>
             );
         } else if (this.state.state === "navigating" || this.state.state === "normal") {
             input = (
-                <BoxedInputField key={"nav-rendered"}
-                                 ref={this.refInput}
-                                 leftIcon={() =>
-                                     <div key={"left-icon"}
-                                          className={cssStyle.directoryIcon + " " + cssStyle.containerIcon}
-                                          onClick={event => this.onPathClicked(event, -1)}>
-                                         <div className={"icon_em client-file_home"}/>
-                                     </div>
-                                 }
+                <CustomClassContext.Consumer>
+                    {customClasses => (
+                        <BoxedInputField key={"nav-rendered"}
+                                         ref={this.refInput}
+                                         leftIcon={() =>
+                                             <div key={"left-icon"}
+                                                  className={cssStyle.directoryIcon + " " + cssStyle.containerIcon}
+                                                  onClick={event => this.onPathClicked(event, -1)}>
+                                                 <div className={"icon_em client-file_home"}/>
+                                             </div>
+                                         }
 
-                                 rightIcon={() =>
-                                     <div
-                                         key={"right-icon"}
-                                         className={cssStyle.refreshIcon + " " + (this.state.state === "normal" ? cssStyle.enabled : "") + " " + cssStyle.containerIcon}
-                                         onClick={() => this.onButtonRefreshClicked()}>
-                                         <div className={"icon_em client-refresh"}/>
-                                     </div>
-                                 }
+                                         rightIcon={() =>
+                                             <div
+                                                 key={"right-icon"}
+                                                 className={cssStyle.refreshIcon + " " + (this.state.state === "normal" ? cssStyle.enabled : "") + " " + cssStyle.containerIcon}
+                                                 onClick={() => this.onButtonRefreshClicked()}>
+                                                 <div className={"icon_em client-refresh"}/>
+                                             </div>
+                                         }
 
-                                 inputBox={() =>
-                                     <div key={"custom-input"} className={cssStyle.containerPath}
-                                          ref={this.refRendered}>
-                                         {this.state.currentPath.split("/").filter(e => !!e).map((e, index, arr) => [
-                                             <ArrowRight key={"arrow-right-" + index + "-" + e}/>,
-                                             <NavigationEntry key={"de-" + index + "-" + e}
-                                                              path={"/" + arr.slice(0, index + 1).join("/") + "/"}
-                                                              name={e} events={this.props.events}/>
-                                         ])}
-                                     </div>
-                                 }
+                                         inputBox={() =>
+                                             <div key={"custom-input"} className={cssStyle.containerPath}
+                                                  ref={this.refRendered}>
+                                                 {this.state.currentPath.split("/").filter(e => !!e).map((e, index, arr) => [
+                                                     <ArrowRight key={"arrow-right-" + index + "-" + e}/>,
+                                                     <NavigationEntry key={"de-" + index + "-" + e}
+                                                                      path={"/" + arr.slice(0, index + 1).join("/") + "/"}
+                                                                      name={e} events={this.props.events}/>
+                                                 ])}
+                                             </div>
+                                         }
 
-                                 editable={this.state.state === "normal"}
-                                 onFocus={() => this.onRenderedPathClicked()}
-                />
+                                         editable={this.state.state === "normal"}
+                                         onFocus={event => !event.defaultPrevented && this.onRenderedPathClicked()}
+                                         className={customClasses?.navigation?.boxedInput}
+                        />
+                    )}
+                </CustomClassContext.Consumer>
             );
         }
 
-        return <div className={cssStyle.navigation}>{input}</div>;
+        return (
+            <div className={cssStyle.navigation}>
+                {input}
+            </div>
+        );
     }
 
     componentDidUpdate(prevProps: Readonly<NavigationBarProperties>, prevState: Readonly<NavigationBarState>, snapshot?: any): void {
@@ -216,8 +258,9 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
     }
 
     private onRenderedPathClicked() {
-        if (this.state.state !== "normal")
+        if (this.state.state !== "normal") {
             return;
+        }
 
         this.setState({
             state: "editing"
@@ -234,8 +277,9 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
     }
 
     private onPathEntered(newPath: string) {
-        if (newPath === this.state.currentPath)
+        if (newPath === this.state.currentPath) {
             return;
+        }
 
         this.ignoreBlur = true;
         this.props.events.fire("action_navigate_to", {path: newPath});
@@ -258,10 +302,11 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
         }, () => this.ignoreBlur = false);
     }
 
-    @EventHandler<FileBrowserEvents>("action_navigate_to_result")
-    private handleNavigateResult(event: FileBrowserEvents["action_navigate_to_result"]) {
-        if (event.status === "success")
+    @EventHandler<FileBrowserEvents>("notify_current_path")
+    private handleCurrentPath(event: FileBrowserEvents["notify_current_path"]) {
+        if (event.status === "success") {
             this.lastSucceededPath = event.path;
+        }
 
         this.setState({
             state: "normal",
@@ -279,7 +324,7 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
 }
 
 interface FileListTableProperties {
-    currentPath: string;
+    initialPath: string;
     events: Registry<FileBrowserEvents>;
 }
 
@@ -288,7 +333,8 @@ interface FileListTableState {
     errorMessage?: string;
 }
 
-const FileName = (props: { path: string, events: Registry<FileBrowserEvents>, file: ListedFileInfo }) => {
+const FileName = (props: { path: string, file: ListedFileInfo }) => {
+    const events = useContext(EventsContext);
     const [editing, setEditing] = useState(props.file.mode === "create");
     const [fileName, setFileName] = useState(props.file.name);
     const refInput = useRef<HTMLInputElement>();
@@ -333,7 +379,7 @@ const FileName = (props: { path: string, events: Registry<FileBrowserEvents>, fi
                 if (props.file.mode === "create") {
                     name = name || props.file.name;
 
-                    props.events.fire("action_create_directory", {
+                    events.fire("action_create_directory", {
                         path: props.path,
                         name: name
                     });
@@ -342,7 +388,7 @@ const FileName = (props: { path: string, events: Registry<FileBrowserEvents>, fi
                     props.file.mode = "creating";
                 } else {
                     if (name.length > 0 && name !== props.file.name) {
-                        props.events.fire("action_rename_file", {
+                        events.fire("action_rename_file", {
                             oldName: props.file.name,
                             newName: name,
                             oldPath: props.path,
@@ -381,19 +427,19 @@ const FileName = (props: { path: string, events: Registry<FileBrowserEvents>, fi
                 return;
 
             event.stopPropagation();
-            props.events.fire("action_select_files", {
+            events.fire("action_select_files", {
                 mode: "exclusive",
                 files: [{name: props.file.name, type: props.file.type}]
             });
-            props.events.fire("action_start_rename", {
+            events.fire("action_start_rename", {
                 path: props.path,
                 name: props.file.name
             });
         }}>{fileName}</a>;
     }
 
-    props.events.reactUse("action_start_rename", event => setEditing(event.name === props.file.name && event.path === props.path));
-    props.events.reactUse("action_rename_file_result", event => {
+    events.reactUse("action_start_rename", event => setEditing(event.name === props.file.name && event.path === props.path));
+    events.reactUse("action_rename_file_result", event => {
         if (event.oldPath !== props.path || event.oldName !== props.file.name)
             return;
 
@@ -418,10 +464,11 @@ const FileName = (props: { path: string, events: Registry<FileBrowserEvents>, fi
     return <>{icon} {name}</>;
 };
 
-const FileSize = (props: { path: string, events: Registry<FileBrowserEvents>, file: ListedFileInfo }) => {
+const FileSize = (props: { path: string, file: ListedFileInfo }) => {
+    const events = useContext(EventsContext);
     const [size, setSize] = useState(-1);
 
-    props.events.reactUse("notify_transfer_status", event => {
+    events.reactUse("notify_transfer_status", event => {
         if (event.id !== props.file.transfer?.id)
             return;
 
@@ -440,7 +487,7 @@ const FileSize = (props: { path: string, events: Registry<FileBrowserEvents>, fi
         }
     });
 
-    props.events.reactUse("notify_transfer_progress", event => {
+    events.reactUse("notify_transfer_progress", event => {
         if (event.id !== props.file.transfer?.id)
             return;
 
@@ -450,13 +497,23 @@ const FileSize = (props: { path: string, events: Registry<FileBrowserEvents>, fi
         setSize(event.fileSize);
     });
 
-    if (size < 0 && (props.file.size < 0 || typeof props.file.size === "undefined"))
-        return <a key={"size-invalid"}><Translatable>unknown</Translatable></a>;
-    return <a key={"size"}>{network.format_bytes(size >= 0 ? size : props.file.size, {
-        unit: "B",
-        time: "",
-        exact: false
-    })}</a>;
+    if (size < 0 && (props.file.size < 0 || typeof props.file.size === "undefined")) {
+        return (
+            <a key={"size-invalid"}>
+                <Translatable>unknown</Translatable>
+            </a>
+        );
+    }
+
+    return (
+        <a key={"size"}>
+            {network.format_bytes(size >= 0 ? size : props.file.size, {
+                unit: "B",
+                time: "",
+                exact: false
+            })}
+        </a>
+    );
 };
 
 const FileTransferIndicator = (props: { file: ListedFileInfo, events: Registry<FileBrowserEvents> }) => {
@@ -520,6 +577,7 @@ const FileTransferIndicator = (props: { file: ListedFileInfo, events: Registry<F
             color = cssStyle.hidden;
             break;
     }
+
     return (
         <div className={cssStyle.indicator + " " + color} style={{right: ((1 - transferProgress) * 100) + "%"}}>
             <div className={cssStyle.status}/>
@@ -532,18 +590,21 @@ const FileListEntry = (props: { row: TableRow<ListedFileInfo>, columns: TableCol
     const [hidden, setHidden] = useState(false);
     const [selected, setSelected] = useState(false);
     const [dropHovered, setDropHovered] = useState(false);
+    const customClasses = useContext(CustomClassContext);
 
     const onDoubleClicked = () => {
         if (file.type === FileType.DIRECTORY) {
-            if (file.mode === "creating" || file.mode === "create")
+            if (file.mode === "creating" || file.mode === "create") {
                 return;
+            }
 
             props.events.fire("action_navigate_to", {
                 path: file.path + file.name + "/"
             });
         } else {
-            if (file.mode === "uploading" || file.virtual)
+            if (file.mode === "uploading" || file.virtual) {
                 return;
+            }
 
             props.events.fire("action_start_download", {
                 files: [{
@@ -577,12 +638,19 @@ const FileListEntry = (props: { row: TableRow<ListedFileInfo>, columns: TableCol
         });
     }, !hidden);
 
-    if (hidden)
+    if (hidden) {
         return null;
+    }
+
+    const elementClassList = joinClassList(
+        cssStyle.directoryEntry, customClasses?.fileEntry?.entry,
+        selected && cssStyle.selected, selected && customClasses?.fileEntry?.selected,
+        dropHovered && cssStyle.hovered, dropHovered && customClasses?.fileEntry?.dropHovered
+    );
 
     return (
         <TableRowElement
-            className={cssStyle.directoryEntry + " " + (selected ? cssStyle.selected : "") + " " + (dropHovered ? cssStyle.hovered : "")}
+            className={elementClassList}
             rowData={props.row}
             columns={props.columns}
             onDoubleClick={onDoubleClicked}
@@ -655,8 +723,257 @@ const FileListEntry = (props: { row: TableRow<ListedFileInfo>, columns: TableCol
     );
 };
 
+type FileListState = {
+    state: "querying" | "invalid-password"
+} | {
+    state: "no-permissions",
+    failedPermission: string
+} | {
+    state: "error",
+    reason: string
+} | {
+    state: "normal",
+    files: ListedFileInfo[]
+};
+
+
+function fileTableHeaderContextMenu(event: React.MouseEvent, table: Table | undefined) {
+    event.preventDefault();
+
+    if(!table) {
+        return;
+    }
+
+    spawn_context_menu(event.pageX, event.pageY, {
+        type: MenuEntryType.CHECKBOX,
+        name: tr("Size"),
+        checkbox_checked: table.state.hiddenColumns.findIndex(e => e === "size") === -1,
+        callback: () => {
+            table.state.hiddenColumns.toggle("size");
+            table.forceUpdate();
+        }
+    }, {
+        type: MenuEntryType.CHECKBOX,
+        name: tr("Type"),
+        checkbox_checked: table.state.hiddenColumns.findIndex(e => e === "type") === -1,
+        callback: () => {
+            table.state.hiddenColumns.toggle("type");
+            table.forceUpdate();
+        }
+    }, {
+        type: MenuEntryType.CHECKBOX,
+        name: tr("Last changed"),
+        checkbox_checked: table.state.hiddenColumns.findIndex(e => e === "change-date") === -1,
+        callback: () => {
+            table.state.hiddenColumns.toggle("change-date");
+            table.forceUpdate();
+        }
+    })
+}
+
+// const FileListRenderer = React.memo((props: { path: string }) => {
+//     const events = useContext(EventsContext);
+//     const customClasses = useContext(CustomClassContext);
+//
+//     const refTable = useRef<Table>();
+//
+//     const [ state, setState ] = useState<FileListState>(() => {
+//         events.fire("query_files", { path: props.path });
+//         return { state: "querying" };
+//     });
+//
+//     events.reactUse("query_files", event => {
+//         if(event.path === props.path) {
+//             setState({ state: "querying" });
+//         }
+//     });
+//
+//     events.reactUse("query_files_result", event => {
+//         if(event.path !== props.path) {
+//             return;
+//         }
+//
+//         switch(event.status) {
+//             case "no-permissions":
+//                 setState({ state: "no-permissions", failedPermission: event.error });
+//                 break;
+//
+//             case "error":
+//                 setState({ state: "error", reason: event.error });
+//                 break;
+//
+//             case "success":
+//                 setState({ state: "normal", files: event.files });
+//                 break;
+//
+//             case "invalid-password":
+//                 setState({ state: "invalid-password" });
+//                 break;
+//
+//             case "timeout":
+//                 setState({ state: "error", reason: tr("query timeout") });
+//                 break;
+//
+//             default:
+//                 setState({ state: "error", reason: tra("invalid query result state {}", event.status) });
+//                 break;
+//         }
+//     });
+//
+//     let rows: TableRow[] = [];
+//     let overlay;
+//
+//     switch (state.state) {
+//         case "querying":
+//             overlay = () => (
+//                 <div key={"loading"} className={cssStyle.overlay}>
+//                     <a><Translatable>loading</Translatable><LoadingDots maxDots={3}/></a>
+//                 </div>
+//             );
+//             break;
+//
+//         case "error":
+//             overlay = () => (
+//                 <div key={"query-error"} className={cssStyle.overlay + " " + cssStyle.overlayError}>
+//                     <a><Translatable>Failed to query directory:</Translatable><br/>{state.reason}</a>
+//                 </div>
+//             );
+//             break;
+//
+//         case "no-permissions":
+//             overlay = () => (
+//                 <div key={"no-permissions"} className={cssStyle.overlay + " " + cssStyle.overlayError}>
+//                     <a><Translatable>Directory query failed on permission</Translatable><br/>{state.failedPermission}
+//                     </a>
+//                 </div>
+//             );
+//             break;
+//
+//         case "invalid-password":
+//             /* TODO: Allow the user to enter a password */
+//             overlay = () => (
+//                 <div key={"invalid-password"} className={cssStyle.overlay + " " + cssStyle.overlayError}>
+//                     <a><Translatable>Directory query failed because it is password protected</Translatable></a>
+//                 </div>
+//             );
+//             break;
+//
+//         case "normal":
+//             if(state.files.length === 0) {
+//                 overlay = () => (
+//                     <div key={"no-files"} className={cssStyle.overlayEmptyFolder}>
+//                         <a><Translatable>This folder is empty.</Translatable></a>
+//                     </div>
+//                 );
+//             } else {
+//                 const directories = state.files.filter(e => e.type === FileType.DIRECTORY);
+//                 const files = state.files.filter(e => e.type === FileType.FILE);
+//
+//                 for (const directory of directories.sort((a, b) => a.name > b.name ? 1 : -1)) {
+//                     rows.push({
+//                         columns: {
+//                             "name": () => <FileName path={props.path} file={directory}/>,
+//                             "type": () => <a key={"type"}><Translatable>Directory</Translatable></a>,
+//                             "change-date": () => directory.datetime ?
+//                                 <a>{Moment(directory.datetime).format("DD/MM/YYYY HH:mm")}</a> : undefined
+//                         },
+//                         className: cssStyle.directoryEntry,
+//                         userData: directory
+//                     });
+//                 }
+//
+//                 for (const file of files.sort((a, b) => a.name > b.name ? 1 : -1)) {
+//                     rows.push({
+//                         columns: {
+//                             "name": () => <FileName path={props.path} file={file}/>,
+//                             "size": () => <FileSize path={props.path} file={file}/>,
+//                             "type": () => <a key={"type"}><Translatable>File</Translatable></a>,
+//                             "change-date": () => file.datetime ?
+//                                 <a key={"date"}>{Moment(file.datetime).format("DD/MM/YYYY HH:mm")}</a> :
+//                                 undefined
+//                         },
+//                         className: cssStyle.directoryEntry,
+//                         userData: file
+//                     });
+//                 }
+//             }
+//             break;
+//     }
+//
+//     return (
+//         <Table
+//             ref={refTable}
+//             className={joinClassList(cssStyle.fileTable, customClasses?.fileTable?.table)}
+//             bodyClassName={joinClassList(cssStyle.body, customClasses?.fileTable?.body)}
+//             headerClassName={joinClassList(cssStyle.header, customClasses?.fileTable?.header)}
+//             columns={[
+//                 {
+//                     name: "name", header: () => [
+//                         <a key={"name-name"}><Translatable>Name</Translatable></a>,
+//                         <div key={"seperator-name"} className={cssStyle.separator}/>
+//                     ], width: 80, className: cssStyle.columnName
+//                 },
+//                 {
+//                     name: "type", header: () => [
+//                         <a key={"name-type"}><Translatable>Type</Translatable></a>,
+//                         <div key={"seperator-type"} className={cssStyle.separator}/>
+//                     ], fixedWidth: "8em", className: cssStyle.columnType
+//                 },
+//                 {
+//                     name: "size", header: () => [
+//                         <a key={"name-size"}><Translatable>Size</Translatable></a>,
+//                         <div key={"seperator-size"} className={cssStyle.separator}/>
+//                     ], fixedWidth: "8em", className: cssStyle.columnSize
+//                 },
+//                 {
+//                     name: "change-date", header: () => [
+//                         <a key={"name-date"}><Translatable>Last changed</Translatable></a>,
+//                         <div key={"seperator-date"} className={cssStyle.separator}/>
+//                     ], fixedWidth: "8em", className: cssStyle.columnChanged
+//                 },
+//             ]}
+//             rows={rows}
+//
+//             bodyOverlayOnly={rows.length === 0}
+//             bodyOverlay={overlay}
+//
+//             hiddenColumns={["type"]}
+//
+//             onHeaderContextMenu={e => fileTableHeaderContextMenu(e, refTable.current)}
+//             onBodyContextMenu={event => {
+//                 event.preventDefault();
+//                 events.fire("action_select_files", { mode: "exclusive", files: [] });
+//                 events.fire("action_selection_context_menu", { pageY: event.pageY, pageX: event.pageX });
+//             }}
+//             onDrop={e => this.onDrop(e)}
+//             onDragOver={event => {
+//                 const types = event.dataTransfer.types;
+//                 if (types.length !== 1)
+//                     return;
+//
+//                 if (types[0] === FileTransferUrlMediaType) {
+//                     /* TODO: Detect if its remote move or internal move */
+//                     event.dataTransfer.effectAllowed = "move";
+//                 } else if (types[0] === "Files") {
+//                     event.dataTransfer.effectAllowed = "copy";
+//                 } else {
+//                     return;
+//                 }
+//
+//                 event.preventDefault();
+//             }}
+//
+//             renderRow={(row: TableRow<ListedFileInfo>, columns, uniqueId) => (
+//                 <FileListEntry columns={columns}
+//                                row={row} key={uniqueId}
+//                                events={this.props.events}/>
+//             )}
+//         />
+//     );
+// });
+
 @ReactEventHandler(e => e.props.events)
-export class FileBrowser extends ReactComponentBase<FileListTableProperties, FileListTableState> {
+export class FileBrowserRenderer extends ReactComponentBase<FileListTableProperties, FileListTableState> {
     private refTable = React.createRef<Table>();
     private currentPath: string;
     private fileList: ListedFileInfo[];
@@ -724,8 +1041,7 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
                 for (const directory of directories.sort((a, b) => a.name > b.name ? 1 : -1)) {
                     rows.push({
                         columns: {
-                            "name": () => <FileName path={this.currentPath} events={this.props.events}
-                                                    file={directory}/>,
+                            "name": () => <FileName path={this.currentPath} file={directory}/>,
                             "type": () => <a key={"type"}><Translatable>Directory</Translatable></a>,
                             "change-date": () => directory.datetime ?
                                 <a>{Moment(directory.datetime).format("DD/MM/YYYY HH:mm")}</a> : undefined
@@ -738,8 +1054,8 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
                 for (const file of files.sort((a, b) => a.name > b.name ? 1 : -1)) {
                     rows.push({
                         columns: {
-                            "name": () => <FileName path={this.currentPath} events={this.props.events} file={file}/>,
-                            "size": () => <FileSize path={this.currentPath} events={this.props.events} file={file}/>,
+                            "name": () => <FileName path={this.currentPath} file={file}/>,
+                            "size": () => <FileSize path={this.currentPath} file={file}/>,
                             "type": () => <a key={"type"}><Translatable>File</Translatable></a>,
                             "change-date": () => file.datetime ?
                                 <a key={"date"}>{Moment(file.datetime).format("DD/MM/YYYY HH:mm")}</a> : undefined
@@ -752,74 +1068,84 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
         }
 
         return (
-            <Table
-                ref={this.refTable}
-                className={cssStyle.fileTable}
-                bodyClassName={cssStyle.body}
-                headerClassName={cssStyle.header}
-                columns={[
-                    {
-                        name: "name", header: () => [
-                            <a key={"name-name"}><Translatable>Name</Translatable></a>,
-                            <div key={"seperator-name"} className={cssStyle.seperator}/>
-                        ], width: 80, className: cssStyle.columnName
-                    },
-                    {
-                        name: "type", header: () => [
-                            <a key={"name-type"}><Translatable>Type</Translatable></a>,
-                            <div key={"seperator-type"} className={cssStyle.seperator}/>
-                        ], fixedWidth: "8em", className: cssStyle.columnType
-                    },
-                    {
-                        name: "size", header: () => [
-                            <a key={"name-size"}><Translatable>Size</Translatable></a>,
-                            <div key={"seperator-size"} className={cssStyle.seperator}/>
-                        ], fixedWidth: "8em", className: cssStyle.columnSize
-                    },
-                    {
-                        name: "change-date", header: () => [
-                            <a key={"name-date"}><Translatable>Last changed</Translatable></a>,
-                            <div key={"seperator-date"} className={cssStyle.seperator}/>
-                        ], fixedWidth: "8em", className: cssStyle.columnChanged
-                    },
-                ]}
-                rows={rows}
+            <EventsContext.Provider value={this.props.events}>
+                <CustomClassContext.Consumer>
+                    {classes => (
+                        <Table
+                            ref={this.refTable}
+                            className={this.classList(cssStyle.fileTable, classes?.fileTable?.table)}
+                            bodyClassName={this.classList(cssStyle.body, classes?.fileTable?.body)}
+                            headerClassName={this.classList(cssStyle.header, classes?.fileTable?.header)}
+                            columns={[
+                                {
+                                    name: "name", header: () => [
+                                        <a key={"name-name"}><Translatable>Name</Translatable></a>,
+                                        <div key={"seperator-name"} className={cssStyle.separator}/>
+                                    ], width: 80, className: cssStyle.columnName
+                                },
+                                {
+                                    name: "type", header: () => [
+                                        <a key={"name-type"}><Translatable>Type</Translatable></a>,
+                                        <div key={"seperator-type"} className={cssStyle.separator}/>
+                                    ], fixedWidth: "8em", className: cssStyle.columnType
+                                },
+                                {
+                                    name: "size", header: () => [
+                                        <a key={"name-size"}><Translatable>Size</Translatable></a>,
+                                        <div key={"seperator-size"} className={cssStyle.separator}/>
+                                    ], fixedWidth: "8em", className: cssStyle.columnSize
+                                },
+                                {
+                                    name: "change-date", header: () => [
+                                        <a key={"name-date"}><Translatable>Last changed</Translatable></a>,
+                                        <div key={"seperator-date"} className={cssStyle.separator}/>
+                                    ], fixedWidth: "8em", className: cssStyle.columnChanged
+                                },
+                            ]}
+                            rows={rows}
 
-                bodyOverlayOnly={overlayOnly}
-                bodyOverlay={overlay}
+                            bodyOverlayOnly={overlayOnly}
+                            bodyOverlay={overlay}
 
-                hiddenColumns={["type"]}
+                            hiddenColumns={["type"]}
 
-                onHeaderContextMenu={e => this.onHeaderContextMenu(e)}
-                onBodyContextMenu={e => this.onBodyContextMenu(e)}
-                onDrop={e => this.onDrop(e)}
-                onDragOver={event => {
-                    const types = event.dataTransfer.types;
-                    if (types.length !== 1)
-                        return;
+                            onHeaderContextMenu={e => this.onHeaderContextMenu(e)}
+                            onBodyContextMenu={e => this.onBodyContextMenu(e)}
+                            onDrop={e => this.onDrop(e)}
+                            onDragOver={event => {
+                                const types = event.dataTransfer.types;
+                                if (types.length !== 1)
+                                    return;
 
-                    if (types[0] === FileTransferUrlMediaType) {
-                        /* TODO: Detect if its remote move or internal move */
-                        event.dataTransfer.effectAllowed = "move";
-                    } else if (types[0] === "Files") {
-                        event.dataTransfer.effectAllowed = "copy";
-                    } else {
-                        return;
-                    }
+                                if (types[0] === FileTransferUrlMediaType) {
+                                    /* TODO: Detect if its remote move or internal move */
+                                    event.dataTransfer.effectAllowed = "move";
+                                } else if (types[0] === "Files") {
+                                    event.dataTransfer.effectAllowed = "copy";
+                                } else {
+                                    return;
+                                }
 
-                    event.preventDefault();
-                }}
+                                event.preventDefault();
+                            }}
 
-                renderRow={(row: TableRow<ListedFileInfo>, columns, uniqueId) => <FileListEntry columns={columns}
-                                                                                                row={row} key={uniqueId}
-                                                                                                events={this.props.events}/>}
-            />
+                            renderRow={(row: TableRow<ListedFileInfo>, columns, uniqueId) => (
+                                <FileListEntry columns={columns}
+                                               row={row} key={uniqueId}
+                                               events={this.props.events}/>
+                            )}
+                        />
+                    )}
+                </CustomClassContext.Consumer>
+            </EventsContext.Provider>
         );
     }
 
     componentDidMount(): void {
         this.selection = [];
-        this.currentPath = this.props.currentPath;
+        this.currentPath = this.props.initialPath;
+
+        this.props.events.fire("query_current_path", {});
         this.props.events.fire("query_files", {
             path: this.currentPath
         });
@@ -827,21 +1153,22 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
 
     private onDrop(event: React.DragEvent) {
         const types = event.dataTransfer.types;
-        if (types.length !== 1)
+        if (types.length !== 1) {
             return;
+        }
 
         event.stopPropagation();
         let targetPath;
         {
             let currentTarget = event.target as HTMLElement;
-            while (currentTarget && !currentTarget.hasAttribute("x-drag-upload-path"))
+            while (currentTarget && !currentTarget.hasAttribute("x-drag-upload-path")) {
                 currentTarget = currentTarget.parentElement;
+            }
             targetPath = currentTarget?.getAttribute("x-drag-upload-path") || this.currentPath;
-            console.log("Target: %o %s", currentTarget, targetPath);
         }
 
         if (types[0] === FileTransferUrlMediaType) {
-            /* TODO: If cross move upload! */
+            /* TODO: Test if we moved cross some boundaries */
             console.error(event.dataTransfer.getData(FileTransferUrlMediaType));
             const fileUrls = event.dataTransfer.getData(FileTransferUrlMediaType).split("&").map(e => decodeURIComponent(e));
             for (const fileUrl of fileUrls) {
@@ -903,13 +1230,14 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
     private onBodyContextMenu(event: React.MouseEvent) {
         event.preventDefault();
         this.props.events.fire("action_select_files", {mode: "exclusive", files: []});
-        this.props.events.fire("action_selection_context_menu", {pageY: event.pageY, pageX: event.pageX});
+        this.props.events.fire("action_selection_context_menu", { pageY: event.pageY, pageX: event.pageX });
     }
 
-    @EventHandler<FileBrowserEvents>("action_navigate_to_result")
-    private handleNavigationResult(event: FileBrowserEvents["action_navigate_to_result"]) {
-        if (event.status !== "success")
+    @EventHandler<FileBrowserEvents>("notify_current_path")
+    private handleNavigationResult(event: FileBrowserEvents["notify_current_path"]) {
+        if (event.status !== "success") {
             return;
+        }
 
         this.currentPath = event.path;
         this.selection = [];
@@ -983,8 +1311,9 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
     @EventHandler<FileBrowserEvents>("action_start_create_directory")
     private handleActionFileCreateBegin(event: FileBrowserEvents["action_start_create_directory"]) {
         let index = 0;
-        while (this.fileList.find(e => e.name === (event.defaultName + (index > 0 ? " (" + index + ")" : ""))))
+        while (this.fileList.find(e => e.name === (event.defaultName + (index > 0 ? " (" + index + ")" : "")))) {
             index++;
+        }
 
         const name = event.defaultName + (index > 0 ? " (" + index + ")" : "");
         this.fileList.push({
@@ -998,12 +1327,14 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
         });
 
         /* fire_async because our children have to render first in order to have the row selected! */
-        this.forceUpdate(() => this.props.events.fire_react("action_select_files", {
-            files: [{
-                name: name,
-                type: FileType.DIRECTORY
-            }], mode: "exclusive"
-        }));
+        this.forceUpdate(() => {
+            this.props.events.fire_react("action_select_files", {
+                files: [{
+                    name: name,
+                    type: FileType.DIRECTORY
+                }], mode: "exclusive"
+            });
+        });
     }
 
     @EventHandler<FileBrowserEvents>("action_create_directory_result")
@@ -1112,8 +1443,9 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
     @EventHandler<FileBrowserEvents>("notify_transfer_status")
     private handleTransferStatus(event: FileBrowserEvents["notify_transfer_status"]) {
         const index = this.fileList.findIndex(e => e.transfer?.id === event.id);
-        if (index === -1)
+        if (index === -1) {
             return;
+        }
 
         let element = this.fileList[index];
         if (event.status === "errored") {

@@ -5,12 +5,14 @@ import {ChannelEntry, ChannelSidebarMode} from "tc-shared/tree/Channel";
 import {ChannelConversationController} from "tc-shared/ui/frames/side/ChannelConversationController";
 import {ChannelDescriptionController} from "tc-shared/ui/frames/side/ChannelDescriptionController";
 import {LocalClientEntry} from "tc-shared/tree/Client";
+import {ChannelFileBrowserController} from "tc-shared/ui/frames/side/ChannelFileBrowserController";
 
 export class ChannelBarController {
     readonly uiEvents: Registry<ChannelBarUiEvents>;
 
     private channelConversations: ChannelConversationController;
     private description: ChannelDescriptionController;
+    private fileBrowser: ChannelFileBrowserController;
 
     private currentConnection: ConnectionHandler;
     private listenerConnection: (() => void)[];
@@ -25,6 +27,7 @@ export class ChannelBarController {
 
         this.channelConversations = new ChannelConversationController();
         this.description = new ChannelDescriptionController();
+        this.fileBrowser = new ChannelFileBrowserController();
 
         this.uiEvents.on("query_mode", () => this.notifyChannelMode());
         this.uiEvents.on("query_channel_id", () => this.notifyChannelId());
@@ -41,6 +44,9 @@ export class ChannelBarController {
         this.currentChannel = undefined;
         this.currentConnection = undefined;
 
+        this.fileBrowser?.destroy();
+        this.fileBrowser = undefined;
+
         this.channelConversations?.destroy();
         this.channelConversations = undefined;
 
@@ -56,6 +62,7 @@ export class ChannelBarController {
         }
 
         this.channelConversations.setConnectionHandler(handler);
+        this.fileBrowser.setConnectionHandler(handler);
 
         this.listenerConnection.forEach(callback => callback());
         this.listenerConnection = [];
@@ -96,6 +103,7 @@ export class ChannelBarController {
             return;
         }
 
+        this.fileBrowser.setChannel(channel);
         this.description.setChannel(channel);
 
         this.listenerChannel.forEach(callback => callback());
@@ -185,9 +193,9 @@ export class ChannelBarController {
                 this.uiEvents.fire_react("notify_data", {
                     content: "file-transfer",
                     data: {
+                        events: this.fileBrowser.uiEvents
                     }
                 });
-                /* TODO! */
                 break;
         }
     }

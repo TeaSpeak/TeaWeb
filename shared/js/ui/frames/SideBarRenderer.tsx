@@ -8,6 +8,7 @@ import {PrivateConversationsPanel} from "tc-shared/ui/frames/side/PrivateConvers
 import {ChannelBarRenderer} from "tc-shared/ui/frames/side/ChannelBarRenderer";
 import {LogCategory, logWarn} from "tc-shared/log";
 import React = require("react");
+import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
 
 const cssStyle = require("./SideBarRenderer.scss");
 
@@ -52,6 +53,7 @@ const ContentRendererClientInfo = () => {
     const contentData = useContentData("client-info");
     if(!contentData) { return null; }
 
+    throw "XX";
     return (
         <ClientInfoRenderer
             events={contentData.events}
@@ -62,13 +64,25 @@ const ContentRendererClientInfo = () => {
 const SideBarFrame = (props: { type: SideBarType }) => {
     switch (props.type) {
         case "channel":
-            return <ContentRendererChannel key={props.type} />;
+            return (
+                <ErrorBoundary key={props.type}>
+                    <ContentRendererChannel />
+                </ErrorBoundary>
+            );
 
         case "private-chat":
-            return <ContentRendererPrivateConversation key={props.type} />;
+            return (
+                <ErrorBoundary key={props.type}>
+                    <ContentRendererPrivateConversation />
+                </ErrorBoundary>
+            );
 
         case "client-info":
-            return <ContentRendererClientInfo key={props.type} />;
+            return (
+                <ErrorBoundary key={props.type}>
+                    <ContentRendererClientInfo />
+                </ErrorBoundary>
+            );
 
         case "music-manage":
             /* TODO! */

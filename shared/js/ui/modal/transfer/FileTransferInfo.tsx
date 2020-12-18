@@ -1,7 +1,6 @@
 import * as React from "react";
 import {useEffect, useRef, useState} from "react";
 import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
-import {TransferStatus} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {HTMLRenderer} from "tc-shared/ui/react-elements/HTMLRenderer";
 import {ProgressBar} from "tc-shared/ui/react-elements/ProgressBar";
@@ -11,59 +10,13 @@ import {format_time, network} from "tc-shared/ui/frames/chat";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
 import {Button} from "tc-shared/ui/react-elements/Button";
+import {TransferStatus} from "tc-shared/ui/modal/transfer/FileDefinitions";
+import {TransferInfoData, TransferInfoEvents} from "tc-shared/ui/modal/transfer/FileTransferInfoDefinitions";
 
-const cssStyle = require("./TransferInfo.scss");
+const cssStyle = require("./FileTransferInfoRenderer.scss");
 const iconArrow = require("./icon_double_arrow.svg");
 const iconTransferUpload = require("./icon_transfer_upload.svg");
 const iconTransferDownload = require("./icon_transfer_download.svg");
-
-export interface TransferInfoEvents {
-    query_transfers: {},
-    query_transfer_result: {
-        status: "success" | "error" | "timeout";
-
-        error?: string;
-        transfers?: TransferInfoData[],
-        showFinished?: boolean
-    }
-
-    action_toggle_expansion: { visible: boolean },
-    action_toggle_finished_transfers: { visible: boolean },
-    action_remove_finished: {},
-
-    notify_transfer_registered: { transfer: TransferInfoData },
-    notify_transfer_status: {
-        id: number,
-        status: TransferStatus,
-        error?: string
-    },
-    notify_transfer_progress: {
-        id: number;
-        status: TransferStatus,
-        progress: TransferProgress
-    },
-
-    notify_modal_closed: {}
-}
-
-export interface TransferInfoData {
-    id: number;
-
-    direction: "upload" | "download";
-    status: TransferStatus;
-
-    name: string;
-    path: string;
-
-    progress: number;
-    error?: string;
-
-    timestampRegistered: number;
-    timestampBegin: number;
-    timestampEnd: number;
-
-    transferredBytes: number;
-}
 
 const ExpendState = (props: { extended: boolean, events: Registry<TransferInfoEvents> }) => {
     const [expended, setExpended] = useState(props.extended);
@@ -495,7 +448,7 @@ const ExtendedInfo = (props: { events: Registry<TransferInfoEvents> }) => {
     </div>;
 };
 
-export const TransferInfo = (props: { events: Registry<TransferInfoEvents> }) => (
+export const FileTransferInfo = (props: { events: Registry<TransferInfoEvents> }) => (
     <div className={cssStyle.container}>
         <ExtendedInfo events={props.events}/>
         <BottomBar events={props.events}/>

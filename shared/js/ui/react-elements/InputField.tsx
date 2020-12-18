@@ -26,7 +26,7 @@ export interface BoxedInputFieldProperties {
 
     size?: "normal" | "large" | "small";
 
-    onFocus?: () => void;
+    onFocus?: (event: React.FocusEvent | React.MouseEvent) => void;
     onBlur?: () => void;
 
     onChange?: (newValue: string) => void;
