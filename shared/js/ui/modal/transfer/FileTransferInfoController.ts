@@ -7,14 +7,14 @@ import {
     TransferProgress,
     TransferProperties
 } from "../../../file/Transfer";
+import {Settings, settings} from "../../../settings";
 import {
     avatarsPathPrefix,
     channelPathPrefix,
     iconPathPrefix,
     TransferStatus
-} from "../../../ui/modal/transfer/ModalFileTransfer";
-import {Settings, settings} from "../../../settings";
-import {TransferInfoData, TransferInfoEvents} from "../../../ui/modal/transfer/TransferInfo";
+} from "tc-shared/ui/modal/transfer/FileDefinitions";
+import {TransferInfoData, TransferInfoEvents} from "tc-shared/ui/modal/transfer/FileTransferInfoDefinitions";
 
 export const initializeTransferInfoController = (connection: ConnectionHandler, events: Registry<TransferInfoEvents>) => {
     const generateTransferPath = (properties: TransferProperties) => {
@@ -128,10 +128,10 @@ export const initializeTransferInfoController = (connection: ConnectionHandler, 
             events.fire("notify_transfer_registered", {transfer: generateTransferInfo(transfer)});
 
             const closeListener = () => unregisterEvents();
-            events.on("notify_modal_closed", closeListener);
+            events.on("notify_destroy", closeListener);
 
             const unregisterEvents = () => {
-                events.off("notify_modal_closed", closeListener);
+                events.off("notify_destroy", closeListener);
                 transfer.events.off("notify_progress", progressListener);
             };
         };
@@ -139,7 +139,7 @@ export const initializeTransferInfoController = (connection: ConnectionHandler, 
 
         const registeredListener = event => listenToTransfer(event.transfer);
         connection.fileManager.events.on("notify_transfer_registered", registeredListener);
-        events.on("notify_modal_closed", () => connection.fileManager.events.off("notify_transfer_registered", registeredListener));
+        events.on("notify_destroy", () => connection.fileManager.events.off("notify_transfer_registered", registeredListener));
 
         connection.fileManager.registeredTransfers().forEach(transfer => listenToTransfer(transfer));
     }

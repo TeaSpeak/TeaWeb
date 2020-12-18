@@ -24,3 +24,7 @@ export function useDependentState<S>(
 
     return [state, setState];
 }
+
+export function joinClassList(...classes: any[]) : string {
+    return classes.filter(value => typeof value === "string" && value.length > 0).join(" ");
+}

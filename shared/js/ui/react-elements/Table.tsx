@@ -137,8 +137,9 @@ export class Table extends React.Component<TableProperties, TableState> {
                 return rowRenderer(row, columns, "tr-" + row.__rowIndex);
             });
 
-            if(this.props.bodyOverlay)
+            if(this.props.bodyOverlay) {
                 body.push(this.props.bodyOverlay());
+            }
         }
 
         return (

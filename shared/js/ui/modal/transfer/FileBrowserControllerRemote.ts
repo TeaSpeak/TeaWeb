@@ -18,15 +18,13 @@ import {
     TransferTargetType
 } from "../../../file/Transfer";
 import {createErrorModal} from "../../../ui/elements/Modal";
+import {ErrorCode} from "../../../connection/ErrorCode";
 import {
     avatarsPathPrefix,
-    channelPathPrefix,
-    FileBrowserEvents,
-    iconPathPrefix,
-    ListedFileInfo,
+    channelPathPrefix, FileBrowserEvents,
+    iconPathPrefix, ListedFileInfo,
     PathInfo
-} from "../../../ui/modal/transfer/ModalFileTransfer";
-import {ErrorCode} from "../../../connection/ErrorCode";
+} from "tc-shared/ui/modal/transfer/FileDefinitions";
 
 function parsePath(path: string, connection: ConnectionHandler): PathInfo {
     if (path === "/" || !path) {
@@ -46,7 +44,7 @@ function parsePath(path: string, connection: ConnectionHandler): PathInfo {
 
         const channel = connection.channelTree.findChannel(channelId);
         if (!channel) {
-            throw tr("Channel not visible anymore");
+            throw tr("Invalid channel id");
         }
 
         return {
@@ -79,13 +77,13 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         try {
             const info = parsePath(event.path, connection);
 
-            events.fire_react("action_navigate_to_result", {
+            events.fire_react("notify_current_path", {
                 path: event.path || "/",
                 status: "success",
                 pathInfo: info
             });
         } catch (error) {
-            events.fire_react("action_navigate_to_result", {
+            events.fire_react("notify_current_path", {
                 path: event.path,
                 status: "error",
                 error: error
@@ -284,8 +282,9 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         let sourcePath: PathInfo, targetPath: PathInfo;
         try {
             sourcePath = parsePath(event.oldPath, connection);
-            if (sourcePath.type !== "channel")
+            if (sourcePath.type !== "channel") {
                 throw tr("Icon/avatars could not be renamed");
+            }
         } catch (error) {
             events.fire_react("action_rename_file_result", {
                 oldPath: event.oldPath,
@@ -297,8 +296,9 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         }
         try {
             targetPath = parsePath(event.newPath, connection);
-            if (sourcePath.type !== "channel")
+            if (sourcePath.type !== "channel") {
                 throw tr("Target path isn't a channel");
+            }
         } catch (error) {
             events.fire_react("action_rename_file_result", {
                 oldPath: event.oldPath,
@@ -374,14 +374,21 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
     let currentPath = "/";
     let currentPathInfo: PathInfo;
     let selection: { name: string, type: FileType }[] = [];
-    events.on("action_navigate_to_result", result => {
-        if (result.status !== "success")
+    events.on("notify_current_path", result => {
+        if (result.status !== "success") {
             return;
+        }
 
         currentPathInfo = result.pathInfo;
         currentPath = result.path;
         selection = [];
     });
+
+    events.on("query_current_path", () => events.fire_react("notify_current_path", {
+        status: "success",
+        path: currentPath,
+        pathInfo: currentPathInfo
+    }));
 
     events.on("action_rename_file_result", result => {
         if (result.status !== "success")
@@ -812,10 +819,10 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             });
 
             const closeListener = () => unregisterEvents();
-            events.on("notify_modal_closed", closeListener);
+            events.on("notify_destroy", closeListener);
 
             const unregisterEvents = () => {
-                events.off("notify_modal_closed", closeListener);
+                events.off("notify_destroy", closeListener);
                 transfer.events.off("notify_progress", progressListener);
             };
         };
@@ -823,7 +830,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
 
         const registeredListener = event => listenToTransfer(event.transfer);
         connection.fileManager.events.on("notify_transfer_registered", registeredListener);
-        events.on("notify_modal_closed", () => connection.fileManager.events.off("notify_transfer_registered", registeredListener));
+        events.on("notify_destroy", () => connection.fileManager.events.off("notify_transfer_registered", registeredListener));
 
         connection.fileManager.registeredTransfers().forEach(transfer => listenToTransfer(transfer));
     }

@@ -1,0 +1,45 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    height: 100%;
+    width: 100%;
+
+    color: #999;
+
+    .navbar {
+        flex-shrink: 0;
+        flex-grow: 0;
+
+        padding: .5em;
+    }
+}
+
+.fileTable {
+    border: none;
+    border-radius: 0;
+
+    background-color: var(--chat-background);
+
+    .header {
+        background-color: var(--chat-background);
+    }
+}
+
+.fileEntry:hover, .fileEntry.hovered {
+    background-color: var(--channel-tree-entry-hovered) !important;
+}
+
+.fileEntrySelected {
+    background-color: var(--channel-tree-entry-selected) !important;
+}
+
+.boxedInput {
+    background-color: var(--side-info-background);
+    border-color: #212121;
+
+    &:focus-within {
+        background-color: #242424;
+    }
+}
