@@ -16,6 +16,7 @@ import ResizeObserver from "resize-observer-polyfill";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {spawnContextMenu} from "tc-shared/ui/ContextMenu";
 import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
+import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
 
 const SubscribeContext = React.createContext<VideoSubscribeInfo>(undefined);
 const EventContext = React.createContext<Registry<ChannelVideoEvents>>(undefined);
@@ -586,7 +587,11 @@ const VideoBar = () => {
         <div className={cssStyle.videoBar}>
             <div className={cssStyle.videos} ref={refVideos}>
                 {videos === "loading" ? undefined :
-                    videos.map(videoId => <VideoContainer videoId={videoId} key={videoId} isSpotlight={false} />)
+                    videos.map(videoId => (
+                        <ErrorBoundary key={videoId}>
+                            <VideoContainer videoId={videoId} isSpotlight={false} />
+                        </ErrorBoundary>
+                    ))
                 }
             </div>
             <VideoBarArrow direction={"left"} containerRef={refArrowLeft} />
@@ -640,9 +645,11 @@ export const ChannelVideoRenderer = (props: { handlerId: string, events: Registr
                 <div className={cssStyle.panel}>
                     <VideoSubscribeContextProvider>
                         <VideoBar />
+                        <ExpendArrow />
+                        <ErrorBoundary>
+                            <Spotlight />
+                        </ErrorBoundary>
                     </VideoSubscribeContextProvider>
-                    <ExpendArrow />
-                    <Spotlight />
                 </div>
             </HandlerIdContext.Provider>
         </EventContext.Provider>
