@@ -56,7 +56,7 @@ function bbcodeLinkUrls(message: string, ignore: { start: number, end: number }[
 
 
         let colonIndex = urlPath.indexOf(":");
-        if(colonIndex === -1 || colonIndex + 2 < urlPath.length || urlPath[colonIndex + 1] !== "/" || urlPath[colonIndex + 2] !== "/") {
+        if(colonIndex === -1 || colonIndex + 2 >= urlPath.length || urlPath[colonIndex + 1] !== "/" || urlPath[colonIndex + 2] !== "/") {
             bbcodeUrl = "[url=https://" + urlPath + "]" + urlPath + "[/url]";
         } else {
             bbcodeUrl = "[url]" + urlPath + "[/url]";
