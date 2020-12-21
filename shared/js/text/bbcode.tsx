@@ -1,11 +1,10 @@
 import {XBBCodeRenderer} from "vendor/xbbcode/react";
 import * as React from "react";
-import {rendererHTML, rendererReact, rendererText} from "tc-shared/text/bbcode/renderer";
+import {rendererHTML, rendererReact, rendererText, BBCodeHandlerContext} from "tc-shared/text/bbcode/renderer";
 import {parse as parseBBCode} from "vendor/xbbcode/parser";
 import {fixupJQueryUrlTags} from "tc-shared/text/bbcode/url";
 import {fixupJQueryImageTags} from "tc-shared/text/bbcode/image";
 import "./bbcode.scss";
-import {BBCodeHandlerContext} from "vendor/xbbcode/renderer/react";
 
 export const escapeBBCode = (text: string) => text.replace(/(\[)/g, "\\$1");
 
