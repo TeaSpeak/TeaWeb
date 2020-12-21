@@ -653,5 +653,5 @@ export const ChannelVideoRenderer = (props: { handlerId: string, events: Registr
                 </div>
             </HandlerIdContext.Provider>
         </EventContext.Provider>
-    )
+    );
 };
