@@ -4,10 +4,9 @@ import * as loader from "tc-loader";
 import {ElementRenderer} from "vendor/xbbcode/renderer/base";
 import {TagElement} from "vendor/xbbcode/elements";
 import * as React from "react";
-import ReactRenderer, {BBCodeHandlerContext} from "vendor/xbbcode/renderer/react";
-import {rendererReact, rendererText} from "tc-shared/text/bbcode/renderer";
+import ReactRenderer from "vendor/xbbcode/renderer/react";
+import {rendererReact, rendererText, BBCodeHandlerContext} from "tc-shared/text/bbcode/renderer";
 import {ClientTag} from "tc-shared/ui/tree/EntryTags";
-import {useContext} from "react";
 
 function spawnUrlContextMenu(pageX: number, pageY: number, target: string) {
     contextmenu.spawn_context_menu(pageX, pageY, {
