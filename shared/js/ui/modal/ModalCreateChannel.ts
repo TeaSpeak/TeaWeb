@@ -15,8 +15,8 @@ import { tr } from "tc-shared/i18n/localize";
 import {spawnChannelEditNew} from "tc-shared/ui/modal/channel-edit/Controller";
 
 export function createChannelModal(connection: ConnectionHandler, channel: ChannelEntry | undefined, parent: ChannelEntry | undefined, permissions: PermissionManager, callback: (properties?: ChannelProperties, permissions?: PermissionValue[]) => any) {
-    spawnChannelEditNew(connection, channel, parent, callback);
-    return;
+    //spawnChannelEditNew(connection, channel, parent, callback);
+    //return;
 
     let properties: ChannelProperties = { } as ChannelProperties; //The changes properties
     const modal = createModal({
