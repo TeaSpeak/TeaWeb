@@ -113,5 +113,9 @@ export function preprocessChatMessageForSend(message: string) : string {
         message = bbcodeLinkUrls(message, noParseRanges);
     }
 
+    while(message.endsWith("\n")) {
+        message = message.substring(0, message.length - 1);
+    }
+
     return message;
 }
