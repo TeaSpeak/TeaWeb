@@ -7,6 +7,7 @@ import * as React from "react";
 import ReactRenderer from "vendor/xbbcode/renderer/react";
 import {rendererReact, rendererText, BBCodeHandlerContext} from "tc-shared/text/bbcode/renderer";
 import {ClientTag} from "tc-shared/ui/tree/EntryTags";
+import {isYoutubeLink, YoutubeRenderer} from "tc-shared/text/bbcode/youtube";
 
 function spawnUrlContextMenu(pageX: number, pageY: number, target: string) {
     contextmenu.spawn_context_menu(pageX, pageY, {
@@ -74,7 +75,7 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
                                 }
                             }
 
-                            return (
+                            const body = (
                                 <a key={"er-" + ++reactId} className={"xbbcode xbbcode-tag-url"} href={target} target={"_blank"} onContextMenu={event => {
                                     event.preventDefault();
                                     spawnUrlContextMenu(event.pageX, event.pageY, target);
@@ -82,6 +83,14 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
                                     {renderer.renderContent(element)}
                                 </a>
                             );
+
+                            if(isYoutubeLink(target)) {
+                                return (
+                                    <YoutubeRenderer url={target}>{body}</YoutubeRenderer>
+                                );
+                            } else {
+                                return body;
+                            }
                         }}
                     </BBCodeHandlerContext.Consumer>
                 );
