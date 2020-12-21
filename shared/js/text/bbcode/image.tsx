@@ -77,7 +77,7 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
                 }
 
                 return (
-                    <div key={"irc-" + ++reactId} className={"xbbcode-tag-img"}>
+                    <div key={"irc-" + ++reactId} className={"xbbcode-tag xbbcode-tag-img"}>
                         <img src={"img/loading_image.svg"} onLoad={event => loadImageForElement(event.currentTarget)} x-image-url={encodeURIComponent(target)} title={target} alt={target} />
                     </div>
                 );
