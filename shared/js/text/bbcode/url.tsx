@@ -55,30 +55,37 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
                     target = '#';
                 }
 
-                const handlerId = useContext(BBCodeHandlerContext);
+                return (
+                    <BBCodeHandlerContext.Consumer key={"er-" + ++reactId}>
+                        {handlerId => {
+                            if(handlerId) {
+                                /* TS3-Protocol for a client */
+                                if(target.match(ClientUrlRegex)) {
+                                    const clientData = target.match(ClientUrlRegex);
+                                    const clientDatabaseId = parseInt(clientData[1]);
+                                    const clientUniqueId = clientDatabaseId[2];
 
-                if(handlerId) {
-                    /* TS3-Protocol for a client */
-                    if(target.match(ClientUrlRegex)) {
-                        const clientData = target.match(ClientUrlRegex);
-                        const clientDatabaseId = parseInt(clientData[1]);
-                        const clientUniqueId = clientDatabaseId[2];
+                                    return <ClientTag
+                                        key={"er-" + ++reactId}
+                                        clientName={rendererText.renderContent(element).join("")}
+                                        clientUniqueId={clientUniqueId}
+                                        clientDatabaseId={clientDatabaseId > 0 ? clientDatabaseId : undefined}
+                                        handlerId={handlerId}
+                                    />;
+                                }
+                            }
 
-                        return <ClientTag
-                            clientName={rendererText.renderContent(element).join("")}
-                            clientUniqueId={clientUniqueId}
-                            clientDatabaseId={clientDatabaseId > 0 ? clientDatabaseId : undefined}
-                            handlerId={handlerId}
-                        />;
-                    }
-                }
-
-                return <a key={"er-" + ++reactId} className={"xbbcode xbbcode-tag-url"} href={target} target={"_blank"} onContextMenu={event => {
-                    event.preventDefault();
-                    spawnUrlContextMenu(event.pageX, event.pageY, target);
-                }}>
-                    {renderer.renderContent(element)}
-                </a>;
+                            return (
+                                <a key={"er-" + ++reactId} className={"xbbcode xbbcode-tag-url"} href={target} target={"_blank"} onContextMenu={event => {
+                                    event.preventDefault();
+                                    spawnUrlContextMenu(event.pageX, event.pageY, target);
+                                }}>
+                                    {renderer.renderContent(element)}
+                                </a>
+                            );
+                        }}
+                    </BBCodeHandlerContext.Consumer>
+                );
             }
 
             tags(): string | string[] {
