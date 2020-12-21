@@ -102,8 +102,9 @@ namespace connection {
         connection_state = ConnectionState.CONNECTING;
 
         connection = new WebSocket('wss://web-stats.teaspeak.de:27790');
-        if(!connection)
+        if(!connection) {
             connection = new WebSocket('wss://localhost:27788');
+        }
 
         {
             const connection_copy = connection;

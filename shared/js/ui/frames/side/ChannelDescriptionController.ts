@@ -92,7 +92,7 @@ export class ChannelDescriptionController {
             this.cachedDescriptionStatus = {
                 status: "success",
                 description: description,
-                handlerId: this.currentChannel.channelTree.client.handlerId
+                handlerId: this.currentChannel?.channelTree.client.handlerId || "unknown"
             };
         } catch (error) {
             if(error instanceof CommandResult) {
