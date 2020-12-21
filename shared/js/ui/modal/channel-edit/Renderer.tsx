@@ -2,25 +2,34 @@ import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controll
 import * as React from "react";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {Registry} from "tc-shared/events";
-import {ChannelEditableProperty, ChannelEditEvents} from "tc-shared/ui/modal/channel-edit/Definitions";
+import {
+    ChannelEditableProperty,
+    ChannelEditEvents,
+    ChannelPropertyPermission
+} from "tc-shared/ui/modal/channel-edit/Definitions";
 import {useContext, useState} from "react";
 import {BoxedInputField} from "tc-shared/ui/react-elements/InputField";
 
 const cssStyle = require("./Renderer.scss");
 
+const ModalTypeContext = React.createContext<"channel-edit" | "channel-create">("channel-edit");
 const EventContext = React.createContext<Registry<ChannelEditEvents>>(undefined);
-const ChangesApplying = React.createContext(false);
 
-const kPropertyLoading = "loading";
+type ChannelPropertyState<T extends keyof ChannelEditableProperty> = {
+    setPropertyValue: (value: ChannelEditableProperty[T]) => void
+} & ({
+    propertyState: "loading",
+    propertyValue: undefined,
+} | {
+    propertyState: "normal" | "applying",
+    propertyValue: ChannelEditableProperty[T],
+})
 
-function useProperty<T extends keyof ChannelEditableProperty>(property: T) : {
-    originalValue: ChannelEditableProperty[T],
-    currentValue: ChannelEditableProperty[T],
-    setCurrentValue: (value: ChannelEditableProperty[T]) => void
-} | typeof kPropertyLoading {
+const kPropertyLoading = "____loading_____";
+function useProperty<T extends keyof ChannelEditableProperty>(property: T) : ChannelPropertyState<T> {
     const events = useContext(EventContext);
 
-    const [ value, setValue ] = useState(() => {
+    const [ value, setValue ] = useState<ChannelEditableProperty[T] | typeof kPropertyLoading>(() => {
         events.fire("query_property", { property: property });
         return kPropertyLoading;
     });
@@ -33,21 +42,51 @@ function useProperty<T extends keyof ChannelEditableProperty>(property: T) : {
         setValue(event.value as any);
     }, undefined, []);
 
-    return kPropertyLoading;
+    if(value === kPropertyLoading) {
+        return {
+            propertyState: "loading",
+            propertyValue: undefined,
+            setPropertyValue: _value => {}
+        };
+    } else {
+        return {
+            propertyState: "normal",
+            propertyValue: value,
+            setPropertyValue: setValue as any
+        };
+    }
+}
+
+function usePermission<T extends keyof ChannelPropertyPermission>(permission: T, defaultValue: ChannelPropertyPermission[T]) : ChannelPropertyPermission[T] {
+    const events = useContext(EventContext);
+    const [ value, setValue ] = useState<ChannelPropertyPermission[T]>(() => {
+        events.fire("query_property_permission", { permission: permission });
+        return defaultValue;
+    });
+
+    events.reactUse("notify_property_permission", event => event.permission === permission && setValue(event.value as any));
+
+    return value;
 }
 
 const ChannelName = () => {
-    const changesApplying = useContext(ChangesApplying);
-    const property = useProperty("name");
+    const modalType = useContext(ModalTypeContext);
+    const { propertyValue, propertyState, setPropertyValue } = useProperty("name");
+    const editable = usePermission("name", modalType === "channel-create");
+    const [ edited, setEdited ] = useState(false);
 
     return (
         <BoxedInputField
-            disabled={changesApplying || property === kPropertyLoading}
-            value={property === kPropertyLoading ? null : property.currentValue}
-            placeholder={property === kPropertyLoading ? tr("loading") : tr("Channel name")}
-            onInput={newValue => property !== kPropertyLoading && property.setCurrentValue(newValue)}
+            disabled={!editable || propertyState !== "normal"}
+            value={propertyValue}
+            placeholder={propertyState === "normal" ? tr("Channel name") : tr("loading")}
+            onInput={value => {
+                setPropertyValue(value);
+                setEdited(true);
+            }}
+            isInvalid={edited && (typeof propertyValue !== "string" || !propertyValue || propertyValue.length > 30)}
         />
-    )
+    );
 }
 
 const GeneralContainer = () => {
@@ -59,12 +98,23 @@ const GeneralContainer = () => {
 }
 
 export class ChannelEditModal extends InternalModal {
-    private readonly channelExists: number;
+    private readonly events: Registry<ChannelEditEvents>;
+    private readonly isChannelCreate: boolean;
+
+    constructor(events: Registry<ChannelEditEvents>, isChannelCreate: boolean) {
+        super();
+        this.events = events;
+        this.isChannelCreate = isChannelCreate;
+    }
 
     renderBody(): React.ReactElement {
-        return (<>
-            <GeneralContainer />
-        </>);
+        return (
+            <EventContext.Provider value={this.events}>
+                <ModalTypeContext.Provider value={this.isChannelCreate ? "channel-create" : "channel-edit"}>
+                    <GeneralContainer />
+                </ModalTypeContext.Provider>
+            </EventContext.Provider>
+        );
     }
 
     title(): string | React.ReactElement {
