@@ -81,6 +81,7 @@ export class PrivateConversationController extends AbstractConversationControlle
         } else {
             this.setConversationManager(undefined);
         }
+        this.reportConversationList();
     }
 
     private initializeConnectionListener(connection: ConnectionHandler) {
