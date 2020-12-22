@@ -241,6 +241,10 @@
         > div {
             align-self: center;
         }
+
+        > div:first-child {
+            flex-shrink: 0;
+        }
     }
 
     .limit {
