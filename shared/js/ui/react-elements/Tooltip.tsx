@@ -2,6 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {ReactElement} from "react";
 import {guid} from "tc-shared/crypto/uid";
+import {Translatable} from "tc-shared/ui/react-elements/i18n";
 
 const cssStyle = require("./Tooltip.scss");
 
@@ -72,7 +73,7 @@ export interface TooltipState {
 }
 
 export interface TooltipProperties {
-    tooltip: () => ReactElement | string;
+    tooltip: () => ReactElement | ReactElement[] | string;
 }
 
 export class Tooltip extends React.Component<TooltipProperties, TooltipState> {
@@ -96,11 +97,17 @@ export class Tooltip extends React.Component<TooltipProperties, TooltipState> {
     }
 
     render() {
-        return <span
-            ref={this.refContainer}
-            onMouseEnter={event => this.onMouseEnter(event)}
-            onMouseLeave={() => this.setState({ hovered: false })}
-        >{this.props.children}</span>;
+        return (
+            <span
+                ref={this.refContainer}
+                onMouseEnter={event => this.onMouseEnter(event)}
+                onMouseLeave={() => this.setState({ hovered: false })}
+                onClick={() => this.setState({ hovered: !this.state.hovered })}
+                style={{ cursor: "pointer" }}
+            >
+                {this.props.children}
+            </span>
+        );
     }
 
     componentDidUpdate(prevProps: Readonly<TooltipProperties>, prevState: Readonly<TooltipState>, snapshot?: any): void {
@@ -142,6 +149,15 @@ export class Tooltip extends React.Component<TooltipProperties, TooltipState> {
         });
     }
 }
+
+export const IconTooltip = (props: { children?: React.ReactElement | React.ReactElement[], className?: string }) => (
+    <Tooltip tooltip={() => props.children}>
+        <div className={cssStyle.tooltip + " " + props.className}>
+            <img src="img/icon_tooltip.svg"/>
+        </div>
+    </Tooltip>
+);
+
 const globalTooltipRef = React.createRef<GlobalTooltip>();
 const tooltipContainer = document.createElement("div");
 document.body.appendChild(tooltipContainer);

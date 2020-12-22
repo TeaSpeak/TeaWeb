@@ -287,9 +287,13 @@ class ChannelTreeController {
         }));
 
         events.push(channel.events.on("notify_properties_updated", event => {
+            if("channel_name" in event.updated_properties) {
+                this.sendChannelInfo(channel);
+            }
+
             for (const key of ChannelIconUpdateKeys) {
                 if (key in event.updated_properties) {
-                    this.sendChannelInfo(channel);
+                    this.sendChannelStatusIcon(channel);
                     break;
                 }
             }

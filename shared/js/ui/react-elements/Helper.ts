@@ -25,6 +25,10 @@ export function useDependentState<S>(
     return [state, setState];
 }
 
+export function useTr(message: string) : string {
+    return /* @tr-ignore */ tr(message);
+}
+
 export function joinClassList(...classes: any[]) : string {
     return classes.filter(value => typeof value === "string" && value.length > 0).join(" ");
 }

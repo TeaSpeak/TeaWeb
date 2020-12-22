@@ -126,7 +126,7 @@ export abstract class AbstractIconManager {
      * @param serverUniqueId The server unique id for the icon
      * @param handlerId Hint which connection handler should be used if we're downloading the icon
      */
-    abstract resolveIcon(iconId: number, serverUniqueId: string, handlerId?: string) : RemoteIcon;
+    abstract resolveIcon(iconId: number, serverUniqueId?: string, handlerId?: string) : RemoteIcon;
 }
 
 let globalIconManager: AbstractIconManager;

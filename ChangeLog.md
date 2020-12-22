@@ -1,4 +1,14 @@
 # Changelog:
+* **22.12.20**
+    - Fixed missing channel status icon update on channel type edit
+    - Improved channel edit UI experience and fixed some bugs
+        - Fixed the invalid flags bug
+        - Show "Not supported" for options which the server does not support
+        - Added the option to edit the channel sidebar mode
+        - Remove the phonetic name and the channel title (Both are not used)
+        - Improved property validation 
+        - Adjusting property editibility according to the clients permissions
+        
 * **18.12.20**
     - Added the ability to send private messages to multiple clients
     - Channel client count now updates within the side bar header

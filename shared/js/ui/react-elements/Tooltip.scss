@@ -46,3 +46,9 @@ html:root {
         opacity: 1;
     }
 }
+
+.iconTooltip {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}

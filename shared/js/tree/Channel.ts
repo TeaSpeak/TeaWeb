@@ -12,7 +12,6 @@ import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import * as htmltags from "../ui/htmltags";
 import {hashPassword} from "../utils/helpers";
 import {openChannelInfo} from "../ui/modal/ModalChannelInfo";
-import {createChannelModal} from "../ui/modal/ModalCreateChannel";
 import {formatMessage} from "../ui/frames/chat";
 
 import {Registry} from "../events";
@@ -22,6 +21,7 @@ import {ErrorCode} from "../connection/ErrorCode";
 import {ClientIcon} from "svg-sprites/client-icons";
 import { tr } from "tc-shared/i18n/localize";
 import {EventChannelData} from "tc-shared/connectionlog/Definitions";
+import {spawnChannelEditNew} from "tc-shared/ui/modal/channel-edit/Controller";
 
 export enum ChannelType {
     PERMANENT,
@@ -66,7 +66,7 @@ export class ChannelProperties {
     channel_password: string = "";
 
     channel_codec: number = 4;
-    channel_codec_quality: number = 0;
+    channel_codec_quality: number = 6;
     channel_codec_is_unencrypted: boolean = false;
 
     channel_maxclients: number = -1;
@@ -78,9 +78,9 @@ export class ChannelProperties {
     channel_flag_semi_permanent: boolean = false;
     channel_flag_default: boolean = false;
     channel_flag_password: boolean = false;
-    channel_flag_maxclients_unlimited: boolean = false;
+    channel_flag_maxclients_unlimited: boolean = true;
     channel_flag_maxfamilyclients_inherited: boolean = false;
-    channel_flag_maxfamilyclients_unlimited: boolean = false;
+    channel_flag_maxfamilyclients_unlimited: boolean = true;
 
     channel_icon_id: number = 0;
     channel_delete_delay: number = 0;
@@ -273,6 +273,10 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
             .then(() => this.channelDescriptionPromise = undefined)
             .catch(() => this.channelDescriptionPromise = undefined);
         return promise;
+    }
+
+    isDescriptionCached() {
+        return this.channelDescriptionCached;
     }
 
     private async doGetChannelDescription() {
@@ -497,21 +501,24 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 name: tr("Edit channel"),
                 invalidPermission: !channelModify,
                 callback: () => {
-                    createChannelModal(this.channelTree.client, this, this.parent, this.channelTree.client.permissions, (changes?, permissions?) => {
-                        if(changes) {
-                            changes["cid"] = this.channelId;
-                            this.channelTree.client.serverConnection.send_command("channeledit", changes);
-                            log.info(LogCategory.CHANNEL, tr("Changed channel properties of channel %s: %o"), this.channelName(), changes);
+                    spawnChannelEditNew(this.channelTree.client, this, this.parent, (properties, permissions) => {
+                        const changedProperties = Object.keys(properties);
+                        if(changedProperties.length > 0) {
+                            properties["cid"] = this.channelId;
+                            this.channelTree.client.serverConnection.send_command("channeledit", properties).then(() => {
+                                this.channelTree.client.sound.play(Sound.CHANNEL_EDITED_SELF);
+                            });
+                            log.info(LogCategory.CHANNEL, tr("Changed channel properties of channel %s: %o"), this.channelName(), properties);
                         }
 
-                        if(permissions && permissions.length > 0) {
+                        if(permissions.length > 0) {
                             let perms = [];
                             for(let perm of permissions) {
                                 perms.push({
                                     permvalue: perm.value,
                                     permnegated: false,
                                     permskip: false,
-                                    permid: perm.type.id
+                                    permsid: perm.permission
                                 });
                             }
 
