@@ -45,6 +45,7 @@ function apply_channel_description(container: JQuery, channel: ChannelEntry) {
     const container_no_value = container.find(".no-value");
 
     channel.getChannelDescription().then(description => {
+        container_value.empty();
         if (description) {
             renderBBCodeAsJQuery(description, { convertSingleUrls: true }).forEach(element => container_value.append(element));
             container_no_value.hide();
