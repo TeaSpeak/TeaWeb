@@ -8,7 +8,8 @@
         - Remove the phonetic name and the channel title (Both are not used)
         - Improved property validation 
         - Adjusting property editibility according to the clients permissions
-        
+    - Fixed issue [#164](https://github.com/TeaSpeak/TeaWeb/issues/154) ("error: channel description" bug)
+    
 * **18.12.20**
     - Added the ability to send private messages to multiple clients
     - Channel client count now updates within the side bar header
