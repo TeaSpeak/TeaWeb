@@ -19,8 +19,7 @@ import {IconTooltip} from "tc-shared/ui/react-elements/Tooltip";
 import {RadioButton} from "tc-shared/ui/react-elements/RadioButton";
 import {Slider} from "tc-shared/ui/react-elements/Slider";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
-import {IconRenderer, RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
-import {ClientIcon} from "../../../../../declarations/svg-sprites/client-icons";
+import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {getIconManager} from "tc-shared/file/Icons";
 
 const cssStyle = require("./Renderer.scss");
