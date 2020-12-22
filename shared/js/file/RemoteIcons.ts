@@ -54,7 +54,7 @@ class RemoteIconManager extends AbstractIconManager {
     }
 
     resolveIcon(iconId: number, serverUniqueId?: string, handlerId?: string): RemoteIcon {
-        serverUniqueId = serverUniqueId || "global";
+        serverUniqueId = serverUniqueId || "";
 
         iconId = iconId >>> 0;
 
