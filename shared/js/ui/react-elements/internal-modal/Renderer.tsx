@@ -67,7 +67,7 @@ export class InternalModalRenderer extends React.PureComponent<{ modal: Abstract
                         onClose={this.props.onClose}
 
                         containerClass={cssStyle.contentInternal}
-                        bodyClass={cssStyle.body}
+                        bodyClass={cssStyle.body + " " + cssStyle["modal-" + this.props.modal.color()]}
                     />
                 </div>
             </div>

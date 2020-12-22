@@ -9,11 +9,12 @@ import { tr } from "tc-shared/i18n/localize";
 export type ServerFeatureSupport = "unsupported" | "supported" | "experimental" | "deprecated";
 
 export enum ServerFeature {
-    ERROR_BULKS= "error-bulks", /* Current version is 1 */
-    ADVANCED_CHANNEL_CHAT= "advanced-channel-chat", /* Current version is 1 */
-    LOG_QUERY= "log-query", /* Current version is 1 */
+    ERROR_BULKS = "error-bulks", /* Current version is 1 */
+    ADVANCED_CHANNEL_CHAT = "advanced-channel-chat", /* Current version is 1 */
+    LOG_QUERY = "log-query", /* Current version is 1 */
     WHISPER_ECHO = "whisper-echo", /* Current version is 1 */
-    VIDEO = "video"
+    VIDEO = "video",
+    SIDEBAR_MODE = "sidebar-mode"
 }
 
 export interface ServerFeatureEvents {

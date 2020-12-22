@@ -68,6 +68,11 @@
 
 				padding: .5em;
 
+				flex-direction: row;
+				display: flex;
+				flex-wrap: wrap;
+				align-content: baseline;
+
 				&.container-icons-local {
 					font-size: 16px;
 				}

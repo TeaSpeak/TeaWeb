@@ -10,7 +10,6 @@ import {ChannelEntry, ChannelProperties, ChannelSubscribeMode} from "./Channel";
 import {ClientEntry, LocalClientEntry, MusicClientEntry} from "./Client";
 import {ChannelTreeEntry} from "./ChannelTreeEntry";
 import {ConnectionHandler, ViewReasonId} from "tc-shared/ConnectionHandler";
-import {createChannelModal} from "tc-shared/ui/modal/ModalCreateChannel";
 import {Registry} from "tc-shared/events";
 import * as ReactDOM from "react-dom";
 import * as React from "react";
@@ -20,13 +19,14 @@ import {createInputModal} from "tc-shared/ui/elements/Modal";
 import {spawnBanClient} from "tc-shared/ui/modal/ModalBanClient";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
-import {tra} from "tc-shared/i18n/localize";
+import {tr, tra} from "tc-shared/i18n/localize";
 import {renderChannelTree} from "tc-shared/ui/tree/Controller";
 import {ChannelTreePopoutController} from "tc-shared/ui/tree/popout/Controller";
 import {Settings, settings} from "tc-shared/settings";
 import {ClientIcon} from "svg-sprites/client-icons";
 
 import "./EntryTagsHandler";
+import {spawnChannelEditNew} from "tc-shared/ui/modal/channel-edit/Controller";
 
 export interface ChannelTreeEvents {
     /* general tree notified */
@@ -888,9 +888,7 @@ export class ChannelTree {
     }
 
     spawnCreateChannel(parent?: ChannelEntry) {
-        createChannelModal(this.client, undefined, parent, this.client.permissions, (properties?, permissions?) => {
-            if(!properties) return;
-
+        spawnChannelEditNew(this.client, undefined, parent, (properties, permissions) => {
             properties["cpid"] = parent ? parent.channelId : 0;
             log.debug(LogCategory.CHANNEL, tr("Creating a new channel.\nProperties: %o\nPermissions: %o"), properties);
             this.client.serverConnection.send_command("channelcreate", properties).then(() => {
@@ -899,6 +897,7 @@ export class ChannelTree {
                     log.error(LogCategory.CHANNEL, tr("Failed to resolve channel after creation. Could not apply permissions!"));
                     return;
                 }
+
                 if(permissions && permissions.length > 0) {
                     let perms = [];
                     for(let perm of permissions) {
@@ -906,7 +905,7 @@ export class ChannelTree {
                             permvalue: perm.value,
                             permnegated: false,
                             permskip: false,
-                            permid: perm.type.id
+                            permsid: perm.permission
                         });
                     }
 

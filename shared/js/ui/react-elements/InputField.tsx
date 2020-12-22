@@ -1,6 +1,5 @@
 import * as React from "react";
 import {ReactElement} from "react";
-import {AST_Export} from "terser";
 
 const cssStyle = require("./InputField.scss");
 
@@ -25,6 +24,7 @@ export interface BoxedInputFieldProperties {
     className?: string;
 
     size?: "normal" | "large" | "small";
+    type?: "text" | "password" | "number";
 
     onFocus?: (event: React.FocusEvent | React.MouseEvent) => void;
     onBlur?: () => void;
@@ -71,17 +71,22 @@ export class BoxedInputField extends React.Component<BoxedInputFieldProperties, 
                 {this.props.leftIcon ? this.props.leftIcon() : ""}
                 {this.props.prefix ? <a key={"prefix"} className={cssStyle.prefix}>{this.props.prefix}</a> : undefined}
                 {this.props.inputBox ?
-                    <span key={"custom-input"} className={cssStyle.inputBox + " " + (this.props.editable ? cssStyle.editable : "")} onClick={this.props.onFocus}>{this.props.inputBox()}</span> :
+                    <span key={"custom-input"}
+                          className={cssStyle.inputBox + " " + (this.props.editable ? cssStyle.editable : "")}
+                          onClick={this.props.onFocus}>{this.props.inputBox()}</span> :
+
                     <input key={"input"}
-                        ref={this.refInput}
-                        value={this.props.value || this.state.value}
-                        defaultValue={this.state.defaultValue || this.props.defaultValue}
-                        placeholder={this.props.placeholder}
-                        readOnly={typeof this.props.editable === "boolean" ? !this.props.editable : false}
-                        disabled={this.state.disabled || this.props.disabled}
-                        onInput={this.props.onInput && (event => this.props.onInput(event.currentTarget.value))}
-                        onKeyDown={e => this.onKeyDown(e)}
-                    />}
+                           type={this.props.type || "text"}
+                           ref={this.refInput}
+                           value={typeof this.props.value === "undefined" ? this.state.value : this.props.value}
+                           defaultValue={this.state.defaultValue || this.props.defaultValue}
+                           placeholder={this.props.placeholder}
+                           readOnly={typeof this.props.editable === "boolean" ? !this.props.editable : false}
+                           disabled={this.state.disabled || this.props.disabled}
+                           onInput={this.props.onInput && (event => this.props.onInput(event.currentTarget.value))}
+                           onKeyDown={e => this.onKeyDown(e)}
+                    />
+                }
                 {this.props.suffix ? <a key={"suffix"} className={cssStyle.suffix}>{this.props.suffix}</a> : undefined}
                 {this.props.rightIcon ? this.props.rightIcon() : ""}
             </div>
@@ -271,7 +276,7 @@ export class Select extends React.Component<SelectProperties, SelectFieldState> 
     render() {
         const disabled = typeof this.state.disabled === "boolean" ? this.state.disabled : typeof this.props.disabled === "boolean" ? this.props.disabled : false;
         return (
-            <div className={(this.props.type === "boxed" ? cssStyle.containerBoxed : cssStyle.containerFlat) + " " + (this.state.isInvalid ? cssStyle.isInvalid : "") + " " + (this.props.className || "") + " " + cssStyle.noLeftIcon + " " + cssStyle.noRightIcon}>
+            <div className={(this.props.type === "boxed" ? cssStyle.containerBoxed : cssStyle.containerFlat) + " " + cssStyle["size-normal"] + " " + (this.state.isInvalid ? cssStyle.isInvalid : "") + " " + (this.props.className || "") + " " + cssStyle.noLeftIcon + " " + cssStyle.noRightIcon}>
                 {this.props.label ?
                     <label className={cssStyle["type-static"] + " " + (this.props.labelClassName || "")}>{this.props.label}</label> : undefined}
                 <select

@@ -104,7 +104,7 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
                 if (!chunk) return;
 
                 for (const icon of chunk) {
-                    const iconId = parseInt(icon.name.substr("icon_".length));
+                    const iconId = parseInt((icon.name || "").substr("icon_".length));
                     if (Number.isNaN(iconId)) {
                         log.warn(LogCategory.GENERAL, tr("Received an unparsable icon within icon list (%o)"), icon);
                         continue;

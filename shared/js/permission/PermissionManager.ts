@@ -459,8 +459,8 @@ export class PermissionManager extends AbstractCommandHandler {
         }, "success", PermissionManager.parse_permission_bulk(json, this.handle.permissions));
     }
 
-    private execute_channel_permission_request(request: PermissionRequestKeys) {
-        this.handle.serverConnection.send_command("channelpermlist", {"cid": request.channel_id}).catch(error => {
+    private execute_channel_permission_request(request: PermissionRequestKeys, processResult?: boolean) {
+        this.handle.serverConnection.send_command("channelpermlist", {"cid": request.channel_id}, { process_result: !!processResult }).catch(error => {
             if(error instanceof CommandResult && error.id == ErrorCode.DATABASE_EMPTY_RESULT)
                 this.fullfill_permission_request("requests_channel_permissions", request, "success", []);
             else
@@ -468,11 +468,11 @@ export class PermissionManager extends AbstractCommandHandler {
         });
     }
 
-    requestChannelPermissions(channelId: number) : Promise<PermissionValue[]> {
+    requestChannelPermissions(channelId: number, processResult?: boolean) : Promise<PermissionValue[]> {
         const keys: PermissionRequestKeys = {
             channel_id: channelId
         };
-        return this.execute_permission_request("requests_channel_permissions", keys, this.execute_channel_permission_request.bind(this));
+        return this.execute_permission_request("requests_channel_permissions", keys, criteria => this.execute_channel_permission_request(criteria, processResult));
     }
 
     /* client permission request */
@@ -767,5 +767,17 @@ export class PermissionManager extends AbstractCommandHandler {
 
         result = result + "}";
         return result;
+    }
+
+    getFailedPermission(command: CommandResult, index?: number) {
+        const json = command.bulks[typeof index === "number" ? index : 0] || {};
+        if("failed_permsid" in json) {
+            return json["failed_permsid"];
+        } else if("failed_permid" in json) {
+            const info = this.resolveInfo(parseInt(json["failed_permid"]));
+            return info ? info.name : "permission id " + json["failed_permid"];
+        } else {
+            return tr("unknown permission");
+        }
     }
 }

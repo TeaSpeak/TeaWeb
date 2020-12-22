@@ -30,7 +30,7 @@ ChannelPropertyPermissionsProviders["name"] = {
         permissions.register_needed_permission(PermissionType.B_CHANNEL_MODIFY_NAME, callback)
     ]
 }
-
+ChannelPropertyPermissionsProviders["icon"] = SimplePermissionProvider(PermissionType.B_ICON_MANAGE, PermissionType.B_ICON_MANAGE);
 ChannelPropertyPermissionsProviders["sortingOrder"] = SimplePermissionProvider(PermissionType.B_CHANNEL_CREATE_WITH_SORTORDER, PermissionType.B_CHANNEL_MODIFY_SORTORDER);
 ChannelPropertyPermissionsProviders["description"] = SimplePermissionProvider(PermissionType.B_CHANNEL_CREATE_WITH_DESCRIPTION, PermissionType.B_CHANNEL_MODIFY_DESCRIPTION);
 ChannelPropertyPermissionsProviders["topic"] = SimplePermissionProvider(PermissionType.B_CHANNEL_CREATE_WITH_TOPIC, PermissionType.B_CHANNEL_MODIFY_TOPIC);
@@ -66,6 +66,7 @@ ChannelPropertyPermissionsProviders["channelType"] = {
         permissions.register_needed_permission(channel ? PermissionType.B_CHANNEL_MODIFY_MAKE_DEFAULT : PermissionType.B_CHANNEL_CREATE_WITH_DEFAULT, callback),
     ]
 };
+ChannelPropertyPermissionsProviders["sidebarMode"] = SimplePermissionProvider(PermissionType.B_CHANNEL_CREATE_MODIFY_SIDEBAR_MODE, PermissionType.B_CHANNEL_CREATE_MODIFY_SIDEBAR_MODE);
 ChannelPropertyPermissionsProviders["codec"] = {
     provider: (permissions) => {
         return {
@@ -78,6 +79,7 @@ ChannelPropertyPermissionsProviders["codec"] = {
         permissions.register_needed_permission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_OPUSVOICE, callback),
     ]
 };
+ChannelPropertyPermissionsProviders["codecQuality"] = SimplePermissionProvider(PermissionType.B_CHANNEL_MODIFY_CODEC_QUALITY, PermissionType.B_CHANNEL_MODIFY_CODEC_QUALITY);
 ChannelPropertyPermissionsProviders["deleteDelay"] = {
     provider: permissions => {
         return {

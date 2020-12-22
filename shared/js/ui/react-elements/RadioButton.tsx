@@ -2,7 +2,7 @@ import * as React from "react";
 
 const cssStyle = require("./RadioButton.scss");
 export const RadioButton = (props: {
-    children?: React.ReactNode | React.ReactNode[],
+    children?: React.ReactNode | string | React.ReactNode[],
 
     name: string,
     selected: boolean,
