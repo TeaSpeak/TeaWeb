@@ -1,5 +1,4 @@
 import {ConnectionHandler} from "../../ConnectionHandler";
-import {ChannelConversationController} from "./side/ChannelConversationController";
 import {PrivateConversationController} from "./side/PrivateConversationController";
 import {ClientInfoController} from "tc-shared/ui/frames/side/ClientInfoController";
 import {SideHeaderController} from "tc-shared/ui/frames/side/HeaderController";
@@ -10,6 +9,7 @@ import {SideBarEvents, SideBarType} from "tc-shared/ui/frames/SideBarDefinitions
 import {Registry} from "tc-shared/events";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {ChannelBarController} from "tc-shared/ui/frames/side/ChannelBarController";
+import {MusicBotController} from "tc-shared/ui/frames/side/MusicBotController";
 
 export class SideBarController {
     private readonly uiEvents: Registry<SideBarEvents>;
@@ -21,6 +21,7 @@ export class SideBarController {
     private clientInfo: ClientInfoController;
     private privateConversations: PrivateConversationController;
     private channelBar: ChannelBarController;
+    private musicPanel: MusicBotController;
 
     constructor() {
         this.listenerConnection = [];
@@ -29,6 +30,7 @@ export class SideBarController {
         this.uiEvents.on("query_content", () => this.sendContent());
         this.uiEvents.on("query_content_data", event => this.sendContentData(event.content));
 
+        this.musicPanel = new MusicBotController();
         this.channelBar = new ChannelBarController();
         this.privateConversations = new PrivateConversationController();
         this.clientInfo = new ClientInfoController();
@@ -48,6 +50,7 @@ export class SideBarController {
         this.clientInfo.setConnectionHandler(connection);
         this.privateConversations.setConnectionHandler(connection);
         this.channelBar.setConnectionHandler(connection);
+        this.musicPanel.setConnection(connection);
 
         if(connection) {
             this.listenerConnection.push(connection.getSideBar().events.on("notify_content_type_changed", () => this.sendContent()));
@@ -59,6 +62,9 @@ export class SideBarController {
     destroy() {
         this.header?.destroy();
         this.header = undefined;
+
+        this.musicPanel?.destroy();
+        this.musicPanel = undefined;
 
         this.channelBar?.destroy();
         this.channelBar = undefined;
@@ -75,6 +81,10 @@ export class SideBarController {
             events: this.uiEvents,
             eventsHeader: this.header["uiEvents"],
         }), container);
+    }
+
+    getMusicController() : MusicBotController {
+        return this.musicPanel;
     }
 
     private sendContent() {
@@ -145,7 +155,10 @@ export class SideBarController {
 
                 this.uiEvents.fire_react("notify_content_data", {
                     content: "music-manage",
-                    data: { }
+                    data: {
+                        botEvents: this.musicPanel.getBotUiEvents(),
+                        playlistEvents: this.musicPanel.getPlaylistUiEvents()
+                    }
                 });
                 break;
         }

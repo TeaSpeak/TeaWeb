@@ -1,4 +1,5 @@
 import {LaterPromise} from "../utils/LaterPromise";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export class CommandResult {
     success: boolean;
@@ -26,6 +27,9 @@ export class CommandResult {
     }
 
     formattedMessage() {
+        if(this.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+            return "failed on permission " + this.json["failed_permid"]
+        }
         return this.extra_message ? this.message + " (" + this.extra_message + ")" : this.message;
     }
 }

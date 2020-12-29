@@ -382,6 +382,10 @@ export class ChannelConversationManager extends AbstractChatManager<ChannelConve
             }
         }));
 
+        this.listenerConnection.push(connection.channelTree.events.on("notify_channel_deleted", event => {
+            this.destroyConversation(event.channel.getChannelId());
+        }));
+
         this.listenerConnection.push(connection.channelTree.events.on("notify_client_enter_view", event => {
             if(event.client instanceof LocalClientEntry) {
                 const targetConversation = this.findConversation(event.targetChannel.channelId);

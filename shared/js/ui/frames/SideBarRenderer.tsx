@@ -9,6 +9,7 @@ import {ChannelBarRenderer} from "tc-shared/ui/frames/side/ChannelBarRenderer";
 import {LogCategory, logWarn} from "tc-shared/log";
 import React = require("react");
 import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
+import {MusicBotRenderer} from "tc-shared/ui/frames/side/MusicBotRenderer";
 
 const cssStyle = require("./SideBarRenderer.scss");
 
@@ -60,6 +61,18 @@ const ContentRendererClientInfo = () => {
     );
 };
 
+const ContentRendererMusicManage = () => {
+    const contentData = useContentData("music-manage");
+    if(!contentData) { return null; }
+
+    return (
+        <MusicBotRenderer
+            botEvents={contentData.botEvents}
+            playlistEvents={contentData.playlistEvents}
+        />
+    );
+};
+
 const SideBarFrame = (props: { type: SideBarType }) => {
     switch (props.type) {
         case "channel":
@@ -84,7 +97,11 @@ const SideBarFrame = (props: { type: SideBarType }) => {
             );
 
         case "music-manage":
-            /* TODO! */
+            return (
+                <ErrorBoundary key={props.type}>
+                    <ContentRendererMusicManage />
+                </ErrorBoundary>
+            )
 
         case "none":
         default:

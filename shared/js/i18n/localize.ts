@@ -73,8 +73,20 @@ export function tra(message: string, ...args: any[]) : JQuery[];
 export function tra(message: string, ...args: any[]) : any {
     message = /* @tr-ignore */ tr(message);
     for(const element of args) {
-        if(typeof element !== "string" && typeof element !== "number" && typeof element !== "boolean")
-            return formatMessage(message, ...args);
+        if(element === null) {
+            continue;
+        }
+
+        switch (typeof element) {
+            case "boolean":
+            case "number":
+            case "string":
+            case "undefined":
+                continue;
+
+            default:
+                return formatMessage(message, ...args);
+        }
     }
     if(message.indexOf("{:") !== -1)
         return formatMessage(message, ...args);
@@ -329,7 +341,7 @@ export async function initialize() {
 declare global {
     interface Window {
         tr(message: string) : string;
-        tra(message: string, ...args: (string | number | boolean)[]) : string;
+        tra(message: string, ...args: (string | number | boolean | null | undefined)[]) : string;
         tra(message: string, ...args: any[]) : JQuery[];
 
         log: any;

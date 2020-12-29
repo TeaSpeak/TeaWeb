@@ -62,10 +62,11 @@ export class Slider extends React.Component<SliderProperties, SliderState> {
 
             const range = this.props.maxValue - this.props.minValue;
             let offset = Math.round(((current - min) * (range / this.props.stepSize)) / (max - min)) * this.props.stepSize;
-            if(offset < 0)
+            if(offset < 0) {
                 offset = 0;
-            else if(offset > range)
+            } else if(offset > range) {
                 offset = range;
+            }
 
             this.refTooltip.current?.setState({
                 pageX: bounds.left + offset * bounds.width / range,
@@ -120,7 +121,14 @@ export class Slider extends React.Component<SliderProperties, SliderState> {
 
     render() {
         const disabled = typeof this.state.disabled === "boolean" ? this.state.disabled : this.props.disabled;
-        const offset = (this.state.value - this.props.minValue) * 100 / (this.props.maxValue - this.props.minValue);
+
+        let value = this.state.value;
+        if(value > this.props.maxValue) {
+            value = this.props.maxValue;
+        } else if(value < this.props.minValue) {
+            value = this.props.minValue;
+        }
+        const offset = (value - this.props.minValue) * 100 / (this.props.maxValue - this.props.minValue);
         return (
             <div
                 className={cssStyle.container + " " + (this.props.className || " ") + " " + (disabled ? cssStyle.disabled : "")}

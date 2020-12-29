@@ -156,20 +156,6 @@ export interface ClientEvents extends ChannelTreeEntryEvents {
     notify_status_icon_changed: { newIcon: ClientIcon },
 
     notify_video_handle_changed: { oldHandle: VideoClient | undefined, newHandle: VideoClient | undefined },
-
-    music_status_update: {
-        player_buffered_index: number,
-        player_replay_index: number
-    },
-    music_song_change: {
-        "song": SongInfo
-    },
-
-    /* TODO: Move this out of the music bots interface? */
-    playlist_song_add: { song: PlaylistSong },
-    playlist_song_remove: { song_id: number },
-    playlist_song_reorder: { song_id: number, previous_song_id: number },
-    playlist_song_loaded: { song_id: number, success: boolean, error_msg?: string, metadata?: string },
 }
 
 const StatusIconUpdateKeys: (keyof ClientProperties)[] = [
@@ -182,8 +168,8 @@ const StatusIconUpdateKeys: (keyof ClientProperties)[] = [
     "client_talk_power"
 ];
 
-export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
-    readonly events: Registry<ClientEvents>;
+export class ClientEntry<Events extends ClientEvents = ClientEvents> extends ChannelTreeEntry<Events> {
+    readonly events: Registry<Events>;
     channelTree: ChannelTree;
 
     protected _clientId: number;
@@ -192,7 +178,6 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
     protected _properties: ClientProperties;
     protected lastVariableUpdate: number = 0;
     protected _speaking: boolean;
-    protected _listener_initialized: boolean;
 
     protected voiceHandle: VoiceClient;
     protected voiceVolume: number;
@@ -211,7 +196,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
 
     constructor(clientId: number, clientName, properties: ClientProperties = new ClientProperties()) {
         super();
-        this.events = new Registry<ClientEvents>();
+        this.events = new Registry<Events>();
 
         this._properties = properties;
         this._properties.client_nickname = clientName;
@@ -365,15 +350,11 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
 
         this.events.fire("notify_mute_state_change", { muted: flagMuted });
         for(const client of this.channelTree.clients) {
-            if(client === this || client.properties.client_unique_identifier !== this.properties.client_unique_identifier)
+            if(client === this as any || client.properties.client_unique_identifier !== this.properties.client_unique_identifier) {
                 continue;
+            }
             client.setMuted(flagMuted, false);
         }
-    }
-
-    protected initializeListener() {
-        if(this._listener_initialized) return;
-        this._listener_initialized = true;
     }
 
     protected contextmenu_info() : contextmenu.MenuEntry[] {
@@ -382,7 +363,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 type: contextmenu.MenuEntryType.ENTRY,
                 name: this.properties.client_type_exact === ClientType.CLIENT_MUSIC ? tr("Show bot info") : tr("Show client info"),
                 callback: () => {
-                    this.channelTree.client.getSideBar().showClientInfo(this);
+                    this.channelTree.client.getSideBar().showClientInfo(this as any);
                 },
                 icon_class: "client-about",
                 visible: !settings.static_global(Settings.KEY_SWITCH_INSTANT_CLIENT)
@@ -491,7 +472,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
     }
 
     open_assignment_modal() {
-        createServerGroupAssignmentModal(this, (groups, flag) => {
+        createServerGroupAssignmentModal(this as any, (groups, flag) => {
             if(groups.length == 0) return Promise.resolve(true);
 
             if(groups.length == 1) {
@@ -519,8 +500,8 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
 
     open_text_chat() {
         const privateConversations = this.channelTree.client.getPrivateConversations();
-        const conversation = privateConversations.findOrCreateConversation(this);
-        conversation.setActiveClientEntry(this);
+        const conversation = privateConversations.findOrCreateConversation(this as any);
+        conversation.setActiveClientEntry(this as any);
         privateConversations.setSelectedConversation(conversation);
 
         this.channelTree.client.getSideBar().showPrivateConversations();
@@ -559,7 +540,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: ClientIcon.About,
                 name: tr("Show client info"),
-                callback: () => openClientInfo(this)
+                callback: () => openClientInfo(this as any)
             },
             contextmenu.Entry.HR(),
             {
@@ -687,13 +668,13 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: ClientIcon.Volume,
                 name: tr("Change Volume"),
-                callback: () => spawnClientVolumeChange(this)
+                callback: () => spawnClientVolumeChange(this as any)
             },
             {
                 type: contextmenu.MenuEntryType.ENTRY,
                 name: tr("Change playback latency"),
                 callback: () => {
-                    spawnChangeLatency(this, this.voiceHandle.getLatencySettings(), () => {
+                    spawnChangeLatency(this as any, this.voiceHandle.getLatencySettings(), () => {
                         this.voiceHandle.resetLatencySettings();
                         return this.voiceHandle.getLatencySettings();
                     }, settings => this.voiceHandle.setLatencySettings(settings), () => this.voiceHandle.flushBuffer());
@@ -987,10 +968,6 @@ export class LocalClientEntry extends ClientEntry {
         );
     }
 
-    initializeListener(): void {
-        super.initializeListener();
-    }
-
     renameSelf(new_name: string) : Promise<boolean> {
         const old_name = this.properties.client_nickname;
         this.updateVariables({ key: "client_nickname", value: new_name }); /* change it locally */
@@ -1038,10 +1015,10 @@ export enum MusicClientPlayerState {
 }
 
 export class MusicClientProperties extends ClientProperties {
-    player_state: number = 0; /* MusicClientPlayerState */
+    player_state: number = 0;
     player_volume: number = 0;
 
-    client_playlist_id: number = 0;
+    client_playlist_id: number = -1;
     client_disabled: boolean = false;
 
     client_flag_notify_song_change: boolean = false;
@@ -1075,7 +1052,19 @@ export class MusicClientPlayerInfo extends SongInfo {
     player_description: string = "";
 }
 
-export class MusicClientEntry extends ClientEntry {
+export interface MusicClientEvents extends ClientEvents {
+    notify_music_player_song_change: { newSong: SongInfo | undefined },
+    notify_music_player_timestamp: {
+        bufferedIndex: number,
+        replayIndex: number
+    },
+
+    notify_subscribe_state_changed: { subscribed: boolean },
+}
+
+export class MusicClientEntry extends ClientEntry<MusicClientEvents> {
+    private subscribed: boolean;
+
     private _info_promise: Promise<MusicClientPlayerInfo>;
     private _info_promise_age: number = 0;
     private _info_promise_resolve: any;
@@ -1083,6 +1072,7 @@ export class MusicClientEntry extends ClientEntry {
 
     constructor(clientId, clientName) {
         super(clientId, clientName, new MusicClientProperties());
+        this.subscribed = false;
     }
 
     destroy() {
@@ -1094,6 +1084,30 @@ export class MusicClientEntry extends ClientEntry {
 
     get properties() : MusicClientProperties {
         return this._properties as MusicClientProperties;
+    }
+
+    isSubscribed() : boolean {
+        return this.subscribed;
+    }
+
+    async subscribe() : Promise<void> {
+        if(this.subscribed) {
+            return;
+        }
+
+        await this.channelTree.client.serverConnection.send_command("musicbotsetsubscription", { bot_id: this.properties.client_database_id });
+
+        this.channelTree.clients.forEach(client => {
+            if(client instanceof MusicClientEntry) {
+                if(client.subscribed) {
+                    client.subscribed = false;
+                    client.events.fire("notify_subscribe_state_changed", { subscribed: false });
+                }
+            }
+        })
+
+        this.subscribed = true;
+        this.events.fire("notify_subscribe_state_changed", { subscribed: this.subscribed });
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined): void {
@@ -1198,7 +1212,7 @@ export class MusicClientEntry extends ClientEntry {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-volume",
                 name: tr("Change local volume"),
-                callback: () => spawnClientVolumeChange(this)
+                callback: () => spawnClientVolumeChange(this as any)
             },
             {
                 type: contextmenu.MenuEntryType.ENTRY,
@@ -1217,7 +1231,7 @@ export class MusicClientEntry extends ClientEntry {
                 type: contextmenu.MenuEntryType.ENTRY,
                 name: tr("Change playback latency"),
                 callback: () => {
-                    spawnChangeLatency(this, this.voiceHandle.getLatencySettings(), () => {
+                    spawnChangeLatency(this as any, this.voiceHandle.getLatencySettings(), () => {
                         this.voiceHandle.resetLatencySettings();
                         return this.voiceHandle.getLatencySettings();
                     }, settings => this.voiceHandle.setLatencySettings(settings), () => this.voiceHandle.flushBuffer());
@@ -1243,10 +1257,6 @@ export class MusicClientEntry extends ClientEntry {
             },
             contextmenu.Entry.CLOSE(() => trigger_close && on_close ? on_close() : {})
         );
-    }
-
-    initializeListener(): void {
-        super.initializeListener();
     }
 
     handlePlayerInfo(json) {

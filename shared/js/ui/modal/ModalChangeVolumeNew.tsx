@@ -308,7 +308,7 @@ export function spawnMusicBotVolumeChange(client: MusicClientEntry, maxValue: nu
         });
     });
 
-    const modal = spawnReactModal(VolumeChangeBot, client, events, maxValue);
+    const modal = spawnReactModal(VolumeChangeBot, client as any, events, maxValue);
 
     events.on("close-modal", event => modal.destroy());
     modal.show();

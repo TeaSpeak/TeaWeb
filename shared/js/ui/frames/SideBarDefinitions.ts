@@ -3,6 +3,8 @@ import {PrivateConversationUIEvents} from "tc-shared/ui/frames/side/PrivateConve
 import {ClientInfoEvents} from "tc-shared/ui/frames/side/ClientInfoDefinitions";
 import {SideHeaderEvents} from "tc-shared/ui/frames/side/HeaderDefinitions";
 import {ChannelBarUiEvents} from "tc-shared/ui/frames/side/ChannelBarDefinitions";
+import {MusicBotUiEvents} from "tc-shared/ui/frames/side/MusicBotDefinitions";
+import {MusicPlaylistUiEvents} from "tc-shared/ui/frames/side/MusicPlaylistDefinitions";
 
 /* TODO: Somehow outsource the event registries to IPC? */
 
@@ -20,7 +22,8 @@ export interface SideBarTypeData {
         events: Registry<ClientInfoEvents>,
     },
     "music-manage": {
-
+        botEvents: Registry<MusicBotUiEvents>,
+        playlistEvents: Registry<MusicPlaylistUiEvents>
     }
 }
 

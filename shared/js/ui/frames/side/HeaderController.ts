@@ -2,7 +2,10 @@ import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {SideHeaderEvents} from "tc-shared/ui/frames/side/HeaderDefinitions";
 import {Registry} from "tc-shared/events";
 import {ChannelEntry, ChannelProperties} from "tc-shared/tree/Channel";
-import {LocalClientEntry} from "tc-shared/tree/Client";
+import {LocalClientEntry, MusicClientEntry} from "tc-shared/tree/Client";
+import {openMusicManage} from "tc-shared/ui/modal/ModalMusicManage";
+import {createInputModal} from "tc-shared/ui/elements/Modal";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 const ChannelInfoUpdateProperties: (keyof ChannelProperties)[] = [
     "channel_name",
@@ -55,18 +58,31 @@ export class SideHeaderController {
         });
 
         this.uiEvents.on("action_bot_manage", () => {
-            /* FIXME: TODO! */
-            /*
-            const bot = this.connection.getSideBar().music_info().current_bot();
-            if(!bot) return;
+            const client = this.connection.channelTree.getSelectedEntry();
+            if(!(client instanceof MusicClientEntry)) {
+                return;
+            }
 
-            openMusicManage(this.connection, bot);
-            */
+            openMusicManage(this.connection, client);
         });
 
         this.uiEvents.on("action_bot_add_song", () => {
-            /* FIXME: TODO! */
-            //this.connection.side_bar.music_info().events.fire("action_song_add")
+            createInputModal(tr("Enter song URL"), tr("Please enter the target song URL"), text => {
+                try {
+                    new URL(text);
+                    return true;
+                } catch(error) {
+                    return false;
+                }
+            }, result => {
+                if(!result) return;
+
+                server_connections.getSidebarController().getMusicController().getPlaylistUiEvents()
+                    .fire("action_add_song", {
+                        url: result as string,
+                        mode: "last"
+                    });
+            }).open();
         });
 
         this.uiEvents.on("query_client_info_own_client", () => this.sendClientInfoOwnClient());

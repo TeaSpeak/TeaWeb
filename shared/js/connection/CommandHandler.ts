@@ -77,11 +77,6 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
         this["notifymusicstatusupdate"] = this.handleNotifyMusicStatusUpdate;
         this["notifymusicplayersongchange"] = this.handleMusicPlayerSongChange;
-
-        this["notifyplaylistsongadd"] = this.handleNotifyPlaylistSongAdd;
-        this["notifyplaylistsongremove"] = this.handleNotifyPlaylistSongRemove;
-        this["notifyplaylistsongreorder"] = this.handleNotifyPlaylistSongReorder;
-        this["notifyplaylistsongloaded"] = this.handleNotifyPlaylistSongLoaded;
     }
 
     private loggable_invoker(uniqueId, clientId, clientName) : EventClient | undefined {
@@ -446,11 +441,9 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
     handleCommandChannelHide(json) {
         let tree = this.connection.client.channelTree;
-        const conversations = this.connection.client.getChannelConversations();
 
         log.info(LogCategory.NETWORKING, tr("Got %d channel hides"), json.length);
         for(let index = 0; index < json.length; index++) {
-            conversations.destroyConversation(parseInt(json[index]["cid"]));
             let channel = tree.findChannel(json[index]["cid"]);
             if(!channel) {
                 logError(LogCategory.NETWORKING, tr("Invalid channel on hide (Unknown channel)"));
@@ -471,26 +464,26 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         let client: ClientEntry;
         let channel = undefined;
         let old_channel = undefined;
-        let reason_id, reason_msg;
+        let reasonId, reasonMsg;
 
-        let invokerid, invokername, invokeruid;
+        let invokerId, invokerName, invokerUniqueId;
 
         for(const entry of json) {
             /* attempt to update properties if given */
             channel =  typeof(entry["ctid"]) !== "undefined" ? tree.findChannel(parseInt(entry["ctid"])) : channel;
             old_channel = typeof(entry["cfid"]) !== "undefined" ? tree.findChannel(parseInt(entry["cfid"])) : old_channel;
-            reason_id = typeof(entry["reasonid"]) !== "undefined" ? entry["reasonid"] : reason_id;
-            reason_msg = typeof(entry["reason_msg"]) !== "undefined" ? entry["reason_msg"] : reason_msg;
+            reasonId = typeof(entry["reasonid"]) !== "undefined" ? entry["reasonid"] : reasonId;
+            reasonMsg = typeof(entry["reason_msg"]) !== "undefined" ? entry["reason_msg"] : reasonMsg;
 
-            invokerid = typeof(entry["invokerid"]) !== "undefined" ? parseInt(entry["invokerid"]) : invokerid;
-            invokername = typeof(entry["invokername"]) !== "undefined" ? entry["invokername"] : invokername;
-            invokeruid = typeof(entry["invokeruid"]) !== "undefined" ? entry["invokeruid"] : invokeruid;
+            invokerId = typeof(entry["invokerid"]) !== "undefined" ? parseInt(entry["invokerid"]) : invokerId;
+            invokerName = typeof(entry["invokername"]) !== "undefined" ? entry["invokername"] : invokerName;
+            invokerUniqueId = typeof(entry["invokeruid"]) !== "undefined" ? entry["invokeruid"] : invokerUniqueId;
 
             client = tree.findClient(parseInt(entry["clid"]));
 
             if(!client) {
                 if(parseInt(entry["client_type_exact"]) == ClientType.CLIENT_MUSIC) {
-                    client = new MusicClientEntry(parseInt(entry["clid"]), entry["client_nickname"]);
+                    client = new MusicClientEntry(parseInt(entry["clid"]), entry["client_nickname"]) as any;
                 } else {
                     client = new ClientEntry(parseInt(entry["clid"]), entry["client_nickname"]);
                 }
@@ -498,7 +491,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 /* TODO: Apply all other properties here as well and than register him */
                 client.properties.client_unique_identifier = entry["client_unique_identifier"];
                 client.properties.client_type = parseInt(entry["client_type"]);
-                client = tree.insertClient(client, channel, { reason: reason_id, isServerJoin: parseInt(entry["cfid"]) === 0 });
+                client = tree.insertClient(client, channel, { reason: reasonId, isServerJoin: parseInt(entry["cfid"]) === 0 });
             } else {
                 tree.moveClient(client, channel);
             }
@@ -509,27 +502,27 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                     channel_from: old_channel ? old_channel.log_data() : undefined,
                     channel_to: channel ? channel.log_data() : undefined,
                     client: client.log_data(),
-                    invoker: this.loggable_invoker(invokeruid, invokerid, invokername),
-                    message:reason_msg,
-                    reason: parseInt(reason_id),
+                    invoker: this.loggable_invoker(invokerUniqueId, invokerId, invokerName),
+                    message:reasonMsg,
+                    reason: parseInt(reasonId),
                 });
 
-                if(reason_id == ViewReasonId.VREASON_USER_ACTION) {
+                if(reasonId == ViewReasonId.VREASON_USER_ACTION) {
                     if(own_channel == channel)
                         if(old_channel)
                             this.connection_handler.sound.play(Sound.USER_ENTERED);
                         else
                             this.connection_handler.sound.play(Sound.USER_ENTERED_CONNECT);
-                } else if(reason_id == ViewReasonId.VREASON_MOVED) {
+                } else if(reasonId == ViewReasonId.VREASON_MOVED) {
                     if(own_channel == channel)
                         this.connection_handler.sound.play(Sound.USER_ENTERED_MOVED);
-                } else if(reason_id == ViewReasonId.VREASON_CHANNEL_KICK) {
+                } else if(reasonId == ViewReasonId.VREASON_CHANNEL_KICK) {
                     if(own_channel == channel)
                         this.connection_handler.sound.play(Sound.USER_ENTERED_KICKED);
-                } else if(reason_id == ViewReasonId.VREASON_SYSTEM) {
+                } else if(reasonId == ViewReasonId.VREASON_SYSTEM) {
 
                 } else {
-                    console.warn(tr("Unknown reasonid for %o"), reason_id);
+                    console.warn(tr("Unknown reasonid for %o"), reasonId);
                 }
             }
 
@@ -552,7 +545,6 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             client.updateVariables(...updates);
 
             if(client instanceof LocalClientEntry) {
-                client.initializeListener();
                 this.connection_handler.update_voice_status();
                 const conversations = this.connection.client.getChannelConversations();
                 conversations.setSelectedConversation(conversations.findOrCreateConversation(client.currentChannel().channelId));
@@ -941,6 +933,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             key: string,
             value: string
         }[] = [];
+
         for(let key in json) {
             if(key === "invokerid") continue;
             if(key === "invokername") continue;
@@ -1064,14 +1057,14 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
         const bot_id = parseInt(json["bot_id"]);
         const client = this.connection.client.channelTree.find_client_by_dbid(bot_id);
-        if(!client) {
+        if(!client || !(client instanceof MusicClientEntry)) {
             log.warn(LogCategory.CLIENT, tr("Received music bot status update for unknown bot (%d)"), bot_id);
             return;
         }
 
-        client.events.fire("music_status_update", {
-            player_replay_index: parseInt(json["player_replay_index"]),
-            player_buffered_index: parseInt(json["player_buffered_index"])
+        client.events.fire("notify_music_player_timestamp", {
+            replayIndex: parseInt(json["player_replay_index"]),
+            bufferedIndex: parseInt(json["player_buffered_index"])
         });
     }
 
@@ -1080,7 +1073,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
         const bot_id = parseInt(json["bot_id"]);
         const client = this.connection.client.channelTree.find_client_by_dbid(bot_id);
-        if(!client) {
+        if(!client || !(client instanceof MusicClientEntry)) {
             log.warn(LogCategory.CLIENT, tr("Received music bot status update for unknown bot (%d)"), bot_id);
             return;
         }
@@ -1092,80 +1085,8 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             JSON.map_to(song, json);
         }
 
-        client.events.fire("music_song_change", {
-            song: song
-        });
-    }
-
-    handleNotifyPlaylistSongAdd(json: any[]) {
-        json = json[0];
-
-        const playlist_id = parseInt(json["playlist_id"]);
-        const client = this.connection.client.channelTree.clients.find(e => e instanceof MusicClientEntry && e.properties.client_playlist_id === playlist_id);
-        if(!client) {
-            log.warn(LogCategory.CLIENT, tr("Received playlist song add event, but we've no music bot for the playlist (%d)"), playlist_id);
-            return;
-        }
-
-        client.events.fire("playlist_song_add", {
-            song: {
-                song_id: parseInt(json["song_id"]),
-                song_invoker: json["song_invoker"],
-                song_previous_song_id: parseInt(json["song_previous_song_id"]),
-                song_url: json["song_url"],
-                song_url_loader: json["song_url_loader"],
-
-                song_loaded: json["song_loaded"] == true || json["song_loaded"] == "1",
-                song_metadata: json["song_metadata"]
-            }
-        });
-    }
-
-    handleNotifyPlaylistSongRemove(json: any[]) {
-        json = json[0];
-
-        const playlist_id = parseInt(json["playlist_id"]);
-        const client = this.connection.client.channelTree.clients.find(e => e instanceof MusicClientEntry && e.properties.client_playlist_id === playlist_id);
-        if(!client) {
-            log.warn(LogCategory.CLIENT, tr("Received playlist song remove event, but we've no music bot for the playlist (%d)"), playlist_id);
-            return;
-        }
-
-        const song_id = parseInt(json["song_id"]);
-        client.events.fire("playlist_song_remove", { song_id: song_id });
-    }
-
-    handleNotifyPlaylistSongReorder(json: any[]) {
-        json = json[0];
-
-        const playlist_id = parseInt(json["playlist_id"]);
-        const client = this.connection.client.channelTree.clients.find(e => e instanceof MusicClientEntry && e.properties.client_playlist_id === playlist_id);
-        if(!client) {
-            log.warn(LogCategory.CLIENT, tr("Received playlist song reorder event, but we've no music bot for the playlist (%d)"), playlist_id);
-            return;
-        }
-
-        const song_id = parseInt(json["song_id"]);
-        const previous_song_id = parseInt(json["song_previous_song_id"]);
-        client.events.fire("playlist_song_reorder", { song_id: song_id, previous_song_id: previous_song_id });
-    }
-
-    handleNotifyPlaylistSongLoaded(json: any[]) {
-        json = json[0];
-
-        const playlist_id = parseInt(json["playlist_id"]);
-        const client = this.connection.client.channelTree.clients.find(e => e instanceof MusicClientEntry && e.properties.client_playlist_id === playlist_id);
-        if(!client) {
-            log.warn(LogCategory.CLIENT, tr("Received playlist song loaded event, but we've no music bot for the playlist (%d)"), playlist_id);
-            return;
-        }
-
-        const song_id = parseInt(json["song_id"]);
-        client.events.fire("playlist_song_loaded", {
-            song_id: song_id,
-            success: json["success"] == 1,
-            error_msg: json["load_error_msg"],
-            metadata: json["song_metadata"]
+        client.events.fire("notify_music_player_song_change", {
+            newSong: song
         });
     }
 }

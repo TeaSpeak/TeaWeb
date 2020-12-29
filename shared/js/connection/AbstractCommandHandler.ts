@@ -41,7 +41,7 @@ export abstract class AbstractCommandHandlerBoss {
         this.single_command_handler = undefined;
     }
 
-    register_explicit_handler(command: string, callback: ExplicitCommandHandler) {
+    register_explicit_handler(command: string, callback: ExplicitCommandHandler) : () => void {
         this.explicitHandlers[command] = this.explicitHandlers[command] || [];
         this.explicitHandlers[command].push(callback);
 

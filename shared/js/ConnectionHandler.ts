@@ -40,7 +40,7 @@ import {PrivateConversationManager} from "tc-shared/conversations/PrivateConvers
 import {SelectedClientInfo} from "./SelectedClientInfo";
 import {SideBarManager} from "tc-shared/SideBarManager";
 import {ServerEventLog} from "tc-shared/connectionlog/ServerEventLog";
-import {EventType} from "tc-shared/connectionlog/Definitions";
+import {PlaylistManager} from "tc-shared/music/PlaylistManager";
 
 export enum InputHardwareState {
     MISSING,
@@ -157,6 +157,7 @@ export class ConnectionHandler {
     serverFeatures: ServerFeatures;
 
     private sideBar: SideBarManager;
+    private playlistManager: PlaylistManager;
 
     private channelConversations: ChannelConversationManager;
     private privateConversations: PrivateConversationManager;
@@ -213,6 +214,7 @@ export class ConnectionHandler {
         this.channelTree = new ChannelTree(this);
         this.fileManager = new FileManager(this);
         this.permissions = new PermissionManager(this);
+        this.playlistManager = new PlaylistManager(this);
 
         this.sideBar = new SideBarManager(this);
         this.privateConversations = new PrivateConversationManager(this);
@@ -368,6 +370,10 @@ export class ConnectionHandler {
 
     getSideBar() : SideBarManager {
         return this.sideBar;
+    }
+
+    getPlaylistManager() : PlaylistManager {
+        return this.playlistManager;
     }
 
     initializeLocalClient(clientId: number, acceptedName: string) {
@@ -1055,6 +1061,9 @@ export class ConnectionHandler {
 
         this.sideBar?.destroy();
         this.sideBar = undefined;
+
+        this.playlistManager?.destroy();
+        this.playlistManager = undefined;
 
         this.clientInfoManager?.destroy();
         this.clientInfoManager = undefined;

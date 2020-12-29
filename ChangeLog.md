@@ -1,4 +1,9 @@
 # Changelog:
+* **29.12.20**
+    - Reimplemented the music bot control UI
+        - Fixing some bugs from earlier versions
+        - Added a volume change button to easily change the bots volume
+        
 * **22.12.20**
     - Fixed missing channel status icon update on channel type edit
     - Improved channel edit UI experience and fixed some bugs
@@ -33,7 +38,7 @@
     - Enabled context menus for all clickable client tags
     - Allowing to drag client tags
     - Fixed the context menu within popout windows for the web client
-    - Reworked the whole sidebar (Hightly decreased memory footprint)
+    - Reworked the whole sidebar (Highly decreased memory footprint)
     
 * **08.12.20**
     - Fixed the permission editor not resolving unique ids

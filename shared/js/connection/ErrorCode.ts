@@ -174,5 +174,6 @@ export enum ErrorCode {
 
     /** @deprecated Use SERVER_INSUFFICIENT_PERMISSIONS */
     PERMISSION_ERROR = ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS,
+    /** @deprecated Use DATABASE_EMPTY_RESULT */
     EMPTY_RESULT = ErrorCode.DATABASE_EMPTY_RESULT
 }

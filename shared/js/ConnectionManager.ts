@@ -35,7 +35,6 @@ export class ConnectionManager {
     private _container_channel_tree: JQuery;
     private _container_hostbanner: JQuery;
     private containerChannelVideo: ReplaceableContainer;
-    private containerSideBar: HTMLDivElement;
     private containerFooter: HTMLDivElement;
     private containerServerLog: HTMLDivElement;
 
@@ -156,6 +155,10 @@ export class ConnectionManager {
 
     all_connections() : ConnectionHandler[] {
         return this.connection_handlers;
+    }
+
+    getSidebarController() : SideBarController {
+        return this.sideBarController;
     }
 }
 
