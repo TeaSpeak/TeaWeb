@@ -3,7 +3,7 @@
     - Reimplemented the music bot control UI
         - Fixing some bugs from earlier versions
         - Added a volume change button to easily change the bots volume
-        
+
 * **22.12.20**
     - Fixed missing channel status icon update on channel type edit
     - Improved channel edit UI experience and fixed some bugs

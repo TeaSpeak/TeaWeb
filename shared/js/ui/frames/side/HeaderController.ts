@@ -160,8 +160,8 @@ export class SideHeaderController {
         }
         this.sendPing();
         this.sendPrivateConversationInfo();
-        this.sendChannelState("voice");
-        this.sendChannelState("text");
+        this.updateVoiceChannel();
+        this.updateTextChannel();
     }
 
     getConnectionHandler() : ConnectionHandler | undefined {
