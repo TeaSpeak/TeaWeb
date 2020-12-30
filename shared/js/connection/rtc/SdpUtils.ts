@@ -14,6 +14,7 @@ interface SdpCodec {
 const OPUS_VOICE_PAYLOAD_TYPE = 111;
 const OPUS_MUSIC_PAYLOAD_TYPE = 112;
 const H264_PAYLOAD_TYPE = 126;
+const VP8_PAYLOAD_TYPE = 120; /* 120 is the default codec format for Firefox. Firefox has problems when changing the payload types */
 
 export class SdpProcessor {
     private static readonly kAudioCodecs: SdpCodec[] = [
@@ -42,6 +43,12 @@ export class SdpProcessor {
 
     private static readonly kVideoCodecs: SdpCodec[] = [
         {
+            payload: VP8_PAYLOAD_TYPE,
+            codec: "VP8",
+            rate: 90000,
+            rtcpFb: [ "nack", "nack pli", "ccm fir", "transport-cc" ],
+        },
+        {
             payload: H264_PAYLOAD_TYPE,
             codec: "H264",
             rate: 90000,
@@ -50,10 +57,10 @@ export class SdpProcessor {
             fmtp: {
                 "level-asymmetry-allowed": 1,
                 "packetization-mode": 1,
-                "profile-level-id": "42e01f",
+                "profile-level-id": "4d0028",
                 "max-fr": 30,
             }
-        }
+        },
     ];
 
     private rtpRemoteChannelMapping: {[key: string]: number};
@@ -78,7 +85,7 @@ export class SdpProcessor {
 
     processIncomingSdp(sdpString: string, _mode: "offer" | "answer") : string {
         /* The server somehow does not encode the level id in hex */
-        sdpString = sdpString.replace(/profile-level-id=4325407/g, "profile-level-id=42e01f");
+        sdpString = sdpString.replace(/profile-level-id=4325407/g, "profile-level-id=4d0028");
 
         const sdp = sdpTransform.parse(sdpString);
         this.rtpRemoteChannelMapping = SdpProcessor.generateRtpSSrcMapping(sdp);
