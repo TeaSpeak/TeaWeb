@@ -1,5 +1,5 @@
 import {
-    BroadcastConstraints,
+    VideoBroadcastConfig,
     LocalVideoBroadcast,
     LocalVideoBroadcastEvents,
     LocalVideoBroadcastState,
@@ -28,7 +28,8 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
 
     private state: LocalVideoBroadcastState;
     private currentSource: VideoSource;
-    private currentConstrints: BroadcastConstraints;
+    private currentConfig: VideoBroadcastConfig;
+    private signaledConfig: VideoBroadcastConfig | undefined;
     private broadcastStartId: number;
 
     private localStartPromise: Promise<void>;
@@ -72,7 +73,7 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
         return Promise.resolve(undefined);
     }
 
-    async changeSource(source: VideoSource, constraints: BroadcastConstraints): Promise<void> {
+    async changeSource(source: VideoSource, constraints: VideoBroadcastConfig): Promise<void> {
         let sourceRef = source.ref();
         try {
             if(this.currentSource !== source) {
@@ -91,7 +92,7 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
                 }
 
                 /* Apply the constraints to the current source */
-                await this.doApplyConstraints(constraints, source);
+                await this.doApplyLocalConstraints(constraints, source);
 
                 const startId = ++this.broadcastStartId;
                 let rtcBroadcastType: RTCBroadcastableTrackType = this.type === "camera" ? "video" : "video-screen";
@@ -108,7 +109,7 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
                 }
 
                 this.setCurrentSource(sourceRef);
-            } else if(!_.isEqual(this.currentConstrints, constraints)) {
+            } else if(!_.isEqual(this.currentConfig, constraints)) {
                 console.error("Constraints changed");
                 await this.applyConstraints(constraints);
             }
@@ -120,12 +121,12 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
     private setCurrentSource(source: VideoSource | undefined) {
         if(this.currentSource) {
             this.currentSource.deref();
-            this.currentConstrints = undefined;
+            this.currentConfig = undefined;
         }
         this.currentSource = source?.ref();
     }
 
-    async startBroadcasting(source: VideoSource, constraints: BroadcastConstraints): Promise<void> {
+    async startBroadcasting(source: VideoSource, constraints: VideoBroadcastConfig): Promise<void> {
         const sourceRef = source.ref();
         while(this.localStartPromise) {
             await this.localStartPromise;
@@ -141,7 +142,7 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
         }
     }
 
-    private async doStartBroadcast(source: VideoSource, constraints: BroadcastConstraints) {
+    private async doStartBroadcast(source: VideoSource, constraints: VideoBroadcastConfig) {
         const videoTracks = source.getStream().getVideoTracks();
         if(videoTracks.length === 0) {
             throw tr("missing video stream track");
@@ -157,7 +158,7 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
         }
 
         try {
-            await this.applyConstraints(constraints);
+            await this.doApplyLocalConstraints(constraints, this.currentSource);
         } catch (error) {
             if(this.broadcastStartId !== startId) {
                 /* broadcast start has been canceled */
@@ -194,7 +195,7 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
         }
 
         try {
-            await this.handle.getRTCConnection().startTrackBroadcast(rtcBroadcastType);
+            await this.handle.getRTCConnection().startVideoBroadcast(this.type, this.currentConfig);
         } catch (error) {
             if(this.broadcastStartId !== startId) {
                 /* broadcast start has been canceled */
@@ -210,14 +211,27 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
             return;
         }
 
+        this.signaledConfig = Object.assign({}, this.currentConfig);
         this.setState({ state: "broadcasting" });
     }
 
-    async applyConstraints(constraints: BroadcastConstraints): Promise<void> {
-        await this.doApplyConstraints(constraints, this.currentSource);
+    async applyConstraints(constraints: VideoBroadcastConfig): Promise<void> {
+        await this.doApplyLocalConstraints(constraints, this.currentSource);
+
+        if(this.signaledConfig?.keyframeInterval !== constraints.keyframeInterval ||
+            this.signaledConfig?.maxBandwidth !== constraints.maxBandwidth
+        ) {
+            try {
+                await this.handle.getRTCConnection().changeVideoBroadcastConfig(this.type, constraints);
+                this.signaledConfig = Object.assign({}, constraints);
+            } catch (error) {
+                /* Really rethrow it? */
+                throw error;
+            }
+        }
     }
 
-    private async doApplyConstraints(constraints: BroadcastConstraints, source: VideoSource): Promise<void> {
+    private async doApplyLocalConstraints(constraints: VideoBroadcastConfig, source: VideoSource): Promise<void> {
         const capabilities = source.getCapabilities();
         const videoConstraints: MediaTrackConstraints = {};
 
@@ -249,9 +263,7 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
         }
 
         await source.getStream().getVideoTracks()[0]?.applyConstraints(constraints);
-        this.currentConstrints = constraints;
-
-        /* TODO: Bandwidth update? */
+        this.currentConfig = constraints;
     }
 
     stopBroadcasting(skipRtcStop?: boolean, stopState?: LocalVideoBroadcastState) {
@@ -296,11 +308,10 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
             }
 
             this.setState({ state: "initializing" });
-            let rtcBroadcastType: RTCBroadcastableTrackType = this.type === "camera" ? "video" : "video-screen";
             const startId = ++this.broadcastStartId;
 
             try {
-                await this.handle.getRTCConnection().startTrackBroadcast(rtcBroadcastType);
+                await this.handle.getRTCConnection().startVideoBroadcast(this.type, this.currentConfig);
             } catch (error) {
                 if(this.broadcastStartId !== startId) {
                     /* broadcast start has been canceled */
@@ -313,8 +324,8 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
         })();
     }
 
-    getConstraints(): BroadcastConstraints | undefined {
-        return this.currentConstrints;
+    getConstraints(): VideoBroadcastConfig | undefined {
+        return this.currentConfig;
     }
 }
 

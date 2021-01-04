@@ -4,7 +4,7 @@ import {ModalVideoSourceEvents} from "tc-shared/ui/modal/video-source/Definition
 import {ModalVideoSource} from "tc-shared/ui/modal/video-source/Renderer";
 import {getVideoDriver, VideoPermissionStatus, VideoSource} from "tc-shared/video/VideoSource";
 import {LogCategory, logError, logWarn} from "tc-shared/log";
-import {BroadcastConstraints, VideoBroadcastType} from "tc-shared/connection/VideoConnection";
+import {VideoBroadcastConfig, VideoBroadcastType} from "tc-shared/connection/VideoConnection";
 import {Settings, settings} from "tc-shared/settings";
 import {tr} from "tc-shared/i18n/localize";
 
@@ -19,14 +19,14 @@ export type VideoSourceModalAction = {
 } | {
     mode: "edit",
     source: VideoSource,
-    broadcastConstraints: BroadcastConstraints
+    broadcastConstraints: VideoBroadcastConfig
 };
 
 /**
  * @param type The video type which should be prompted
  * @param mode
  */
-export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, mode: VideoSourceModalAction) : Promise<{ source: VideoSource | undefined, constraints: BroadcastConstraints | undefined }> {
+export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, mode: VideoSourceModalAction) : Promise<{ source: VideoSource | undefined, config: VideoBroadcastConfig | undefined }> {
     const controller = new VideoSourceController(type);
 
     let defaultSelectDevice: string | true;
@@ -41,7 +41,7 @@ export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, mode
                 controller.destroy();
                 return {
                     source: resultSource,
-                    constraints: resultConstraints
+                    config: resultConstraints
                 };
             } else {
                 /* Select failed. We'll open the modal and show the error. */
@@ -91,11 +91,11 @@ export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, mode
     controller.destroy();
     return {
         source: resultSource,
-        constraints: resultConstraints
+        config: resultConstraints
     };
 }
 
-function updateBroadcastConstraintsFromSource(source: VideoSource, constraints: BroadcastConstraints) {
+function updateBroadcastConfigFromSource(source: VideoSource, constraints: VideoBroadcastConfig) {
     const videoTrack = source.getStream().getVideoTracks()[0];
     const trackSettings = videoTrack.getSettings();
 
@@ -104,7 +104,7 @@ function updateBroadcastConstraintsFromSource(source: VideoSource, constraints: 
     constraints.maxFrameRate = trackSettings.frameRate;
 }
 
-async function generateAndApplyDefaultConstraints(source: VideoSource) : Promise<BroadcastConstraints> {
+async function generateAndApplyDefaultConfig(source: VideoSource) : Promise<VideoBroadcastConfig> {
     const videoTrack = source.getStream().getVideoTracks()[0];
 
     let maxHeight = settings.static_global(Settings.KEY_VIDEO_DEFAULT_MAX_HEIGHT);
@@ -116,7 +116,12 @@ async function generateAndApplyDefaultConstraints(source: VideoSource) : Promise
     maxHeight = Math.min(maxHeight, capabilities.maxHeight);
     maxWidth = Math.min(maxWidth, capabilities.maxWidth);
 
-    const broadcastConstraints: BroadcastConstraints = {} as any;
+    /* FIXME: Get these values somewhere else! */
+    const broadcastConstraints: VideoBroadcastConfig = {
+        maxBandwidth: 1_600_000,
+        keyframeInterval: 0
+    } as VideoBroadcastConfig;
+
     {
         let ratio = 1;
 
@@ -137,23 +142,22 @@ async function generateAndApplyDefaultConstraints(source: VideoSource) : Promise
         }
     }
 
-    broadcastConstraints.dynamicQuality = true;
-    broadcastConstraints.dynamicFrameRate = true;
-    broadcastConstraints.maxBandwidth = 10_000_000;
+    broadcastConstraints.dynamicQuality = settings.static_global(Settings.KEY_VIDEO_DYNAMIC_QUALITY);
+    broadcastConstraints.dynamicFrameRate = settings.static_global(Settings.KEY_VIDEO_DYNAMIC_FRAME_RATE);
 
     try {
-        await applyBroadcastConstraints(source, broadcastConstraints);
+        await applyBroadcastConfig(source, broadcastConstraints);
     } catch (error) {
-        logWarn(LogCategory.VIDEO, tr("Failed to apply initial default broadcast constraints: %o"), error);
+        logWarn(LogCategory.VIDEO, tr("Failed to apply initial default broadcast config: %o"), error);
     }
 
-    updateBroadcastConstraintsFromSource(source, broadcastConstraints);
+    updateBroadcastConfigFromSource(source, broadcastConstraints);
 
     return broadcastConstraints;
 }
 
 /* May throws an overconstraint error */
-async function applyBroadcastConstraints(source: VideoSource, constraints: BroadcastConstraints) {
+async function applyBroadcastConfig(source: VideoSource, constraints: VideoBroadcastConfig) {
     const videoTrack = source.getStream().getVideoTracks()[0];
     if(!videoTrack) { return; }
 
@@ -183,7 +187,7 @@ class VideoSourceController {
     private readonly type: VideoBroadcastType;
 
     private currentSource: VideoSource | string;
-    private currentConstraints: BroadcastConstraints;
+    private currentConstraints: VideoBroadcastConfig;
 
     /* preselected current source id */
     private currentSourceId: string;
@@ -204,6 +208,8 @@ class VideoSourceController {
         this.events.on("query_start_button", () => this.notifyStartButton());
         this.events.on("query_setting_dimension", () => this.notifySettingDimension());
         this.events.on("query_setting_framerate", () => this.notifySettingFramerate());
+        this.events.on("query_setting_bitrate_max", () => this.notifySettingBitrate());
+        this.events.on("query_setting_keyframe_sender", () => this.notifySettingKeyframeInterval());
 
         this.events.on("action_request_permissions", () => {
             getVideoDriver().requestPermissions().then(result => {
@@ -289,6 +295,14 @@ class VideoSourceController {
         this.events.on("action_setting_framerate", event => {
             this.currentConstraints.maxFrameRate = event.frameRate;
         });
+
+        this.events.on("action_setting_bitrate_max", event => {
+            this.currentConstraints.maxBandwidth = event.bitrate;
+        });
+
+        this.events.on("action_setting_keyframe_sender", event => {
+            this.currentConstraints.keyframeInterval = event.interval;
+        });
     }
 
     destroy() {
@@ -310,7 +324,7 @@ class VideoSourceController {
             if(this.currentConstraints) {
                 try {
                     /* TODO: Automatically scale down resolution if new one isn't capable of supplying our current resolution */
-                    await applyBroadcastConstraints(source, this.currentConstraints);
+                    await applyBroadcastConfig(source, this.currentConstraints);
                 } catch (error) {
                     logWarn(LogCategory.VIDEO, tr("Failed to apply broadcast constraints to new source: %o"), error);
                     this.currentConstraints = undefined;
@@ -318,7 +332,7 @@ class VideoSourceController {
             }
 
             if(!this.currentConstraints) {
-                this.currentConstraints = await generateAndApplyDefaultConstraints(source);
+                this.currentConstraints = await generateAndApplyDefaultConfig(source);
             }
         }
 
@@ -328,9 +342,11 @@ class VideoSourceController {
         this.notifyCurrentSource();
         this.notifySettingDimension();
         this.notifySettingFramerate();
+        this.notifySettingBitrate();
+        this.notifySettingKeyframeInterval();
     }
 
-    async useSettings(source: VideoSource, constraints: BroadcastConstraints) {
+    async useSettings(source: VideoSource, constraints: VideoBroadcastConfig) {
         if(typeof this.currentSource === "object") {
             this.currentSource.deref();
         }
@@ -342,6 +358,8 @@ class VideoSourceController {
         this.notifyCurrentSource();
         this.notifySettingDimension();
         this.notifySettingFramerate();
+        this.notifySettingBitrate();
+        this.notifySettingKeyframeInterval();
     }
 
     async selectSource(sourceId: string) : Promise<boolean> {
@@ -387,7 +405,7 @@ class VideoSourceController {
         return typeof this.currentSource === "object" ? this.currentSource : undefined;
     }
 
-    getBroadcastConstraints() : BroadcastConstraints {
+    getBroadcastConstraints() : VideoBroadcastConfig {
         return this.currentConstraints;
     }
 
@@ -528,4 +546,23 @@ class VideoSourceController {
             this.events.fire_react("notify_settings_framerate", { frameRate: undefined });
         }
     };
+
+    private notifySettingBitrate() {
+        if(this.currentConstraints) {
+            this.events.fire_react("notify_setting_bitrate_max", {
+                bitrate: {
+                    allowedBitrate: 0,
+                    bitrate: this.currentConstraints.maxBandwidth
+                }
+            });
+        } else {
+            this.events.fire_react("notify_setting_bitrate_max",  undefined);
+        }
+    }
+
+    private notifySettingKeyframeInterval() {
+        this.events.fire_react("notify_settings_keyframe_sender", {
+            interval: this.currentConstraints?.keyframeInterval || 0
+        });
+    }
 }

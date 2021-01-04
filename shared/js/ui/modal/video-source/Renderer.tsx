@@ -2,12 +2,12 @@ import {Registry} from "tc-shared/events";
 import * as React from "react";
 import {
     DeviceListResult,
-    ModalVideoSourceEvents, ScreenCaptureDeviceList, SettingFrameRate,
+    ModalVideoSourceEvents, ScreenCaptureDeviceList, SettingBitrate, SettingFrameRate,
     VideoPreviewStatus, VideoSourceState
 } from "tc-shared/ui/modal/video-source/Definitions";
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
-import {Select} from "tc-shared/ui/react-elements/InputField";
+import {BoxedInputField, Select} from "tc-shared/ui/react-elements/InputField";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {useContext, useEffect, useRef, useState} from "react";
 import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
@@ -16,6 +16,7 @@ import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
 import {Tab, TabEntry} from "tc-shared/ui/react-elements/Tab";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {ScreenCaptureDevice} from "tc-shared/video/VideoSource";
+import {useTr} from "tc-shared/ui/react-elements/Helper";
 
 const cssStyle = require("./Renderer.scss");
 const ModalEvents = React.createContext<Registry<ModalVideoSourceEvents>>(undefined);
@@ -540,6 +541,49 @@ const SettingFramerate = () => {
     );
 }
 
+const SettingBps = () => {
+    const events = useContext(ModalEvents);
+
+    const [ bitrate, setBitrate ] = useState<SettingBitrate | undefined>(() => {
+        events.fire("query_setting_bitrate_max");
+        return undefined;
+    });
+    events.reactUse("notify_setting_bitrate_max", event => {
+        setBitrate(event.bitrate);
+        setCurrentValue(undefined);
+    });
+
+    const [ currentValue, setCurrentValue ] = useState<string>(undefined);
+
+    const advanced = useContext(AdvancedSettings);
+    if(!advanced) {
+        return null;
+    }
+
+    return (
+        <div className={cssStyle.setting + " " + cssStyle.dimensions}>
+            <div className={cssStyle.title}>
+                <div><Translatable>Bitrate</Translatable></div>
+                <div>{bitrate ? (bitrate.bitrate / 1000).toFixed() + " kbps" : ""}</div>
+            </div>
+            <div className={cssStyle.body}>
+                <BoxedInputField
+                    value={bitrate ? typeof currentValue === "string" ? currentValue : (bitrate.bitrate / 1000).toFixed(0) : " "}
+                    placeholder={tr("loading")}
+                    onChange={value => {
+                        const numValue = (parseInt(value) * 1000) || 0;
+                        bitrate.bitrate = numValue;
+                        events.fire("action_setting_bitrate_max", { bitrate: numValue });
+                        setCurrentValue(undefined);
+                    }}
+                    onInput={value => setCurrentValue(value)}
+                    type={"number"}
+                />
+            </div>
+        </div>
+    );
+}
+
 const calculateBps = (width: number, height: number, frameRate: number) => {
     /* Based on the tables showed here: http://www.lighterra.com/papers/videoencodingh264/ */
     const estimatedBitsPerPixed = 3.9;
@@ -609,6 +653,7 @@ const Settings = React.memo(() => {
                 <div className={cssStyle.sectionBody}>
                     <SettingDimension />
                     <SettingFramerate />
+                    <SettingBps />
                     <BpsInfo />
                 </div>
             </div>

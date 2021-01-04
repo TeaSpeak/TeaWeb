@@ -204,12 +204,10 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
                     createServerModal(this, properties => {
                         log.info(LogCategory.SERVER, tr("Changing server properties %o"), properties);
                         console.log(tr("Changed properties: %o"), properties);
-                        if (properties) {
-                            if(Object.keys(properties)) {
-                                return this.channelTree.client.serverConnection.send_command("serveredit", properties).then(() => {
-                                    this.channelTree.client.sound.play(Sound.SERVER_EDITED_SELF);
-                                });
-                            }
+                        if (Object.keys(properties || {}).length > 0) {
+                            return this.channelTree.client.serverConnection.send_command("serveredit", properties).then(() => {
+                                this.channelTree.client.sound.play(Sound.SERVER_EDITED_SELF);
+                            });
                         }
                         return Promise.resolve();
                     });

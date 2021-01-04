@@ -77,7 +77,7 @@ export type LocalVideoBroadcastState = {
     state: "broadcasting"
 }
 
-export interface BroadcastConstraints {
+export interface VideoBroadcastConfig {
     /**
      * Ideal and max video width
      */
@@ -94,9 +94,16 @@ export interface BroadcastConstraints {
     dynamicQuality: boolean,
 
     /**
-     * Max bandwidth which should be used (in bits/second)
+     * Max bandwidth which should be used (in bits/second).
+     * `0` indicates no bandwidth limit.
      */
-    maxBandwidth: number,
+    maxBandwidth: number | 0,
+
+    /**
+     * Interval of enforcing keyframes.
+     * Zero means that no keyframes will be enforced.
+     */
+    keyframeInterval: number | 0,
 
     /**
      * Maximal frame rate for the video.
@@ -124,16 +131,14 @@ export interface LocalVideoBroadcast {
      * @param source The source of the broadcast (No ownership will be taken. The voice connection must ref the source by itself!)
      * @param constraints
      */
-    startBroadcasting(source: VideoSource, constraints: BroadcastConstraints) : Promise<void>;
+    startBroadcasting(source: VideoSource, constraints: VideoBroadcastConfig) : Promise<void>;
 
     /**
      * @param source The source of the broadcast (No ownership will be taken. The voice connection must ref the source by itself!)
      * @param constraints
      */
-    changeSource(source: VideoSource, constraints: BroadcastConstraints) : Promise<void>;
-
-    getConstraints() : BroadcastConstraints | undefined;
-    applyConstraints(constraints: BroadcastConstraints) : Promise<void>;
+    changeSource(source: VideoSource, constraints: VideoBroadcastConfig) : Promise<void>;
+    getConstraints() : VideoBroadcastConfig | undefined;
 
     stopBroadcasting();
 }
