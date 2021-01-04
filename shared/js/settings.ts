@@ -555,6 +555,20 @@ export class Settings extends StaticSettings {
         valueType: "number",
     };
 
+    static readonly KEY_VIDEO_DYNAMIC_QUALITY: ValuedSettingsKey<boolean> = {
+        key: 'video_dynamic_quality',
+        defaultValue: true,
+        description: "Dynamically decrease video quality in order to archive a higher framerate.",
+        valueType: "boolean",
+    };
+
+    static readonly KEY_VIDEO_DYNAMIC_FRAME_RATE: ValuedSettingsKey<boolean> = {
+        key: 'video_dynamic_frame_rate',
+        defaultValue: true,
+        description: "Dynamically decrease video framerate to allow higher video resolutions.",
+        valueType: "boolean",
+    };
+
     static readonly FN_LOG_ENABLED: (category: string) => SettingsKey<boolean> = category => {
         return {
             key: "log." + category.toLowerCase() + ".enabled",

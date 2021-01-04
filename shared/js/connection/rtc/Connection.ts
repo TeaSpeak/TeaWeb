@@ -11,6 +11,7 @@ import {SdpCompressor, SdpProcessor} from "./SdpUtils";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {WhisperTarget} from "tc-shared/voice/VoiceWhisper";
 import {globalAudioContext} from "tc-backend/audio/player";
+import {VideoBroadcastConfig, VideoBroadcastType} from "tc-shared/connection/VideoConnection";
 
 const kSdpCompressionMode = 1;
 
@@ -665,37 +666,90 @@ export class RTCConnection {
         return oldTrack;
     }
 
-    /**
-     * @param type
-     * @throws a string on error
-     */
-    public async startTrackBroadcast(type: RTCBroadcastableTrackType) : Promise<void> {
-        if(typeof this.currentTransceiver[type] !== "object") {
-            throw tr("missing transceiver");
-        }
-
+    public async startVideoBroadcast(type: VideoBroadcastType, config: VideoBroadcastConfig) {
+        let track: RTCBroadcastableTrackType;
+        let broadcastType: number;
         switch (type) {
-            case "audio":
-                if(!this.audioSupport) {
-                    throw tr("audio support isn't enabled");
-                }
+            case "camera":
+                broadcastType = 0;
+                track = "video";
                 break;
 
-            case "video":
-            case "video-screen":
+            case "screen":
+                broadcastType = 1;
+                track = "video-screen";
                 break;
 
             default:
-                throw tr("invalid broadcast type");
+                throw tr("invalid video broadcast type");
         }
 
+        let payload = {};
+        payload["broadcast_keyframe_interval"] = config.keyframeInterval;
+        payload["broadcast_bitrate_max"] = config.maxBandwidth;
+        payload["ssrc"] =  this.sdpProcessor.getLocalSsrcFromFromMediaId(this.currentTransceiver[track].mid);
+        payload["type"] = broadcastType;
+
         try {
-            await this.connection.send_command("rtcbroadcast", {
-                type: broadcastableTrackTypeToNumber(type),
-                ssrc: this.sdpProcessor.getLocalSsrcFromFromMediaId(this.currentTransceiver[type].mid)
+            await this.connection.send_command("broadcastvideo", payload);
+        } catch (error) {
+            if(error instanceof CommandResult) {
+                if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+                    throw tr("failed on permission") + " " + this.connection.client.permissions.getFailedPermission(error);
+                }
+
+                error = error.formattedMessage();
+            }
+            logError(LogCategory.WEBRTC, tr("failed to start %s broadcast: %o"), type, error);
+            throw tr("failed to signal broadcast start");
+        }
+    }
+
+    public async changeVideoBroadcastConfig(type: VideoBroadcastType, config: VideoBroadcastConfig) {
+        let track: RTCBroadcastableTrackType;
+        let broadcastType: number;
+        switch (type) {
+            case "camera":
+                broadcastType = 0;
+                track = "video";
+                break;
+
+            case "screen":
+                broadcastType = 1;
+                track = "video-screen";
+                break;
+
+            default:
+                throw tr("invalid video broadcast type");
+        }
+
+        let payload = {};
+        payload["broadcast_keyframe_interval"] = config.keyframeInterval;
+        payload["broadcast_bitrate_max"] = config.maxBandwidth;
+        payload["bt"] = broadcastType;
+
+        try {
+            await this.connection.send_command("broadcastvideoconfigure", payload);
+        } catch (error) {
+            if(error instanceof CommandResult) {
+                if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+                    throw tr("failed on permission") + " " + this.connection.client.permissions.getFailedPermission(error);
+                }
+
+                error = error.formattedMessage();
+            }
+            logError(LogCategory.WEBRTC, tr("failed to update %s broadcast: %o"), type, error);
+            throw tr("failed to update broadcast config");
+        }
+    }
+
+    public async startAudioBroadcast() {
+        try {
+            await this.connection.send_command("broadcastaudio", {
+                ssrc: this.sdpProcessor.getLocalSsrcFromFromMediaId(this.currentTransceiver["audio"].mid)
             });
         } catch (error) {
-            logError(LogCategory.WEBRTC, tr("failed to start %s broadcast: %o"), type, error);
+            logError(LogCategory.WEBRTC, tr("failed to start %s broadcast: %o"), "audio", error);
             throw tr("failed to signal broadcast start");
         }
     }
@@ -727,10 +781,30 @@ export class RTCConnection {
     }
 
     public stopTrackBroadcast(type: RTCBroadcastableTrackType) {
-        this.connection.send_command("rtcbroadcast", {
-            type: broadcastableTrackTypeToNumber(type),
-            ssrc: 0
-        }).catch(error => {
+        let promise: Promise<any>;
+        switch (type) {
+            case "audio":
+                promise = this.connection.send_command("broadcastaudio", {
+                    ssrc: 0
+                });
+                break;
+
+            case "video-screen":
+                promise = this.connection.send_command("broadcastvideo", {
+                    type: 1,
+                    ssrc: 0
+                });
+                break;
+
+            case "video":
+                promise = this.connection.send_command("broadcastvideo", {
+                    type: 0,
+                    ssrc: 0
+                });
+                break;
+        }
+
+        promise.catch(error => {
             logWarn(LogCategory.WEBRTC, tr("Failed to signal track broadcast stop: %o"), error);
         });
     }

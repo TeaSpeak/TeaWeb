@@ -51,6 +51,11 @@ export type SettingFrameRate = {
     current: number
 };
 
+export type SettingBitrate = {
+    allowedBitrate: number | -1
+    bitrate: number | 0,
+};
+
 export interface ModalVideoSourceEvents {
     action_cancel: {},
     action_start: {},
@@ -58,6 +63,8 @@ export interface ModalVideoSourceEvents {
     action_select_source: { id: string | undefined },
     action_setting_dimension: { width: number, height: number },
     action_setting_framerate: { frameRate: number },
+    action_setting_bitrate_max: { bitrate: number | 0 },
+    action_setting_keyframe_sender: { interval: number | 0 },
     action_toggle_screen_capture_device_select: { shown: boolean },
     action_preselect_screen_capture_device: { deviceId: string },
 
@@ -67,7 +74,9 @@ export interface ModalVideoSourceEvents {
     query_start_button: {},
     query_setting_dimension: {},
     query_setting_framerate: {},
-    query_screen_capture_devices: { }
+    query_setting_bitrate_max: {},
+    query_setting_keyframe_sender: {},
+    query_screen_capture_devices: {}
 
     notify_source: { state: VideoSourceState }
     notify_device_list: { status: DeviceListResult },
@@ -91,7 +100,13 @@ export interface ModalVideoSourceEvents {
     },
     notify_screen_capture_devices: {
         devices: ScreenCaptureDeviceList
-    }
+    },
+    notify_setting_bitrate_max: {
+        bitrate: SettingBitrate | undefined
+    },
+    notify_settings_keyframe_sender: {
+        interval: number | 0
+    },
 
     notify_destroy: {}
 }

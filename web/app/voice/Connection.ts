@@ -73,7 +73,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
             const localClientId = this.rtcConnection.getConnection().client.getClientId();
             for(const data of event.arguments) {
                 if(parseInt(data["clid"]) === localClientId) {
-                    this.rtcConnection.startTrackBroadcast("audio").catch(error => {
+                    this.rtcConnection.startAudioBroadcast().catch(error => {
                         logError(LogCategory.VOICE, tr("Failed to start voice audio broadcasting after channel switch: %o"), error);
                         this.localFailedReason = tr("Failed to start audio broadcasting");
                         this.setConnectionState(VoiceConnectionStatus.Failed);
@@ -422,7 +422,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
     private handleRtcConnectionStateChanged(event: RTCConnectionEvents["notify_state_changed"]) {
         switch (event.newState) {
             case RTPConnectionState.CONNECTED:
-                this.rtcConnection.startTrackBroadcast("audio").then(() => {
+                this.rtcConnection.startAudioBroadcast().then(() => {
                     logTrace(LogCategory.VOICE, tr("Local audio broadcasting has been started successfully"));
                     this.setConnectionState(VoiceConnectionStatus.Connected);
                 }).catch(error => {

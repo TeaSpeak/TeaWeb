@@ -193,14 +193,14 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
             }
 
             spawnVideoSourceSelectModal(event.broadcastType, event.quickSelect ? { mode: "select-quick", defaultDevice: event.defaultDevice } : { mode: "select-default", defaultDevice: event.defaultDevice })
-                .then(async ({ source, constraints }) => {
+                .then(async ({ source, config }) => {
                 if(!source) { return; }
 
                 try {
                     const broadcast = connection.getServerConnection().getVideoConnection().getLocalBroadcast(event.broadcastType);
                     if(broadcast.getState().state === "initializing" || broadcast.getState().state === "broadcasting") {
                         console.error("Change source");
-                        broadcast.changeSource(source, constraints).catch(error => {
+                        broadcast.changeSource(source, config).catch(error => {
                             logError(LogCategory.VIDEO, tr("Failed to change broadcast source: %o"), event.broadcastType, error);
                             if(typeof error !== "string") {
                                 error = tr("lookup the console for detail");
@@ -214,7 +214,7 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                         });
                     } else {
                         console.error("Start broadcast");
-                        broadcast.startBroadcasting(source, constraints).catch(error => {
+                        broadcast.startBroadcasting(source, config).catch(error => {
                             logError(LogCategory.VIDEO, tr("Failed to start %s broadcasting: %o"), event.broadcastType, error);
                             if(typeof error !== "string") {
                                 error = tr("lookup the console for detail");
@@ -252,7 +252,7 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
         }
 
         spawnVideoSourceSelectModal(event.broadcastType, { mode: "edit", source: broadcast.getSource(), broadcastConstraints: Object.assign({}, broadcast.getConstraints()) })
-        .then(async ({ source, constraints }) => {
+        .then(async ({ source, config }) => {
             if (!source) {
                 return;
             }
@@ -262,7 +262,7 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                 return;
             }
 
-            await broadcast.changeSource(source, constraints);
+            await broadcast.changeSource(source, config);
         }).catch(error => {
             logWarn(LogCategory.VIDEO, tr("Failed to edit video broadcast: %o"), error);
             createErrorModal(tr("Broadcast update failed"), tr("We failed to update the current video broadcast settings.\nThe old settings will be used.")).open();
