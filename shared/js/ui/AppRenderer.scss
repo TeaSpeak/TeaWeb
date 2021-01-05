@@ -1,0 +1,68 @@
+@import "../../css/static/properties";
+@import "../../css/static/mixin";
+
+.app {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+
+    padding: 5px;
+
+    /* TODO: Move this into the control bar? */
+    .controlBar {
+        z-index: 200;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+
+        flex-shrink: 0;
+        flex-grow: 0;
+
+        border-radius: 5px;
+
+        height: 2em;
+        width: 100%;
+    }
+
+    .channelTreeAndSidebar {
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        margin-top: 5px;
+        min-height: 27em;
+    }
+
+    .channelTree {
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+
+        background: var(--channel-tree-background);
+        min-width: 200px;
+        min-height: 100px;
+
+        overflow: hidden;
+        border-radius: 5px;
+    }
+
+    .sideBar {
+        min-width: 350px;
+    }
+
+    .containerLog {
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        flex-shrink: 1;
+        flex-grow: 1;
+
+        min-height: 0;
+    }
+}

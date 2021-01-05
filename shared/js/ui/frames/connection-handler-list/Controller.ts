@@ -1,23 +1,11 @@
 import {Registry} from "tc-shared/events";
 import {ConnectionListUIEvents, HandlerConnectionState} from "tc-shared/ui/frames/connection-handler-list/Definitions";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
-import {ConnectionHandlerList} from "tc-shared/ui/frames/connection-handler-list/Renderer";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
 import { tr } from "tc-shared/i18n/localize";
 
-export function initializeConnectionUIList() {
-    const container = document.getElementById("connection-handler-list");
-    const events = new Registry<ConnectionListUIEvents>();
-    //events.enableDebug("Handler-List");
-    initializeController(events);
-
-    ReactDOM.render(React.createElement(ConnectionHandlerList, { events: events }), container);
-}
-
-function initializeController(events: Registry<ConnectionListUIEvents>) {
+export function initializeConnectionListController(events: Registry<ConnectionListUIEvents>) {
     let registeredHandlerEvents: {[key: string]:(() => void)[]} = {};
 
     events.on("notify_destroy", () => {

@@ -23,6 +23,7 @@ const VersionsRenderer = () => (
     </React.Fragment>
 );
 
+/* FIXME: Outsource this! */
 const RtcStatus = () => {
     const statusController = useMemo(() => new StatusController(new Registry<ConnectionStatusEvents>()), []);
     statusController.setConnectionHandler(server_connections.active_connection());

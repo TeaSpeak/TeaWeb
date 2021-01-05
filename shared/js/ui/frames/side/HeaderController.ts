@@ -21,7 +21,7 @@ const ChannelInfoUpdateProperties: (keyof ChannelProperties)[] = [
 
 /* TODO: Remove the ping interval handler. It's currently still there since the clients are not emitting the event yet */
 export class SideHeaderController {
-    private readonly uiEvents: Registry<SideHeaderEvents>;
+    readonly uiEvents: Registry<SideHeaderEvents>;
 
     private connection: ConnectionHandler;
 

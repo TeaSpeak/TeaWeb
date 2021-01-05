@@ -467,7 +467,7 @@ export const ControlBar2 = (props: { events: Registry<ControlBarEvents>, classNa
     return (
         <Events.Provider value={props.events}>
             <ModeContext.Provider value={mode}>
-                <div className={cssStyle.controlBar + " " + cssStyle["mode-" + mode]}>
+                <div className={cssStyle.controlBar + " " + cssStyle["mode-" + mode] + " " + props.className}>
                     {items}
                 </div>
             </ModeContext.Provider>

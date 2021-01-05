@@ -20,13 +20,14 @@ import {spawnBanClient} from "tc-shared/ui/modal/ModalBanClient";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {tr, tra} from "tc-shared/i18n/localize";
-import {renderChannelTree} from "tc-shared/ui/tree/Controller";
+import {initializeChannelTreeUiEvents, renderChannelTree} from "tc-shared/ui/tree/Controller";
 import {ChannelTreePopoutController} from "tc-shared/ui/tree/popout/Controller";
 import {Settings, settings} from "tc-shared/settings";
 import {ClientIcon} from "svg-sprites/client-icons";
 
 import "./EntryTagsHandler";
 import {spawnChannelEditNew} from "tc-shared/ui/modal/channel-edit/Controller";
+import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 
 export interface ChannelTreeEvents {
     /* general tree notified */
@@ -96,7 +97,11 @@ export class ChannelTree {
 
     readonly popoutController: ChannelTreePopoutController;
 
-    private readonly tagContainer: JQuery;
+    /*
+     * We're constantly keeping the UI controller used (IDK yet how fast event attachment/detachment is)
+     * The main background is to speed up server tab switching.
+     */
+    mainTreeUiEvents: Registry<ChannelTreeUIEvents>;
 
     private selectedEntry: ChannelTreeEntry<any> | undefined;
     private showQueries: boolean;
@@ -112,8 +117,7 @@ export class ChannelTree {
         this.server = new ServerEntry(this, "undefined", undefined);
         this.popoutController = new ChannelTreePopoutController(this);
 
-        this.tagContainer = $.spawn("div").addClass("channel-tree-container");
-        renderChannelTree(this, this.tagContainer[0], { popoutButton: true });
+        this.mainTreeUiEvents = initializeChannelTreeUiEvents(this, { popoutButton: true });
 
         this.events.on("notify_channel_list_received", () => {
             if(!this.selectedEntry) {
@@ -122,10 +126,6 @@ export class ChannelTree {
         });
 
         this.reset();
-    }
-
-    tag_tree() : HTMLDivElement {
-        return this.tagContainer[0] as HTMLDivElement;
     }
 
     channelsOrdered() : ChannelEntry[] {
@@ -195,7 +195,9 @@ export class ChannelTree {
     }
 
     destroy() {
-        ReactDOM.unmountComponentAtNode(this.tagContainer[0]);
+        this.mainTreeUiEvents?.fire("notify_destroy");
+        this.mainTreeUiEvents?.destroy();
+        this.mainTreeUiEvents = undefined;
 
         if(this.server) {
             this.server.destroy();
@@ -207,7 +209,6 @@ export class ChannelTree {
         this.channelLast = undefined;
 
         this.popoutController.destroy();
-        this.tagContainer.remove();
         this.events.destroy();
     }
 
