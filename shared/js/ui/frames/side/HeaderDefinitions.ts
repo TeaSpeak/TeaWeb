@@ -7,7 +7,7 @@ export type SideHeaderStateNone = {
 
 export type SideHeaderStateConversation = {
     state: "conversation",
-    mode: "channel" | "private"
+    mode: "channel" | "private" | "server"
 };
 
 export type SideHeaderStateClient = {
@@ -38,12 +38,18 @@ export type PrivateConversationInfo = {
     open: number
 };
 
+export type SideHeaderServerInfo = {
+    name: string,
+    icon: RemoteIconInfo
+}
+
 export interface SideHeaderEvents {
     action_bot_manage: {},
     action_bot_add_song: {},
     action_switch_channel_chat: {},
     action_open_conversation: {},
 
+    query_server_info: {},
     query_current_channel_state: { mode: "voice" | "text" },
     query_private_conversations: {},
     query_client_info_own_client: {},
@@ -61,5 +67,8 @@ export interface SideHeaderEvents {
     },
     notify_client_info_own_client: {
         isOwnClient: boolean
+    },
+    notify_server_info: {
+        info: SideHeaderServerInfo | undefined
     }
 }

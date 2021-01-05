@@ -56,6 +56,10 @@ export class ChannelBarController {
         this.uiEvents.destroy();
     }
 
+    getChannelConversationController() : ChannelConversationController {
+        return this.channelConversations;
+    }
+
     setConnectionHandler(handler: ConnectionHandler) {
         if(this.currentConnection === handler) {
             return;

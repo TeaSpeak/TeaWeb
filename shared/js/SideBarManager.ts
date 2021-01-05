@@ -42,6 +42,10 @@ export class SideBarManager {
         this.setSideBarContent("channel");
     }
 
+    showServer() {
+        this.setSideBarContent("server");
+    }
+
     showClientInfo(client: ClientEntry) {
         this.connection.getSelectedClientInfo().setClient(client);
         this.setSideBarContent("client-info");

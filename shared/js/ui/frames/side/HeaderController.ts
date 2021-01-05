@@ -89,6 +89,7 @@ export class SideHeaderController {
         this.uiEvents.on("query_current_channel_state", event => this.sendChannelState(event.mode));
         this.uiEvents.on("query_private_conversations", () => this.sendPrivateConversationInfo());
         this.uiEvents.on("query_ping", () => this.sendPing());
+        this.uiEvents.on("query_server_info", () => this.sendServerInfo());
     }
 
     private initializeConnection() {
@@ -144,6 +145,11 @@ export class SideHeaderController {
         this.listenerConnection.push(this.connection.getPrivateConversations().events.on("notify_unread_count_changed", () => this.sendPrivateConversationInfo()));
         this.listenerConnection.push(this.connection.getPrivateConversations().events.on(["notify_conversation_destroyed", "notify_conversation_destroyed"], () => this.sendPrivateConversationInfo()));
         this.listenerConnection.push(this.connection.getSelectedClientInfo().events.on("notify_client_changed", () => this.sendClientInfoOwnClient()));
+        this.listenerConnection.push(this.connection.channelTree.server.events.on("notify_properties_updated", event => {
+            if("virtualserver_icon_id" in event.updated_properties || "virtualserver_name" in event.updated_properties) {
+                this.sendServerInfo();
+            }
+        }));
     }
 
     setConnectionHandler(connection: ConnectionHandler) {
@@ -301,6 +307,23 @@ export class SideHeaderController {
             this.uiEvents.fire_react("notify_client_info_own_client", { isOwnClient: this.connection.getSelectedClientInfo().getClient() instanceof LocalClientEntry });
         } else {
             this.uiEvents.fire_react("notify_client_info_own_client", { isOwnClient: false });
+        }
+    }
+
+    private sendServerInfo() {
+        if(this.connection?.connected) {
+            this.uiEvents.fire_react("notify_server_info", {
+                info: {
+                    name: this.connection.channelTree.server.properties.virtualserver_name,
+                    icon: {
+                        handlerId: this.connection.handlerId,
+                        serverUniqueId: this.connection.getCurrentServerUniqueId(),
+                        iconId: this.connection.channelTree.server.properties.virtualserver_icon_id
+                    }
+                }
+            })
+        } else {
+            this.uiEvents.fire_react("notify_server_info", { info: undefined });
         }
     }
 }
