@@ -13,6 +13,8 @@ html:root {
     flex-direction: column;
     justify-content: stretch;
 
+    flex-shrink: 0;
+
     .withBackground {
         background-color: var(--hostbanner-background);
         border-top-left-radius: 5px;

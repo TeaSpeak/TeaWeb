@@ -133,7 +133,7 @@ export interface ConnectParameters {
 export class ConnectionHandler {
     readonly handlerId: string;
 
-    private readonly event_registry: Registry<ConnectionEvents>;
+    private readonly events_: Registry<ConnectionEvents>;
     channelTree: ChannelTree;
 
     connection_state: ConnectionState = ConnectionState.UNCONNECTED;
@@ -159,13 +159,13 @@ export class ConnectionHandler {
 
     private clientInfoManager: SelectedClientInfo;
 
-    private _clientId: number = 0;
+    private localClientId: number = 0;
     private localClient: LocalClientEntry;
 
-    private _reconnect_timer: number;
-    private _reconnect_attempt: boolean = false;
+    private autoReconnectTimer: number;
+    private autoReconnectAttempt: boolean = false;
 
-    private _connect_initialize_id: number = 1;
+    private connectAttemptId: number = 1;
     private echoTestRunning = false;
 
     private pluginCmdRegistry: PluginCmdRegistry;
@@ -188,8 +188,8 @@ export class ConnectionHandler {
 
     constructor() {
         this.handlerId = guid();
-        this.event_registry = new Registry<ConnectionEvents>();
-        this.event_registry.enableDebug("connection-handler");
+        this.events_ = new Registry<ConnectionEvents>();
+        this.events_.enableDebug("connection-handler");
 
         this.settings = new ServerSettings();
 
@@ -225,10 +225,10 @@ export class ConnectionHandler {
         this.localClient = new LocalClientEntry(this);
         this.localClient.channelTree = this.channelTree;
 
-        this.event_registry.register_handler(this);
+        this.events_.register_handler(this);
         this.pluginCmdRegistry.registerHandler(new W2GPluginCmdHandler());
 
-        this.events().fire("notify_handler_initialized");
+        this.events_.fire("notify_handler_initialized");
     }
 
     initialize_client_state(source?: ConnectionHandler) {
@@ -242,12 +242,12 @@ export class ConnectionHandler {
     }
 
     events() : Registry<ConnectionEvents> {
-        return this.event_registry;
+        return this.events_;
     }
 
     async startConnection(addr: string, profile: ConnectionProfile, user_action: boolean, parameters: ConnectParameters) {
         this.cancel_reconnect(false);
-        this._reconnect_attempt = parameters.auto_reconnect_attempt || false;
+        this.autoReconnectAttempt = parameters.auto_reconnect_attempt || false;
         this.handleDisconnect(DisconnectReason.REQUESTED);
 
         let server_address: ServerAddress = {
@@ -298,11 +298,11 @@ export class ConnectionHandler {
         if(server_address.host === "localhost") {
             server_address.host = "127.0.0.1";
         } else if(dns.supported() && !server_address.host.match(Regex.IP_V4) && !server_address.host.match(Regex.IP_V6)) {
-            const id = ++this._connect_initialize_id;
+            const id = ++this.connectAttemptId;
             this.log.log("connection.hostname.resolve", {});
             try {
                 const resolved = await dns.resolve_address(server_address, { timeout: 5000 }) || {} as any;
-                if(id != this._connect_initialize_id)
+                if(id != this.connectAttemptId)
                     return; /* we're old */
 
                 server_address.host = typeof(resolved.target_ip) === "string" ? resolved.target_ip : server_address.host;
@@ -314,7 +314,7 @@ export class ConnectionHandler {
                     }
                 });
             } catch(error) {
-                if(id != this._connect_initialize_id)
+                if(id != this.connectAttemptId)
                     return; /* we're old */
 
                 this.handleDisconnect(DisconnectReason.DNS_FAILED, error);
@@ -348,7 +348,7 @@ export class ConnectionHandler {
     }
 
     getClient() : LocalClientEntry { return this.localClient; }
-    getClientId() { return this._clientId; }
+    getClientId() { return this.localClientId; }
 
     getPrivateConversations() : PrivateConversationManager {
         return this.privateConversations;
@@ -371,7 +371,7 @@ export class ConnectionHandler {
     }
 
     initializeLocalClient(clientId: number, acceptedName: string) {
-        this._clientId = clientId;
+        this.localClientId = clientId;
         this.localClient["_clientId"] = clientId;
 
         this.channelTree.registerClient(this.localClient);
@@ -477,7 +477,7 @@ export class ConnectionHandler {
 
     private _certificate_modal: Modal;
     handleDisconnect(type: DisconnectReason, data: any = {}) {
-        this._connect_initialize_id++;
+        this.connectAttemptId++;
 
         let auto_reconnect = false;
         switch (type) {
@@ -498,7 +498,7 @@ export class ConnectionHandler {
                 this.sound.play(Sound.CONNECTION_REFUSED);
                 break;
             case DisconnectReason.CONNECT_FAILURE:
-                if(this._reconnect_attempt) {
+                if(this.autoReconnectAttempt) {
                     auto_reconnect = true;
                     break;
                 }
@@ -574,7 +574,7 @@ export class ConnectionHandler {
                 break;
             case DisconnectReason.CONNECTION_CLOSED:
                 log.error(LogCategory.CLIENT, tr("Lost connection to remote server!"));
-                if(!this._reconnect_attempt) {
+                if(!this.autoReconnectAttempt) {
                     createErrorModal(
                         tr("Connection closed"),
                         tr("The connection was closed by remote host")
@@ -683,8 +683,8 @@ export class ConnectionHandler {
             const server_address = this.serverConnection.remote_address();
             const profile = this.serverConnection.handshake_handler().profile;
 
-            this._reconnect_timer = setTimeout(() => {
-                this._reconnect_timer = undefined;
+            this.autoReconnectTimer = setTimeout(() => {
+                this.autoReconnectTimer = undefined;
                 this.log.log("reconnect.execute", {});
                 log.info(LogCategory.NETWORKING, tr("Reconnecting..."));
 
@@ -696,16 +696,16 @@ export class ConnectionHandler {
     }
 
     cancel_reconnect(log_event: boolean) {
-        if(this._reconnect_timer) {
+        if(this.autoReconnectTimer) {
             if(log_event) this.log.log("reconnect.canceled", {});
-            clearTimeout(this._reconnect_timer);
-            this._reconnect_timer = undefined;
+            clearTimeout(this.autoReconnectTimer);
+            this.autoReconnectTimer = undefined;
         }
     }
 
     private on_connection_state_changed(old_state: ConnectionState, new_state: ConnectionState) {
         console.log("From %s to %s", ConnectionState[old_state], ConnectionState[new_state]);
-        this.event_registry.fire("notify_connection_state_changed", {
+        this.events_.fire("notify_connection_state_changed", {
             oldState: old_state,
             newState: new_state
         });
@@ -805,14 +805,14 @@ export class ConnectionHandler {
             if(shouldRecord || this.echoTestRunning) {
                 if(this.getInputHardwareState() !== InputHardwareState.START_FAILED) {
                     this.startVoiceRecorder(Date.now() - this._last_record_error_popup > 10 * 1000).then(() => {
-                        this.event_registry.fire("notify_state_updated", { state: "microphone" });
+                        this.events_.fire("notify_state_updated", { state: "microphone" });
                     });
                 }
             } else {
                 currentInput.stop().catch(error => {
                     logWarn(LogCategory.AUDIO, tr("Failed to stop the microphone input recorder: %o"), error);
                 }).then(() => {
-                    this.event_registry.fire("notify_state_updated", { state: "microphone" });
+                    this.events_.fire("notify_state_updated", { state: "microphone" });
                 });
             }
         }
@@ -1017,7 +1017,7 @@ export class ConnectionHandler {
     }
 
     destroy() {
-        this.event_registry.unregister_handler(this);
+        this.events_.unregister_handler(this);
         this.cancel_reconnect(true);
 
         this.pluginCmdRegistry?.destroy();
@@ -1093,7 +1093,7 @@ export class ConnectionHandler {
             this.sound.play(muted ? Sound.MICROPHONE_MUTED : Sound.MICROPHONE_ACTIVATED);
         }
         this.update_voice_status();
-        this.event_registry.fire("notify_state_updated", { state: "microphone" });
+        this.events_.fire("notify_state_updated", { state: "microphone" });
     }
     toggleMicrophone() { this.setMicrophoneMuted(!this.isMicrophoneMuted()); }
 
@@ -1104,7 +1104,7 @@ export class ConnectionHandler {
         if(this.client_status.output_muted === muted) return;
         if(muted && !dontPlaySound) this.sound.play(Sound.SOUND_MUTED); /* play the sound *before* we're setting the muted state */
         this.client_status.output_muted = muted;
-        this.event_registry.fire("notify_state_updated", { state: "speaker" });
+        this.events_.fire("notify_state_updated", { state: "speaker" });
         if(!muted && !dontPlaySound) this.sound.play(Sound.SOUND_ACTIVATED); /* play the sound *after* we're setting we've unmuted the sound */
         this.update_voice_status();
         this.serverConnection.getVoiceConnection().stopAllVoiceReplays();
@@ -1129,7 +1129,7 @@ export class ConnectionHandler {
         } else {
             this.channelTree.unsubscribe_all_channels();
         }
-        this.event_registry.fire("notify_state_updated", { state: "subscribe" });
+        this.events_.fire("notify_state_updated", { state: "subscribe" });
     }
 
     isSubscribeToAllChannels() : boolean { return this.client_status.channel_subscribe_all; }
@@ -1156,7 +1156,7 @@ export class ConnectionHandler {
             this.log.log("error.custom", {message: tr("Failed to update away status.")});
         });
 
-        this.event_registry.fire("notify_state_updated", {
+        this.events_.fire("notify_state_updated", {
             state: "away"
         });
     }
@@ -1168,7 +1168,7 @@ export class ConnectionHandler {
         this.client_status.queries_visible = flag;
         this.channelTree.toggle_server_queries(flag);
 
-        this.event_registry.fire("notify_state_updated", {
+        this.events_.fire("notify_state_updated", {
             state: "query"
         });
     }
@@ -1183,7 +1183,7 @@ export class ConnectionHandler {
             return;
 
         this.inputHardwareState = state;
-        this.event_registry.fire("notify_state_updated", { state: "microphone" });
+        this.events_.fire("notify_state_updated", { state: "microphone" });
     }
 
     hasOutputHardware() : boolean { return true; }

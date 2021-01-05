@@ -25,10 +25,15 @@ export interface ChannelTreeRendererOptions {
     popoutButton: boolean;
 }
 
-export function renderChannelTree(channelTree: ChannelTree, target: HTMLElement, options: ChannelTreeRendererOptions) {
+export function initializeChannelTreeUiEvents(channelTree: ChannelTree, options: ChannelTreeRendererOptions) : Registry<ChannelTreeUIEvents> {
     const events = new Registry<ChannelTreeUIEvents>();
     events.enableDebug("channel-tree-view");
     initializeChannelTreeController(events, channelTree, options);
+    return events;
+}
+
+export function renderChannelTree(channelTree: ChannelTree, target: HTMLElement, options: ChannelTreeRendererOptions) {
+    const events = initializeChannelTreeUiEvents(channelTree, options);
 
     ReactDOM.render(<ChannelTreeRenderer handlerId={channelTree.client.handlerId} events={events} />, target);
 
@@ -89,7 +94,6 @@ class ChannelTreeController {
 
     /* the key here is the unique entry id! */
     private eventListeners: {[key: number]: (() => void)[]} = {};
-    private channelTreeInitialized = false;
 
     private readonly connectionStateListener;
     private readonly voiceConnectionStateListener;
@@ -135,7 +139,7 @@ class ChannelTreeController {
 
     private handleConnectionStateChanged(event: ConnectionEvents["notify_connection_state_changed"]) {
         if(event.newState !== ConnectionState.CONNECTED) {
-            this.channelTreeInitialized = false;
+            this.channelTree.channelsInitialized = false;
             this.sendChannelTreeEntries();
         }
         this.sendServerStatus(this.channelTree.server);
@@ -146,7 +150,7 @@ class ChannelTreeController {
             return;
         }
 
-        if(!this.channelTreeInitialized) {
+        if(!this.channelTree.channelsInitialized) {
             return;
         }
 
@@ -154,7 +158,7 @@ class ChannelTreeController {
     }
 
     private handleGroupsUpdated(event: GroupManagerEvents["notify_groups_updated"]) {
-        if(!this.channelTreeInitialized) {
+        if(!this.channelTree.channelsInitialized) {
             return;
         }
 
@@ -176,7 +180,7 @@ class ChannelTreeController {
     }
 
     private handleGroupsReceived() {
-        if(!this.channelTreeInitialized) {
+        if(!this.channelTree.channelsInitialized) {
             return;
         }
 
@@ -186,13 +190,13 @@ class ChannelTreeController {
 
     /* general channel tree event handlers */
     @EventHandler<ChannelTreeEvents>("notify_popout_state_changed")
-    private handlePoputStateChanged() {
+    private handlePopoutStateChanged() {
         this.sendPopoutState();
     }
 
     @EventHandler<ChannelTreeEvents>("notify_channel_list_received")
     private handleChannelListReceived() {
-        this.channelTreeInitialized = true;
+        this.channelTree.channelsInitialized = true;
         this.channelTree.channels.forEach(channel => this.initializeChannelEvents(channel));
         this.channelTree.clients.forEach(channel => this.initializeClientEvents(channel));
         this.sendChannelTreeEntries();
@@ -201,14 +205,14 @@ class ChannelTreeController {
 
     @EventHandler<ChannelTreeEvents>("notify_channel_created")
     private handleChannelCreated(event: ChannelTreeEvents["notify_channel_created"]) {
-        if(!this.channelTreeInitialized) { return; }
+        if(!this.channelTree.channelsInitialized) { return; }
         this.initializeChannelEvents(event.channel);
         this.sendChannelTreeEntries();
     }
 
     @EventHandler<ChannelTreeEvents>("notify_channel_moved")
     private handleChannelMoved(event: ChannelTreeEvents["notify_channel_moved"]) {
-        if(!this.channelTreeInitialized) { return; }
+        if(!this.channelTree.channelsInitialized) { return; }
         this.sendChannelTreeEntries();
 
         if(event.previousParent && !event.previousParent.child_channel_head) {
@@ -223,14 +227,14 @@ class ChannelTreeController {
 
     @EventHandler<ChannelTreeEvents>("notify_channel_deleted")
     private handleChannelDeleted(event: ChannelTreeEvents["notify_channel_deleted"]) {
-        if(!this.channelTreeInitialized) { return; }
+        if(!this.channelTree.channelsInitialized) { return; }
         this.finalizeEvents(event.channel);
         this.sendChannelTreeEntries();
     }
 
     @EventHandler<ChannelTreeEvents>("notify_client_enter_view")
     private handleClientEnter(event: ChannelTreeEvents["notify_client_enter_view"]) {
-        if(!this.channelTreeInitialized) { return; }
+        if(!this.channelTree.channelsInitialized) { return; }
 
         this.initializeClientEvents(event.client);
         this.sendChannelInfo(event.targetChannel);
@@ -240,7 +244,7 @@ class ChannelTreeController {
 
     @EventHandler<ChannelTreeEvents>("notify_client_leave_view")
     private handleClientLeave(event: ChannelTreeEvents["notify_client_leave_view"]) {
-        if(!this.channelTreeInitialized) { return; }
+        if(!this.channelTree.channelsInitialized) { return; }
 
         this.finalizeEvents(event.client);
         this.sendChannelInfo(event.sourceChannel);
@@ -250,7 +254,7 @@ class ChannelTreeController {
 
     @EventHandler<ChannelTreeEvents>("notify_client_moved")
     private handleClientMoved(event: ChannelTreeEvents["notify_client_moved"]) {
-        if(!this.channelTreeInitialized) { return; }
+        if(!this.channelTree.channelsInitialized) { return; }
 
         this.sendChannelInfo(event.oldChannel);
         this.sendChannelStatusIcon(event.oldChannel);
@@ -264,7 +268,7 @@ class ChannelTreeController {
 
     @EventHandler<ChannelTreeEvents>("notify_selected_entry_changed")
     private handleSelectedEntryChanged(_event: ChannelTreeEvents["notify_selected_entry_changed"]) {
-        if(!this.channelTreeInitialized) { return; }
+        if(!this.channelTree.channelsInitialized) { return; }
 
         this.sendSelectedEntry();
     }

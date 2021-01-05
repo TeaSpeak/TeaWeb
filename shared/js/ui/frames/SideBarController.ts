@@ -2,9 +2,6 @@ import {ConnectionHandler} from "../../ConnectionHandler";
 import {PrivateConversationController} from "./side/PrivateConversationController";
 import {ClientInfoController} from "tc-shared/ui/frames/side/ClientInfoController";
 import {SideHeaderController} from "tc-shared/ui/frames/side/HeaderController";
-import * as ReactDOM from "react-dom";
-import {SideBarRenderer} from "tc-shared/ui/frames/SideBarRenderer";
-import * as React from "react";
 import {SideBarEvents, SideBarType} from "tc-shared/ui/frames/SideBarDefinitions";
 import {Registry} from "tc-shared/events";
 import {LogCategory, logWarn} from "tc-shared/log";
@@ -12,7 +9,7 @@ import {ChannelBarController} from "tc-shared/ui/frames/side/ChannelBarControlle
 import {MusicBotController} from "tc-shared/ui/frames/side/MusicBotController";
 
 export class SideBarController {
-    private readonly uiEvents: Registry<SideBarEvents>;
+    readonly uiEvents: Registry<SideBarEvents>;
 
     private currentConnection: ConnectionHandler;
     private listenerConnection: (() => void)[];
@@ -77,14 +74,20 @@ export class SideBarController {
     }
 
     renderInto(container: HTMLDivElement) {
+        /*
         ReactDOM.render(React.createElement(SideBarRenderer, {
             events: this.uiEvents,
             eventsHeader: this.header["uiEvents"],
         }), container);
+        */
     }
 
     getMusicController() : MusicBotController {
         return this.musicPanel;
+    }
+
+    getHeaderController() : SideHeaderController {
+        return this.header;
     }
 
     private sendContent() {

@@ -47,15 +47,11 @@ import "./connection/rtc/Connection";
 import "./connection/rtc/video/Connection";
 import "./video/VideoSource";
 import "./media/Video";
+import "./ui/AppController";
 
 import {defaultConnectProfile, findConnectProfile} from "tc-shared/profiles/ConnectionProfile";
 import {server_connections} from "tc-shared/ConnectionManager";
-import {initializeConnectionUIList} from "tc-shared/ui/frames/connection-handler-list/Controller";
 import ContextMenuEvent = JQuery.ContextMenuEvent;
-import {Registry} from "tc-shared/events";
-import {ControlBarEvents} from "tc-shared/ui/frames/control-bar/Definitions";
-import {ControlBar2} from "tc-shared/ui/frames/control-bar/Renderer";
-import {initializeControlBarController} from "tc-shared/ui/frames/control-bar/Controller";
 
 let preventWelcomeUI = false;
 async function initialize() {
@@ -71,15 +67,7 @@ async function initialize() {
 }
 
 async function initialize_app() {
-    initializeConnectionUIList();
-
     global_ev_handler.initialize(global_client_actions);
-    {
-        const events = new Registry<ControlBarEvents>()
-        initializeControlBarController(events, "main");
-        ReactDOM.render(<ControlBar2 events={events} />, $(".container-control-bar")[0]);
-    }
-
     /*
     loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
         name: "settings init",
@@ -88,8 +76,9 @@ async function initialize_app() {
     });
     */
 
-    if(!aplayer.initialize())
+    if(!aplayer.initialize()) {
         console.warn(tr("Failed to initialize audio controller!"));
+    }
 
     aplayer.on_ready(() => {
         if(aplayer.set_master_volume)

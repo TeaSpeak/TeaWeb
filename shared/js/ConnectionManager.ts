@@ -10,6 +10,8 @@ import {ServerEventLogController} from "tc-shared/ui/frames/log/Controller";
 import {ServerLogFrame} from "tc-shared/ui/frames/log/Renderer";
 import {HostBannerController} from "tc-shared/ui/frames/HostBannerController";
 import {HostBanner} from "tc-shared/ui/frames/HostBannerRenderer";
+import {ChannelTreeView} from "tc-shared/ui/tree/RendererView";
+import {ChannelTreeRenderer} from "tc-shared/ui/tree/Renderer";
 
 export let server_connections: ConnectionManager;
 
@@ -34,15 +36,16 @@ export class ConnectionManager {
     private connection_handlers: ConnectionHandler[] = [];
     private active_handler: ConnectionHandler | undefined;
 
-    private _container_channel_tree: JQuery;
     private containerChannelVideo: ReplaceableContainer;
     private containerFooter: HTMLDivElement;
     private containerServerLog: HTMLDivElement;
     private containerHostBanner: HTMLDivElement;
+    private containerChannelTree: HTMLDivElement;
 
-    private sideBarController: SideBarController;
-    private serverLogController: ServerEventLogController;
-    private hostBannerController: HostBannerController;
+    /* FIXME: Move these controller out! */
+    sideBarController: SideBarController;
+    serverLogController: ServerEventLogController;
+    hostBannerController: HostBannerController;
 
     constructor() {
         this.event_registry = new Registry<ConnectionManagerEvents>();
@@ -56,13 +59,14 @@ export class ConnectionManager {
         this.containerServerLog = document.getElementById("server-log") as HTMLDivElement;
         this.containerFooter = document.getElementById("container-footer") as HTMLDivElement;
         this.containerHostBanner = document.getElementById("hostbanner") as HTMLDivElement;
-        this._container_channel_tree = $("#channelTree");
+        this.containerChannelTree = document.getElementById("channelTree") as HTMLDivElement;
 
         this.sideBarController.renderInto(document.getElementById("chat") as HTMLDivElement);
         this.set_active_connection(undefined);
     }
 
     initializeReactComponents() {
+        return;
         ReactDOM.render(React.createElement(FooterRenderer), this.containerFooter);
         ReactDOM.render(React.createElement(ServerLogFrame, { events: this.serverLogController.events }), this.containerServerLog);
         ReactDOM.render(React.createElement(HostBanner, { events: this.hostBannerController.uiEvents }), this.containerHostBanner);
@@ -129,12 +133,15 @@ export class ConnectionManager {
         this.serverLogController.setConnectionHandler(handler);
         this.hostBannerController.setConnectionHandler(handler);
 
-        this._container_channel_tree.children().detach();
+/*
         this.containerChannelVideo.replaceWith(handler?.video_frame.getContainer());
 
         if(handler) {
-            this._container_channel_tree.append(handler.channelTree.tag_tree());
+            ReactDOM.render(React.createElement(ChannelTreeRenderer, { handlerId: handler.handlerId, events: handler.channelTree.mainTreeUiEvents }), this.containerChannelTree);
+        } else {
+            ReactDOM.render(undefined, this.containerChannelTree);
         }
+*/
 
         const old_handler = this.active_handler;
         this.active_handler = handler;

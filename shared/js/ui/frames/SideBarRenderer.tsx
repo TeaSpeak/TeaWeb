@@ -169,7 +169,8 @@ const SideBarHeader = (props: { type: SideBarType, eventsHeader: Registry<SideHe
 
 export const SideBarRenderer = (props: {
     events: Registry<SideBarEvents>,
-    eventsHeader: Registry<SideHeaderEvents>
+    eventsHeader: Registry<SideHeaderEvents>,
+    className?: string
 }) => {
     const [ content, setContent ] = useState<SideBarType>(() => {
         props.events.fire("query_content");
@@ -179,7 +180,7 @@ export const SideBarRenderer = (props: {
 
     return (
         <EventContent.Provider value={props.events}>
-            <div className={cssStyle.container}>
+            <div className={cssStyle.container + " " + props.className}>
                 <ErrorBoundary>
                     <SideBarHeader eventsHeader={props.eventsHeader} type={content} />
                 </ErrorBoundary>
