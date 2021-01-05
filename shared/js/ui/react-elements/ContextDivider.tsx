@@ -47,23 +47,34 @@ export class ContextDivider extends React.Component<ContextDividerProperties, Co
                 this.setState({ active: false });
                 return;
             }
-            const parentBounds = separator.parentElement.getBoundingClientRect();
 
-            const min = this.props.direction === "horizontal" ? parentBounds.left : parentBounds.top;
-            const max = this.props.direction === "horizontal" ? parentBounds.left + parentBounds.width : parentBounds.top + parentBounds.height;
+            const previousElement = separator.previousElementSibling as HTMLElement;
+            const nextElement = separator.nextElementSibling as HTMLElement;
+
+            const beforeBounds = previousElement.getBoundingClientRect();
+            const afterBounds = nextElement.getBoundingClientRect();
+
+            let min: number, max: number;
+
+            if(this.props.direction === "horizontal") {
+                min = Math.min(beforeBounds.left, afterBounds.left);
+                if(min === beforeBounds.left) {
+                    max = afterBounds.left + afterBounds.width;
+                } else {
+                    max = beforeBounds.left + beforeBounds.width;
+                }
+            } else {
+                min = Math.min(beforeBounds.top, afterBounds.top);
+                if(min === beforeBounds.top) {
+                    max = afterBounds.top + afterBounds.height;
+                } else {
+                    max = beforeBounds.top + beforeBounds.height;
+                }
+            }
+
             const current = event instanceof MouseEvent ?
                 (this.props.direction === "horizontal" ? event.pageX : event.pageY) :
                 (this.props.direction === "horizontal" ? event.touches[event.touches.length - 1].clientX : event.touches[event.touches.length - 1].clientY);
-
-            /*
-            const previous_offset = previous_element.offset();
-            const next_offset = next_element.offset();
-
-            const min = vertical ? Math.min(previous_offset.left, next_offset.left) : Math.min(previous_offset.top, next_offset.top);
-            const max = vertical ?
-                Math.max(previous_offset.left + previous_element.width(), next_offset.left + next_element.width()) :
-                Math.max(previous_offset.top + previous_element.height(), next_offset.top + next_element.height());
-            */
 
             if(current < min) {
                 this.value = 0;
@@ -76,10 +87,7 @@ export class ContextDivider extends React.Component<ContextDividerProperties, Co
                 this.value = 100;
             }
 
-            settings.changeGlobal(Settings.FN_SEPARATOR_STATE(this.props.id), JSON.stringify({
-                value: this.value
-            }));
-            this.applySeparator(separator.previousSibling as HTMLElement, separator.nextSibling as HTMLElement);
+            this.applySeparator(separator.previousElementSibling as HTMLElement, separator.nextElementSibling as HTMLElement);
         };
 
         this.listenerUp = () => this.stopMovement();
@@ -88,20 +96,23 @@ export class ContextDivider extends React.Component<ContextDividerProperties, Co
     render() {
         let separatorClassNames = cssStyle.separator;
 
-        if(this.props.direction === "vertical")
+        if(this.props.direction === "vertical") {
             separatorClassNames += " " + cssStyle.vertical;
-        else
+        } else {
             separatorClassNames += " " + cssStyle.horizontal;
+        }
 
-        if(this.props.separatorClassName)
+        if(this.props.separatorClassName) {
             separatorClassNames += " " + this.props.separatorClassName;
+        }
 
-        if(this.state.active && this.props.separatorClassName)
+        if(this.state.active && this.props.separatorClassName) {
             separatorClassNames += " " + this.props.separatorClassName;
+        }
 
         return (
             <div key={"context-separator"} ref={this.refSeparator} className={separatorClassNames} onMouseDown={e => this.startMovement(e)} onTouchStart={e => this.startMovement(e)} />
-        )
+        );
     }
 
     componentDidMount(): void {
@@ -138,11 +149,16 @@ export class ContextDivider extends React.Component<ContextDividerProperties, Co
         document.removeEventListener('touchend', this.listenerUp);
         document.removeEventListener('touchcancel', this.listenerUp);
         document.documentElement.classList.remove(cssStyle.documentActiveClass);
+
+        settings.changeGlobal(Settings.FN_SEPARATOR_STATE(this.props.id), JSON.stringify({
+            value: this.value
+        }));
     }
 
     private applySeparator(previousElement: HTMLElement, nextElement: HTMLElement) {
-        if(!this.refSeparator.current || !previousElement || !nextElement)
+        if(!this.refSeparator.current || !previousElement || !nextElement) {
             return;
+        }
 
         if(this.props.direction === "horizontal") {
             const center = this.refSeparator.current.clientWidth;
