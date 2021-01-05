@@ -5,10 +5,11 @@ import {SideHeaderEvents} from "tc-shared/ui/frames/side/HeaderDefinitions";
 import {ChannelBarUiEvents} from "tc-shared/ui/frames/side/ChannelBarDefinitions";
 import {MusicBotUiEvents} from "tc-shared/ui/frames/side/MusicBotDefinitions";
 import {MusicPlaylistUiEvents} from "tc-shared/ui/frames/side/MusicPlaylistDefinitions";
+import {ChannelConversationUiEvents} from "tc-shared/ui/frames/side/ChannelConversationDefinitions";
 
 /* TODO: Somehow outsource the event registries to IPC? */
 
-export type SideBarType = "none" | "channel" | "private-chat" | "client-info" | "music-manage";
+export type SideBarType = "none" | "server" | "channel" | "private-chat" | "client-info" | "music-manage";
 export interface SideBarTypeData {
     "none": {},
     "channel": {
@@ -24,6 +25,10 @@ export interface SideBarTypeData {
     "music-manage": {
         botEvents: Registry<MusicBotUiEvents>,
         playlistEvents: Registry<MusicPlaylistUiEvents>
+    },
+    "server": {
+        handlerId: string,
+        chatEvents: Registry<ChannelConversationUiEvents>
     }
 }
 

@@ -4,7 +4,7 @@ import {
     SideHeaderEvents,
     SideHeaderState,
     SideHeaderChannelState,
-    SideHeaderPingInfo, PrivateConversationInfo
+    SideHeaderPingInfo, PrivateConversationInfo, SideHeaderServerInfo
 } from "tc-shared/ui/frames/side/HeaderDefinitions";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {useContext, useState} from "react";
@@ -70,6 +70,38 @@ const BlockChannelState = (props: { mode: "voice" | "text" }) => {
         <Block target={"left"}>
             {title}
             <ChannelStateRenderer info={info} />
+        </Block>
+    );
+}
+
+const ServerInfoRenderer = React.memo((props: { info: SideHeaderServerInfo | undefined }) => {
+    if(!props.info) {
+        return <div className={cssStyle.value} key={"not-connected"}><Translatable>Not connected</Translatable></div>;
+    }
+
+    let icon;
+    if(props.info.icon.iconId !== 0) {
+        const remoteIcon = getIconManager().resolveIcon(props.info.icon.iconId, props.info.icon.serverUniqueId, props.info.icon.handlerId);
+        icon = <RemoteIconRenderer icon={remoteIcon} className={cssStyle.icon} key={"icon-" + props.info.icon.iconId} />;
+    }
+
+    return (
+        <div className={cssStyle.value} key={"connected"}>{icon}{props.info.name}</div>
+    );
+});
+
+const BlockServerState = () => {
+    const events = useContext(EventsContext);
+    const [ info, setInfo ] = useState<SideHeaderServerInfo | undefined>(() => {
+        events.fire("query_server_info");
+        return undefined;
+    });
+
+    events.reactUse("notify_server_info", event => setInfo(event.info));
+    return (
+        <Block target={"left"}>
+            <Translatable>You're chatting on Server</Translatable>
+            <ServerInfoRenderer info={info} />
         </Block>
     );
 }
@@ -221,6 +253,8 @@ const BlockBottomLeft = () => {
         case "conversation":
             if(state.mode === "private") {
                 return <BlockButtonSwitchToChannelChat key={"switch-channel-chat"} />;
+            } else if(state.mode === "server") {
+                return <BlockServerState key={"server"} />
             } else {
                 return <BlockChannelState mode={"text"} key={"text-state"} />;
             }

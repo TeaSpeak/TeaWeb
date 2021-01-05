@@ -118,6 +118,16 @@ export class SideBarController {
                 });
                 break;
 
+            case "server":
+                this.uiEvents.fire_react("notify_content_data", {
+                    content: "server",
+                    data: this.currentConnection ? {
+                        chatEvents: this.channelBar.getChannelConversationController().getUiEvents(),
+                        handlerId: this.currentConnection.handlerId
+                    } : undefined
+                });
+                break;
+
             case "private-chat":
                 if(!this.currentConnection) {
                     logWarn(LogCategory.GENERAL, tr("Received private chat content data request without an active connection."));

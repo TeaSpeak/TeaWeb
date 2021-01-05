@@ -10,6 +10,7 @@ import {LogCategory, logWarn} from "tc-shared/log";
 import React = require("react");
 import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
 import {MusicBotRenderer} from "tc-shared/ui/frames/side/MusicBotRenderer";
+import {ConversationPanel} from "tc-shared/ui/frames/side/AbstractConversationRenderer";
 
 const cssStyle = require("./SideBarRenderer.scss");
 
@@ -34,6 +35,21 @@ const ContentRendererChannel = () => {
         <ChannelBarRenderer
             key={"channel"}
             events={contentData.events}
+        />
+    );
+};
+
+const ContentRendererServer = () => {
+    const contentData = useContentData("server");
+    if(!contentData) { return null; }
+
+    return (
+        <ConversationPanel
+            key={"server"}
+            events={contentData.chatEvents}
+            handlerId={contentData.handlerId}
+            messagesDeletable={true}
+            noFirstMessageOverlay={false}
         />
     );
 };
@@ -75,6 +91,12 @@ const ContentRendererMusicManage = () => {
 
 const SideBarFrame = (props: { type: SideBarType }) => {
     switch (props.type) {
+        case "server":
+            return (
+                <ErrorBoundary key={props.type}>
+                    <ContentRendererServer />
+                </ErrorBoundary>
+            )
         case "channel":
             return (
                 <ErrorBoundary key={props.type}>
@@ -114,6 +136,10 @@ const SideBarHeader = (props: { type: SideBarType, eventsHeader: Registry<SideHe
     switch (props.type) {
         case "none":
             headerState = { state: "none" };
+            break;
+
+        case "server":
+            headerState = { state: "conversation", mode: "server" };
             break;
 
         case "channel":

@@ -189,7 +189,7 @@ export class ChannelTree {
             if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
                 const conversation = this.client.getChannelConversations().findOrCreateConversation(0);
                 this.client.getChannelConversations().setSelectedConversation(conversation);
-                this.client.getSideBar().showChannel();
+                this.client.getSideBar().showServer();
             }
         }
     }
