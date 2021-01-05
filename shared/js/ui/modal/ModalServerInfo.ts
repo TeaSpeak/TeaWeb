@@ -11,7 +11,6 @@ import {LogCategory} from "../../log";
 import * as tooltip from "../../ui/elements/Tooltip";
 import * as i18nc from "../../i18n/country";
 import {format_time, formatMessage} from "../../ui/frames/chat";
-import {Hostbanner} from "../../ui/frames/hostbanner";
 import * as moment from "moment";
 import {ErrorCode} from "../../connection/ErrorCode";
 import { tr } from "tc-shared/i18n/localize";
@@ -93,6 +92,8 @@ function apply_hostbanner(server: ServerEntry, tag: JQuery) {
         container = $.spawn("div").addClass("container-hostbanner")
     ).addClass("hidden");
 
+    /* FIXME: .... */
+    /*
     const htag = Hostbanner.generate_tag(server.properties.virtualserver_hostbanner_gfx_url, server.properties.virtualserver_hostbanner_gfx_interval, server.properties.virtualserver_hostbanner_mode);
     htag.then(t => {
         if (!t) return;
@@ -100,6 +101,7 @@ function apply_hostbanner(server: ServerEntry, tag: JQuery) {
         tag.removeClass("hidden");
         container.append(t);
     });
+    */
 }
 
 function apply_category_1(server: ServerEntry, tag: JQuery, update_callbacks: ServerBandwidthInfoUpdateCallback[]) {

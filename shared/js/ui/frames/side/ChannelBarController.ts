@@ -80,6 +80,8 @@ export class ChannelBarController {
             this.listenerConnection.push(handler.channelTree.events.on("notify_selected_entry_changed", event => {
                 if(event.newEntry instanceof ChannelEntry) {
                     this.setChannel(event.newEntry);
+                } else {
+                    this.setChannel(undefined);
                 }
             }));
 

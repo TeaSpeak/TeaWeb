@@ -13,7 +13,6 @@ import * as htmltags from "./ui/htmltags";
 import {FilterMode, InputState, MediaStreamRequestResult} from "./voice/RecorderBase";
 import {CommandResult} from "./connection/ServerConnectionDeclaration";
 import {defaultRecorder, RecorderProfile} from "./voice/RecorderProfile";
-import {Hostbanner} from "./ui/frames/hostbanner";
 import {connection_log, Regex} from "./ui/modal/ModalConnect";
 import {formatMessage} from "./ui/frames/chat";
 import {spawnAvatarUpload} from "./ui/modal/ModalAvatar";
@@ -150,10 +149,6 @@ export class ConnectionHandler {
     settings: ServerSettings;
     sound: SoundManager;
 
-    hostbanner: Hostbanner;
-
-    tag_connection_handler: JQuery;
-
     serverFeatures: ServerFeatures;
 
     private sideBar: SideBarManager;
@@ -226,7 +221,6 @@ export class ConnectionHandler {
 
         this.log = new ServerEventLog(this);
         this.sound = new SoundManager(this);
-        this.hostbanner = new Hostbanner(this);
 
         this.localClient = new LocalClientEntry(this);
         this.localClient.channelTree = this.channelTree;
@@ -676,7 +670,6 @@ export class ConnectionHandler {
         if(this.serverConnection)
             this.serverConnection.disconnect();
 
-        this.hostbanner.update();
         this.client_status.lastChannelCodecWarned = 0;
 
         if(auto_reconnect) {
@@ -1026,9 +1019,6 @@ export class ConnectionHandler {
     destroy() {
         this.event_registry.unregister_handler(this);
         this.cancel_reconnect(true);
-
-        this.hostbanner?.destroy();
-        this.hostbanner = undefined;
 
         this.pluginCmdRegistry?.destroy();
         this.pluginCmdRegistry = undefined;
