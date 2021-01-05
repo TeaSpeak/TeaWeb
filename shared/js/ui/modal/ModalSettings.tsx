@@ -93,8 +93,6 @@ function settings_general_application(container: JQuery, modal: Modal) {
         const option = container.find(".option-hostbanner-background") as JQuery<HTMLInputElement>;
         option.on('change', event => {
             settings.changeGlobal(Settings.KEY_HOSTBANNER_BACKGROUND, option[0].checked);
-            for (const sc of server_connections.all_connections())
-                sc.hostbanner.update();
         }).prop("checked", settings.static_global(Settings.KEY_HOSTBANNER_BACKGROUND));
     }
 

@@ -267,7 +267,7 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
             log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Server update properties", entries);
         }
 
-        let update_bannner = false, update_bookmarks = false;
+        let  update_bookmarks = false;
         for(let variable of variables) {
             JSON.map_field_to(this.properties, variable.value, variable.key);
 
@@ -277,8 +277,6 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
                  */
                 this.properties.virtualserver_icon_id = variable.value as any >>> 0;
                 update_bookmarks = true;
-            } else if(variable.key.indexOf('hostbanner') != -1) {
-                update_bannner = true;
             }
         }
         {
@@ -299,9 +297,6 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
                 bookmarks.save_bookmark();
             }
         }
-
-        if(update_bannner)
-            this.channelTree.client.hostbanner.update();
 
         group.end();
         if(is_self_notify && this.info_request_promise_resolve) {

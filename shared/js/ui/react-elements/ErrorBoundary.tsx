@@ -19,8 +19,10 @@ export class ErrorBoundary extends React.Component<{}, ErrorBoundaryState> {
                     <div className={cssStyle.text}>A rendering error has occurred</div>
                 </div>
             );
-        } else {
+        } else if(typeof this.props.children !== "undefined") {
             return this.props.children;
+        } else {
+            return null;
         }
     }
 

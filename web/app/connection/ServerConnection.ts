@@ -2,7 +2,6 @@ import {
     AbstractServerConnection,
     CommandOptionDefaults,
     CommandOptions, ConnectionPing,
-    ConnectionStateListener,
     ConnectionStatistics,
 } from "tc-shared/connection/ConnectionBase";
 import {ConnectionHandler, ConnectionState, DisconnectReason} from "tc-shared/ConnectionHandler";

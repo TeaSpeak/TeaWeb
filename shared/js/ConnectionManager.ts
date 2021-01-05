@@ -8,6 +8,8 @@ import * as ReactDOM from "react-dom";
 import {SideBarController} from "tc-shared/ui/frames/SideBarController";
 import {ServerEventLogController} from "tc-shared/ui/frames/log/Controller";
 import {ServerLogFrame} from "tc-shared/ui/frames/log/Renderer";
+import {HostBannerController} from "tc-shared/ui/frames/HostBannerController";
+import {HostBanner} from "tc-shared/ui/frames/HostBannerRenderer";
 
 export let server_connections: ConnectionManager;
 
@@ -33,13 +35,14 @@ export class ConnectionManager {
     private active_handler: ConnectionHandler | undefined;
 
     private _container_channel_tree: JQuery;
-    private _container_hostbanner: JQuery;
     private containerChannelVideo: ReplaceableContainer;
     private containerFooter: HTMLDivElement;
     private containerServerLog: HTMLDivElement;
+    private containerHostBanner: HTMLDivElement;
 
     private sideBarController: SideBarController;
     private serverLogController: ServerEventLogController;
+    private hostBannerController: HostBannerController;
 
     constructor() {
         this.event_registry = new Registry<ConnectionManagerEvents>();
@@ -47,12 +50,13 @@ export class ConnectionManager {
 
         this.sideBarController = new SideBarController();
         this.serverLogController = new ServerEventLogController();
+        this.hostBannerController = new HostBannerController();
 
         this.containerChannelVideo = new ReplaceableContainer(document.getElementById("channel-video") as HTMLDivElement);
         this.containerServerLog = document.getElementById("server-log") as HTMLDivElement;
         this.containerFooter = document.getElementById("container-footer") as HTMLDivElement;
+        this.containerHostBanner = document.getElementById("hostbanner") as HTMLDivElement;
         this._container_channel_tree = $("#channelTree");
-        this._container_hostbanner = $("#hostbanner");
 
         this.sideBarController.renderInto(document.getElementById("chat") as HTMLDivElement);
         this.set_active_connection(undefined);
@@ -61,6 +65,7 @@ export class ConnectionManager {
     initializeReactComponents() {
         ReactDOM.render(React.createElement(FooterRenderer), this.containerFooter);
         ReactDOM.render(React.createElement(ServerLogFrame, { events: this.serverLogController.events }), this.containerServerLog);
+        ReactDOM.render(React.createElement(HostBanner, { events: this.hostBannerController.uiEvents }), this.containerHostBanner);
     }
 
     events() : Registry<ConnectionManagerEvents> {
@@ -122,13 +127,12 @@ export class ConnectionManager {
     private set_active_connection_(handler: ConnectionHandler) {
         this.sideBarController.setConnection(handler);
         this.serverLogController.setConnectionHandler(handler);
+        this.hostBannerController.setConnectionHandler(handler);
 
         this._container_channel_tree.children().detach();
-        this._container_hostbanner.children().detach();
         this.containerChannelVideo.replaceWith(handler?.video_frame.getContainer());
 
         if(handler) {
-            this._container_hostbanner.append(handler.hostbanner.html_tag);
             this._container_channel_tree.append(handler.channelTree.tag_tree());
         }
 
