@@ -569,6 +569,13 @@ export class Settings extends StaticSettings {
         valueType: "boolean",
     };
 
+    static readonly KEY_VIDEO_QUICK_SETUP: ValuedSettingsKey<boolean> = {
+        key: 'video_quick_setup',
+        defaultValue: true,
+        description: "Automatically select the default video device and start broadcasting without the video configure dialog.",
+        valueType: "boolean",
+    };
+
     static readonly FN_LOG_ENABLED: (category: string) => SettingsKey<boolean> = category => {
         return {
             key: "log." + category.toLowerCase() + ".enabled",

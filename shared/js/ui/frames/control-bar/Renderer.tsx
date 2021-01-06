@@ -18,6 +18,7 @@ import {spawnContextMenu} from "tc-shared/ui/ContextMenu";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
+import {Settings, settings} from "tc-shared/settings";
 
 const cssStyle = require("./Renderer.scss");
 const cssButtonStyle = require("./Button.scss");
@@ -278,7 +279,7 @@ const VideoButton = (props: { type: VideoBroadcastType }) => {
             let dropdownText = props.type === "camera" ? tr("Start video broadcasting") : tr("Start screen sharing");
             return (
                 <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={icon}
-                        onToggle={() => events.fire("action_toggle_video", {enable: true, broadcastType: props.type, quickStart: true})}
+                        onToggle={() => events.fire("action_toggle_video", {enable: true, broadcastType: props.type, quickStart: settings.static_global(Settings.KEY_VIDEO_QUICK_SETUP)})}
                         tooltip={tooltip} key={"enable"}>
                     <DropdownEntry icon={icon} text={dropdownText} onClick={() => events.fire("action_toggle_video", {enable: true, broadcastType: props.type})} />
                     {props.type === "camera" ? <VideoDeviceList key={"list"} /> : null}
