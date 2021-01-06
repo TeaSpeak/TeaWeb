@@ -366,7 +366,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
     handleCommandChannelListFinished() {
         this.connection.client.channelTree.channelsInitialized = true;
-        this.connection.client.channelTree.events.fire_react("notify_channel_list_received");
+        this.connection.client.channelTree.events.fire("notify_channel_list_received");
 
         if(this.batchTreeUpdateFinishedTimeout) {
             clearTimeout(this.batchTreeUpdateFinishedTimeout);

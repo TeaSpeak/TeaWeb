@@ -16,6 +16,31 @@ export type ChannelIcons = {
 export type ChannelEntryInfo = { name: string, nameStyle: ChannelNameAlignment, collapsedState: CollapsedState };
 export type ChannelTreeEntry = { type: "channel" | "server" | "client" | "client-local", entryId: number, depth: number };
 
+export type FullChannelTreeEntry = {
+    entryId: number,
+    depth: number,
+} & ( { fullInfo: true, unread: boolean } & (
+    {
+        type: "channel",
+        info: ChannelEntryInfo;
+        icon: ClientIcon;
+        icons: ChannelIcons;
+    } | {
+        type: "server",
+        state: ServerState;
+    } | {
+        type: "client" | "client-local",
+        name: ClientNameInfo;
+        status: ClientIcon;
+        icons: ClientIcons;
+
+        talkStatus?: ClientTalkIconState;
+        talkRequestMessage?: string;
+    }
+) | { fullInfo: false } & {
+    type: "channel" | "server" | "client" | "client-local"
+});
+
 export type ClientNameInfo = { name: string, prefix: string[], suffix: string[], awayMessage: string };
 export type ClientTalkIconState = "unset" | "prohibited" | "requested" | "granted";
 export type ClientIcons = {
@@ -41,7 +66,7 @@ export interface ChannelTreeUIEvents {
     action_move_channels: { targetTreeEntry: number, mode: "before" | "after" | "child", entries: ChannelTreeDragEntry[] },
 
     /* queries */
-    query_tree_entries: {},
+    query_tree_entries: { fullInfo: boolean },
     query_popout_state: {},
     query_selected_entry: {},
 
@@ -59,7 +84,7 @@ export interface ChannelTreeUIEvents {
     query_server_state: { treeEntryId: number },
 
     /* notifies */
-    notify_tree_entries: { entries: ChannelTreeEntry[] },
+    notify_tree_entries_full: { entries: FullChannelTreeEntry[] },
     notify_popout_state: { shown: boolean, showButton: boolean },
     notify_selected_entry: { treeEntryId: number | 0 },
 

@@ -455,7 +455,7 @@ export class RDPChannelTree {
         document.addEventListener("focusout", this.documentDragStopListener);
         document.addEventListener("mouseout", this.documentDragStopListener);
 
-        this.events.fire("query_tree_entries");
+        this.events.fire("query_tree_entries", { fullInfo: true });
         this.events.fire("query_popout_state");
         this.events.fire("query_selected_entry");
     }
@@ -644,8 +644,8 @@ export class RDPChannelTree {
         }
     }
 
-    @EventHandler<ChannelTreeUIEvents>("notify_tree_entries")
-    private handleNotifyTreeEntries(event: ChannelTreeUIEvents["notify_tree_entries"]) {
+    @EventHandler<ChannelTreeUIEvents>("notify_tree_entries_full")
+    private handleNotifyTreeEntries(event: ChannelTreeUIEvents["notify_tree_entries_full"]) {
         const oldEntryInstances = this.treeEntries;
         this.treeEntries = {};
 
@@ -657,23 +657,45 @@ export class RDPChannelTree {
             } else {
                 switch (entry.type) {
                     case "channel":
-                        result = new RDPChannel(this, entry.entryId);
+                        const channel = new RDPChannel(this, entry.entryId);
+                        if(entry.fullInfo) {
+                            channel.info = entry.info;
+                            channel.icon = entry.icon;
+                            channel.icons = entry.icons;
+                        } else {
+                            channel.queryState();
+                        }
+                        result = channel;
                         break;
 
                     case "client":
                     case "client-local":
-                        result = new RDPClient(this, entry.entryId, entry.type === "client-local");
+                        const client = new RDPClient(this, entry.entryId, entry.type === "client-local");
+                        if(entry.fullInfo) {
+                            client.name = entry.name;
+                            client.status = entry.status;
+                            client.icons = entry.icons;
+                            client.talkStatus = entry.talkStatus;
+                            client.talkRequestMessage = entry.talkRequestMessage;
+                        } else {
+                            client.queryState();
+                        }
+                        result = client;
                         break;
 
                     case "server":
-                        result = new RDPServer(this, entry.entryId);
+                        const server = new RDPServer(this, entry.entryId);
+                        if(entry.fullInfo) {
+                            server.state = entry.state;
+                        } else {
+                            server.queryState();
+                        }
+                        result = server;
                         break;
 
                     default:
-                        throw "invalid channel entry type " + entry.type;
+                        throw "invalid channel entry type " + (entry as any).type;
                 }
-
-                result.queryState();
             }
 
             this.treeEntries[entry.entryId] = result;
@@ -697,7 +719,6 @@ export class RDPChannelTree {
             treeRevision: ++this.treeRevision
         });
     }
-
 
     @EventHandler<ChannelTreeUIEvents>("notify_popout_state")
     private handleNotifyPopoutState(event: ChannelTreeUIEvents["notify_popout_state"]) {
@@ -902,7 +923,6 @@ export class RDPClient extends RDPEntry {
 
     name: ClientNameInfo;
     status: ClientIcon;
-    info: ClientNameInfo;
     icons: ClientIcons;
 
     rename: boolean = false;
