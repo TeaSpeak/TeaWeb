@@ -44,9 +44,7 @@ class ChannelTreeModal extends AbstractModal {
     renderBody(): React.ReactElement {
         return (
             <div className={cssStyle.container}>
-                <div className={cssStyle.containerControlBar}>
-                    <ControlBar2 events={this.eventsControlBar} className={cssStyle.containerControlBar} />
-                </div>
+                <ControlBar2 events={this.eventsControlBar} className={cssStyle.containerControlBar} />
                 <div className={cssStyle.containerChannelTree}>
                     <ChannelTreeRenderer events={this.eventsTree} handlerId={this.handlerId} />
                 </div>
