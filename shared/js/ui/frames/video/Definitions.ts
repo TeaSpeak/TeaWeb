@@ -1,5 +1,6 @@
 import {ClientIcon} from "svg-sprites/client-icons";
 import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
+import {LogCategory, logWarn} from "tc-shared/log";
 
 export const kLocalVideoId = "__local__video__";
 export const kLocalBroadcastChannels: VideoBroadcastType[] = ["screen", "camera"];
@@ -71,6 +72,7 @@ export interface ChannelVideoEvents {
     action_set_spotlight: { videoId: string | undefined, expend: boolean },
     action_focus_spotlight: {},
     action_set_fullscreen: { videoId: string | undefined },
+    action_set_pip: { videoId: string | undefined, broadcastType: VideoBroadcastType },
     action_toggle_mute: { videoId: string, broadcastType: VideoBroadcastType | undefined, muted: boolean },
     action_dismiss: { videoId: string, broadcastType: VideoBroadcastType },
 
@@ -121,4 +123,46 @@ export interface ChannelVideoEvents {
     notify_subscribe_info: {
         info: VideoSubscribeInfo
     }
+}
+
+export function makeVideoAutoplay(video: HTMLVideoElement) : () => void {
+    let replayTimeout;
+
+    video.autoplay = true;
+
+    const executePlay = () => {
+        if(replayTimeout) {
+            return;
+        }
+
+        video.play().then(undefined).catch(() => {
+            logWarn(LogCategory.VIDEO, tr("Failed to start video replay. Retrying in 500ms intervals."));
+            replayTimeout = setInterval(() => {
+                video.play().then(() => {
+                    clearInterval(replayTimeout);
+                    replayTimeout = undefined;
+                }).catch(() => {});
+            });
+        });
+    };
+
+    const listenerPause = () => {
+        logWarn(LogCategory.VIDEO, tr("Video replay paused. Executing play again."));
+        executePlay();
+    };
+
+    const listenerEnded = () => {
+        logWarn(LogCategory.VIDEO, tr("Video replay ended. Executing play again."));
+        executePlay();
+    };
+
+    video.addEventListener("pause", listenerPause);
+    video.addEventListener("ended", listenerEnded);
+    executePlay();
+
+    return () => {
+        clearTimeout(replayTimeout);
+        video.removeEventListener("pause", listenerPause);
+        video.removeEventListener("ended", listenerEnded);
+    };
 }
