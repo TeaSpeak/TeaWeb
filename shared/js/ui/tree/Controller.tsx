@@ -2,10 +2,10 @@ import {ChannelTree, ChannelTreeEvents} from "tc-shared/tree/ChannelTree";
 import {ChannelTreeEntry as ChannelTreeEntryModel, ChannelTreeEntryEvents} from "tc-shared/tree/ChannelTreeEntry";
 import {EventHandler, Registry} from "tc-shared/events";
 import {
+    ChannelEntryInfo,
     ChannelIcons,
-    ChannelTreeEntry,
-    ChannelTreeUIEvents,
-    ClientTalkIconState,
+    ChannelTreeUIEvents, ClientIcons, ClientNameInfo,
+    ClientTalkIconState, FullChannelTreeEntry,
     ServerState
 } from "tc-shared/ui/tree/Definitions";
 import {ChannelTreeRenderer} from "./Renderer";
@@ -140,7 +140,7 @@ class ChannelTreeController {
     private handleConnectionStateChanged(event: ConnectionEvents["notify_connection_state_changed"]) {
         if(event.newState !== ConnectionState.CONNECTED) {
             this.channelTree.channelsInitialized = false;
-            this.sendChannelTreeEntries();
+            this.sendChannelTreeEntriesFull([]);
         }
         this.sendServerStatus(this.channelTree.server);
     }
@@ -199,7 +199,7 @@ class ChannelTreeController {
         this.channelTree.channelsInitialized = true;
         this.channelTree.channels.forEach(channel => this.initializeChannelEvents(channel));
         this.channelTree.clients.forEach(channel => this.initializeClientEvents(channel));
-        this.sendChannelTreeEntries();
+        this.sendChannelTreeEntriesFull(undefined);
         this.sendSelectedEntry();
     }
 
@@ -207,13 +207,13 @@ class ChannelTreeController {
     private handleChannelCreated(event: ChannelTreeEvents["notify_channel_created"]) {
         if(!this.channelTree.channelsInitialized) { return; }
         this.initializeChannelEvents(event.channel);
-        this.sendChannelTreeEntries();
+        this.sendChannelTreeEntriesFull([event.channel.uniqueEntryId]);
     }
 
     @EventHandler<ChannelTreeEvents>("notify_channel_moved")
     private handleChannelMoved(event: ChannelTreeEvents["notify_channel_moved"]) {
         if(!this.channelTree.channelsInitialized) { return; }
-        this.sendChannelTreeEntries();
+        this.sendChannelTreeEntriesFull([]);
 
         if(event.previousParent && !event.previousParent.child_channel_head) {
             /* the collapsed state arrow changed */
@@ -229,7 +229,7 @@ class ChannelTreeController {
     private handleChannelDeleted(event: ChannelTreeEvents["notify_channel_deleted"]) {
         if(!this.channelTree.channelsInitialized) { return; }
         this.finalizeEvents(event.channel);
-        this.sendChannelTreeEntries();
+        this.sendChannelTreeEntriesFull([]);
     }
 
     @EventHandler<ChannelTreeEvents>("notify_client_enter_view")
@@ -239,7 +239,7 @@ class ChannelTreeController {
         this.initializeClientEvents(event.client);
         this.sendChannelInfo(event.targetChannel);
         this.sendChannelStatusIcon(event.targetChannel);
-        this.sendChannelTreeEntries();
+        this.sendChannelTreeEntriesFull([event.client.uniqueEntryId]);
     }
 
     @EventHandler<ChannelTreeEvents>("notify_client_leave_view")
@@ -249,7 +249,7 @@ class ChannelTreeController {
         this.finalizeEvents(event.client);
         this.sendChannelInfo(event.sourceChannel);
         this.sendChannelStatusIcon(event.sourceChannel);
-        this.sendChannelTreeEntries();
+        this.sendChannelTreeEntriesFull([]);
     }
 
     @EventHandler<ChannelTreeEvents>("notify_client_moved")
@@ -261,7 +261,7 @@ class ChannelTreeController {
 
         this.sendChannelInfo(event.newChannel);
         this.sendChannelStatusIcon(event.newChannel);
-        this.sendChannelTreeEntries();
+        this.sendChannelTreeEntriesFull([]);
 
         this.sendClientTalkStatus(event.client);
     }
@@ -287,7 +287,7 @@ class ChannelTreeController {
         this.initializeTreeEntryEvents(channel, events);
         events.push(channel.events.on("notify_collapsed_state_changed", () => {
             this.sendChannelInfo(channel);
-            this.sendChannelTreeEntries();
+            this.sendChannelTreeEntriesFull([]);
         }));
 
         events.push(channel.events.on("notify_properties_updated", event => {
@@ -380,14 +380,14 @@ class ChannelTreeController {
         });
     }
 
-    public sendChannelTreeEntries() {
-        const entries = [] as ChannelTreeEntry[];
+    private buildFlatChannelTree() : { entry: ChannelTreeEntryModel<any>, depth: number }[] {
+        const entries: { entry: ChannelTreeEntryModel<any>, depth: number }[] = [];
 
         /* at first comes the server */
-        entries.push({ type: "server", entryId: this.channelTree.server.uniqueEntryId, depth: 0 });
+        entries.push({ entry: this.channelTree.server, depth: 0 });
 
         const buildSubTree = (channel: ChannelEntry, depth: number) => {
-            entries.push({ type: "channel", entryId: channel.uniqueEntryId, depth: depth });
+            entries.push({ entry: channel, depth: depth });
             if(channel.isCollapsed()) {
                 return;
             }
@@ -397,17 +397,94 @@ class ChannelTreeController {
                 clients = clients.filter(client => client.properties.client_type_exact !== ClientType.CLIENT_QUERY);
             }
 
-            entries.push(...clients.map(client => { return {
-                type: client instanceof LocalClientEntry ? "client-local" : "client",
-                depth: depth + 1,
-                entryId: client.uniqueEntryId
-            } as ChannelTreeEntry }));
+            entries.push(...clients.map(client => {
+                return {
+                    entry: client,
+                    depth: depth + 1
+                }
+            }));
             channel.children(false).forEach(channel => buildSubTree(channel, depth + 1));
         };
 
         this.channelTree.rootChannel().forEach(entry => buildSubTree(entry, 1));
+        return entries;
+    }
 
-        this.events.fire_react("notify_tree_entries", { entries: entries });
+    /**
+     * @param fullInfoEntries If `undefined` full entry info will be send.
+     *                        Else only infos for entries which are contained within the entry id array will be send.
+     */
+    public sendChannelTreeEntriesFull(fullInfoEntries: number[] | undefined) {
+        const entries = [] as FullChannelTreeEntry[];
+
+        for(const entry of this.buildFlatChannelTree()) {
+            if(!fullInfoEntries || fullInfoEntries.indexOf(entry.entry.uniqueEntryId) !== -1) {
+                if(entry.entry instanceof ServerEntry) {
+                    entries.push({
+                        type: "server",
+                        entryId: entry.entry.uniqueEntryId,
+                        depth: entry.depth,
+                        fullInfo: true,
+                        state: this.generateServerStatus(entry.entry),
+                        unread: entry.entry.isUnread()
+                    });
+                } else if(entry.entry instanceof ClientEntry) {
+                    const talkStatus = this.generateClientTalkStatus(entry.entry);
+                    entries.push({
+                        type: entry.entry instanceof LocalClientEntry ? "client-local" : "client",
+                        entryId: entry.entry.uniqueEntryId,
+                        depth: entry.depth,
+                        fullInfo: true,
+                        unread: entry.entry.isUnread(),
+                        name: this.generateClientNameInfo(entry.entry),
+                        icons: this.generateClientIcons(entry.entry),
+                        status: entry.entry.getStatusIcon(),
+                        talkStatus: talkStatus.status,
+                        talkRequestMessage: talkStatus.requestMessage
+                    });
+                } else if(entry.entry instanceof ChannelEntry) {
+                    entries.push({
+                        type: "channel",
+                        entryId: entry.entry.uniqueEntryId,
+                        depth: entry.depth,
+                        fullInfo: true,
+                        unread: entry.entry.isUnread(),
+                        icons: this.generateChannelIcons(entry.entry),
+                        info: this.generateChannelInfo(entry.entry),
+                        icon: entry.entry.getStatusIcon()
+                    })
+                } else {
+                    throw tr("Invalid flat channel tree entry");
+                }
+            } else {
+                if(entry.entry instanceof ServerEntry) {
+                    entries.push({
+                        type: "server",
+                        entryId: entry.entry.uniqueEntryId,
+                        depth: entry.depth,
+                        fullInfo: false
+                    });
+                } else if(entry.entry instanceof ClientEntry) {
+                    entries.push({
+                        type: entry.entry instanceof LocalClientEntry ? "client-local" : "client",
+                        entryId: entry.entry.uniqueEntryId,
+                        depth: entry.depth,
+                        fullInfo: false
+                    });
+                } else if(entry.entry instanceof ChannelEntry) {
+                    entries.push({
+                        type: "channel",
+                        entryId: entry.entry.uniqueEntryId,
+                        depth: entry.depth,
+                        fullInfo: false
+                    })
+                } else {
+                    throw tr("Invalid flat channel tree entry");
+                }
+            }
+        }
+
+        this.events.fire_react("notify_tree_entries_full", { entries: entries });
     }
 
     public sendSelectedEntry() {
@@ -415,14 +492,18 @@ class ChannelTreeController {
         this.events.fire_react("notify_selected_entry", { treeEntryId: selectedEntry ? selectedEntry.uniqueEntryId : 0 });
     }
 
+    private generateChannelInfo(channel: ChannelEntry) : ChannelEntryInfo {
+        return {
+            collapsedState: channel.child_channel_head || channel.channelClientsOrdered().length > 0 ? channel.isCollapsed() ? "collapsed" : "expended" : "unset",
+            name: channel.parsed_channel_name.text,
+            nameStyle: channel.parsed_channel_name.alignment
+        };
+    }
+
     public sendChannelInfo(channel: ChannelEntry) {
         this.events.fire_react("notify_channel_info", {
             treeEntryId: channel.uniqueEntryId,
-            info: {
-                collapsedState: channel.child_channel_head || channel.channelClientsOrdered().length > 0 ? channel.isCollapsed() ? "collapsed" : "expended" : "unset",
-                name: channel.parsed_channel_name.text,
-                nameStyle: channel.parsed_channel_name.alignment
-            }
+            info: this.generateChannelInfo(channel)
         })
     }
 
@@ -430,7 +511,7 @@ class ChannelTreeController {
         this.events.fire_react("notify_channel_icon", { icon: channel.getStatusIcon(), treeEntryId: channel.uniqueEntryId });
     }
 
-    public sendChannelIcons(channel: ChannelEntry) {
+    private generateChannelIcons(channel: ChannelEntry) : ChannelIcons {
         let icons: ChannelIcons = {
             musicQuality: channel.properties.channel_codec === 3 || channel.properties.channel_codec === 5,
             codecUnsupported: true,
@@ -455,10 +536,14 @@ class ChannelTreeController {
                 icons.codecUnsupported = true;
         }
 
-        this.events.fire_react("notify_channel_icons", { icons: icons, treeEntryId: channel.uniqueEntryId });
+        return icons;
     }
 
-    public sendClientNameInfo(client: ClientEntry) {
+    public sendChannelIcons(channel: ChannelEntry) {
+        this.events.fire_react("notify_channel_icons", { icons: this.generateChannelIcons(channel), treeEntryId: channel.uniqueEntryId });
+    }
+
+    private generateClientNameInfo(client: ClientEntry) : ClientNameInfo {
         let prefix = [];
         let suffix = [];
         for(const groupId of client.assignedServerGroupIds()) {
@@ -484,18 +569,22 @@ class ChannelTreeController {
         }
 
         const afkMessage = client.properties.client_away ? client.properties.client_away_message : undefined;
+        return {
+            name: client.clientNickName(),
+            awayMessage: afkMessage,
+            prefix: prefix,
+            suffix: suffix
+        };
+    }
+
+    public sendClientNameInfo(client: ClientEntry) {
         this.events.fire_react("notify_client_name", {
-            info: {
-                name: client.clientNickName(),
-                awayMessage: afkMessage,
-                prefix: prefix,
-                suffix: suffix
-            },
+            info: this.generateClientNameInfo(client),
             treeEntryId: client.uniqueEntryId
         });
     }
 
-    public sendClientIcons(client: ClientEntry) {
+    private generateClientIcons(client: ClientEntry) : ClientIcons {
         const uniqueServerId = this.channelTree.client.getCurrentServerUniqueId();
 
         const serverGroupIcons = client.assignedServerGroupIds()
@@ -510,17 +599,21 @@ class ChannelTreeController {
             .map(group => { return { iconId: group.properties.iconid, groupName: group.name, groupId: group.id, serverUniqueId: uniqueServerId }; });
 
         const clientIcon = client.properties.client_icon_id === 0 ? [] : [client.properties.client_icon_id];
+        return {
+            serverGroupIcons: serverGroupIcons,
+            channelGroupIcon: channelGroupIcon[0],
+            clientIcon: clientIcon.length > 0 ? { iconId: clientIcon[0], serverUniqueId: uniqueServerId } : undefined
+        };
+    }
+
+    public sendClientIcons(client: ClientEntry) {
         this.events.fire_react("notify_client_icons", {
-            icons: {
-                serverGroupIcons: serverGroupIcons,
-                channelGroupIcon: channelGroupIcon[0],
-                clientIcon: clientIcon.length > 0 ? { iconId: clientIcon[0], serverUniqueId: uniqueServerId } : undefined
-            },
+            icons: this.generateClientIcons(client),
             treeEntryId: client.uniqueEntryId
         });
     }
 
-    public sendClientTalkStatus(client: ClientEntry) {
+    private generateClientTalkStatus(client: ClientEntry) : { status: ClientTalkIconState, requestMessage?: string } {
         let status: ClientTalkIconState = "unset";
 
         if(client.properties.client_is_talker) {
@@ -533,37 +626,42 @@ class ChannelTreeController {
             }
         }
 
-        this.events.fire_react("notify_client_talk_status", { treeEntryId: client.uniqueEntryId, requestMessage: client.properties.client_talk_request_msg, status: status });
+        return {
+            requestMessage: client.properties.client_talk_request_msg,
+            status: status
+        }
     }
 
-    public sendServerStatus(serverEntry: ServerEntry) {
-        let status: ServerState;
+    public sendClientTalkStatus(client: ClientEntry) {
+        const status = this.generateClientTalkStatus(client);
+        this.events.fire_react("notify_client_talk_status", { treeEntryId: client.uniqueEntryId, requestMessage: status.requestMessage, status: status.status });
+    }
 
+    private generateServerStatus(serverEntry: ServerEntry) : ServerState {
         switch (this.channelTree.client.connection_state) {
             case ConnectionState.AUTHENTICATING:
             case ConnectionState.CONNECTING:
             case ConnectionState.INITIALISING:
-                status = {
+                return {
                     state: "connecting",
                     targetAddress: serverEntry.remote_address.host + (serverEntry.remote_address.port === 9987 ? "" : `:${serverEntry.remote_address.port}`)
                 };
-                break;
 
             case ConnectionState.DISCONNECTING:
             case ConnectionState.UNCONNECTED:
-                status = { state: "disconnected" };
-                break;
+                return { state: "disconnected" };
 
             case ConnectionState.CONNECTED:
-                status = {
+                return {
                     state: "connected",
                     name: serverEntry.properties.virtualserver_name,
                     icon: { iconId: serverEntry.properties.virtualserver_icon_id, serverUniqueId: serverEntry.properties.virtualserver_unique_identifier }
                 };
-                break;
         }
+    }
 
-        this.events.fire_react("notify_server_state", { treeEntryId: serverEntry.uniqueEntryId, state: status });
+    public sendServerStatus(serverEntry: ServerEntry) {
+        this.events.fire_react("notify_server_state", { treeEntryId: serverEntry.uniqueEntryId, state: this.generateServerStatus(serverEntry) });
     }
 }
 
@@ -588,7 +686,7 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
 
     events.on("notify_destroy", channelTree.client.events().on("notify_visibility_changed", event => events.fire("notify_visibility_changed", event)));
 
-    events.on("query_tree_entries", () => controller.sendChannelTreeEntries());
+    events.on("query_tree_entries", event => controller.sendChannelTreeEntriesFull(event.fullInfo ? undefined : []));
     events.on("query_channel_info", event => {
         const entry = channelTree.findEntryId(event.treeEntryId);
         if(!entry || !(entry instanceof ChannelEntry)) {
