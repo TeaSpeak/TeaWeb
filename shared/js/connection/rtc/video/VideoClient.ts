@@ -20,6 +20,11 @@ export class RtpVideoClient implements VideoClient {
         camera: event => this.handleTrackStateChanged("camera", event.newState)
     };
 
+    private dismissedStates: {[T in VideoBroadcastType]: boolean} = {
+        screen: false,
+        camera: false
+    };
+
     private currentTrack: {[T in VideoBroadcastType]: RemoteRTPVideoTrack} = {
         camera: undefined,
         screen: undefined
@@ -69,6 +74,7 @@ export class RtpVideoClient implements VideoClient {
 
         this.joinedStates[broadcastType] = true;
         this.setBroadcastState(broadcastType, VideoBroadcastState.Initializing);
+        this.setBroadcastDismissed(broadcastType,false);
         await this.handle.getConnection().send_command("broadcastvideojoin", {
             bid: this.broadcastIds[broadcastType],
             bt: broadcastType === "camera" ? 0 : 1
@@ -124,7 +130,9 @@ export class RtpVideoClient implements VideoClient {
         if(this.currentTrack[type]) {
             this.currentTrack[type].getEvents().on("notify_state_changed", this.listenerTrackStateChanged[type]);
         }
+
         this.updateBroadcastState(type);
+        this.events.fire("notify_broadcast_stream_changed", { broadcastType: type });
     }
 
     setBroadcastId(type: VideoBroadcastType, id: number | undefined) {
@@ -138,6 +146,23 @@ export class RtpVideoClient implements VideoClient {
             this.joinedStates[type] = false;
         }
         this.updateBroadcastState(type);
+    }
+
+    private setBroadcastDismissed(broadcastType: VideoBroadcastType, dismissed: boolean) {
+        if(this.dismissedStates[broadcastType] === dismissed) {
+            return;
+        }
+
+        this.dismissedStates[broadcastType] = dismissed;
+        this.events.fire("notify_dismissed_state_changed", { broadcastType: broadcastType, dismissed: dismissed });
+    }
+
+    dismissBroadcast(broadcastType: VideoBroadcastType) {
+        this.setBroadcastDismissed(broadcastType, true);
+    }
+
+    isBroadcastDismissed(broadcastType: VideoBroadcastType): boolean {
+        return this.dismissedStates[broadcastType];
     }
 
     private setBroadcastState(type: VideoBroadcastType, state: VideoBroadcastState) {

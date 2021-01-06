@@ -29,12 +29,22 @@
         width: 100%;
     }
 
+    .mainContainer {
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+
+        position: relative;
+
+        height: 100%;
+        margin-top: 5px;
+    }
+
     .channelTreeAndSidebar {
         display: flex;
         flex-direction: row;
         justify-content: stretch;
 
-        margin-top: 5px;
         min-height: 27em;
     }
 
