@@ -7,7 +7,7 @@ import {
     ChannelVideoEvents,
     ChannelVideoInfo,
     ChannelVideoStreamState,
-    kLocalVideoId, VideoStreamState, VideoSubscribeInfo
+    kLocalVideoId, makeVideoAutoplay, VideoStreamState, VideoSubscribeInfo
 } from "tc-shared/ui/frames/video/Definitions";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
@@ -17,6 +17,7 @@ import {LogCategory, logWarn} from "tc-shared/log";
 import {spawnContextMenu} from "tc-shared/ui/ContextMenu";
 import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
 import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
+import {useTr} from "tc-shared/ui/react-elements/Helper";
 
 const SubscribeContext = React.createContext<VideoSubscribeInfo>(undefined);
 const EventContext = React.createContext<Registry<ChannelVideoEvents>>(undefined);
@@ -83,44 +84,17 @@ const VideoInfo = React.memo((props: { videoId: string }) => {
     );
 });
 
-const VideoStreamReplay = React.memo((props: { stream: MediaStream | undefined, className: string, title: string }) => {
+const VideoStreamReplay = React.memo((props: { stream: MediaStream | undefined, className: string, streamType: VideoBroadcastType }) => {
     const refVideo = useRef<HTMLVideoElement>();
-    const refReplayTimeout = useRef<number>();
 
     useEffect(() => {
+        let cancelAutoplay;
         const video = refVideo.current;
         if(props.stream) {
             video.style.opacity = "1";
             video.srcObject = props.stream;
-            video.autoplay = true;
             video.muted = true;
-
-            const executePlay = () => {
-                if(refReplayTimeout.current) {
-                    return;
-                }
-
-                video.play().then(undefined).catch(() => {
-                    logWarn(LogCategory.VIDEO, tr("Failed to start video replay. Retrying in 500ms intervals."));
-                    refReplayTimeout.current = setInterval(() => {
-                        video.play().then(() => {
-                            clearInterval(refReplayTimeout.current);
-                            refReplayTimeout.current = undefined;
-                        }).catch(() => {});
-                    });
-                });
-            };
-
-            video.onpause = () => {
-                logWarn(LogCategory.VIDEO, tr("Video replay paused. Executing play again."));
-                executePlay();
-            }
-
-            video.onended = () => {
-                logWarn(LogCategory.VIDEO, tr("Video replay ended. Executing play again."));
-                executePlay();
-            }
-            executePlay();
+            cancelAutoplay = makeVideoAutoplay(video);
         } else {
             video.style.opacity = "0";
         }
@@ -132,13 +106,21 @@ const VideoStreamReplay = React.memo((props: { stream: MediaStream | undefined, 
                 video.onended = undefined;
             }
 
-            clearInterval(refReplayTimeout.current);
-            refReplayTimeout.current = undefined;
+            if(cancelAutoplay) {
+                cancelAutoplay();
+            }
         }
     }, [ props.stream ]);
 
+    let title;
+    if(props.streamType === "camera") {
+        title = useTr("Camera");
+    } else {
+        title = useTr("Screen");
+    }
+
     return (
-        <video ref={refVideo} className={cssStyle.video + " " + props.className} title={props.title} />
+        <video ref={refVideo} className={cssStyle.video + " " + props.className} title={title} x-stream-type={props.streamType} />
     )
 });
 
@@ -265,7 +247,7 @@ const VideoStreamRenderer = (props: { videoId: string, streamType: VideoBroadcas
             );
 
         case "connected":
-            return <VideoStreamReplay stream={state.stream} className={props.className} title={props.streamType === "camera" ? tr("Camera") : tr("Screen")} key={"connected"} />;
+            return <VideoStreamReplay stream={state.stream} className={props.className} streamType={props.streamType} key={"connected"} />;
 
         case "failed":
             return (
@@ -465,11 +447,22 @@ const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolea
                 }
             }}
             onContextMenu={event => {
+                const streamType = (event.target as HTMLElement).getAttribute("x-stream-type");
+
                 event.preventDefault();
                 spawnContextMenu({
                     pageY: event.pageY,
                     pageX: event.pageX
                 }, [
+                    {
+                        type: "normal",
+                        label: tr("Popout Video"),
+                        icon: ClientIcon.Fullscreen,
+                        click: () => {
+                            events.fire("action_set_pip", { videoId: props.videoId, broadcastType: streamType as any });
+                        },
+                        visible: !!streamType && "requestPictureInPicture" in HTMLVideoElement.prototype
+                    },
                     {
                         type: "normal",
                         label: isFullscreen ? tr("Release fullscreen") : tr("Show in fullscreen"),

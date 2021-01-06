@@ -6,7 +6,7 @@ import {Registry} from "tc-shared/events";
 import {
     ChannelVideoEvents,
     ChannelVideoStreamState,
-    kLocalVideoId,
+    kLocalVideoId, makeVideoAutoplay,
     VideoStreamState
 } from "tc-shared/ui/frames/video/Definitions";
 import {
@@ -22,6 +22,7 @@ import {tr} from "tc-shared/i18n/localize";
 import {Settings, settings} from "tc-shared/settings";
 import * as _ from "lodash";
 import PermissionType from "tc-shared/permission/PermissionType";
+import {createErrorModal} from "tc-shared/ui/elements/Modal";
 
 const cssStyle = require("./Renderer.scss");
 
@@ -32,6 +33,7 @@ interface ClientVideoController {
     subscribeVideo(type: VideoBroadcastType);
     muteVideo(type: VideoBroadcastType);
     dismissVideo(type: VideoBroadcastType);
+    showPip(type: VideoBroadcastType) : Promise<void>;
 
     notifyVideoInfo();
     notifyVideo();
@@ -59,6 +61,9 @@ class RemoteClientVideoController implements ClientVideoController {
         screen: "none",
         camera: "none"
     };
+
+    private pipElement: HTMLVideoElement | undefined;
+    private pipBroadcastType: VideoBroadcastType | undefined;
 
     constructor(client: ClientEntry, eventRegistry: Registry<ChannelVideoEvents>, videoId?: string) {
         this.client = client;
@@ -114,6 +119,9 @@ class RemoteClientVideoController implements ClientVideoController {
 
         this.eventListener?.forEach(callback => callback());
         this.eventListener = undefined;
+
+        this.pipElement?.remove();
+        this.pipElement = undefined;
     }
 
     isBroadcasting() {
@@ -201,6 +209,10 @@ class RemoteClientVideoController implements ClientVideoController {
                 this.callbackSubscriptionStateChanged();
             }
         }
+
+        if(this.pipBroadcastType && this.currentStreamStates[this.pipBroadcastType] !== "streaming") {
+            this.stopPip();
+        }
     }
 
     notifyVideo() {
@@ -230,6 +242,14 @@ class RemoteClientVideoController implements ClientVideoController {
             }
         }
 
+        if(this.pipBroadcastType === type && this.pipElement) {
+            if(state.state === "connected") {
+                this.pipElement.srcObject = state.stream;
+            } else {
+                this.stopPip();
+            }
+        }
+
         this.events.fire_react("notify_video_stream", {
             videoId: this.videoId,
             broadcastType: type,
@@ -249,6 +269,81 @@ class RemoteClientVideoController implements ClientVideoController {
     protected getBroadcastStream(target: VideoBroadcastType) : MediaStream | undefined {
         const videoClient = this.client.getVideoClient();
         return videoClient ? videoClient.getVideoStream(target) : undefined;
+    }
+
+    private stopPip() {
+        if((document as any).pictureInPictureElement === this.pipElement && "exitPictureInPicture" in document) {
+            (document as any).exitPictureInPicture();
+        }
+
+        this.pipElement?.remove();
+        this.pipElement = undefined;
+        this.pipBroadcastType = undefined;
+    }
+
+    async showPip(type: VideoBroadcastType) {
+        if(this.pipBroadcastType === type) {
+            return;
+        }
+        this.pipBroadcastType = type;
+
+        if(!("requestPictureInPicture" in HTMLVideoElement.prototype)) {
+            throw tr("Picture in picture isn't supported");
+        }
+
+        const stream = this.getBroadcastStream(type);
+        if(!stream) {
+            throw tr("Missing video stream");
+        }
+
+        const element = document.createElement("video");
+        element.srcObject = stream;
+        element.muted = true;
+        element.style.position = "absolute";
+        element.style.top = "-1000000px";
+
+        this.pipElement?.remove();
+        this.pipElement = element;
+        this.pipBroadcastType = type;
+
+        try {
+            document.body.appendChild(element);
+
+            try {
+                await new Promise((resolve, reject) => {
+                    element.onloadedmetadata = resolve;
+                    element.onerror = reject;
+                });
+            } catch (error) {
+                throw tr("Failed to load video meta data");
+            } finally {
+                element.onloadedmetadata = undefined;
+                element.onerror = undefined;
+            }
+
+            try {
+                await (element as any).requestPictureInPicture();
+            } catch(error) {
+                throw error;
+            }
+
+            const cancelAutoplay = makeVideoAutoplay(element);
+            element.addEventListener('leavepictureinpicture', () => {
+                cancelAutoplay();
+                element.remove();
+                if(this.pipElement === element) {
+                    this.pipElement = undefined;
+                    this.pipBroadcastType = undefined;
+                }
+            });
+        } catch(error) {
+            element.remove();
+            if(this.pipElement === element) {
+                this.pipElement = undefined;
+                this.pipBroadcastType = undefined;
+            }
+            throw error;
+        }
     }
 }
 
@@ -465,6 +560,20 @@ class ChannelVideoController {
             }
 
             controller.notifyVideoStream(event.broadcastType);
+        });
+
+        this.events.on("action_set_pip", async event => {
+            const controller = this.findVideoById(event.videoId);
+            if (!controller) {
+                logWarn(LogCategory.VIDEO, tr("Tried to enable video pip for a non existing video id (%s)."), event.videoId);
+                return;
+            }
+
+            try {
+                await controller.showPip(event.broadcastType);
+            } catch (error) {
+                createErrorModal(tr("Failed to start PIP"), tra("Failed to popout video:\n{}", error)).open();
+            }
         });
 
         const channelTree = this.connection.channelTree;
