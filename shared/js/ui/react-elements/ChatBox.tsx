@@ -59,21 +59,24 @@ const EmojiButton = (props: { events: Registry<ChatBoxEvents> }) => {
                 <img alt={""} src={"img/smiley-smile.svg"} />
             </div>
             <div className={cssStyle.picker} style={{ display: shown ? undefined : "none" }}>
-                <Picker
-                    set={"twitter"}
-                    theme={"light"}
-                    showPreview={true}
-                    title={""}
-                    showSkinTones={true}
-                    useButton={false}
-                    native={false}
+                {!shown ? undefined :
+                    <Picker
+                        key={"picker"}
+                        set={"twitter"}
+                        theme={"light"}
+                        showPreview={true}
+                        title={""}
+                        showSkinTones={true}
+                        useButton={false}
+                        native={false}
 
-                    onSelect={(emoji: any) => {
-                        if(enabled) {
-                            props.events.fire("action_insert_text", { text: emoji.native, focus: true });
-                        }
-                    }}
-                />
+                        onSelect={(emoji: any) => {
+                            if(enabled) {
+                                props.events.fire("action_insert_text", { text: emoji.native, focus: true });
+                            }
+                        }}
+                    />
+                }
             </div>
         </div>
     );
