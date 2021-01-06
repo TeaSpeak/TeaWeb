@@ -194,8 +194,9 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
             return;
         }
 
+        const config = Object.assign({}, this.currentConfig);
         try {
-            await this.handle.getRTCConnection().startVideoBroadcast(this.type, this.currentConfig);
+            await this.handle.getRTCConnection().startVideoBroadcast(this.type, config);
         } catch (error) {
             if(this.broadcastStartId !== startId) {
                 /* broadcast start has been canceled */
@@ -211,7 +212,8 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
             return;
         }
 
-        this.signaledConfig = Object.assign({}, this.currentConfig);
+        /* TODO: Test if the config may has already be changed */
+        this.signaledConfig = config;
         this.setState({ state: "broadcasting" });
     }
 
@@ -311,7 +313,11 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
             const startId = ++this.broadcastStartId;
 
             try {
-                await this.handle.getRTCConnection().startVideoBroadcast(this.type, this.currentConfig);
+                const config = Object.assign({}, this.currentConfig);
+                await this.handle.getRTCConnection().startVideoBroadcast(this.type, config);
+                this.setState({ state: "broadcasting" });
+                this.signaledConfig = config;
+                /* TODO: Test if the config may has already be changed */
             } catch (error) {
                 if(this.broadcastStartId !== startId) {
                     /* broadcast start has been canceled */

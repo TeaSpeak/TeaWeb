@@ -12,6 +12,15 @@ export class HostBannerController {
         this.uiEvents = new Registry<HostBannerUiEvents>();
     }
 
+    destroy() {
+        this.currentConnection = undefined;
+
+        this.listenerConnection?.forEach(callback => callback());
+        this.listenerConnection = [];
+
+        this.uiEvents?.destroy();
+    }
+
     setConnectionHandler(handler: ConnectionHandler) {
         if(this.currentConnection === handler) {
             return;

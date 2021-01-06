@@ -2,16 +2,6 @@ import {ConnectionHandler, DisconnectReason} from "./ConnectionHandler";
 import {Registry} from "./events";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
-import {FooterRenderer} from "tc-shared/ui/frames/footer/Renderer";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
-import {SideBarController} from "tc-shared/ui/frames/SideBarController";
-import {ServerEventLogController} from "tc-shared/ui/frames/log/Controller";
-import {ServerLogFrame} from "tc-shared/ui/frames/log/Renderer";
-import {HostBannerController} from "tc-shared/ui/frames/HostBannerController";
-import {HostBanner} from "tc-shared/ui/frames/HostBannerRenderer";
-import {ChannelTreeView} from "tc-shared/ui/tree/RendererView";
-import {ChannelTreeRenderer} from "tc-shared/ui/tree/Renderer";
 
 export let server_connections: ConnectionManager;
 
@@ -28,148 +18,6 @@ class ReplaceableContainer {
         target = target || this.placeholder;
         this.container.replaceWith(target);
         this.container = target;
-    }
-}
-
-export class ConnectionManager {
-    private readonly event_registry: Registry<ConnectionManagerEvents>;
-    private connection_handlers: ConnectionHandler[] = [];
-    private active_handler: ConnectionHandler | undefined;
-
-    private containerChannelVideo: ReplaceableContainer;
-    private containerFooter: HTMLDivElement;
-    private containerServerLog: HTMLDivElement;
-    private containerHostBanner: HTMLDivElement;
-    private containerChannelTree: HTMLDivElement;
-
-    /* FIXME: Move these controller out! */
-    sideBarController: SideBarController;
-    serverLogController: ServerEventLogController;
-    hostBannerController: HostBannerController;
-
-    constructor() {
-        this.event_registry = new Registry<ConnectionManagerEvents>();
-        this.event_registry.enableDebug("connection-manager");
-
-        this.sideBarController = new SideBarController();
-        this.serverLogController = new ServerEventLogController();
-        this.hostBannerController = new HostBannerController();
-
-        this.containerChannelVideo = new ReplaceableContainer(document.getElementById("channel-video") as HTMLDivElement);
-        this.containerServerLog = document.getElementById("server-log") as HTMLDivElement;
-        this.containerFooter = document.getElementById("container-footer") as HTMLDivElement;
-        this.containerHostBanner = document.getElementById("hostbanner") as HTMLDivElement;
-        this.containerChannelTree = document.getElementById("channelTree") as HTMLDivElement;
-
-        this.sideBarController.renderInto(document.getElementById("chat") as HTMLDivElement);
-        this.set_active_connection(undefined);
-    }
-
-    initializeReactComponents() {
-        return;
-        ReactDOM.render(React.createElement(FooterRenderer), this.containerFooter);
-        ReactDOM.render(React.createElement(ServerLogFrame, { events: this.serverLogController.events }), this.containerServerLog);
-        ReactDOM.render(React.createElement(HostBanner, { events: this.hostBannerController.uiEvents }), this.containerHostBanner);
-    }
-
-    events() : Registry<ConnectionManagerEvents> {
-        return this.event_registry;
-    }
-
-    spawn_server_connection() : ConnectionHandler {
-        const handler = new ConnectionHandler();
-        handler.initialize_client_state(this.active_handler);
-        this.connection_handlers.push(handler);
-
-        this.event_registry.fire("notify_handler_created", { handler: handler, handlerId: handler.handlerId });
-        return handler;
-    }
-
-    destroy_server_connection(handler: ConnectionHandler) {
-        if(this.connection_handlers.length <= 1)
-            throw "cannot deleted the last connection handler";
-
-        if(!this.connection_handlers.remove(handler))
-            throw "unknown connection handler";
-
-        if(handler.serverConnection) {
-            const connected = handler.connected;
-            handler.serverConnection.disconnect("handler destroyed");
-            handler.handleDisconnect(DisconnectReason.HANDLER_DESTROYED, connected);
-        }
-
-        if(handler === this.active_handler)
-            this.set_active_connection_(this.connection_handlers[0]);
-        this.event_registry.fire("notify_handler_deleted", { handler: handler, handlerId: handler.handlerId });
-
-        /* destroy all elements */
-        handler.destroy();
-    }
-
-    set_active_connection(handler: ConnectionHandler) {
-        if(handler && this.connection_handlers.indexOf(handler) == -1)
-            throw "Handler hasn't been registered or is already obsolete!";
-        if(handler === this.active_handler)
-            return;
-        this.set_active_connection_(handler);
-    }
-
-    swapHandlerOrder(handlerA: ConnectionHandler, handlerB: ConnectionHandler) {
-        const indexA = this.connection_handlers.findIndex(handler => handlerA === handler);
-        const indexB = this.connection_handlers.findIndex(handler => handlerB === handler);
-
-        if(indexA === -1 || indexB === -1 || indexA === indexB) {
-            return;
-        }
-
-        let temp = this.connection_handlers[indexA];
-        this.connection_handlers[indexA] = this.connection_handlers[indexB];
-        this.connection_handlers[indexB] = temp;
-        this.events().fire("notify_handler_order_changed");
-    }
-
-    private set_active_connection_(handler: ConnectionHandler) {
-        this.sideBarController.setConnection(handler);
-        this.serverLogController.setConnectionHandler(handler);
-        this.hostBannerController.setConnectionHandler(handler);
-
-/*
-        this.containerChannelVideo.replaceWith(handler?.video_frame.getContainer());
-
-        if(handler) {
-            ReactDOM.render(React.createElement(ChannelTreeRenderer, { handlerId: handler.handlerId, events: handler.channelTree.mainTreeUiEvents }), this.containerChannelTree);
-        } else {
-            ReactDOM.render(undefined, this.containerChannelTree);
-        }
-*/
-
-        const old_handler = this.active_handler;
-        this.active_handler = handler;
-        this.event_registry.fire("notify_active_handler_changed", {
-            oldHandler: old_handler,
-            newHandler: handler,
-
-            oldHandlerId: old_handler?.handlerId,
-            newHandlerId: handler?.handlerId
-        });
-        old_handler?.events().fire("notify_visibility_changed", { visible: false });
-        handler?.events().fire("notify_visibility_changed", { visible: true });
-    }
-
-    findConnection(handlerId: string) : ConnectionHandler | undefined {
-        return this.connection_handlers.find(e => e.handlerId === handlerId);
-    }
-
-    active_connection() : ConnectionHandler | undefined {
-        return this.active_handler;
-    }
-
-    all_connections() : ConnectionHandler[] {
-        return this.connection_handlers;
-    }
-
-    getSidebarController() : SideBarController {
-        return this.sideBarController;
     }
 }
 
@@ -198,11 +46,120 @@ export interface ConnectionManagerEvents {
     notify_handler_order_changed: { }
 }
 
+export class ConnectionManager {
+    private readonly events_: Registry<ConnectionManagerEvents>;
+    private connectionHandlers: ConnectionHandler[] = [];
+    private activeConnectionHandler: ConnectionHandler | undefined;
+
+    private containerChannelVideo: ReplaceableContainer;
+
+    constructor() {
+        this.events_ = new Registry<ConnectionManagerEvents>();
+        this.events_.enableDebug("connection-manager");
+
+        /* FIXME! */
+        this.containerChannelVideo = new ReplaceableContainer(document.getElementById("channel-video") as HTMLDivElement);
+        this.set_active_connection(undefined);
+    }
+
+    events() : Registry<ConnectionManagerEvents> {
+        return this.events_;
+    }
+
+    spawn_server_connection() : ConnectionHandler {
+        const handler = new ConnectionHandler();
+        handler.initialize_client_state(this.activeConnectionHandler);
+        this.connectionHandlers.push(handler);
+
+        this.events_.fire("notify_handler_created", { handler: handler, handlerId: handler.handlerId });
+        return handler;
+    }
+
+    destroy_server_connection(handler: ConnectionHandler) {
+        if(this.connectionHandlers.length <= 1) {
+            throw "cannot deleted the last connection handler";
+        }
+
+        if(!this.connectionHandlers.remove(handler)) {
+            throw "unknown connection handler";
+        }
+
+        if(handler.serverConnection) {
+            const connected = handler.connected;
+            handler.serverConnection.disconnect("handler destroyed");
+            handler.handleDisconnect(DisconnectReason.HANDLER_DESTROYED, connected);
+        }
+
+        if(handler === this.activeConnectionHandler) {
+            this.set_active_connection_(this.connectionHandlers[0]);
+        }
+        this.events_.fire("notify_handler_deleted", { handler: handler, handlerId: handler.handlerId });
+
+        /* destroy all elements */
+        handler.destroy();
+    }
+
+    set_active_connection(handler: ConnectionHandler) {
+        if(handler && this.connectionHandlers.indexOf(handler) == -1) {
+            throw "Handler hasn't been registered or is already obsolete!";
+        }
+
+        if(handler === this.activeConnectionHandler) {
+            return;
+        }
+
+        this.set_active_connection_(handler);
+    }
+
+    swapHandlerOrder(handlerA: ConnectionHandler, handlerB: ConnectionHandler) {
+        const indexA = this.connectionHandlers.findIndex(handler => handlerA === handler);
+        const indexB = this.connectionHandlers.findIndex(handler => handlerB === handler);
+
+        if(indexA === -1 || indexB === -1 || indexA === indexB) {
+            return;
+        }
+
+        let temp = this.connectionHandlers[indexA];
+        this.connectionHandlers[indexA] = this.connectionHandlers[indexB];
+        this.connectionHandlers[indexB] = temp;
+        this.events().fire("notify_handler_order_changed");
+    }
+
+    private set_active_connection_(handler: ConnectionHandler) {
+/*
+        this.containerChannelVideo.replaceWith(handler?.video_frame.getContainer());
+*/
+
+        const oldHandler = this.activeConnectionHandler;
+        this.activeConnectionHandler = handler;
+        this.events_.fire("notify_active_handler_changed", {
+            oldHandler: oldHandler,
+            newHandler: handler,
+
+            oldHandlerId: oldHandler?.handlerId,
+            newHandlerId: handler?.handlerId
+        });
+        oldHandler?.events().fire("notify_visibility_changed", { visible: false });
+        handler?.events().fire("notify_visibility_changed", { visible: true });
+    }
+
+    findConnection(handlerId: string) : ConnectionHandler | undefined {
+        return this.connectionHandlers.find(e => e.handlerId === handlerId);
+    }
+
+    active_connection() : ConnectionHandler | undefined {
+        return this.activeConnectionHandler;
+    }
+
+    all_connections() : ConnectionHandler[] {
+        return this.connectionHandlers;
+    }
+}
+
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     name: "server manager init",
     function: async () => {
         server_connections = new ConnectionManager();
-        server_connections.initializeReactComponents();
     },
     priority: 80
 });

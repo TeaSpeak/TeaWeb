@@ -48,7 +48,9 @@ export enum VideoBroadcastState {
 }
 
 export interface VideoClientEvents {
-    notify_broadcast_state_changed: { broadcastType: VideoBroadcastType, oldState: VideoBroadcastState, newState: VideoBroadcastState }
+    notify_broadcast_state_changed: { broadcastType: VideoBroadcastType, oldState: VideoBroadcastState, newState: VideoBroadcastState },
+    notify_dismissed_state_changed: { broadcastType: VideoBroadcastType, dismissed: boolean },
+    notify_broadcast_stream_changed: { broadcastType: VideoBroadcastType }
 }
 
 export interface VideoClient {
@@ -60,6 +62,9 @@ export interface VideoClient {
 
     joinBroadcast(broadcastType: VideoBroadcastType) : Promise<void>;
     leaveBroadcast(broadcastType: VideoBroadcastType);
+
+    dismissBroadcast(broadcastType: VideoBroadcastType);
+    isBroadcastDismissed(broadcastType: VideoBroadcastType) : boolean;
 }
 
 export interface LocalVideoBroadcastEvents {

@@ -5,7 +5,7 @@ export const kLocalVideoId = "__local__video__";
 export const kLocalBroadcastChannels: VideoBroadcastType[] = ["screen", "camera"];
 
 export type ChannelVideoInfo = { clientName: string, clientUniqueId: string, clientId: number, statusIcon: ClientIcon };
-export type ChannelVideoStreamState = "available" | "streaming" | "ignored" | "muted" | "none";
+export type ChannelVideoStreamState = "available" | "streaming" | "ignored" | "none";
 
 export type VideoStatistics = {
     type: "sender",

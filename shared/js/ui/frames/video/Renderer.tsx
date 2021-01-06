@@ -361,20 +361,20 @@ const VideoControlButtons = React.memo((props: {
     const screenShown = props.screenState !== "none" && props.videoId !== kLocalVideoId;
     const cameraShown = props.cameraState !== "none" && props.videoId !== kLocalVideoId;
 
-    const screenDisabled = props.screenState === "ignored" || props.screenState === "muted" || props.screenState === "available";
-    const cameraDisabled = props.cameraState === "ignored" || props.cameraState === "muted" || props.cameraState === "available";
+    const screenDisabled = props.screenState === "ignored" || props.screenState === "available";
+    const cameraDisabled = props.cameraState === "ignored" || props.cameraState === "available";
 
     return (
         <div className={cssStyle.actionIcons}>
             <div className={cssStyle.iconContainer + " " + cssStyle.toggle + " " + (screenShown ? "" : cssStyle.hidden) + " " + (screenDisabled ? cssStyle.disabled : "")}
                  onClick={() => events.fire("action_toggle_mute", { videoId: props.videoId, broadcastType: "screen", muted: !screenDisabled })}
-                 title={props.screenState === "muted" ? tr("Unmute screen video") : tr("Mute screen video")}
+                 title={screenDisabled ? tr("Unmute screen video") : tr("Mute screen video")}
             >
                 <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.ShareScreen} />
             </div>
             <div className={cssStyle.iconContainer + " " + cssStyle.toggle + " " + (cameraShown ? "" : cssStyle.hidden) + " " + (cameraDisabled ? cssStyle.disabled : "")}
                  onClick={() => events.fire("action_toggle_mute", { videoId: props.videoId, broadcastType: "camera", muted: !cameraDisabled })}
-                 title={props.cameraState === "muted" ? tr("Unmute camera video") : tr("Mute camera video")}
+                 title={cameraDisabled ? tr("Unmute camera video") : tr("Mute camera video")}
             >
                 <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.VideoMuted} />
             </div>

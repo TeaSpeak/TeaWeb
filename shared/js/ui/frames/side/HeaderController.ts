@@ -4,8 +4,11 @@ import {Registry} from "tc-shared/events";
 import {ChannelEntry, ChannelProperties} from "tc-shared/tree/Channel";
 import {LocalClientEntry, MusicClientEntry} from "tc-shared/tree/Client";
 import {openMusicManage} from "tc-shared/ui/modal/ModalMusicManage";
-import {createInputModal} from "tc-shared/ui/elements/Modal";
+import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import {server_connections} from "tc-shared/ConnectionManager";
+import {appViewController} from "tc-shared/ui/AppController";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import {LogCategory, logError} from "tc-shared/log";
 
 const ChannelInfoUpdateProperties: (keyof ChannelProperties)[] = [
     "channel_name",
@@ -74,14 +77,26 @@ export class SideHeaderController {
                 } catch(error) {
                     return false;
                 }
-            }, result => {
+            }, async result => {
                 if(!result) return;
 
-                server_connections.getSidebarController().getMusicController().getPlaylistUiEvents()
-                    .fire("action_add_song", {
-                        url: result as string,
-                        mode: "last"
-                    });
+                try {
+                    const client = this.connection.channelTree.getSelectedEntry();
+                    if(!(client instanceof MusicClientEntry)) {
+                        throw tr("Missing music bot");
+                    }
+
+                    await this.connection.getPlaylistManager().addSong(client.properties.client_playlist_id, result as string, "any", 0);
+                } catch (error) {
+                    if(error instanceof CommandResult) {
+                        error = error.formattedMessage();
+                    } else if(typeof error !== "string") {
+                        logError(LogCategory.NETWORKING, tr("Failed to add song to playlist entry: %o"), error);
+                        error = tr("Lookup the console for details");
+                    }
+
+                    createErrorModal(tr("Failed to add song song"), tra("Failed to add song:\n", error)).open();
+                }
             }).open();
         });
 

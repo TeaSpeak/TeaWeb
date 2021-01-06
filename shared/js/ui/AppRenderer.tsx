@@ -15,7 +15,7 @@ import {FooterRenderer} from "tc-shared/ui/frames/footer/Renderer";
 import {HostBanner} from "tc-shared/ui/frames/HostBannerRenderer";
 import {HostBannerUiEvents} from "tc-shared/ui/frames/HostBannerDefinitions";
 import {AppUiEvents} from "tc-shared/ui/AppDefinitions";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {ChannelTreeRenderer} from "tc-shared/ui/tree/Renderer";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 
@@ -54,6 +54,30 @@ const cssStyle = require("./AppRenderer.scss");
 </div>
  */
 
+const VideoFrame = React.memo((props: { events: Registry<AppUiEvents> }) => {
+    const refElement = React.useRef<HTMLDivElement>();
+    const [ container, setContainer ] = useState<HTMLDivElement | undefined>(() => {
+        props.events.fire("query_video_container");
+        return undefined;
+    });
+    props.events.reactUse("notify_video_container", event => setContainer(event.container));
+
+    useEffect(() => {
+        if(!refElement.current || !container) {
+            return;
+        }
+
+        refElement.current.replaceWith(container);
+        return () => container.replaceWith(refElement.current);
+    });
+
+    if(!container) {
+        return null;
+    }
+
+    return <div ref={refElement} />;
+});
+
 const ChannelTree = React.memo((props: { events: Registry<AppUiEvents> }) => {
     const [ data, setData ] = useState<{ events: Registry<ChannelTreeUIEvents>, handlerId: string }>(() => {
         props.events.fire("query_channel_tree");
@@ -88,24 +112,27 @@ export const TeaAppMainView = (props: {
             <ErrorBoundary>
                 <ConnectionHandlerList events={props.connectionList} />
             </ErrorBoundary>
-            {/* TODO: The video! */}
 
-            <div className={cssStyle.channelTreeAndSidebar}>
-                <div className={cssStyle.channelTree}>
-                    <ErrorBoundary>
-                        <HostBanner events={props.hostBanner} />
-                        <ChannelTree events={props.events} />
-                    </ErrorBoundary>
+            <div className={cssStyle.mainContainer}>
+                <VideoFrame events={props.events} />
+
+                <div className={cssStyle.channelTreeAndSidebar}>
+                    <div className={cssStyle.channelTree}>
+                        <ErrorBoundary>
+                            <HostBanner events={props.hostBanner} />
+                            <ChannelTree events={props.events} />
+                        </ErrorBoundary>
+                    </div>
+                    <ContextDivider id={"channel-chat"} direction={"horizontal"} defaultValue={25} />
+                    <SideBarRenderer events={props.sidebar} eventsHeader={props.sidebarHeader} className={cssStyle.sideBar} />
                 </div>
-                <ContextDivider id={"channel-chat"} direction={"horizontal"} defaultValue={25} />
-                <SideBarRenderer events={props.sidebar} eventsHeader={props.sidebarHeader} className={cssStyle.sideBar} />
+                <ContextDivider id={"main-log"} direction={"vertical"} defaultValue={75} />
+                <ErrorBoundary>
+                    <div className={cssStyle.containerLog}>
+                        <ServerLogFrame events={props.log} />
+                    </div>
+                </ErrorBoundary>
             </div>
-            <ContextDivider id={"main-log"} direction={"vertical"} defaultValue={75} />
-            <ErrorBoundary>
-                <div className={cssStyle.containerLog}>
-                    <ServerLogFrame events={props.log} />
-                </div>
-            </ErrorBoundary>
             <FooterRenderer />
         </div>
     );
