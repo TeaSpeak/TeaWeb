@@ -22,11 +22,13 @@ export type VideoSourceModalAction = {
     broadcastConstraints: VideoBroadcastConfig
 };
 
+export type VideoSourceSelectResult = { source: VideoSource | undefined, config: VideoBroadcastConfig | undefined };
+
 /**
  * @param type The video type which should be prompted
  * @param mode
  */
-export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, mode: VideoSourceModalAction) : Promise<{ source: VideoSource | undefined, config: VideoBroadcastConfig | undefined }> {
+export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, mode: VideoSourceModalAction) : Promise<VideoSourceSelectResult> {
     const controller = new VideoSourceController(type);
 
     let defaultSelectDevice: string | true;
@@ -55,8 +57,23 @@ export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, mode
         await controller.useSettings(mode.source, mode.broadcastConstraints);
     }
 
+    let result: VideoSourceSelectResult = {
+        config: undefined,
+        source: undefined
+    };
+
     const modal = spawnReactModal(ModalVideoSource, controller.events, type, mode.mode === "edit");
-    controller.events.on(["action_start", "action_cancel"], () => modal.destroy());
+    controller.events.on(["action_start", "action_cancel"], event => {
+        result.source?.deref();
+        if(event.type === "action_start") {
+            result.source = controller.getCurrentSource()?.ref();
+            result.config = controller.getBroadcastConstraints();
+        } else {
+            result.source = undefined;
+            result.config = undefined;
+        }
+        modal.destroy();
+    });
 
     modal.show().then(() => {
         if(defaultSelectDevice) {
@@ -86,13 +103,8 @@ export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, mode
         modal.events.one(["destroy", "close"], resolve);
     });
 
-    const resultSource = controller.getCurrentSource()?.ref();
-    const resultConstraints = controller.getBroadcastConstraints();
     controller.destroy();
-    return {
-        source: resultSource,
-        config: resultConstraints
-    };
+    return result;
 }
 
 function updateBroadcastConfigFromSource(source: VideoSource, constraints: VideoBroadcastConfig) {
