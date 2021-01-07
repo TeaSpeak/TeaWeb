@@ -546,7 +546,6 @@ class ChannelTreeController {
 
         for(const entry of this.buildFlatChannelTree()) {
             if(!fullInfoEntries || fullInfoEntries.indexOf(entry.entry.uniqueEntryId) !== -1) {
-                console.error("Sending full info for %o - %o", entry.entry.uniqueEntryId, fullInfoEntries);
                 if(entry.entry instanceof ServerEntry) {
                     entries.push({
                         type: "server",
