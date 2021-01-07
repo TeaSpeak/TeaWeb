@@ -6,7 +6,7 @@ import {Registry} from "tc-shared/events";
 import {
     ChannelVideoEvents,
     ChannelVideoStreamState,
-    kLocalVideoId, makeVideoAutoplay,
+    kLocalVideoId,
     VideoStreamState
 } from "tc-shared/ui/frames/video/Definitions";
 import {
@@ -62,9 +62,6 @@ class RemoteClientVideoController implements ClientVideoController {
         camera: "none"
     };
 
-    private pipElement: HTMLVideoElement | undefined;
-    private pipBroadcastType: VideoBroadcastType | undefined;
-
     constructor(client: ClientEntry, eventRegistry: Registry<ChannelVideoEvents>, videoId?: string) {
         this.client = client;
         this.events = eventRegistry;
@@ -119,9 +116,6 @@ class RemoteClientVideoController implements ClientVideoController {
 
         this.eventListener?.forEach(callback => callback());
         this.eventListener = undefined;
-
-        this.pipElement?.remove();
-        this.pipElement = undefined;
     }
 
     isBroadcasting() {
@@ -209,10 +203,6 @@ class RemoteClientVideoController implements ClientVideoController {
                 this.callbackSubscriptionStateChanged();
             }
         }
-
-        if(this.pipBroadcastType && this.currentStreamStates[this.pipBroadcastType] !== "streaming") {
-            this.stopPip();
-        }
     }
 
     notifyVideo() {
@@ -242,14 +232,6 @@ class RemoteClientVideoController implements ClientVideoController {
             }
         }
 
-        if(this.pipBroadcastType === type && this.pipElement) {
-            if(state.state === "connected") {
-                this.pipElement.srcObject = state.stream;
-            } else {
-                this.stopPip();
-            }
-        }
-
         this.events.fire_react("notify_video_stream", {
             videoId: this.videoId,
             broadcastType: type,
@@ -271,79 +253,13 @@ class RemoteClientVideoController implements ClientVideoController {
         return videoClient ? videoClient.getVideoStream(target) : undefined;
     }
 
-    private stopPip() {
-        if((document as any).pictureInPictureElement === this.pipElement && "exitPictureInPicture" in document) {
-            (document as any).exitPictureInPicture();
-        }
-
-        this.pipElement?.remove();
-        this.pipElement = undefined;
-        this.pipBroadcastType = undefined;
-    }
-
     async showPip(type: VideoBroadcastType) {
-        if(this.pipBroadcastType === type) {
+        const client = this.client.getVideoClient();
+        if(!client) {
             return;
         }
-        this.pipBroadcastType = type;
 
-        if(!("requestPictureInPicture" in HTMLVideoElement.prototype)) {
-            throw tr("Picture in picture isn't supported");
-        }
-
-        const stream = this.getBroadcastStream(type);
-        if(!stream) {
-            throw tr("Missing video stream");
-        }
-
-        const element = document.createElement("video");
-        element.srcObject = stream;
-        element.muted = true;
-        element.style.position = "absolute";
-        element.style.top = "-1000000px";
-
-        this.pipElement?.remove();
-        this.pipElement = element;
-        this.pipBroadcastType = type;
-
-        try {
-            document.body.appendChild(element);
-
-            try {
-                await new Promise((resolve, reject) => {
-                    element.onloadedmetadata = resolve;
-                    element.onerror = reject;
-                });
-            } catch (error) {
-                throw tr("Failed to load video meta data");
-            } finally {
-                element.onloadedmetadata = undefined;
-                element.onerror = undefined;
-            }
-
-            try {
-                await (element as any).requestPictureInPicture();
-            } catch(error) {
-                throw error;
-            }
-
-            const cancelAutoplay = makeVideoAutoplay(element);
-            element.addEventListener('leavepictureinpicture', () => {
-                cancelAutoplay();
-                element.remove();
-                if(this.pipElement === element) {
-                    this.pipElement = undefined;
-                    this.pipBroadcastType = undefined;
-                }
-            });
-        } catch(error) {
-            element.remove();
-            if(this.pipElement === element) {
-                this.pipElement = undefined;
-                this.pipBroadcastType = undefined;
-            }
-            throw error;
-        }
+        await client.showPip(type);
     }
 }
 

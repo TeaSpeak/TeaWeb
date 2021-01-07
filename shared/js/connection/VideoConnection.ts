@@ -65,6 +65,8 @@ export interface VideoClient {
 
     dismissBroadcast(broadcastType: VideoBroadcastType);
     isBroadcastDismissed(broadcastType: VideoBroadcastType) : boolean;
+
+    showPip(broadcastType: VideoBroadcastType) : Promise<void>;
 }
 
 export interface LocalVideoBroadcastEvents {

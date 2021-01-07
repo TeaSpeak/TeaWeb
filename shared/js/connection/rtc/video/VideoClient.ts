@@ -9,6 +9,7 @@ import {RemoteRTPTrackState, RemoteRTPVideoTrack} from "../RemoteTrack";
 import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
 import {RTCConnection} from "tc-shared/connection/rtc/Connection";
+import {makeVideoAutoplay} from "tc-shared/ui/frames/video/Definitions";
 
 export class RtpVideoClient implements VideoClient {
     private readonly handle: RTCConnection;
@@ -44,6 +45,9 @@ export class RtpVideoClient implements VideoClient {
         camera: false,
         screen: false
     }
+
+    private pipElement: HTMLVideoElement | undefined;
+    private pipBroadcastType: VideoBroadcastType | undefined;
 
     constructor(handle: RTCConnection, clientId: number) {
         this.handle = handle;
@@ -113,6 +117,7 @@ export class RtpVideoClient implements VideoClient {
     }
 
     destroy() {
+        this.stopPip();
         this.setRtpTrack("camera", undefined);
         this.setRtpTrack("screen", undefined);
     }
@@ -133,6 +138,13 @@ export class RtpVideoClient implements VideoClient {
 
         this.updateBroadcastState(type);
         this.events.fire("notify_broadcast_stream_changed", { broadcastType: type });
+        if(type === this.pipBroadcastType && this.pipElement) {
+            if(track) {
+                this.pipElement.srcObject = track.getMediaStream();
+            } else {
+                this.stopPip();
+            }
+        }
     }
 
     setBroadcastId(type: VideoBroadcastType, id: number | undefined) {
@@ -163,6 +175,86 @@ export class RtpVideoClient implements VideoClient {
 
     isBroadcastDismissed(broadcastType: VideoBroadcastType): boolean {
         return this.dismissedStates[broadcastType];
+    }
+
+    async showPip(broadcastType: VideoBroadcastType): Promise<void> {
+        if(this.trackStates[broadcastType] !== VideoBroadcastState.Running && this.trackStates[broadcastType] !== VideoBroadcastState.Buffering) {
+            throw tr("Target broadcast isn't running");
+        }
+
+        if(this.pipBroadcastType === broadcastType) {
+            return;
+        }
+
+        this.pipBroadcastType = broadcastType;
+
+        if(!("requestPictureInPicture" in HTMLVideoElement.prototype)) {
+            throw tr("Picture in picture isn't supported");
+        }
+
+        const stream = this.getVideoStream(broadcastType);
+        if(!stream) {
+            throw tr("Missing video stream");
+        }
+
+        const element = document.createElement("video");
+        element.srcObject = stream;
+        element.muted = true;
+        element.style.position = "absolute";
+        element.style.top = "-1000000px";
+
+        this.pipElement?.remove();
+        this.pipElement = element;
+        this.pipBroadcastType = broadcastType;
+
+        try {
+            document.body.appendChild(element);
+
+            try {
+                await new Promise((resolve, reject) => {
+                    element.onloadedmetadata = resolve;
+                    element.onerror = reject;
+                });
+            } catch (error) {
+                throw tr("Failed to load video meta data");
+            } finally {
+                element.onloadedmetadata = undefined;
+                element.onerror = undefined;
+            }
+
+            try {
+                await (element as any).requestPictureInPicture();
+            } catch(error) {
+                throw error;
+            }
+
+            const cancelAutoplay = makeVideoAutoplay(element);
+            element.addEventListener('leavepictureinpicture', () => {
+                cancelAutoplay();
+                element.remove();
+                if(this.pipElement === element) {
+                    this.pipElement = undefined;
+                    this.pipBroadcastType = undefined;
+                }
+            });
+        } catch(error) {
+            element.remove();
+            if(this.pipElement === element) {
+                this.pipElement = undefined;
+                this.pipBroadcastType = undefined;
+            }
+            throw error;
+        }
+    }
+
+    private stopPip() {
+        if((document as any).pictureInPictureElement === this.pipElement && "exitPictureInPicture" in document) {
+            (document as any).exitPictureInPicture();
+        }
+
+        this.pipElement?.remove();
+        this.pipElement = undefined;
+        this.pipBroadcastType = undefined;
     }
 
     private setBroadcastState(type: VideoBroadcastType, state: VideoBroadcastState) {
