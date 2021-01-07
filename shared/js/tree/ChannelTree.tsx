@@ -11,7 +11,6 @@ import {ClientEntry, LocalClientEntry, MusicClientEntry} from "./Client";
 import {ChannelTreeEntry} from "./ChannelTreeEntry";
 import {ConnectionHandler, ViewReasonId} from "tc-shared/ConnectionHandler";
 import {Registry} from "tc-shared/events";
-import * as ReactDOM from "react-dom";
 import * as React from "react";
 
 import {batch_updates, BatchUpdateType, flush_batched_updates} from "tc-shared/ui/react-elements/ReactComponentBase";
@@ -20,7 +19,7 @@ import {spawnBanClient} from "tc-shared/ui/modal/ModalBanClient";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {tr, tra} from "tc-shared/i18n/localize";
-import {initializeChannelTreeUiEvents, renderChannelTree} from "tc-shared/ui/tree/Controller";
+import {initializeChannelTreeUiEvents} from "tc-shared/ui/tree/Controller";
 import {ChannelTreePopoutController} from "tc-shared/ui/tree/popout/Controller";
 import {Settings, settings} from "tc-shared/settings";
 import {ClientIcon} from "svg-sprites/client-icons";

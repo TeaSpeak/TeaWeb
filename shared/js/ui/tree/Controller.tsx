@@ -8,9 +8,7 @@ import {
     ClientTalkIconState, FullChannelTreeEntry,
     ServerState
 } from "tc-shared/ui/tree/Definitions";
-import {ChannelTreeRenderer} from "./Renderer";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {ChannelEntry, ChannelProperties} from "tc-shared/tree/Channel";
 import {ClientEntry, ClientProperties, ClientType, LocalClientEntry, MusicClientEntry} from "tc-shared/tree/Client";
@@ -19,7 +17,6 @@ import {VoiceConnectionEvents, VoiceConnectionStatus} from "tc-shared/connection
 import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
 import {GroupManager, GroupManagerEvents} from "tc-shared/permission/GroupManager";
 import {ServerEntry} from "tc-shared/tree/Server";
-import {server_connections} from "tc-shared/ConnectionManager";
 
 export interface ChannelTreeRendererOptions {
     popoutButton: boolean;
@@ -32,25 +29,154 @@ export function initializeChannelTreeUiEvents(channelTree: ChannelTree, options:
     return events;
 }
 
-export function renderChannelTree(channelTree: ChannelTree, target: HTMLElement, options: ChannelTreeRendererOptions) {
-    const events = initializeChannelTreeUiEvents(channelTree, options);
+function generateServerStatus(serverEntry: ServerEntry) : ServerState {
+    switch (serverEntry.channelTree.client.connection_state) {
+        case ConnectionState.AUTHENTICATING:
+        case ConnectionState.CONNECTING:
+        case ConnectionState.INITIALISING:
+            return {
+                state: "connecting",
+                targetAddress: serverEntry.remote_address.host + (serverEntry.remote_address.port === 9987 ? "" : `:${serverEntry.remote_address.port}`)
+            };
 
-    ReactDOM.render(<ChannelTreeRenderer handlerId={channelTree.client.handlerId} events={events} />, target);
+        case ConnectionState.DISCONNECTING:
+        case ConnectionState.UNCONNECTED:
+            return { state: "disconnected" };
 
-    let handlerDestroyListener;
-    server_connections.events().on("notify_handler_deleted", handlerDestroyListener = event => {
-        if(event.handler !== channelTree.client) {
-            return;
-        }
-
-        ReactDOM.unmountComponentAtNode(target);
-        server_connections.events().off("notify_handler_deleted", handlerDestroyListener);
-        events.fire("notify_destroy");
-        events.destroy();
-    });
+        case ConnectionState.CONNECTED:
+            return {
+                state: "connected",
+                name: serverEntry.properties.virtualserver_name,
+                icon: { iconId: serverEntry.properties.virtualserver_icon_id, serverUniqueId: serverEntry.properties.virtualserver_unique_identifier }
+            };
+    }
 }
 
-/* FIXME: Client move is not a part of the channel tree, it's part of our own controller here */
+function generateClientTalkStatus(client: ClientEntry) : { status: ClientTalkIconState, requestMessage?: string } {
+    let status: ClientTalkIconState = "unset";
+
+    if(client.properties.client_is_talker) {
+        status = "granted";
+    } else if(client.properties.client_talk_power < client.currentChannel().properties.channel_needed_talk_power) {
+        status = "prohibited";
+
+        if(client.properties.client_talk_request !== 0) {
+            status = "requested";
+        }
+    }
+
+    return {
+        requestMessage: client.properties.client_talk_request_msg,
+        status: status
+    }
+}
+
+function generateClientIcons(client: ClientEntry) : ClientIcons {
+    const uniqueServerId = client.channelTree.client.getCurrentServerUniqueId();
+
+    const serverGroupIcons = client.assignedServerGroupIds()
+        .map(groupId => client.channelTree.client.groups.findServerGroup(groupId))
+        .filter(group => !!group && group.properties.iconid !== 0)
+        .sort(GroupManager.sorter())
+        .map(group => {
+            return {
+                iconId: group.properties.iconid,
+                groupName: group.name,
+                groupId: group.id,
+                serverUniqueId: uniqueServerId
+            };
+        });
+
+    const channelGroupIcon = [client.assignedChannelGroup()]
+        .map(groupId => client.channelTree.client.groups.findChannelGroup(groupId))
+        .filter(group => !!group && group.properties.iconid !== 0)
+        .map(group => {
+            return {
+                iconId: group.properties.iconid,
+                groupName: group.name,
+                groupId: group.id,
+                serverUniqueId: uniqueServerId
+            };
+        });
+
+    const clientIcon = client.properties.client_icon_id === 0 ? [] : [client.properties.client_icon_id];
+    return {
+        serverGroupIcons: serverGroupIcons,
+        channelGroupIcon: channelGroupIcon[0],
+        clientIcon: clientIcon.length > 0 ? { iconId: clientIcon[0], serverUniqueId: uniqueServerId } : undefined
+    };
+}
+
+function generateClientNameInfo(client: ClientEntry) : ClientNameInfo {
+    let prefix = [];
+    let suffix = [];
+    for(const groupId of client.assignedServerGroupIds()) {
+        const group = client.channelTree.client.groups.findServerGroup(groupId);
+        if(!group) {
+            continue;
+        }
+
+        if(group.properties.namemode === 1) {
+            prefix.push(group.name);
+        } else if(group.properties.namemode === 2) {
+            suffix.push(group.name);
+        }
+    }
+
+    const channelGroup = client.channelTree.client.groups.findChannelGroup(client.assignedChannelGroup());
+    if(channelGroup) {
+        if(channelGroup.properties.namemode === 1) {
+            prefix.push(channelGroup.name);
+        } else if(channelGroup.properties.namemode === 2) {
+            suffix.push(channelGroup.name);
+        }
+    }
+
+    const afkMessage = client.properties.client_away ? client.properties.client_away_message : undefined;
+    return {
+        name: client.clientNickName(),
+        awayMessage: afkMessage,
+        prefix: prefix,
+        suffix: suffix
+    };
+}
+
+function generateChannelIcons(channel: ChannelEntry) : ChannelIcons {
+    let icons: ChannelIcons = {
+        musicQuality: channel.properties.channel_codec === 3 || channel.properties.channel_codec === 5,
+        codecUnsupported: true,
+        default: channel.properties.channel_flag_default,
+        moderated: channel.properties.channel_needed_talk_power !== 0,
+        passwordProtected: channel.properties.channel_flag_password,
+        channelIcon: {
+            iconId: channel.properties.channel_icon_id,
+            serverUniqueId: channel.channelTree.client.getCurrentServerUniqueId()
+        }
+    };
+
+    const voiceConnection = channel.channelTree.client.serverConnection.getVoiceConnection();
+    const voiceState = voiceConnection.getConnectionState();
+
+    switch (voiceState) {
+        case VoiceConnectionStatus.Connected:
+            icons.codecUnsupported = !voiceConnection.decodingSupported(channel.properties.channel_codec);
+            break;
+
+        default:
+            icons.codecUnsupported = true;
+    }
+
+    return icons;
+}
+
+function generateChannelInfo(channel: ChannelEntry) : ChannelEntryInfo {
+    return {
+        collapsedState: channel.child_channel_head || channel.channelClientsOrdered().length > 0 ? channel.isCollapsed() ? "collapsed" : "expended" : "unset",
+        name: channel.parsed_channel_name.text,
+        nameStyle: channel.parsed_channel_name.alignment
+    };
+}
+
 const ChannelIconUpdateKeys: (keyof ChannelProperties)[] = [
     "channel_name",
     "channel_flag_password",
@@ -425,19 +551,19 @@ class ChannelTreeController {
                         entryId: entry.entry.uniqueEntryId,
                         depth: entry.depth,
                         fullInfo: true,
-                        state: this.generateServerStatus(entry.entry),
+                        state: generateServerStatus(entry.entry),
                         unread: entry.entry.isUnread()
                     });
                 } else if(entry.entry instanceof ClientEntry) {
-                    const talkStatus = this.generateClientTalkStatus(entry.entry);
+                    const talkStatus = generateClientTalkStatus(entry.entry);
                     entries.push({
                         type: entry.entry instanceof LocalClientEntry ? "client-local" : "client",
                         entryId: entry.entry.uniqueEntryId,
                         depth: entry.depth,
                         fullInfo: true,
                         unread: entry.entry.isUnread(),
-                        name: this.generateClientNameInfo(entry.entry),
-                        icons: this.generateClientIcons(entry.entry),
+                        name: generateClientNameInfo(entry.entry),
+                        icons: generateClientIcons(entry.entry),
                         status: entry.entry.getStatusIcon(),
                         talkStatus: talkStatus.status,
                         talkRequestMessage: talkStatus.requestMessage
@@ -449,8 +575,8 @@ class ChannelTreeController {
                         depth: entry.depth,
                         fullInfo: true,
                         unread: entry.entry.isUnread(),
-                        icons: this.generateChannelIcons(entry.entry),
-                        info: this.generateChannelInfo(entry.entry),
+                        icons: generateChannelIcons(entry.entry),
+                        info: generateChannelInfo(entry.entry),
                         icon: entry.entry.getStatusIcon()
                     })
                 } else {
@@ -492,18 +618,10 @@ class ChannelTreeController {
         this.events.fire_react("notify_selected_entry", { treeEntryId: selectedEntry ? selectedEntry.uniqueEntryId : 0 });
     }
 
-    private generateChannelInfo(channel: ChannelEntry) : ChannelEntryInfo {
-        return {
-            collapsedState: channel.child_channel_head || channel.channelClientsOrdered().length > 0 ? channel.isCollapsed() ? "collapsed" : "expended" : "unset",
-            name: channel.parsed_channel_name.text,
-            nameStyle: channel.parsed_channel_name.alignment
-        };
-    }
-
     public sendChannelInfo(channel: ChannelEntry) {
         this.events.fire_react("notify_channel_info", {
             treeEntryId: channel.uniqueEntryId,
-            info: this.generateChannelInfo(channel)
+            info: generateChannelInfo(channel)
         })
     }
 
@@ -511,157 +629,31 @@ class ChannelTreeController {
         this.events.fire_react("notify_channel_icon", { icon: channel.getStatusIcon(), treeEntryId: channel.uniqueEntryId });
     }
 
-    private generateChannelIcons(channel: ChannelEntry) : ChannelIcons {
-        let icons: ChannelIcons = {
-            musicQuality: channel.properties.channel_codec === 3 || channel.properties.channel_codec === 5,
-            codecUnsupported: true,
-            default: channel.properties.channel_flag_default,
-            moderated: channel.properties.channel_needed_talk_power !== 0,
-            passwordProtected: channel.properties.channel_flag_password,
-            channelIcon: {
-                iconId: channel.properties.channel_icon_id,
-                serverUniqueId: this.channelTree.client.getCurrentServerUniqueId()
-            }
-        };
-
-        const voiceConnection = this.channelTree.client.serverConnection.getVoiceConnection();
-        const voiceState = voiceConnection.getConnectionState();
-
-        switch (voiceState) {
-            case VoiceConnectionStatus.Connected:
-                icons.codecUnsupported = !voiceConnection.decodingSupported(channel.properties.channel_codec);
-                break;
-
-            default:
-                icons.codecUnsupported = true;
-        }
-
-        return icons;
-    }
-
     public sendChannelIcons(channel: ChannelEntry) {
-        this.events.fire_react("notify_channel_icons", { icons: this.generateChannelIcons(channel), treeEntryId: channel.uniqueEntryId });
-    }
-
-    private generateClientNameInfo(client: ClientEntry) : ClientNameInfo {
-        let prefix = [];
-        let suffix = [];
-        for(const groupId of client.assignedServerGroupIds()) {
-            const group = this.channelTree.client.groups.findServerGroup(groupId);
-            if(!group) {
-                continue;
-            }
-
-            if(group.properties.namemode === 1) {
-                prefix.push(group.name);
-            } else if(group.properties.namemode === 2) {
-                suffix.push(group.name);
-            }
-        }
-
-        const channelGroup = this.channelTree.client.groups.findChannelGroup(client.assignedChannelGroup());
-        if(channelGroup) {
-            if(channelGroup.properties.namemode === 1) {
-                prefix.push(channelGroup.name);
-            } else if(channelGroup.properties.namemode === 2) {
-                suffix.push(channelGroup.name);
-            }
-        }
-
-        const afkMessage = client.properties.client_away ? client.properties.client_away_message : undefined;
-        return {
-            name: client.clientNickName(),
-            awayMessage: afkMessage,
-            prefix: prefix,
-            suffix: suffix
-        };
+        this.events.fire_react("notify_channel_icons", { icons: generateChannelIcons(channel), treeEntryId: channel.uniqueEntryId });
     }
 
     public sendClientNameInfo(client: ClientEntry) {
         this.events.fire_react("notify_client_name", {
-            info: this.generateClientNameInfo(client),
+            info: generateClientNameInfo(client),
             treeEntryId: client.uniqueEntryId
         });
-    }
-
-    private generateClientIcons(client: ClientEntry) : ClientIcons {
-        const uniqueServerId = this.channelTree.client.getCurrentServerUniqueId();
-
-        const serverGroupIcons = client.assignedServerGroupIds()
-            .map(groupId => this.channelTree.client.groups.findServerGroup(groupId))
-            .filter(group => !!group && group.properties.iconid !== 0)
-            .sort(GroupManager.sorter())
-            .map(group => { return { iconId: group.properties.iconid, groupName: group.name, groupId: group.id, serverUniqueId: uniqueServerId }; });
-
-        const channelGroupIcon = [client.assignedChannelGroup()]
-            .map(groupId => this.channelTree.client.groups.findChannelGroup(groupId))
-            .filter(group => !!group && group.properties.iconid !== 0)
-            .map(group => { return { iconId: group.properties.iconid, groupName: group.name, groupId: group.id, serverUniqueId: uniqueServerId }; });
-
-        const clientIcon = client.properties.client_icon_id === 0 ? [] : [client.properties.client_icon_id];
-        return {
-            serverGroupIcons: serverGroupIcons,
-            channelGroupIcon: channelGroupIcon[0],
-            clientIcon: clientIcon.length > 0 ? { iconId: clientIcon[0], serverUniqueId: uniqueServerId } : undefined
-        };
     }
 
     public sendClientIcons(client: ClientEntry) {
         this.events.fire_react("notify_client_icons", {
-            icons: this.generateClientIcons(client),
+            icons: generateClientIcons(client),
             treeEntryId: client.uniqueEntryId
         });
     }
 
-    private generateClientTalkStatus(client: ClientEntry) : { status: ClientTalkIconState, requestMessage?: string } {
-        let status: ClientTalkIconState = "unset";
-
-        if(client.properties.client_is_talker) {
-            status = "granted";
-        } else if(client.properties.client_talk_power < client.currentChannel().properties.channel_needed_talk_power) {
-            status = "prohibited";
-
-            if(client.properties.client_talk_request !== 0) {
-                status = "requested";
-            }
-        }
-
-        return {
-            requestMessage: client.properties.client_talk_request_msg,
-            status: status
-        }
-    }
-
     public sendClientTalkStatus(client: ClientEntry) {
-        const status = this.generateClientTalkStatus(client);
+        const status = generateClientTalkStatus(client);
         this.events.fire_react("notify_client_talk_status", { treeEntryId: client.uniqueEntryId, requestMessage: status.requestMessage, status: status.status });
     }
 
-    private generateServerStatus(serverEntry: ServerEntry) : ServerState {
-        switch (this.channelTree.client.connection_state) {
-            case ConnectionState.AUTHENTICATING:
-            case ConnectionState.CONNECTING:
-            case ConnectionState.INITIALISING:
-                return {
-                    state: "connecting",
-                    targetAddress: serverEntry.remote_address.host + (serverEntry.remote_address.port === 9987 ? "" : `:${serverEntry.remote_address.port}`)
-                };
-
-            case ConnectionState.DISCONNECTING:
-            case ConnectionState.UNCONNECTED:
-                return { state: "disconnected" };
-
-            case ConnectionState.CONNECTED:
-                return {
-                    state: "connected",
-                    name: serverEntry.properties.virtualserver_name,
-                    icon: { iconId: serverEntry.properties.virtualserver_icon_id, serverUniqueId: serverEntry.properties.virtualserver_unique_identifier }
-                };
-        }
-    }
-
     public sendServerStatus(serverEntry: ServerEntry) {
-        this.events.fire_react("notify_server_state", { treeEntryId: serverEntry.uniqueEntryId, state: this.generateServerStatus(serverEntry) });
+        this.events.fire_react("notify_server_state", { treeEntryId: serverEntry.uniqueEntryId, state: generateServerStatus(serverEntry) });
     }
 }
 
@@ -687,6 +679,7 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
     events.on("notify_destroy", channelTree.client.events().on("notify_visibility_changed", event => events.fire("notify_visibility_changed", event)));
 
     events.on("query_tree_entries", event => controller.sendChannelTreeEntriesFull(event.fullInfo ? undefined : []));
+    events.on("query_selected_entry", () => controller.sendSelectedEntry());
     events.on("query_channel_info", event => {
         const entry = channelTree.findEntryId(event.treeEntryId);
         if(!entry || !(entry instanceof ChannelEntry)) {
