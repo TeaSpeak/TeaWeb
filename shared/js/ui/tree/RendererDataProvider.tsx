@@ -660,6 +660,7 @@ export class RDPChannelTree {
 
                     if(entry.fullInfo) {
                         channel.stateQueried = true;
+                        channel.unread = entry.unread;
                         channel.handleInfoUpdate(entry.info);
                         channel.handleIconUpdate(entry.icon);
                         channel.handleIconsUpdate(entry.icons);
@@ -678,6 +679,7 @@ export class RDPChannelTree {
 
                     if(entry.fullInfo) {
                         client.stateQueried = true;
+                        client.unread = entry.unread;
                         client.handleNameUpdate(entry.name);
                         client.handleStatusUpdate(entry.status);
                         client.handleIconsUpdate(entry.icons);
@@ -696,8 +698,9 @@ export class RDPChannelTree {
 
                     if(entry.fullInfo) {
                         server.stateQueried = true;
+                        server.unread = entry.unread;
                         server.handleStateUpdate(entry.state);
-                    } else if(server.stateQueried) {
+                    } else if(!server.stateQueried) {
                         server.queryState();
                     }
                     result = server;

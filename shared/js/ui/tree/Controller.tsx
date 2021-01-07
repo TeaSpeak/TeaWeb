@@ -311,8 +311,8 @@ class ChannelTreeController {
             return;
         }
 
-        this.channelTree.clients.forEach(channel => this.sendClientNameInfo(channel));
-        this.channelTree.clients.forEach(client => this.sendClientIcons(client));
+        /* Faster than just sending each stuff individual */
+        this.sendChannelTreeEntriesFull(undefined);
     }
 
     /* general channel tree event handlers */
@@ -403,7 +403,7 @@ class ChannelTreeController {
     /* entry event handlers */
     private initializeTreeEntryEvents<T extends ChannelTreeEntryEvents>(entry: ChannelTreeEntryModel<T>, events: any[]) {
         events.push(entry.events.on("notify_unread_state_change", event => {
-            this.events.fire("notify_unread_state", { unread: event.unread, treeEntryId: entry.uniqueEntryId });
+            this.events.fire_react("notify_unread_state", { unread: event.unread, treeEntryId: entry.uniqueEntryId });
         }));
     }
 
@@ -456,7 +456,7 @@ class ChannelTreeController {
         this.initializeTreeEntryEvents(client, events);
 
         events.push(client.events.on("notify_status_icon_changed", event => {
-            this.events.fire("notify_client_status", { treeEntryId: client.uniqueEntryId, status: event.newIcon });
+            this.events.fire_react("notify_client_status", { treeEntryId: client.uniqueEntryId, status: event.newIcon });
         }));
 
         events.push(client.events.on("notify_properties_updated", event => {
@@ -546,6 +546,7 @@ class ChannelTreeController {
 
         for(const entry of this.buildFlatChannelTree()) {
             if(!fullInfoEntries || fullInfoEntries.indexOf(entry.entry.uniqueEntryId) !== -1) {
+                console.error("Sending full info for %o - %o", entry.entry.uniqueEntryId, fullInfoEntries);
                 if(entry.entry instanceof ServerEntry) {
                     entries.push({
                         type: "server",
@@ -677,7 +678,7 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
         events.fire_react("notify_unread_state", { treeEntryId: event.treeEntryId, unread: entry.isUnread() });
     });
 
-    events.on("notify_destroy", channelTree.client.events().on("notify_visibility_changed", event => events.fire("notify_visibility_changed", event)));
+    events.on("notify_destroy", channelTree.client.events().on("notify_visibility_changed", event => events.fire_react("notify_visibility_changed", event)));
 
     events.on("query_tree_entries", event => controller.sendChannelTreeEntriesFull(event.fullInfo ? undefined : []));
     events.on("query_selected_entry", () => controller.sendSelectedEntry());
@@ -851,12 +852,12 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
             return;
         }
 
-        events.fire("notify_client_name_edit", { treeEntryId: event.treeEntryId, initialValue: undefined });
+        events.fire_react("notify_client_name_edit", { treeEntryId: event.treeEntryId, initialValue: undefined });
         if(!event.name || event.name === entry.clientNickName()) { return; }
 
         entry.renameSelf(event.name).then(result => {
             if(result) { return; }
-            events.fire("notify_client_name_edit", { treeEntryId: event.treeEntryId, initialValue: event.name });
+            events.fire_react("notify_client_name_edit", { treeEntryId: event.treeEntryId, initialValue: event.name });
         })
     });
 
