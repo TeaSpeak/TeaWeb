@@ -329,7 +329,6 @@ export class RDPChannelTree {
         this.selection = new RDPTreeSelection(this);
 
         this.documentDragStopListener = () => {
-            return; /* FIXME: Remove! */
             if(this.dragOverChannelEntry) {
                 this.dragOverChannelEntry.setDragHint("none");
                 this.dragOverChannelEntry = undefined;
