@@ -15,17 +15,15 @@ html:root {
     align-items: center;
 
     > div {
-        margin-right: 2px;
+        margin-right: .1em;
     }
 
     .statusIcon {
         flex-shrink: 0;
-
-        font-size: 16px;
     }
 
     .clientName {
-        line-height: 16px;
+        line-height: 1.2em;
         min-width: 2em;
 
         flex-grow: 0;

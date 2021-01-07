@@ -1,4 +1,9 @@
 # Changelog:
+* **07.01.21**
+    - Improved general client ui memory footprint (Don't constantly rendering the channel tree)
+    - Improved channel tree loading performance especially on server join and switch
+    - The channel tree now adjusts accordingly to the clients font size
+    
 * **29.12.20**
     - Reimplemented the music bot control UI
         - Fixing some bugs from earlier versions

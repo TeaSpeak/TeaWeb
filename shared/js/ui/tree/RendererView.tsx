@@ -36,11 +36,12 @@ export interface ChannelTreeViewProperties {
 }
 
 export interface ChannelTreeViewState {
-    element_scroll_offset?: number; /* in px */
-    scroll_offset: number; /* in px */
-    view_height: number; /* in px */
+    elementScrollOffset?: number; /* in px */
+    scrollOffset: number; /* in px */
+    viewHeight: number; /* in px */
+    fontSize: number; /* in px */
 
-    tree_version: number;
+    treeVersion: number;
     smoothScroll: boolean;
 
     /* the currently rendered tree */
@@ -51,7 +52,7 @@ export interface ChannelTreeViewState {
 @ReactEventHandler<ChannelTreeView>(e => e.props.events)
 @BatchUpdateAssignment(BatchUpdateType.CHANNEL_TREE)
 export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewProperties, ChannelTreeViewState> {
-    public static readonly EntryHeight = 18;
+    public static readonly EntryHeightEm = 1.3;
 
     private readonly refContainer = React.createRef<HTMLDivElement>();
     private resizeObserver: ResizeObserver;
@@ -68,12 +69,13 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         super(props);
 
         this.state = {
-            scroll_offset: 0,
-            view_height: 0,
-            tree_version: 0,
+            scrollOffset: 0,
+            viewHeight: 0,
+            treeVersion: 0,
             smoothScroll: false,
             tree: [],
-            treeRevision: -1
+            treeRevision: -1,
+            fontSize: 14
         };
     }
 
@@ -89,11 +91,17 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
             }
 
             const bounds = entries[0].contentRect;
-            if (this.state.view_height !== bounds.height) {
+            if (this.state.viewHeight !== bounds.height) {
                 this.setState({
-                    view_height: bounds.height
+                    viewHeight: bounds.height
                 });
             }
+
+            const fontSize = parseFloat(getComputedStyle(entries[0].target).getPropertyValue("font-size"));
+            console.error("Updated font size to: %o", fontSize);
+            this.setState({
+                fontSize: fontSize || 0
+            });
         });
 
         this.resizeObserver.observe(this.refContainer.current);
@@ -119,14 +127,15 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         this.scrollFixRequested = true;
         requestAnimationFrame(() => {
             this.scrollFixRequested = false;
-            this.refContainer.current.scrollTop = this.state.scroll_offset;
+            this.refContainer.current.scrollTop = this.state.scrollOffset;
             this.setState({smoothScroll: true});
         });
     }
 
     private visibleEntries() {
-        let viewEntryCount = Math.ceil(this.state.view_height / ChannelTreeView.EntryHeight);
-        const viewEntryBegin = Math.floor(this.state.scroll_offset / ChannelTreeView.EntryHeight);
+        const entryHeight = ChannelTreeView.EntryHeightEm * this.state.fontSize;
+        let viewEntryCount = Math.ceil(this.state.viewHeight / entryHeight);
+        const viewEntryBegin = Math.floor(this.state.scrollOffset / entryHeight);
         const viewEntryEnd = Math.min(this.state.tree.length, viewEntryBegin + viewEntryCount);
 
         return {
@@ -170,7 +179,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
             >
                 <div
                     className={viewStyle.channelTree}
-                    style={{height: (this.state.tree.length * ChannelTreeView.EntryHeight) + "px"}}>
+                    style={{height: (this.state.tree.length * ChannelTreeView.EntryHeightEm) + "em"}}>
                     {elements}
                 </div>
             </div>
@@ -179,7 +188,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
 
     private onScroll() {
         this.setState({
-            scroll_offset: this.refContainer.current.scrollTop
+            scrollOffset: this.refContainer.current.scrollTop
         });
     }
 
@@ -191,18 +200,18 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
             return;
         }
 
-        let new_index;
+        let newIndex;
         const currentRange = this.visibleEntries();
         if (index >= currentRange.end - 1) {
-            new_index = index - (currentRange.end - currentRange.begin) + 2;
+            newIndex = index - (currentRange.end - currentRange.begin) + 2;
         } else if (index < currentRange.begin) {
-            new_index = index;
+            newIndex = index;
         } else {
             if (callback) callback();
             return;
         }
 
-        this.refContainer.current.scrollTop = new_index * ChannelTreeView.EntryHeight;
+        this.refContainer.current.scrollTop = newIndex * ChannelTreeView.EntryHeightEm * this.state.fontSize;
 
         if (callback) {
             let cb = {
@@ -211,7 +220,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
                 timeout: setTimeout(() => {
                     this.inViewCallbacks.remove(cb);
                     callback();
-                }, (Math.abs(new_index - currentRange.begin) / (currentRange.end - currentRange.begin)) * 1500)
+                }, (Math.abs(newIndex - currentRange.begin) / (currentRange.end - currentRange.begin)) * 1500)
             };
             this.inViewCallbacks.push(cb);
         }
@@ -233,7 +242,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
             return undefined;
         }
 
-        const total_offset = container.scrollTop + pageY;
-        return this.state.tree[Math.floor(total_offset / ChannelTreeView.EntryHeight)]?.entryId;
+        const totalOffset = container.scrollTop + pageY;
+        return this.state.tree[Math.floor(totalOffset / (ChannelTreeView.EntryHeightEm * this.state.fontSize))]?.entryId;
     }
 }

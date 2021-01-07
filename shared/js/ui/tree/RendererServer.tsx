@@ -5,6 +5,9 @@ import {UnreadMarkerRenderer} from "./RendererTreeEntry";
 import {getIconManager} from "tc-shared/file/Icons";
 import {RDPServer} from "tc-shared/ui/tree/RendererDataProvider";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
+import {ChannelTreeView} from "tc-shared/ui/tree/RendererView";
+import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
+import {ClientIcon} from "svg-sprites/client-icons";
 
 const serverStyle = require("./Server.scss");
 const viewStyle = require("./View.scss");
@@ -37,7 +40,7 @@ export class ServerRenderer extends React.Component<{ server: RDPServer }, {}> {
         return (
             <div
                 className={serverStyle.serverEntry + " " + viewStyle.treeEntry + " " + (selected ? viewStyle.selected : "")}
-                style={{ top: server.offsetTop }}
+                style={{ top: (server.offsetTop * ChannelTreeView.EntryHeightEm) + "em" }}
                 onMouseDown={event => {
                     if (event.button !== 0) {
                         return; /* only left mouse clicks */
@@ -60,7 +63,7 @@ export class ServerRenderer extends React.Component<{ server: RDPServer }, {}> {
             >
                 <div className={viewStyle.leftPadding} style={{ paddingLeft: server.offsetLeft + "em" }} />
                 <UnreadMarkerRenderer entry={server} ref={server.refUnread} />
-                <div className={"icon client-server_green " + serverStyle.server_type}/>
+                <ClientIconRenderer icon={ClientIcon.ServerGreen} className={serverStyle.icon} />
                 <div className={serverStyle.name}>{name}</div>
                 {icon}
             </div>
