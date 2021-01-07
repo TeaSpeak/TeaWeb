@@ -651,52 +651,62 @@ export class RDPChannelTree {
 
         this.orderedTree = event.entries.map((entry, index) => {
             let result: RDPEntry;
-            if(oldEntryInstances[entry.entryId]) {
-                result = oldEntryInstances[entry.entryId];
-                delete oldEntryInstances[entry.entryId];
-            } else {
-                switch (entry.type) {
-                    case "channel":
-                        const channel = new RDPChannel(this, entry.entryId);
-                        if(entry.fullInfo) {
-                            channel.info = entry.info;
-                            channel.icon = entry.icon;
-                            channel.icons = entry.icons;
-                        } else {
-                            channel.queryState();
-                        }
-                        result = channel;
-                        break;
+            switch (entry.type) {
+                case "channel":
+                    const channel = oldEntryInstances[entry.entryId] || new RDPChannel(this, entry.entryId);
+                    if(!(channel instanceof RDPChannel)) {
+                        throw tr("entry id type changed");
+                    }
 
-                    case "client":
-                    case "client-local":
-                        const client = new RDPClient(this, entry.entryId, entry.type === "client-local");
-                        if(entry.fullInfo) {
-                            client.name = entry.name;
-                            client.status = entry.status;
-                            client.icons = entry.icons;
-                            client.talkStatus = entry.talkStatus;
-                            client.talkRequestMessage = entry.talkRequestMessage;
-                        } else {
-                            client.queryState();
-                        }
-                        result = client;
-                        break;
+                    if(entry.fullInfo) {
+                        channel.stateQueried = true;
+                        channel.handleInfoUpdate(entry.info);
+                        channel.handleIconUpdate(entry.icon);
+                        channel.handleIconsUpdate(entry.icons);
+                    } else if(!channel.stateQueried) {
+                        channel.queryState();
+                    }
+                    result = channel;
+                    break;
 
-                    case "server":
-                        const server = new RDPServer(this, entry.entryId);
-                        if(entry.fullInfo) {
-                            server.state = entry.state;
-                        } else {
-                            server.queryState();
-                        }
-                        result = server;
-                        break;
+                case "client":
+                case "client-local":
+                    const client = oldEntryInstances[entry.entryId] || new RDPClient(this, entry.entryId, entry.type === "client-local");
+                    if(!(client instanceof RDPClient)) {
+                        throw tr("entry id type changed");
+                    }
 
-                    default:
-                        throw "invalid channel entry type " + (entry as any).type;
-                }
+                    if(entry.fullInfo) {
+                        client.stateQueried = true;
+                        client.handleNameUpdate(entry.name);
+                        client.handleStatusUpdate(entry.status);
+                        client.handleIconsUpdate(entry.icons);
+                        client.handleTalkStatusUpdate(entry.talkStatus, entry.talkRequestMessage);
+                    } else if(!client.stateQueried) {
+                        client.queryState();
+                    }
+                    result = client;
+                    break;
+
+                case "server":
+                    const server = oldEntryInstances[entry.entryId] || new RDPServer(this, entry.entryId);
+                    if(!(server instanceof RDPServer)) {
+                        throw tr("entry id type changed");
+                    }
+
+                    if(entry.fullInfo) {
+                        server.stateQueried = true;
+                        server.handleStateUpdate(entry.state);
+                    } else if(server.stateQueried) {
+                        server.queryState();
+                    }
+                    result = server;
+                    break;
+
+                default:
+                    throw "invalid channel entry type " + (entry as any).type;
             }
+            delete oldEntryInstances[entry.entryId];
 
             this.treeEntries[entry.entryId] = result;
             result.handlePositionUpdate(index, entry.depth);
@@ -734,6 +744,8 @@ export abstract class RDPEntry {
 
     readonly refUnread = React.createRef<UnreadMarkerRenderer>();
 
+    stateQueried: boolean;
+
     offsetTop: number; /* In 16px units */
     offsetLeft: number; /* In channel units */
 
@@ -765,8 +777,9 @@ export abstract class RDPEntry {
 
     /* do the initial state query */
     queryState() {
-        const events = this.getEvents();
+        this.stateQueried = true;
 
+        const events = this.getEvents();
         events.fire("query_unread_state", { treeEntryId: this.entryId });
     }
 

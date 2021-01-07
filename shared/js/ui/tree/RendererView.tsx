@@ -91,17 +91,13 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
             }
 
             const bounds = entries[0].contentRect;
-            if (this.state.viewHeight !== bounds.height) {
+            const fontSize = parseFloat(getComputedStyle(entries[0].target).getPropertyValue("font-size"));
+            if (this.state.viewHeight !== bounds.height || this.state.fontSize !== fontSize) {
                 this.setState({
-                    viewHeight: bounds.height
+                    viewHeight: bounds.height,
+                    fontSize: fontSize
                 });
             }
-
-            const fontSize = parseFloat(getComputedStyle(entries[0].target).getPropertyValue("font-size"));
-            console.error("Updated font size to: %o", fontSize);
-            this.setState({
-                fontSize: fontSize || 0
-            });
         });
 
         this.resizeObserver.observe(this.refContainer.current);
