@@ -35,26 +35,29 @@ const ConnectionHandler = React.memo((props: { handlerId: string, mode: Connecti
         setStatus(event.status);
     });
 
-    let displayedName;
+    let displayedName, displayedNameTitle;
     let cutoffName = false;
     let voiceReplaying = false;
-    let icon = <ClientIconRenderer icon={ClientIcon.ServerGreen} key={"default"} />;
+    let icon = <ClientIconRenderer icon={ClientIcon.ServerGreen} key={"default"} className={cssStyle.icon} />;
     if(status === "loading") {
-        displayedName = tr("loading status");
+        displayedName = displayedNameTitle = tr("loading status");
     } else {
         switch (status.connectionState) {
             case "connected":
                 cutoffName = status.handlerName.length > 30;
                 voiceReplaying = status.voiceReplaying;
                 displayedName = <React.Fragment key={"connected"}>{status.handlerName}</React.Fragment>;
-                icon = <RemoteIconRenderer icon={getIconManager().resolveIcon(status.serverIcon.iconId, status.serverIcon.serverUniqueId, props.handlerId)} />;
+                displayedNameTitle = status.handlerName;
+                icon = <RemoteIconRenderer icon={getIconManager().resolveIcon(status.serverIcon.iconId, status.serverIcon.serverUniqueId, props.handlerId)} className={cssStyle.icon} />;
                 break;
 
             case "connecting":
+                displayedNameTitle = tr("Connecting to server");
                 displayedName = <><Translatable key={"connecting"}>Connecting to server</Translatable> <LoadingDots /></>;
                 break;
 
             case "disconnected":
+                displayedNameTitle = tr("Not connected");
                 displayedName = <Translatable key={"not connected"}>Not connected</Translatable>;
                 break;
         }
@@ -72,10 +75,8 @@ const ConnectionHandler = React.memo((props: { handlerId: string, mode: Connecti
              ref={props.refContainer}
              x-handler-id={props.handlerId}
         >
-            <div className={cssStyle.icon}>
-                {icon}
-            </div>
-            <div className={cssStyle.name} title={displayedName}>{displayedName}</div>
+            {icon}
+            <div className={cssStyle.name} title={displayedNameTitle}>{displayedName}</div>
             <div className={cssStyle.buttonClose} onClick={() => {
                 events.fire("action_destroy_handler", { handlerId: props.handlerId })
             }}>
