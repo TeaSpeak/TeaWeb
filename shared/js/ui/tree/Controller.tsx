@@ -280,7 +280,8 @@ class ChannelTreeController {
             return;
         }
 
-        this.channelTree.channels.forEach(channel => this.sendChannelIcons(channel));
+        /* Quicker than sending info for every client & channel */
+        this.sendChannelTreeEntriesFull(undefined);
     }
 
     private handleGroupsUpdated(event: GroupManagerEvents["notify_groups_updated"]) {
