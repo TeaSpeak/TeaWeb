@@ -9,7 +9,7 @@ import {Group, GroupManager, GroupTarget, GroupType} from "../permission/GroupMa
 import PermissionType from "../permission/PermissionType";
 import {createErrorModal, createInputModal} from "../ui/elements/Modal";
 import * as htmltags from "../ui/htmltags";
-import {CommandResult, PlaylistSong} from "../connection/ServerConnectionDeclaration";
+import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {ChannelEntry} from "./Channel";
 import {ConnectionHandler, ViewReasonId} from "../ConnectionHandler";
 import {createServerGroupAssignmentModal} from "../ui/modal/ModalGroupAssignment";
@@ -290,7 +290,7 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
     }
 
     getStatusIcon() : ClientIcon {
-        if (this.properties.client_type_exact == ClientType.CLIENT_QUERY) {
+        if (this.properties.client_type == ClientType.CLIENT_QUERY) {
             return ClientIcon.ServerQuery;
         } else if (this.properties.client_away) {
             return ClientIcon.Away;

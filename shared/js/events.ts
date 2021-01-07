@@ -284,7 +284,7 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
                     }
                     index++;
                 }
-            })
+            });
         });
     }
 
