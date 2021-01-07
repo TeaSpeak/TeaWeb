@@ -12,7 +12,7 @@
     transition: all $animation_length ease-in-out;
     &.shown {
         margin-top: -4px;
-        height: 24px;
+        height: 1.8em;
 
         transition: all $animation_length ease-in-out;
     }
@@ -109,25 +109,34 @@
         padding-left: 5px;
         padding-right: 5px;
 
-        height: 24px;
+        height: 1.8em;
         overflow: hidden;
 
-        border-bottom: 1px solid transparent;
+        border-bottom: .075em solid transparent;
         @include transition(all ease-in-out $button_hover_animation_time, opacity ease-in-out 0);
 
         .icon {
-            width: 16px;
-            height: 16px;
+            height: 1em;
+            width: 1em;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: stretch;
 
             align-self: center;
             margin-right: 5px;
+
+            > img {
+                flex-grow: 1;
+            }
         }
 
         .name {
             color: #a8a8a8;
+            line-height: 1.2em;
 
             align-self: center;
-            margin-right: 20px;
+            margin-right: 1.2em;
 
             position: relative;
 
@@ -137,8 +146,8 @@
         }
 
         .buttonClose {
-            width: 16px;
-            height: 16px;
+            width: 1.1em;
+            height: 1.1em;
 
             position: absolute;
             right: 5px;
@@ -162,7 +171,7 @@
                     position: absolute;
                     left: 0;
                     top: 0;
-                    background: linear-gradient(to right, transparent calc(100% - 50px), #1e1e1e calc(100% - 25px));
+                    background: linear-gradient(to right, transparent calc(100% - 3.5em), #1e1e1e calc(100% - 1.5em));
                 }
             }
         }
@@ -171,7 +180,7 @@
             background-color: #242425;
 
             &.cutoffName .name:before {
-                background: linear-gradient(to right, transparent calc(100% - 50px), #242425 calc(100% - 25px));
+                background: linear-gradient(to right, transparent calc(100% - 3.5em), #242425 calc(100% - 1.5em));
             }
         }
 
@@ -180,7 +189,7 @@
             background-color: #2d2f32;
 
             &.cutoffName .name:before {
-                background: linear-gradient(to right, transparent calc(100% - 50px), #2d2f32 calc(100% - 25px));
+                background: linear-gradient(to right, transparent calc(100% - 3.5em), #2d2f32 calc(100% - 1.5em));
             }
         }
 
