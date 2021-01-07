@@ -10,6 +10,7 @@ import ResizeObserver from 'resize-observer-polyfill';
 import {RDPChannelTree, RDPEntry} from "./RendererDataProvider";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
+import {LogCategory, logWarn} from "tc-shared/log";
 
 const viewStyle = require("./View.scss");
 
@@ -191,8 +192,10 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
     scrollEntryInView(entryId: number, callback?: () => void) {
         const index = this.state.tree.findIndex(e => e.entryId === entryId);
         if (index === -1) {
-            if (callback) callback();
-            console.warn(tr("Failed to scroll tree entry in view because its not registered within the view. EntryId: %d"), entryId);
+            if (callback) {
+                callback();
+            }
+            logWarn(LogCategory.GENERAL, tr("Failed to scroll tree entry in view because its not registered within the view. EntryId: %d"), entryId);
             return;
         }
 
@@ -203,7 +206,9 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         } else if (index < currentRange.begin) {
             newIndex = index;
         } else {
-            if (callback) callback();
+            if (callback) {
+                callback();
+            }
             return;
         }
 
