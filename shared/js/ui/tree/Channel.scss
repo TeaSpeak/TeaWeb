@@ -16,8 +16,8 @@ html:root {
     cursor: pointer;
 
     .containerArrow {
-        width: 16px;
-        margin-left: -16px;
+        width: 1em;
+        margin-left: -1em;
         text-align: center;
 
         flex-shrink: 0;
@@ -25,15 +25,17 @@ html:root {
         &.down {
             align-self: normal;
         }
+
+        > * {
+            font-size: .9em;
+        }
     }
 
     .channelType {
-        font-size: 16px;
-
         flex-grow: 0;
         flex-shrink: 0;
 
-        margin-right: 2px;
+        margin-right: .1em;;
     }
 
     .containerChannelName {
@@ -47,7 +49,6 @@ html:root {
 
         max-width: 100%; /* important for the repetitive channel name! */
         overflow-x: hidden;
-        height: 16px;
 
         &.align-right {
             justify-content: right;
@@ -58,6 +59,7 @@ html:root {
         }
 
         .channelName {
+            line-height: 1.2em;
             align-self: center;
             color: var(--channel-tree-entry-color);
 
@@ -115,57 +117,49 @@ html:root {
         }
     }
 
-    height: 18px + 2px!important;
-
-    margin-top: -1px!important;
-    padding-top: 1px!important;
-
-    margin-bottom: -1px!important;
-    padding-bottom: 1px!important;
-
-    padding-left: 1px!important;
-
-    .leftPadding {
-        height: 100%;
-
-        margin-left: -1px;
-    }
-
     &.drag-top {
-        height: 20px!important;
+        &::before {
+            content: "";
+            position: absolute;
 
-        padding-top: 0!important;
-        padding-bottom: 2px!important;
+            width: 100%;
+            top: -1px;
+            left: var(--drag-left-offset, 0);
 
-        border-top: 2px solid var(--channel-tree-move-border);
-
-        .leftPadding {
-            background-color: var(--channel-tree-background);
-            margin-top: -4px;
+            border-top: 2px solid var(--channel-tree-move-border);
         }
     }
 
     &.drag-bottom {
-        padding-bottom: 0!important;
-        border-bottom: 2px solid var(--channel-tree-move-border);
-
         z-index: 1;
 
-        .leftPadding {
-            background-color: var(--channel-tree-background);
-            margin-bottom: -3px;
+        &::after {
+            content: "";
+            position: absolute;
+
+            width: 100%;
+            bottom: -1px;
+            left: var(--drag-left-offset, 0);
+
+            border-bottom: 2px solid var(--channel-tree-move-border);
         }
     }
 
     &.drag-contain {
-        padding-top: 0!important;
-        padding-bottom: 0!important;
-
-        padding-left: 0!important;
-        border: 1px solid var(--channel-tree-move-border);
-
-        border-radius: 2px;
-
         z-index: 1;
+
+        &::before {
+            content: "";
+            position: absolute;
+
+            top: -1px;
+            bottom: -1px;
+            left: var(--drag-left-offset, 0);
+            right: 0;
+
+            margin-left: -.2em;
+
+            border: 2px solid var(--channel-tree-move-border);
+        }
     }
 }

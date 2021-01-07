@@ -1,4 +1,12 @@
 .container {
     width: 1em;
     height: 1em;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    > img {
+        flex-grow: 1;
+    }
 }

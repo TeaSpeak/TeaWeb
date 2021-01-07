@@ -329,6 +329,7 @@ export class RDPChannelTree {
         this.selection = new RDPTreeSelection(this);
 
         this.documentDragStopListener = () => {
+            return; /* FIXME: Remove! */
             if(this.dragOverChannelEntry) {
                 this.dragOverChannelEntry.setDragHint("none");
                 this.dragOverChannelEntry = undefined;
@@ -699,7 +700,7 @@ export class RDPChannelTree {
             }
 
             this.treeEntries[entry.entryId] = result;
-            result.handlePositionUpdate(index * ChannelTreeView.EntryHeight, entry.depth);
+            result.handlePositionUpdate(index, entry.depth);
 
             return result;
         }).filter(e => !!e);
@@ -734,8 +735,8 @@ export abstract class RDPEntry {
 
     readonly refUnread = React.createRef<UnreadMarkerRenderer>();
 
-    offsetTop: number;
-    offsetLeft: number;
+    offsetTop: number; /* In 16px units */
+    offsetLeft: number; /* In channel units */
 
     selected: boolean = false;
     unread: boolean = false;

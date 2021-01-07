@@ -7,6 +7,7 @@ import {Settings, settings} from "tc-shared/settings";
 import {UnreadMarkerRenderer} from "tc-shared/ui/tree/RendererTreeEntry";
 import {RDPClient} from "tc-shared/ui/tree/RendererDataProvider";
 import * as DOMPurify from "dompurify";
+import {ChannelTreeView} from "tc-shared/ui/tree/RendererView";
 
 const clientStyle = require("./Client.scss");
 const viewStyle = require("./View.scss");
@@ -176,7 +177,7 @@ export class RendererClient extends React.Component<{ client: RDPClient }, {}> {
 
         return (
             <div className={clientStyle.clientEntry + " " + viewStyle.treeEntry + " " + (selected ? viewStyle.selected : "")}
-                 style={{ top: client.offsetTop }}
+                 style={{ top: (client.offsetTop * ChannelTreeView.EntryHeightEm) + "em" }}
                  onContextMenu={event => {
                      if (settings.static(Settings.KEY_DISABLE_CONTEXT_MENU)) {
                          return;

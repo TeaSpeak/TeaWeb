@@ -7,6 +7,7 @@ import {getIconManager} from "tc-shared/file/Icons";
 import {Settings, settings} from "tc-shared/settings";
 import {RDPChannel} from "tc-shared/ui/tree/RendererDataProvider";
 import {UnreadMarkerRenderer} from "tc-shared/ui/tree/RendererTreeEntry";
+import {ChannelTreeView} from "tc-shared/ui/tree/RendererView";
 
 const channelStyle = require("./Channel.scss");
 const viewStyle = require("./View.scss");
@@ -132,7 +133,9 @@ export class RendererChannel extends React.Component<{ channel: RDPChannel }, {}
             <div
                 ref={this.props.channel.refChannelContainer}
                 className={viewStyle.treeEntry + " " + channelStyle.channelEntry + " " + (channel.selected ? viewStyle.selected : "") + " " + dragClass}
-                style={{ top: channel.offsetTop }}
+                style={{
+                    top: (channel.offsetTop * ChannelTreeView.EntryHeightEm) + "em",
+                }}
                 onMouseUp={event => {
                     if (event.button !== 0) {
                         return; /* only left mouse clicks */
@@ -170,5 +173,22 @@ export class RendererChannel extends React.Component<{ channel: RDPChannel }, {}
                 {channelIcons}
             </div>
         );
+    }
+
+    componentDidUpdate(prevProps: Readonly<{ channel: RDPChannel }>, prevState: Readonly<{}>, snapshot?: any) {
+        this.fixCssVariables();
+    }
+
+    componentDidMount() {
+        this.fixCssVariables();
+    }
+
+    private fixCssVariables() {
+        const container = this.props.channel.refChannelContainer.current;
+        if(!container) {
+            return;
+        }
+
+        container.style.setProperty("--drag-left-offset", this.props.channel.offsetLeft + "em");
     }
 }
