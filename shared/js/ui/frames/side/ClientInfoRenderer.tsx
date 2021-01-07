@@ -436,6 +436,24 @@ const ServerGroupRenderer = () => {
     );
 };
 
+const ConnectedClientInfoBlock = () => {
+    const client = useContext(ClientContext);
+    if(client.type === "query" || client.type === "none") {
+        return null;
+    }
+
+    return (
+        <React.Fragment key={"info"}>
+            <ClientOnlineSince />
+            <ClientCountry />
+            <ClientForumAccount />
+            <ClientVolume />
+            <ClientVersion />
+            <ClientStatus />
+        </React.Fragment>
+    );
+}
+
 const ClientInfoProvider = () => {
     const events = useContext(EventsContext);
 
@@ -468,12 +486,7 @@ const ClientInfoProvider = () => {
                 </div>
                 <div className={cssStyle.generalInfo}>
                     <div className={cssStyle.block + " " + cssStyle.blockLeft}>
-                        <ClientOnlineSince />
-                        <ClientCountry />
-                        <ClientForumAccount />
-                        <ClientVolume />
-                        <ClientVersion />
-                        <ClientStatus />
+                        <ConnectedClientInfoBlock />
                     </div>
                     <div className={cssStyle.block + " " + cssStyle.blockRight}>
                         <ChannelGroupRenderer />
