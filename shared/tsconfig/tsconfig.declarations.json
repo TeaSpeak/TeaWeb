@@ -10,7 +10,6 @@
     "baseUrl": "../../",
     "paths": {
       "tc-shared/*": ["shared/js/*"],
-     // "tc-backend/web/*": ["web/app/*"], /* specific web part */
       "tc-backend/*": ["shared/backend.d/*"],
       "tc-loader": ["loader/exports/loader.d.ts"],
       "svg-sprites/*": ["shared/svg-sprites/*"],
@@ -23,6 +22,7 @@
   "include": [
     "../js/proto.ts",
     "../backend.d",
-    "../js/**/*.ts"
+    "../js/**/*.ts",
+    "../../webpack/build-definitions.d.ts"
   ]
 }

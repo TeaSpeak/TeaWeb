@@ -16,7 +16,7 @@ import "../../../file/RemoteAvatars";
 import "../../../file/RemoteIcons";
 
 if("__native_client_init_shared" in window) {
-    window.__native_client_init_shared(__webpack_require__);
+    (window as any).__native_client_init_shared(__webpack_require__);
 }
 
 let modalRenderer: ModalRenderer;
