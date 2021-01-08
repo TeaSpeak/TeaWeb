@@ -92,7 +92,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         this.acquireVoiceRecorder(undefined, true).catch(error => {
             log.warn(LogCategory.VOICE, tr("Failed to release voice recorder: %o"), error);
         }).then(() => {
-            for(const client of Object.values(this.voiceClients))  {
+            for(const client of Object.keys(this.voiceClients).map(clientId => this.voiceClients[clientId]))  {
                 client.abortReplay();
             }
             this.voiceClients = undefined;
@@ -127,6 +127,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         await recorder?.unmount();
 
         this.handleRecorderStop();
+        const oldRecorder = recorder;
         this.currentAudioSource = recorder;
 
         if(recorder) {
@@ -156,7 +157,10 @@ export class VoiceConnection extends AbstractVoiceConnection {
             await this.voiceBridge?.setInput(undefined);
         }
 
-        this.events.fire("notify_recorder_changed");
+        this.events.fire("notify_recorder_changed", {
+            oldRecorder: oldRecorder,
+            newRecorder: recorder
+        });
     }
 
     public startVoiceBridge() {

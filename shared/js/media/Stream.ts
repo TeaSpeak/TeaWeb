@@ -1,7 +1,7 @@
-import {MediaStreamRequestResult} from "tc-shared/voice/RecorderBase";
+import {InputStartError} from "tc-shared/voice/RecorderBase";
 import * as log from "tc-shared/log";
-import {LogCategory, logWarn} from "tc-shared/log";
-import { tr } from "tc-shared/i18n/localize";
+import {LogCategory, logInfo, logWarn} from "tc-shared/log";
+import {tr} from "tc-shared/i18n/localize";
 
 export type MediaStreamType = "audio" | "video";
 
@@ -19,22 +19,20 @@ export interface MediaStreamEvents {
 export const mediaStreamEvents = new Registry<MediaStreamEvents>();
 */
 
-export async function requestMediaStreamWithConstraints(constraints: MediaTrackConstraints, type: MediaStreamType) : Promise<MediaStreamRequestResult | MediaStream> {
+export async function requestMediaStreamWithConstraints(constraints: MediaTrackConstraints, type: MediaStreamType) : Promise<InputStartError | MediaStream> {
     const beginTimestamp = Date.now();
     try {
-        log.info(LogCategory.AUDIO, tr("Requesting a %s stream for device %s in group %s"), type, constraints.deviceId, constraints.groupId);
-        const stream = await navigator.mediaDevices.getUserMedia(type === "audio" ? { audio: constraints } : { video: constraints });
-
-        return stream;
+        logInfo(LogCategory.AUDIO, tr("Requesting a %s stream for device %s in group %s"), type, constraints.deviceId, constraints.groupId);
+        return await navigator.mediaDevices.getUserMedia(type === "audio" ? {audio: constraints} : {video: constraints});
     } catch(error) {
         if('name' in error) {
             if(error.name === "NotAllowedError") {
                 if(Date.now() - beginTimestamp < 250) {
                     log.warn(LogCategory.AUDIO, tr("Media stream request failed (System denied). Browser message: %o"), error.message);
-                    return MediaStreamRequestResult.ESYSTEMDENIED;
+                    return InputStartError.ESYSTEMDENIED;
                 } else {
                     log.warn(LogCategory.AUDIO, tr("Media stream request failed (No permissions). Browser message: %o"), error.message);
-                    return MediaStreamRequestResult.ENOTALLOWED;
+                    return InputStartError.ENOTALLOWED;
                 }
             } else {
                 log.warn(LogCategory.AUDIO, tr("Media stream request failed. Request resulted in error: %o: %o"), error.name, error);
@@ -43,13 +41,13 @@ export async function requestMediaStreamWithConstraints(constraints: MediaTrackC
             log.warn(LogCategory.AUDIO, tr("Failed to initialize media stream (%o)"), error);
         }
 
-        return MediaStreamRequestResult.EUNKNOWN;
+        return InputStartError.EUNKNOWN;
     }
 }
 
 /* request permission for devices only one per time! */
-let currentMediaStreamRequest: Promise<MediaStream | MediaStreamRequestResult>;
-export async function requestMediaStream(deviceId: string | undefined, groupId: string | undefined, type: MediaStreamType) : Promise<MediaStream | MediaStreamRequestResult> {
+let currentMediaStreamRequest: Promise<MediaStream | InputStartError>;
+export async function requestMediaStream(deviceId: string | undefined, groupId: string | undefined, type: MediaStreamType) : Promise<MediaStream | InputStartError> {
     /* wait for the current media stream requests to finish */
     while(currentMediaStreamRequest) {
         try {
@@ -78,8 +76,9 @@ export async function requestMediaStream(deviceId: string | undefined, groupId: 
     try {
         return await currentMediaStreamRequest;
     } finally {
-        if(currentMediaStreamRequest === promise)
+        if(currentMediaStreamRequest === promise) {
             currentMediaStreamRequest = undefined;
+        }
     }
 }
 

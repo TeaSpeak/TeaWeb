@@ -87,31 +87,34 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
 
     /* level meters */
     {
-        const level_meters: { [key: string]: Promise<LevelMeter> } = {};
-        const level_info: { [key: string]: any } = {};
-        let level_update_task;
+        const levelMeterInitializePromises: { [key: string]: Promise<LevelMeter> } = {};
+        const deviceLevelInfo: { [key: string]: any } = {};
+        let deviceLevelUpdateTask;
 
-        const destroy_meters = () => {
-            Object.keys(level_meters).forEach(e => {
-                const meter = level_meters[e];
-                delete level_meters[e];
+        const destroyLevelIndicators = () => {
+            Object.keys(levelMeterInitializePromises).forEach(e => {
+                const meter = levelMeterInitializePromises[e];
+                delete levelMeterInitializePromises[e];
 
                 meter.then(e => e.destroy());
             });
-            Object.keys(level_info).forEach(e => delete level_info[e]);
+            Object.keys(deviceLevelInfo).forEach(e => delete deviceLevelInfo[e]);
         };
 
-        const update_level_meter = () => {
-            destroy_meters();
+        const updateLevelMeter = () => {
+            destroyLevelIndicators();
 
-            level_info["none"] = {deviceId: "none", status: "success", level: 0};
+            deviceLevelInfo["none"] = {deviceId: "none", status: "success", level: 0};
 
             for (const device of recorderBackend.getDeviceList().getDevices()) {
                 let promise = recorderBackend.createLevelMeter(device).then(meter => {
                     meter.setObserver(level => {
-                        if (level_meters[device.deviceId] !== promise) return; /* old level meter */
+                        if (levelMeterInitializePromises[device.deviceId] !== promise) {
+                            /* old level meter */
+                            return;
+                        }
 
-                        level_info[device.deviceId] = {
+                        deviceLevelInfo[device.deviceId] = {
                             deviceId: device.deviceId,
                             status: "success",
                             level: level
@@ -119,8 +122,11 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
                     });
                     return Promise.resolve(meter);
                 }).catch(error => {
-                    if (level_meters[device.deviceId] !== promise) return; /* old level meter */
-                    level_info[device.deviceId] = {
+                    if (levelMeterInitializePromises[device.deviceId] !== promise) {
+                        /* old level meter */
+                        return;
+                    }
+                    deviceLevelInfo[device.deviceId] = {
                         deviceId: device.deviceId,
                         status: "error",
 
@@ -130,28 +136,30 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
                     log.warn(LogCategory.AUDIO, tr("Failed to initialize a level meter for device %s (%s): %o"), device.deviceId, device.driver + ":" + device.name, error);
                     return Promise.reject(error);
                 });
-                level_meters[device.deviceId] = promise;
+                levelMeterInitializePromises[device.deviceId] = promise;
             }
         };
 
-        level_update_task = setInterval(() => {
+        deviceLevelUpdateTask = setInterval(() => {
             const deviceListStatus = recorderBackend.getDeviceList().getStatus();
 
             events.fire("notify_device_level", {
-                level: level_info,
+                level: deviceLevelInfo,
                 status: deviceListStatus === "error" ? "uninitialized" : deviceListStatus
             });
         }, 50);
 
         events.on("notify_devices", event => {
-            if (event.status !== "success") return;
+            if (event.status !== "success") {
+                return;
+            }
 
-            update_level_meter();
+            updateLevelMeter();
         });
 
-        events.on("notify_destroy", event => {
-            destroy_meters();
-            clearInterval(level_update_task);
+        events.on("notify_destroy", () => {
+            destroyLevelIndicators();
+            clearInterval(deviceLevelUpdateTask);
         });
     }
 

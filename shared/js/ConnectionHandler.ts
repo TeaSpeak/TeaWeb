@@ -10,7 +10,7 @@ import {createErrorModal, createInfoModal, createInputModal, Modal} from "./ui/e
 import {hashPassword} from "./utils/helpers";
 import {HandshakeHandler} from "./connection/HandshakeHandler";
 import * as htmltags from "./ui/htmltags";
-import {FilterMode, InputState, MediaStreamRequestResult} from "./voice/RecorderBase";
+import {FilterMode, InputState, InputStartError} from "./voice/RecorderBase";
 import {CommandResult} from "./connection/ServerConnectionDeclaration";
 import {defaultRecorder, RecorderProfile} from "./voice/RecorderProfile";
 import {connection_log, Regex} from "./ui/modal/ModalConnect";
@@ -183,6 +183,7 @@ export class ConnectionHandler {
     private clientStatusSync = false;
 
     private inputHardwareState: InputHardwareState = InputHardwareState.MISSING;
+    private listenerRecorderInputDeviceChanged: (() => void);
 
     log: ServerEventLog;
 
@@ -196,9 +197,21 @@ export class ConnectionHandler {
         this.serverConnection = getServerConnectionFactory().create(this);
         this.serverConnection.events.on("notify_connection_state_changed", event => this.on_connection_state_changed(event.oldState, event.newState));
 
-        this.serverConnection.getVoiceConnection().events.on("notify_recorder_changed", () => {
+        this.serverConnection.getVoiceConnection().events.on("notify_recorder_changed", event => {
             this.setInputHardwareState(this.getVoiceRecorder() ? InputHardwareState.VALID : InputHardwareState.MISSING);
-            this.update_voice_status();
+            this.updateVoiceStatus();
+
+            if(this.listenerRecorderInputDeviceChanged) {
+                this.listenerRecorderInputDeviceChanged();
+                this.listenerRecorderInputDeviceChanged = undefined;
+            }
+
+            if(event.newRecorder) {
+                this.listenerRecorderInputDeviceChanged = event.newRecorder.input?.events.on("notify_device_changed", () => {
+                    this.setInputHardwareState(InputHardwareState.VALID);
+                    this.updateVoiceStatus();
+                });
+            }
         });
         this.serverConnection.getVoiceConnection().events.on("notify_connection_status_changed", () => this.update_voice_status());
         this.serverConnection.getVoiceConnection().setWhisperSessionInitializer(this.initializeWhisperSession.bind(this));
@@ -265,7 +278,7 @@ export class ConnectionHandler {
                 server_address.port = 9987;
             }
         }
-        log.info(LogCategory.CLIENT, tr("Start connection to %s:%d"), server_address.host, server_address.port);
+        logInfo(LogCategory.CLIENT, tr("Start connection to %s:%d"), server_address.host, server_address.port);
         this.log.log("connection.begin", {
             address: {
                 server_hostname: server_address.host,
@@ -385,7 +398,7 @@ export class ConnectionHandler {
     private handleConnectionStateChanged(event: ConnectionEvents["notify_connection_state_changed"]) {
         this.connection_state = event.newState;
         if(event.newState === ConnectionState.CONNECTED) {
-            log.info(LogCategory.CLIENT, tr("Client connected"));
+            logInfo(LogCategory.CLIENT, tr("Client connected"));
             this.log.log("connection.connected", {
                 serverAddress: {
                     server_port: this.channelTree.server.remote_address.port,
@@ -674,19 +687,19 @@ export class ConnectionHandler {
 
         if(auto_reconnect) {
             if(!this.serverConnection) {
-                log.info(LogCategory.NETWORKING, tr("Allowed to auto reconnect but cant reconnect because we dont have any information left..."));
+                logInfo(LogCategory.NETWORKING, tr("Allowed to auto reconnect but cant reconnect because we dont have any information left..."));
                 return;
             }
             this.log.log("reconnect.scheduled", {timeout: 5000});
 
-            log.info(LogCategory.NETWORKING, tr("Allowed to auto reconnect. Reconnecting in 5000ms"));
+            logInfo(LogCategory.NETWORKING, tr("Allowed to auto reconnect. Reconnecting in 5000ms"));
             const server_address = this.serverConnection.remote_address();
             const profile = this.serverConnection.handshake_handler().profile;
 
             this.autoReconnectTimer = setTimeout(() => {
                 this.autoReconnectTimer = undefined;
                 this.log.log("reconnect.execute", {});
-                log.info(LogCategory.NETWORKING, tr("Reconnecting..."));
+                logInfo(LogCategory.NETWORKING, tr("Reconnecting..."));
 
                 this.startConnection(server_address.host + ":" + server_address.port, profile, false, Object.assign(this.reconnect_properties(profile), {auto_reconnect_attempt: true}));
             }, 5000);
@@ -783,8 +796,10 @@ export class ConnectionHandler {
                 if(Object.keys(localClientUpdates).length > 0) {
                     /* directly update all update locally so we don't send updates twice */
                     const updates = [];
-                    for(const key of Object.keys(localClientUpdates))
+                    for(const key of Object.keys(localClientUpdates)) {
                         updates.push({ key: key, value: localClientUpdates[key] ? "1" : "0" });
+                    }
+
                     this.getClient().updateVariables(...updates);
 
                     this.clientStatusSync = true;
@@ -804,7 +819,7 @@ export class ConnectionHandler {
         if(currentInput) {
             if(shouldRecord || this.echoTestRunning) {
                 if(this.getInputHardwareState() !== InputHardwareState.START_FAILED) {
-                    this.startVoiceRecorder(Date.now() - this._last_record_error_popup > 10 * 1000).then(() => {
+                    this.startVoiceRecorder(Date.now() - this.lastRecordErrorPopup > 10 * 1000).then(() => {
                         this.events_.fire("notify_state_updated", { state: "microphone" });
                     });
                 }
@@ -818,7 +833,7 @@ export class ConnectionHandler {
         }
     }
 
-    private _last_record_error_popup: number = 0;
+    private lastRecordErrorPopup: number = 0;
     update_voice_status() {
         this.updateVoiceStatus();
         return;
@@ -870,21 +885,23 @@ export class ConnectionHandler {
                 }
 
                 this.setInputHardwareState(InputHardwareState.VALID);
-                this.update_voice_status();
+                this.updateVoiceStatus();
                 return { state: "success" };
             } catch (error) {
                 this.setInputHardwareState(InputHardwareState.START_FAILED);
-                this.update_voice_status();
+                this.updateVoiceStatus();
 
                 let errorMessage;
-                if(error === MediaStreamRequestResult.ENOTSUPPORTED) {
+                if(error === InputStartError.ENOTSUPPORTED) {
                     errorMessage = tr("Your browser does not support voice recording");
-                } else if(error === MediaStreamRequestResult.EBUSY) {
+                } else if(error === InputStartError.EBUSY) {
                     errorMessage = tr("The input device is busy");
-                } else if(error === MediaStreamRequestResult.EDEVICEUNKNOWN) {
+                } else if(error === InputStartError.EDEVICEUNKNOWN) {
                     errorMessage = tr("Invalid input device");
-                } else if(error === MediaStreamRequestResult.ENOTALLOWED) {
+                } else if(error === InputStartError.ENOTALLOWED) {
                     errorMessage = tr("No permissions");
+                } else if(error === InputStartError.ESYSTEMUNINITIALIZED) {
+                    errorMessage = tr("Window audio not initialized.");
                 } else if(error instanceof Error) {
                     errorMessage = error.message;
                 } else if(typeof error === "string") {
@@ -893,9 +910,9 @@ export class ConnectionHandler {
                     errorMessage = tr("lookup the console");
                 }
 
-                log.warn(LogCategory.VOICE, tr("Failed to start microphone input (%s)."), error);
+                logWarn(LogCategory.VOICE, tr("Failed to start microphone input (%s)."), error);
                 if(notifyError) {
-                    this._last_record_error_popup = Date.now();
+                    this.lastRecordErrorPopup = Date.now();
                     createErrorModal(tr("Failed to start recording"), tra("Microphone start failed.\nError: {}", errorMessage)).open();
                 }
                 return { state: "error", message: errorMessage };
@@ -910,11 +927,11 @@ export class ConnectionHandler {
 
     reconnect_properties(profile?: ConnectionProfile) : ConnectParameters {
         const name = (this.getClient() ? this.getClient().clientNickName() : "") ||
-                        (this.serverConnection && this.serverConnection.handshake_handler() ? this.serverConnection.handshake_handler().parameters.nickname : "") ||
+                        (this.serverConnection?.handshake_handler() ? this.serverConnection.handshake_handler().parameters.nickname : "") ||
                         StaticSettings.instance.static(Settings.KEY_CONNECT_USERNAME, profile ? profile.defaultUsername : undefined) ||
                         "Another TeaSpeak user";
         const channel = (this.getClient() && this.getClient().currentChannel() ? this.getClient().currentChannel().channelId : 0) ||
-                        (this.serverConnection && this.serverConnection.handshake_handler() ? (this.serverConnection.handshake_handler().parameters.channel || {} as any).target : "");
+                        (this.serverConnection?.handshake_handler() ? (this.serverConnection.handshake_handler().parameters.channel || {} as any).target : "");
         const channel_password = (this.getClient() && this.getClient().currentChannel() ? this.getClient().currentChannel().cached_password() : "") ||
                                  (this.serverConnection && this.serverConnection.handshake_handler() ? (this.serverConnection.handshake_handler().parameters.channel || {} as any).password : "");
         return {
@@ -926,10 +943,12 @@ export class ConnectionHandler {
 
     update_avatar() {
         spawnAvatarUpload(data => {
-            if(typeof(data) === "undefined")
+            if(typeof(data) === "undefined") {
                 return;
-            if(data === null) {
-                log.info(LogCategory.CLIENT, tr("Deleting existing avatar"));
+            }
+
+            if(!data) {
+                logInfo(LogCategory.CLIENT, tr("Deleting existing avatar"));
                 this.serverConnection.send_command('ftdeletefile', {
                     name: "/avatar_", /* delete own avatar */
                     path: "",
@@ -940,15 +959,19 @@ export class ConnectionHandler {
                     log.error(LogCategory.GENERAL, tr("Failed to reset avatar flag: %o"), error);
 
                     let message;
-                    if(error instanceof CommandResult)
+                    if(error instanceof CommandResult) {
                         message = formatMessage(tr("Failed to delete avatar.{:br:}Error: {0}"), error.extra_message || error.message);
-                    if(!message)
+                    }
+
+                    if(!message) {
                         message = formatMessage(tr("Failed to delete avatar.{:br:}Lookup the console for more details"));
+                    }
+                    
                     createErrorModal(tr("Failed to delete avatar"), message).open();
                     return;
                 });
             } else {
-                log.info(LogCategory.CLIENT, tr("Uploading new avatar"));
+                logInfo(LogCategory.CLIENT, tr("Uploading new avatar"));
                 (async () => {
                     const transfer = this.fileManager.initializeFileUpload({
                         name: "/avatar",
@@ -1073,8 +1096,13 @@ export class ConnectionHandler {
         this.serverFeatures?.destroy();
         this.serverFeatures = undefined;
 
-        this.settings && this.settings.destroy();
+        this.settings?.destroy();
         this.settings = undefined;
+
+        if(this.listenerRecorderInputDeviceChanged) {
+            this.listenerRecorderInputDeviceChanged();
+            this.listenerRecorderInputDeviceChanged = undefined;
+        }
 
         if(this.serverConnection) {
             getServerConnectionFactory().destroy(this.serverConnection);
@@ -1087,7 +1115,10 @@ export class ConnectionHandler {
 
     /* state changing methods */
     setMicrophoneMuted(muted: boolean, dontPlaySound?: boolean) {
-        if(this.client_status.input_muted === muted) return;
+        if(this.client_status.input_muted === muted) {
+            return;
+        }
+
         this.client_status.input_muted = muted;
         if(!dontPlaySound) {
             this.sound.play(muted ? Sound.MICROPHONE_MUTED : Sound.MICROPHONE_ACTIVATED);
@@ -1179,8 +1210,9 @@ export class ConnectionHandler {
 
     getInputHardwareState() : InputHardwareState { return this.inputHardwareState; }
     private setInputHardwareState(state: InputHardwareState) {
-        if(this.inputHardwareState === state)
+        if(this.inputHardwareState === state) {
             return;
+        }
 
         this.inputHardwareState = state;
         this.events_.fire("notify_state_updated", { state: "microphone" });

@@ -25,33 +25,40 @@ export interface NativeInputConsumer {
 
 export type InputConsumer = CallbackInputConsumer | NodeInputConsumer | NativeInputConsumer;
 
-
 export enum InputState {
     /* Input recording has been paused */
     PAUSED,
 
     /*
      * Recording has been requested, and is currently initializing.
-     * This state may persist, when the audio context hasn't been initialized yet
      */
     INITIALIZING,
 
-    /* we're currently recording the input */
+    /* we're currently recording the input. */
     RECORDING
 }
 
-export enum MediaStreamRequestResult {
+export enum InputStartError {
     EUNKNOWN = "eunknown",
     EDEVICEUNKNOWN = "edeviceunknown",
     EBUSY = "ebusy",
     ENOTALLOWED = "enotallowed",
     ESYSTEMDENIED = "esystemdenied",
-    ENOTSUPPORTED = "enotsupported"
+    ENOTSUPPORTED = "enotsupported",
+    ESYSTEMUNINITIALIZED = "esystemuninitialized"
 }
 
 export interface InputEvents {
+    notify_state_changed: {
+        oldState: InputState,
+        newState: InputState
+    },
+
     notify_voice_start: {},
-    notify_voice_end: {}
+    notify_voice_end: {},
+
+    notify_filter_mode_changed: { oldMode: FilterMode, newMode: FilterMode },
+    notify_device_changed: { oldDeviceId: string, newDeviceId: string },
 }
 
 export enum FilterMode {
@@ -77,7 +84,7 @@ export interface AbstractInput {
     currentState() : InputState;
     destroy();
 
-    start() : Promise<MediaStreamRequestResult | true>;
+    start() : Promise<InputStartError | true>;
     stop() : Promise<void>;
 
     /*
@@ -91,10 +98,12 @@ export interface AbstractInput {
 
     currentDeviceId() : string | undefined;
 
-    /*
+    /**
      * This method should not throw!
-     * If the target device is unknown than it should return EDEVICEUNKNOWN on start.
-     * After changing the device, the input state falls to InputState.PAUSED.
+     * If the target device is unknown, it should return `InputStartError.EDEVICEUNKNOWN` on start.
+     * If the device is different than the current device the recorder stops.
+     *
+     * When the device has been changed the event `notify_device_changed` will be fired.
      */
     setDeviceId(device: string) : Promise<void>;
 
@@ -104,7 +113,6 @@ export interface AbstractInput {
     supportsFilter(type: FilterType) : boolean;
     createFilter<T extends FilterType>(type: T, priority: number) : FilterTypeClass<T>;
     removeFilter(filter: Filter);
-    /* resetFilter(); */
 
     getVolume() : number;
     setVolume(volume: number);

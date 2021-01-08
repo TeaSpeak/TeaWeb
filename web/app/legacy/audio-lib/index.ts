@@ -22,7 +22,7 @@ export class AudioLibrary {
     }
 
     private static spawnNewWorker() : Worker {
-        /*
+        /*  
          * Attention don't use () => new Worker(...).
          * This confuses the worker plugin and will not emit any modules
          */

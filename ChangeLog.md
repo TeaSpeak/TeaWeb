@@ -1,4 +1,8 @@
 # Changelog:
+* **08.01.21**
+    - Fixed a bug where the microphone did not started recording after switching the device
+    - Fixed bug that the web client was only able to use the default microphone
+    
 * **07.01.21**
     - Improved general client ui memory footprint (Don't constantly rendering the channel tree)
     - Improved channel tree loading performance especially on server join and switch
@@ -17,7 +21,7 @@
         - Added the option to edit the channel sidebar mode
         - Remove the phonetic name and the channel title (Both are not used)
         - Improved property validation 
-        - Adjusting property editibility according to the clients permissions
+        - Adjusting property edibility according to the clients permissions
     - Fixed issue [#164](https://github.com/TeaSpeak/TeaWeb/issues/154) ("error: channel description" bug)
     
 * **18.12.20**
