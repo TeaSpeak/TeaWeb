@@ -57,6 +57,7 @@ function preprocessMessage(message: string, settings: BBCodeRenderOptions) : str
         {
             const result = raw_url.match(youtubeUrlRegex);
             if(!result) break single_url_yt;
+            if(result[5]?.length < 11) break single_url_yt;
 
             return "[yt]https://www.youtube.com/watch?v=" + result[5] + "[/yt]";
         }
