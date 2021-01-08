@@ -26,12 +26,12 @@ deploy:
     skip_cleanup: true
     on:
       branch: develop
-  - provider: script
-    cleanup: false
-    skip_cleanup: true
-    script: "bash  scripts/travis/deploy_docker.sh development"
-    on:
-      branch: develop
+#  - provider: script
+#    cleanup: false
+#    skip_cleanup: true
+#    script: "bash  scripts/travis/deploy_docker.sh development"
+#    on:
+#      branch: develop
   - provider: script
     script: "bash  scripts/travis/deploy_server.sh production"
     cleanup: false
@@ -44,9 +44,9 @@ deploy:
     script: "bash  scripts/travis/deploy_github.sh"
     on:
       branch: master
-  - provider: script
-    cleanup: false
-    skip_cleanup: true
-    script: "bash  scripts/travis/deploy_docker.sh release"
-    on:
-      branch: master
+#  - provider: script
+#    cleanup: false
+#    skip_cleanup: true
+#    script: "bash  scripts/travis/deploy_docker.sh release"
+#    on:
+#      branch: master
