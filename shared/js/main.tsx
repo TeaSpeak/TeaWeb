@@ -20,7 +20,6 @@ import * as aplayer from "tc-backend/audio/player";
 import * as ppt from "tc-backend/ppt";
 import * as keycontrol from "./KeyControl";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import * as global_ev_handler from "./events/ClientGlobalControlHandler";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {FileTransferState, TransferProvider,} from "tc-shared/file/Transfer";

@@ -15,7 +15,7 @@ function generate_declaration() {
         fi
     fi
 
-    npm run dtsgen -- --config "$(pwd)/tsconfig/$1" -v
+    npm run tsc -- --project "$(pwd)/tsconfig/$1"
     if [[ ! -e $2 ]]; then
         echo "Failed to generate definitions"
         exit 1

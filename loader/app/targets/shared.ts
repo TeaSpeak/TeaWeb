@@ -2,13 +2,6 @@ import * as loader from "../loader/loader";
 import {Stage} from "../loader/loader";
 import {BrowserInfo, detect as detectBrowser,} from "detect-browser";
 
-declare global {
-    interface Window {
-        detectedBrowser: BrowserInfo,
-        removeLoaderContextMenuHook: () => void
-    }
-}
-
 loader.register_task(Stage.SETUP, {
     name: "app init",
     function: async () => {

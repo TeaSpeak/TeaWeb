@@ -60,8 +60,9 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
     }
 
     async acquireVoiceRecorder(recorder: RecorderProfile | undefined): Promise<void> {
-        if(this.recorder === recorder)
+        if(this.recorder === recorder) {
             return;
+        }
 
         if(this.recorder) {
             this.recorder.callback_unmount = undefined;
@@ -69,6 +70,7 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
         }
 
         await recorder?.unmount();
+        const oldRecorder = this.recorder;
         this.recorder = recorder;
 
         if(this.recorder) {
@@ -78,7 +80,10 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
             }
         }
 
-        this.events.fire("notify_recorder_changed", {});
+        this.events.fire("notify_recorder_changed", {
+            oldRecorder,
+            newRecorder: recorder
+        });
     }
 
     availableVoiceClients(): VoiceClient[] {

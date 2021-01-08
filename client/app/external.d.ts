@@ -3,6 +3,5 @@ interface Window {
     __native_client_init_shared: (webpackRequire: any) => void;
 }
 
-declare const __webpack_require__;
 declare const __teaclient_preview_notice: any;
 declare const __teaclient_preview_error: any;
