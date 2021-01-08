@@ -379,7 +379,13 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
         const current_connection_handler = infoHandler.getCurrentHandler();
         if(current_connection_handler) {
             current_connection_handler.setMicrophoneMuted(!event.enabled);
-            current_connection_handler.acquireInputHardware().then(() => {});
+            if(current_connection_handler.getVoiceRecorder()) {
+                if(event.enabled) {
+                    current_connection_handler.startVoiceRecorder(true).then(undefined);
+                }
+            } else {
+                current_connection_handler.acquireInputHardware().then(() => {});
+            }
         }
     });
 

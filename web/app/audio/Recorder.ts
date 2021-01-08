@@ -6,19 +6,19 @@ import {
     InputConsumer,
     InputConsumerType,
     InputEvents,
-    MediaStreamRequestResult,
+    InputStartError,
     InputState,
     LevelMeter,
     NodeInputConsumer
 } from "tc-shared/voice/RecorderBase";
 import * as log from "tc-shared/log";
-import {LogCategory, logDebug, logWarn} from "tc-shared/log";
+import {LogCategory, logDebug} from "tc-shared/log";
 import * as aplayer from "./player";
 import {JAbstractFilter, JStateFilter, JThresholdFilter} from "./RecorderFilter";
 import {Filter, FilterType, FilterTypeClass} from "tc-shared/voice/Filter";
 import {inputDeviceList} from "tc-backend/web/audio/RecorderDeviceList";
-import {requestMediaStream} from "tc-shared/media/Stream";
-import { tr } from "tc-shared/i18n/localize";
+import {requestMediaStream, stopMediaStream} from "tc-shared/media/Stream";
+import {tr} from "tc-shared/i18n/localize";
 
 declare global {
     interface MediaStream {
@@ -75,7 +75,7 @@ class JavascriptInput implements AbstractInput {
     private inputFiltered: boolean = false;
     private filterMode: FilterMode = FilterMode.Block;
 
-    private startPromise: Promise<MediaStreamRequestResult | true>;
+    private startPromise: Promise<InputStartError | true>;
 
     private volumeModifier: number = 1;
 
@@ -101,11 +101,19 @@ class JavascriptInput implements AbstractInput {
         this.audioNodeVolume.gain.value = this.volumeModifier;
 
         this.initializeFilters();
-        if(this.state === InputState.INITIALIZING) {
-            this.start().catch(error => {
-                logWarn(LogCategory.AUDIO, tr("Failed to automatically start audio recording: %s"), error);
-            });
+    }
+
+    private setState(state: InputState) {
+        if(this.state === state) {
+            return;
         }
+
+        const oldState = this.state;
+        this.state = state;
+        this.events.fire("notify_state_changed", {
+            oldState,
+            newState: state
+        });
     }
 
     private initializeFilters() {
@@ -153,47 +161,57 @@ class JavascriptInput implements AbstractInput {
         }
     }
 
-    async start() : Promise<MediaStreamRequestResult | true> {
+    async start() : Promise<InputStartError | true> {
         while(this.startPromise) {
             try {
                 await this.startPromise;
             } catch {}
         }
 
-        if(this.state != InputState.PAUSED)
+        if(this.state != InputState.PAUSED) {
             return;
+        }
 
         /* do it async since if the doStart fails on the first iteration, we're setting the start promise, after it's getting cleared */
         return await (this.startPromise = Promise.resolve().then(() => this.doStart()));
     }
 
-    private async doStart() : Promise<MediaStreamRequestResult | true> {
+    private async doStart() : Promise<InputStartError | true> {
         try {
+            if(!aplayer.initialized() || !this.audioContext) {
+                return InputStartError.ESYSTEMUNINITIALIZED;
+            }
+
             if(this.state != InputState.PAUSED) {
                 throw tr("recorder already started");
             }
+            this.setState(InputState.INITIALIZING);
 
-            this.state = InputState.INITIALIZING;
             let deviceId;
             if(this.deviceId === IDevice.NoDeviceId) {
                 throw tr("no device selected");
             } else if(this.deviceId === IDevice.DefaultDeviceId) {
                 deviceId = undefined;
+            } else {
+                deviceId = this.deviceId;
             }
 
-            if(!this.audioContext) {
-                /* Awaiting the audio context to be initialized */
-                return;
-            }
-
+            console.error("Starting input recorder on %o - %o", this.deviceId, deviceId);
             const requestResult = await requestMediaStream(deviceId, undefined, "audio");
             if(!(requestResult instanceof MediaStream)) {
-                this.state = InputState.PAUSED;
+                this.setState(InputState.PAUSED);
                 return requestResult;
             }
 
             /* added the then body to avoid a inspection warning... */
             inputDeviceList.refresh().then(() => {});
+
+            if(this.currentStream) {
+                stopMediaStream(this.currentStream);
+                this.currentStream = undefined;
+            }
+            this.currentAudioStream?.disconnect();
+            this.currentAudioStream = undefined;
 
             this.currentStream = requestResult;
 
@@ -202,19 +220,20 @@ class JavascriptInput implements AbstractInput {
                     filter.setPaused(false);
                 }
             }
+
             /* TODO: Only add if we're really having a callback consumer */
             this.audioNodeCallbackConsumer.addEventListener('audioprocess', this.audioScriptProcessorCallback);
 
             this.currentAudioStream = this.audioContext.createMediaStreamSource(this.currentStream);
             this.currentAudioStream.connect(this.audioNodeVolume);
 
-            this.state = InputState.RECORDING;
+            this.setState(InputState.RECORDING);
             this.updateFilterStatus(true);
 
             return true;
         } catch(error) {
             if(this.state == InputState.INITIALIZING) {
-                this.state = InputState.PAUSED;
+                this.setState(InputState.PAUSED);
             }
 
             throw error;
@@ -231,7 +250,7 @@ class JavascriptInput implements AbstractInput {
             } catch {}
         }
 
-        this.state = InputState.PAUSED;
+        this.setState(InputState.PAUSED);
         if(this.currentAudioStream) {
             this.currentAudioStream.disconnect();
         }
@@ -248,9 +267,9 @@ class JavascriptInput implements AbstractInput {
 
         this.currentStream = undefined;
         this.currentAudioStream = undefined;
-        for(const f of this.registeredFilters) {
-            if(f.isEnabled()) {
-                f.setPaused(true);
+        for(const filter of this.registeredFilters) {
+            if(filter.isEnabled()) {
+                filter.setPaused(true);
             }
         }
 
@@ -271,7 +290,9 @@ class JavascriptInput implements AbstractInput {
             log.warn(LogCategory.AUDIO, tr("Failed to stop previous record session (%o)"), error);
         }
 
+        const oldDeviceId = deviceId;
         this.deviceId = deviceId;
+        this.events.fire("notify_device_changed", { newDeviceId: deviceId, oldDeviceId })
     }
 
 
@@ -452,9 +473,14 @@ class JavascriptInput implements AbstractInput {
             return;
         }
 
+        const oldMode = this.filterMode;
         this.filterMode = mode;
         this.updateFilterStatus(false);
         this.initializeFilters();
+        this.events.fire("notify_filter_mode_changed", {
+            oldMode,
+            newMode: mode
+        });
     }
 }
 
@@ -511,13 +537,13 @@ class JavascriptLevelMeter implements LevelMeter {
         /* starting stream */
         const _result = await requestMediaStream(this._device.deviceId, this._device.groupId, "audio");
         if(!(_result instanceof MediaStream)){
-            if(_result === MediaStreamRequestResult.ENOTALLOWED)
+            if(_result === InputStartError.ENOTALLOWED)
                 throw tr("No permissions");
-            if(_result === MediaStreamRequestResult.ENOTSUPPORTED)
+            if(_result === InputStartError.ENOTSUPPORTED)
                 throw tr("Not supported");
-            if(_result === MediaStreamRequestResult.EBUSY)
+            if(_result === InputStartError.EBUSY)
                 throw tr("Device busy");
-            if(_result === MediaStreamRequestResult.EUNKNOWN)
+            if(_result === InputStartError.EUNKNOWN)
                 throw tr("an error occurred");
             throw _result;
         }

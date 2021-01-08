@@ -160,6 +160,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
         await recorder?.unmount();
 
         this.handleRecorderStop();
+        const oldRecorder = recorder;
         this.currentAudioSource = recorder;
 
         if(recorder) {
@@ -195,7 +196,10 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
             }
         }
 
-        this.events.fire("notify_recorder_changed");
+        this.events.fire("notify_recorder_changed", {
+            oldRecorder,
+            newRecorder: recorder
+        });
     }
 
     private handleRecorderStop() {

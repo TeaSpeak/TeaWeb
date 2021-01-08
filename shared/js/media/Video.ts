@@ -7,7 +7,7 @@ import {
     VideoSource, VideoSourceCapabilities, VideoSourceInitialSettings
 } from "tc-shared/video/VideoSource";
 import {Registry} from "tc-shared/events";
-import {MediaStreamRequestResult} from "tc-shared/voice/RecorderBase";
+import {InputStartError} from "tc-shared/voice/RecorderBase";
 import {LogCategory, logDebug, logError, logWarn} from "tc-shared/log";
 import {queryMediaPermissions, requestMediaStream, stopMediaStream} from "tc-shared/media/Stream";
 import {tr} from "tc-shared/i18n/localize";
@@ -126,10 +126,10 @@ export class WebVideoDriver implements VideoDriver {
 
     async requestPermissions(): Promise<VideoSource | boolean> {
         const result = await requestMediaStream("default", undefined, "video");
-        if(result === MediaStreamRequestResult.ENOTALLOWED) {
+        if(result === InputStartError.ENOTALLOWED) {
             this.setPermissionStatus(VideoPermissionStatus.UserDenied);
             return false;
-        } else if(result === MediaStreamRequestResult.ESYSTEMDENIED) {
+        } else if(result === InputStartError.ESYSTEMDENIED) {
             this.setPermissionStatus(VideoPermissionStatus.SystemDenied);
             return false;
         }
@@ -177,10 +177,10 @@ export class WebVideoDriver implements VideoDriver {
          * This also applies to Firefox since the user has to manually update the flag after that.
          * Only the initial state for Firefox is and should be "Granted".
          */
-        if(result === MediaStreamRequestResult.ENOTALLOWED) {
+        if(result === InputStartError.ENOTALLOWED) {
             this.setPermissionStatus(VideoPermissionStatus.UserDenied);
             throw tr("Device access has been denied");
-        } else if(result === MediaStreamRequestResult.ESYSTEMDENIED) {
+        } else if(result === InputStartError.ESYSTEMDENIED) {
             this.setPermissionStatus(VideoPermissionStatus.SystemDenied);
             throw tr("Device access has been denied");
         }

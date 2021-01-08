@@ -22,7 +22,10 @@ export interface VoiceConnectionEvents {
         newStatus: VoiceConnectionStatus
     },
 
-    "notify_recorder_changed": {},
+    "notify_recorder_changed": {
+        oldRecorder: RecorderProfile | undefined,
+        newRecorder: RecorderProfile | undefined
+    },
 
     "notify_whisper_created": {
         session: WhisperSession

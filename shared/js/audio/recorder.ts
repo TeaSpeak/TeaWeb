@@ -17,9 +17,6 @@ export interface AudioRecorderBacked {
 }
 
 export interface DeviceListEvents {
-    /*
-     * Should only trigger if the list really changed.
-     */
     notify_list_updated: {
         removedDeviceCount: number,
         addedDeviceCount: number
@@ -44,6 +41,7 @@ export interface IDevice {
     driver: string;
     name: string;
 }
+
 export namespace IDevice {
     export const NoDeviceId = "none";
     export const DefaultDeviceId = "default";
@@ -90,8 +88,9 @@ export abstract class AbstractDeviceList implements DeviceList {
     }
 
     protected setState(state: DeviceListState) {
-        if(this.listState === state)
+        if(this.listState === state) {
             return;
+        }
 
         const oldState = this.listState;
         this.listState = state;
@@ -99,8 +98,9 @@ export abstract class AbstractDeviceList implements DeviceList {
     }
 
     protected setPermissionState(state: PermissionState) {
-        if(this.permissionState === state)
+        if(this.permissionState === state) {
             return;
+        }
 
         const oldState = this.permissionState;
         this.permissionState = state;
@@ -108,24 +108,28 @@ export abstract class AbstractDeviceList implements DeviceList {
     }
 
     awaitInitialized(): Promise<void> {
-        if(this.listState !== "uninitialized")
+        if(this.listState !== "uninitialized") {
             return Promise.resolve();
+        }
 
         return new Promise<void>(resolve => {
             const callback = (event: DeviceListEvents["notify_state_changed"]) => {
-                if(event.newState === "uninitialized")
+                if(event.newState === "uninitialized") {
                     return;
+                }
 
                 this.events.off("notify_state_changed", callback);
                 resolve();
             };
+
             this.events.on("notify_state_changed", callback);
         });
     }
 
     awaitHealthy(): Promise<void> {
-        if(this.listState === "healthy")
+        if(this.listState === "healthy") {
             return Promise.resolve();
+        }
 
         return new Promise<void>(resolve => {
             const callback = (event: DeviceListEvents["notify_state_changed"]) => {
@@ -150,15 +154,17 @@ export abstract class AbstractDeviceList implements DeviceList {
 let recorderBackend: AudioRecorderBacked;
 
 export function getRecorderBackend() : AudioRecorderBacked {
-    if(typeof recorderBackend === "undefined")
+    if(typeof recorderBackend === "undefined") {
         throw tr("the recorder backend hasn't been set yet");
+    }
 
     return recorderBackend;
 }
 
 export function setRecorderBackend(instance: AudioRecorderBacked) {
-    if(typeof recorderBackend !== "undefined")
+    if(typeof recorderBackend !== "undefined") {
         throw tr("a recorder backend has already been initialized");
+    }
 
     recorderBackend = instance;
 }
