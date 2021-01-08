@@ -4,7 +4,6 @@ import {LogCategory} from "../../log";
 import * as loader from "tc-loader";
 import {createModal} from "../../ui/elements/Modal";
 import {ConnectionProfile, defaultConnectProfile, findConnectProfile, availableConnectProfiles} from "../../profiles/ConnectionProfile";
-import {KeyCode} from "../../PPTListener";
 import * as i18nc from "../../i18n/country";
 import {spawnSettingsModal} from "../../ui/modal/ModalSettings";
 import {server_connections} from "tc-shared/ConnectionManager";

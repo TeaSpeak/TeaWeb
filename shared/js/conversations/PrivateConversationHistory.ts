@@ -206,8 +206,9 @@ async function doOpenDatabase(forceUpgrade: boolean) {
 
 function doInitializeUser(uniqueId: string, database: IDBDatabase) {
     const storeId = clientUniqueId2StoreName(uniqueId);
-    if(database.objectStoreNames.contains(storeId))
+    if(database.objectStoreNames.contains(storeId)) {
         return;
+    }
 
     const store = database.createObjectStore(storeId, { keyPath: "databaseId", autoIncrement: true });
 

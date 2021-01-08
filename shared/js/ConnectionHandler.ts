@@ -40,6 +40,7 @@ import {SelectedClientInfo} from "./SelectedClientInfo";
 import {SideBarManager} from "tc-shared/SideBarManager";
 import {ServerEventLog} from "tc-shared/connectionlog/ServerEventLog";
 import {PlaylistManager} from "tc-shared/music/PlaylistManager";
+import {connectionHistory} from "tc-shared/connectionlog/History";
 
 export enum InputHardwareState {
     MISSING,
@@ -138,6 +139,7 @@ export class ConnectionHandler {
 
     connection_state: ConnectionState = ConnectionState.UNCONNECTED;
     serverConnection: AbstractServerConnection;
+    currentConnectId: number; /* Id used for the connection history */
 
     fileManager: FileManager;
 
@@ -263,7 +265,7 @@ export class ConnectionHandler {
         this.autoReconnectAttempt = parameters.auto_reconnect_attempt || false;
         this.handleDisconnect(DisconnectReason.REQUESTED);
 
-        let server_address: ServerAddress = {
+        let resolvedAddress: ServerAddress = {
             host: "",
             port: -1
         };
@@ -271,22 +273,22 @@ export class ConnectionHandler {
             let _v6_end = addr.indexOf(']');
             let idx = addr.lastIndexOf(':');
             if(idx != -1 && idx > _v6_end) {
-                server_address.port = parseInt(addr.substr(idx + 1));
-                server_address.host = addr.substr(0, idx);
+                resolvedAddress.port = parseInt(addr.substr(idx + 1));
+                resolvedAddress.host = addr.substr(0, idx);
             } else {
-                server_address.host = addr;
-                server_address.port = 9987;
+                resolvedAddress.host = addr;
+                resolvedAddress.port = 9987;
             }
         }
-        logInfo(LogCategory.CLIENT, tr("Start connection to %s:%d"), server_address.host, server_address.port);
+        logInfo(LogCategory.CLIENT, tr("Start connection to %s:%d"), resolvedAddress.host, resolvedAddress.port);
         this.log.log("connection.begin", {
             address: {
-                server_hostname: server_address.host,
-                server_port: server_address.port
+                server_hostname: resolvedAddress.host,
+                server_port: resolvedAddress.port
             },
             client_nickname: parameters.nickname
         });
-        this.channelTree.initialiseHead(addr, server_address);
+        this.channelTree.initialiseHead(addr, resolvedAddress);
 
         if(parameters.password && !parameters.password.hashed){
             try {
@@ -302,28 +304,28 @@ export class ConnectionHandler {
         }
         if(parameters.password) {
             connection_log.update_address_password({
-                hostname: server_address.host,
-                port: server_address.port
+                hostname: resolvedAddress.host,
+                port: resolvedAddress.port
             }, parameters.password.password);
         }
 
-        const original_address = {host: server_address.host, port: server_address.port};
-        if(server_address.host === "localhost") {
-            server_address.host = "127.0.0.1";
-        } else if(dns.supported() && !server_address.host.match(Regex.IP_V4) && !server_address.host.match(Regex.IP_V6)) {
+        const originalAddress = {host: resolvedAddress.host, port: resolvedAddress.port};
+        if(resolvedAddress.host === "localhost") {
+            resolvedAddress.host = "127.0.0.1";
+        } else if(dns.supported() && !resolvedAddress.host.match(Regex.IP_V4) && !resolvedAddress.host.match(Regex.IP_V6)) {
             const id = ++this.connectAttemptId;
             this.log.log("connection.hostname.resolve", {});
             try {
-                const resolved = await dns.resolve_address(server_address, { timeout: 5000 }) || {} as any;
+                const resolved = await dns.resolve_address(resolvedAddress, { timeout: 5000 }) || {} as any;
                 if(id != this.connectAttemptId)
                     return; /* we're old */
 
-                server_address.host = typeof(resolved.target_ip) === "string" ? resolved.target_ip : server_address.host;
-                server_address.port = typeof(resolved.target_port) === "number" ? resolved.target_port : server_address.port;
+                resolvedAddress.host = typeof(resolved.target_ip) === "string" ? resolved.target_ip : resolvedAddress.host;
+                resolvedAddress.port = typeof(resolved.target_port) === "number" ? resolved.target_port : resolvedAddress.port;
                 this.log.log("connection.hostname.resolved", {
                     address: {
-                        server_port: server_address.port,
-                        server_hostname: server_address.host
+                        server_port: resolvedAddress.port,
+                        server_hostname: resolvedAddress.host
                     }
                 });
             } catch(error) {
@@ -334,14 +336,22 @@ export class ConnectionHandler {
             }
         }
 
-        await this.serverConnection.connect(server_address, new HandshakeHandler(profile, parameters));
+        if(user_action) {
+            this.currentConnectId = await connectionHistory.logConnectionAttempt(originalAddress.host, originalAddress.port);
+        } else {
+            this.currentConnectId = -1;
+        }
+
+        await this.serverConnection.connect(resolvedAddress, new HandshakeHandler(profile, parameters));
         setTimeout(() => {
             const connected = this.serverConnection.connected();
             if(user_action && connected) {
                 connection_log.log_connect({
-                    hostname: original_address.host,
-                    port: original_address.port
+                    hostname: originalAddress.host,
+                    port: originalAddress.port
                 });
+
+                /* TODO: Log successful connect/update the server unique id: attemptId */
             }
         }, 50);
     }
@@ -491,6 +501,7 @@ export class ConnectionHandler {
     private _certificate_modal: Modal;
     handleDisconnect(type: DisconnectReason, data: any = {}) {
         this.connectAttemptId++;
+        this.currentConnectId = -1;
 
         let auto_reconnect = false;
         switch (type) {

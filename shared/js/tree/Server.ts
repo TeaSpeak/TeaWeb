@@ -124,7 +124,7 @@ export interface ServerAddress {
 
 export interface ServerEvents extends ChannelTreeEntryEvents {
     notify_properties_updated: {
-        updated_properties: {[Key in keyof ServerProperties]: ServerProperties[Key]};
+        updated_properties: Partial<ServerProperties>;
         server_properties: ServerProperties
     }
 }
@@ -267,24 +267,26 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
             log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Server update properties", entries);
         }
 
-        let  update_bookmarks = false;
+        let updatedProperties: Partial<ServerProperties> = {};
+        let update_bookmarks = false;
         for(let variable of variables) {
-            JSON.map_field_to(this.properties, variable.value, variable.key);
+            if(!JSON.map_field_to(this.properties, variable.value, variable.key)) {
+                /* The value has not been updated */
+                continue;
+            }
 
+            updatedProperties[variable.key] = variable.value;
             if(variable.key == "virtualserver_icon_id") {
-                /* For more detail lookup client::updateVariables and client_icon_id!
-                 * ATTENTION: This is required!
-                 */
                 this.properties.virtualserver_icon_id = variable.value as any >>> 0;
                 update_bookmarks = true;
             }
         }
-        {
-            let properties = {};
-            for(const property of variables)
-                properties[property.key] = this.properties[property.key];
-            this.events.fire("notify_properties_updated", { updated_properties: properties as any, server_properties: this.properties });
-        }
+
+        this.events.fire("notify_properties_updated", {
+            updated_properties: updatedProperties,
+            server_properties: this.properties
+        });
+
         if(update_bookmarks) {
             const bmarks = bookmarks.bookmarks_flat()
                 .filter(e => e.server_properties.server_address === this.remote_address.host && e.server_properties.server_port == this.remote_address.port)
