@@ -168,8 +168,10 @@ class JavascriptInput implements AbstractInput {
             } catch {}
         }
 
-        if(this.state != InputState.PAUSED) {
-            return;
+        if(this.state === InputState.RECORDING) {
+            return true;
+        } else if(this.state === InputState.INITIALIZING) {
+            return InputStartError.EBUSY;
         }
 
         /* do it async since if the doStart fails on the first iteration, we're setting the start promise, after it's getting cleared */
