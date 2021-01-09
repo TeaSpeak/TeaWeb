@@ -337,7 +337,7 @@ export class ConnectionHandler {
         }
 
         if(user_action) {
-            this.currentConnectId = await connectionHistory.logConnectionAttempt(originalAddress.host, originalAddress.port);
+            this.currentConnectId = await connectionHistory.logConnectionAttempt(originalAddress.host + (originalAddress.port === 9987 ? "" : (":" + originalAddress.port)));
         } else {
             this.currentConnectId = -1;
         }
@@ -921,7 +921,7 @@ export class ConnectionHandler {
                     errorMessage = tr("lookup the console");
                 }
 
-                logWarn(LogCategory.VOICE, tr("Failed to start microphone input (%s)."), error);
+                logWarn(LogCategory.VOICE, tr("Failed to start microphone input (%o)."), error);
                 if(notifyError) {
                     this.lastRecordErrorPopup = Date.now();
                     createErrorModal(tr("Failed to start recording"), tra("Microphone start failed.\nError: {}", errorMessage)).open();

@@ -1,5 +1,6 @@
 import * as React from "react";
 import {ReactElement} from "react";
+import {joinClassList} from "tc-shared/ui/react-elements/Helper";
 
 const cssStyle = require("./InputField.scss");
 
@@ -128,6 +129,8 @@ export interface FlatInputFieldProperties {
     labelClassName?: string;
     labelFloatingClassName?: string;
 
+    type?: "text" | "password" | "number";
+
     help?: string | React.ReactElement;
     helpClassName?: string;
 
@@ -173,19 +176,20 @@ export class FlatInputField extends React.Component<FlatInputFieldProperties, Fl
         const disabled = typeof this.state.disabled === "boolean" ? this.state.disabled : typeof this.props.disabled === "boolean" ? this.props.disabled : false;
         const readOnly = typeof this.state.editable === "boolean" ? !this.state.editable : typeof this.props.editable === "boolean" ? !this.props.editable : false;
         const placeholder = typeof this.state.placeholder === "string" ? this.state.placeholder : typeof this.props.placeholder === "string" ? this.props.placeholder : undefined;
+        const filled = this.state.filled || this.props.value?.length > 0;
 
         return (
-            <div className={cssStyle.containerFlat + " " + (this.state.isInvalid ? cssStyle.isInvalid : "") + " " + (this.state.filled ? cssStyle.isFilled : "") + " " + (this.props.className || "")}>
+            <div className={cssStyle.containerFlat + " " + (this.state.isInvalid ? cssStyle.isInvalid : "") + " " + (filled ? cssStyle.isFilled : "") + " " + (this.props.className || "")}>
                 {this.props.label ?
                     <label className={
                         cssStyle["type-" + (this.props.labelType || "static")] + " " +
                         (this.props.labelClassName || "") + " " +
-                        (this.props.labelFloatingClassName && this.state.filled ? this.props.labelFloatingClassName : "")}>{this.props.label}</label> : undefined}
+                        (this.props.labelFloatingClassName && filled ? this.props.labelFloatingClassName : "")}>{this.props.label}</label> : undefined}
                 <input
                     defaultValue={this.props.defaultValue}
                     value={this.props.value}
 
-                    type={"text"}
+                    type={this.props.type || "text"}
                     ref={this.refInput}
                     readOnly={readOnly}
                     disabled={disabled}
@@ -228,6 +232,61 @@ export class FlatInputField extends React.Component<FlatInputFieldProperties, Fl
     }
 }
 
+export const ControlledSelect = (props: {
+    type?: "flat" | "boxed",
+    className?: string,
+
+    value: string,
+    placeHolder?: string,
+
+    label?: React.ReactNode,
+    labelClassName?: string,
+
+    help?: React.ReactNode,
+    helpClassName?: string,
+
+    invalid?: React.ReactNode,
+    invalidClassName?: string,
+
+    disabled?: boolean,
+
+    onFocus?: () => void,
+    onBlur?: () => void,
+
+    onChange?: (event?: React.ChangeEvent<HTMLSelectElement>) => void,
+
+    children: React.ReactElement<HTMLOptionElement | HTMLOptGroupElement> | React.ReactElement<HTMLOptionElement | HTMLOptGroupElement>[]
+}) => {
+    const disabled = typeof props.disabled === "boolean" ? props.disabled : false;
+
+    return (
+        <div
+            className={joinClassList(
+                props.type === "boxed" ? cssStyle.containerBoxed : cssStyle.containerFlat,
+                cssStyle["size-normal"],
+                props.invalid ? cssStyle.isInvalid : undefined,
+                props.className,
+                cssStyle.noLeftIcon, cssStyle.noRightIcon
+            )}
+        >
+            {!props.label ? undefined :
+                <label className={joinClassList(cssStyle["type-static"], props.labelClassName)} key={"label"}>{props.label}</label>
+            }
+            <select
+                value={props.value}
+                disabled={disabled}
+
+                onFocus={props.onFocus}
+                onBlur={props.onBlur}
+                onChange={props.onChange}
+            >
+                {props.children}
+            </select>
+            {props.invalid ? <small className={joinClassList(cssStyle.invalidFeedback, props.invalidClassName)} key={"invalid"}>{props.invalid}</small> : undefined}
+            {props.help ? <small className={joinClassList(cssStyle.invalidFeedback, props.help)} key={"help"}>{props.help}</small> : undefined}
+        </div>
+    );
+}
 
 export interface SelectProperties {
     type?: "flat" | "boxed";

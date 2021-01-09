@@ -42,11 +42,14 @@ class BodyRenderer {
     }
 
     setInstance(instance: AbstractModal) {
-        if(this.modalInstance)
+        if(this.modalInstance) {
             ReactDOM.unmountComponentAtNode(this.htmlContainer);
+        }
+
         this.modalInstance = instance;
-        if(this.modalInstance)
+        if(this.modalInstance) {
             ReactDOM.render(<>{this.modalInstance.renderBody()}</>, this.htmlContainer);
+        }
     }
 }
 

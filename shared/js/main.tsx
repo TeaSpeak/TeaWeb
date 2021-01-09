@@ -52,6 +52,8 @@ import {defaultConnectProfile, findConnectProfile} from "tc-shared/profiles/Conn
 import {server_connections} from "tc-shared/ConnectionManager";
 import ContextMenuEvent = JQuery.ContextMenuEvent;
 
+import "./ui/modal/connect/Controller";
+
 let preventWelcomeUI = false;
 async function initialize() {
     try {

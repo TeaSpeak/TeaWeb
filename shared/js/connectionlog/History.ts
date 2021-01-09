@@ -6,16 +6,15 @@ import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {ServerProperties} from "tc-shared/tree/Server";
 
-const kUnknownServerUniqueId = "unknown";
+export const kUnknownHistoryServerUniqueId = "unknown";
 
 export type ConnectionHistoryEntry = {
     id: number,
     timestamp: number,
 
-    targetHost: string,
-    targetPort: number,
-
-    serverUniqueId: string | typeof kUnknownServerUniqueId
+    /* Target address how it has been given by the user */
+    targetAddress: string;
+    serverUniqueId: string | typeof kUnknownHistoryServerUniqueId
 };
 
 export type ConnectionHistoryServerEntry = {
@@ -29,6 +28,8 @@ export type ConnectionHistoryServerEntry = {
 export type ConnectionHistoryServerInfo = {
     name: string,
     iconId: number,
+
+    country: string,
 
     /* These properties are only available upon server variable retrieval */
     clientsOnline: number | -1,
@@ -49,28 +50,42 @@ export class ConnectionHistory {
             switch (event.oldVersion) {
                 case 0:
                     if(!database.objectStoreNames.contains("attempt-history")) {
+                        /*
+                            Schema:
+                            {
+                                timestamp: number,
+                                targetAddress: string,
+                                serverUniqueId: string | typeof kUnknownHistoryServerUniqueId
+                            }
+                         */
                         const store = database.createObjectStore("attempt-history", { keyPath: "id", autoIncrement: true });
                         store.createIndex("timestamp", "timestamp", { unique: false });
-                        store.createIndex("targetHost", "targetHost", { unique: false });
-                        store.createIndex("targetPort", "targetPort", { unique: false });
+                        store.createIndex("targetAddress", "targetAddress", { unique: false });
                         store.createIndex("serverUniqueId", "serverUniqueId", { unique: false });
                     }
 
                     if(!database.objectStoreNames.contains("server-info")) {
-                        const store = database.createObjectStore("server-info", { keyPath: "uniqueId" });
-                        store.createIndex("firstConnectTimestamp", "firstConnectTimestamp", { unique: false });
-                        store.createIndex("firstConnectId", "firstConnectId", { unique: false });
+                        database.createObjectStore("server-info", { keyPath: "uniqueId" });
+                        /*
+                            Schema:
+                            {
+                                firstConnectTimestamp: number,
+                                firstConnectId: number,
 
-                        store.createIndex("lastConnectTimestamp", "lastConnectTimestamp", { unique: false });
-                        store.createIndex("lastConnectId", "lastConnectId", { unique: false });
+                                lastConnectTimestamp: number,
+                                lastConnectId: number,
 
-                        store.createIndex("name", "name", { unique: false });
-                        store.createIndex("iconId", "iconId", { unique: false });
+                                name: string,
+                                iconId: number,
 
-                        store.createIndex("clientsOnline", "clientsOnline", { unique: false });
-                        store.createIndex("clientsMax", "clientsMax", { unique: false });
+                                country: string,
 
-                        store.createIndex("passwordProtected", "passwordProtected", { unique: false });
+                                clientsOnline: number | -1,
+                                clientsMax: number | -1,
+
+                                passwordProtected: boolean
+                            }
+                         */
                     }
 
                     /* fall through wanted */
@@ -96,11 +111,10 @@ export class ConnectionHistory {
 
     /**
      * Register a new connection attempt.
-     * @param targetHost
-     * @param targetPort
+     * @param targetAddress
      * @return Returns a unique connect attempt identifier id which could be later used to set the unique server id.
      */
-    async logConnectionAttempt(targetHost: string, targetPort: number) : Promise<number> {
+    async logConnectionAttempt(targetAddress: string) : Promise<number> {
         if(!this.database) {
             return;
         }
@@ -111,9 +125,8 @@ export class ConnectionHistory {
         const id = await new Promise<IDBValidKey>((resolve, reject) => {
             const insert = store.put({
                 timestamp: Date.now(),
-                targetHost: targetHost,
-                targetPort: targetPort,
-                serverUniqueId: kUnknownServerUniqueId
+                targetAddress: targetAddress,
+                serverUniqueId: kUnknownHistoryServerUniqueId
             });
 
             insert.onsuccess = () => resolve(insert.result);
@@ -128,8 +141,8 @@ export class ConnectionHistory {
         return id;
     }
 
-    private async resolveDatabaseServerInfo(serverUniqueId: string) : Promise<IDBCursorWithValue | null> {
-        const transaction = this.database.transaction(["server-info"], "readwrite");
+    private async resolveDatabaseServerInfo(serverUniqueId: string, mode: IDBTransactionMode) : Promise<IDBCursorWithValue | null> {
+        const transaction = this.database.transaction(["server-info"], mode);
         const store = transaction.objectStore("server-info");
 
         return await new Promise<IDBCursorWithValue | null>((resolve, reject) => {
@@ -140,7 +153,7 @@ export class ConnectionHistory {
     }
 
     private async updateDatabaseServerInfo(serverUniqueId: string, updateCallback: (databaseValue) => void) {
-        let entry = await this.resolveDatabaseServerInfo(serverUniqueId);
+        let entry = await this.resolveDatabaseServerInfo(serverUniqueId, "readwrite");
 
         if(entry) {
             const newValue = Object.assign({}, entry.value);
@@ -209,7 +222,7 @@ export class ConnectionHistory {
             if(entry.value.serverUniqueId === serverUniqueId) {
                 logWarn(LogCategory.GENERAL, tr("updateConnectionServerUniqueId(...) has been called twice"));
                 return;
-            } else if(entry.value.serverUniqueId !== kUnknownServerUniqueId) {
+            } else if(entry.value.serverUniqueId !== kUnknownHistoryServerUniqueId) {
                 throw tr("connection attempt has already a server unique id set");
             }
 
@@ -263,7 +276,7 @@ export class ConnectionHistory {
             return undefined;
         }
 
-        let entry = await this.resolveDatabaseServerInfo(serverUniqueId);
+        let entry = await this.resolveDatabaseServerInfo(serverUniqueId, "readonly");
         if(!entry) {
             return;
         }
@@ -278,6 +291,8 @@ export class ConnectionHistory {
 
             name: value.name,
             iconId: value.iconId,
+
+            country: value.country,
 
             clientsOnline: value.clientsOnline,
             clientsMax: value.clientsMax,
@@ -297,7 +312,7 @@ export class ConnectionHistory {
 
         const result: ConnectionHistoryEntry[] = [];
 
-        const transaction = this.database.transaction(["attempt-history"], "readwrite");
+        const transaction = this.database.transaction(["attempt-history"], "readonly");
         const store = transaction.objectStore("attempt-history");
 
         const cursor = store.index("timestamp").openCursor(undefined, "prev");
@@ -315,21 +330,17 @@ export class ConnectionHistory {
                 id: entry.value.id,
                 timestamp: entry.value.timestamp,
 
-                targetHost: entry.value.targetHost,
-                targetPort: entry.value.targetPort,
-
+                targetAddress: entry.value.targetAddress,
                 serverUniqueId: entry.value.serverUniqueId,
             } as ConnectionHistoryEntry;
             entry.continue();
 
-            if(parsedEntry.serverUniqueId !== kUnknownServerUniqueId) {
+            if(parsedEntry.serverUniqueId !== kUnknownHistoryServerUniqueId) {
                 if(result.findIndex(entry => entry.serverUniqueId === parsedEntry.serverUniqueId) !== -1) {
                     continue;
                 }
             } else {
-                if(result.findIndex(entry => {
-                    return entry.targetHost === parsedEntry.targetHost && entry.targetPort === parsedEntry.targetPort;
-                }) !== -1) {
+                if(result.findIndex(entry => entry.targetAddress === parsedEntry.targetAddress) !== -1) {
                     continue;
                 }
             }
@@ -339,6 +350,22 @@ export class ConnectionHistory {
 
         return result;
     }
+
+    async countConnectCount(target: string, targetType: "address" | "server-unique-id") : Promise<number> {
+        if(!this.database) {
+            return -1;
+        }
+
+        const transaction = this.database.transaction(["attempt-history"], "readonly");
+        const store = transaction.objectStore("attempt-history");
+
+
+        const count = store.index(targetType === "server-unique-id" ? "serverUniqueId" : "targetAddress").count(target);
+        return await new Promise<number>((resolve, reject) => {
+            count.onsuccess = () => resolve(count.result);
+            count.onerror = () => reject(count.error);
+        });
+    }
 }
 
 const kConnectServerInfoUpdatePropertyKeys: (keyof ServerProperties)[] = [
@@ -347,7 +374,8 @@ const kConnectServerInfoUpdatePropertyKeys: (keyof ServerProperties)[] = [
     "virtualserver_flag_password",
     "virtualserver_maxclients",
     "virtualserver_clientsonline",
-    "virtualserver_flag_password"
+    "virtualserver_flag_password",
+    "virtualserver_country_code"
 ];
 
 class ConnectionHistoryUpdateListener {
@@ -393,6 +421,8 @@ class ConnectionHistoryUpdateListener {
                     this.history.updateServerInfo(event.server_properties.virtualserver_unique_identifier, {
                         name: event.server_properties.virtualserver_name,
                         iconId: event.server_properties.virtualserver_icon_id,
+
+                        country: event.server_properties.virtualserver_country_code,
 
                         clientsMax: event.server_properties.virtualserver_maxclients,
                         clientsOnline: event.server_properties.virtualserver_clientsonline,

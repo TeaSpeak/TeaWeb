@@ -1,6 +1,7 @@
 import * as React from "react";
 import {AbstractModal} from "tc-shared/ui/react-elements/ModalDefinitions";
 import {ClientIcon} from "svg-sprites/client-icons";
+import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
 
 const cssStyle = require("./Modal.scss");
 
@@ -23,7 +24,11 @@ export const InternalModalContentRenderer = (props: {
                 <div className={cssStyle.icon}>
                     <img src="img/favicon/teacup.png"  alt={tr("Modal - Icon")} />
                 </div>
-                <div className={cssStyle.title + " " + props.headerTitleClass}>{props.modal.title()}</div>
+                <div className={cssStyle.title + " " + props.headerTitleClass}>
+                    <ErrorBoundary>
+                        {props.modal.title()}
+                    </ErrorBoundary>
+                </div>
                 {!props.onMinimize ? undefined : (
                     <div className={cssStyle.button} onClick={props.onMinimize}>
                         <div className={"icon_em " + ClientIcon.MinimizeButton} />
@@ -36,7 +41,9 @@ export const InternalModalContentRenderer = (props: {
                 )}
             </div>
             <div className={cssStyle.body + " " + props.bodyClass}>
-                {props.modal.renderBody()}
+                <ErrorBoundary>
+                    {props.modal.renderBody()}
+                </ErrorBoundary>
             </div>
         </div>
     );
