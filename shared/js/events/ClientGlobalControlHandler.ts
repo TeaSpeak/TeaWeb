@@ -172,7 +172,7 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
 
     event_registry.on("action_open_window_connect", event => {
         spawnConnectModalNew({
-            connectInANewTab: true
+            connectInANewTab: event.newTab
         });
     });
 
