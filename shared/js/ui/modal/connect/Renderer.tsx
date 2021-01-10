@@ -24,7 +24,7 @@ const ConnectDefaultNewTabContext = React.createContext<boolean>(false);
 
 const cssStyle = require("./Renderer.scss");
 
-function useProperty<T extends keyof ConnectProperties, V>(key: T, defaultValue: V) : ConnectProperties[T] | V {
+function useProperty<T extends keyof ConnectProperties, V>(key: T, defaultValue: V) : [ConnectProperties[T] | V, (value: ConnectProperties[T]) => void] {
     const events = useContext(EventContext);
     const [ value, setValue ] = useState<ConnectProperties[T] | V>(() => {
         events.fire("query_property", { property: key });
@@ -32,7 +32,7 @@ function useProperty<T extends keyof ConnectProperties, V>(key: T, defaultValue:
     });
     events.reactUse("notify_property", event => event.property === key && setValue(event.value as any));
 
-    return value;
+    return [value, setValue];
 }
 
 function usePropertyValid<T extends keyof PropertyValidState>(key: T, defaultValue: PropertyValidState[T]) : PropertyValidState[T] {
@@ -48,7 +48,7 @@ function usePropertyValid<T extends keyof PropertyValidState>(key: T, defaultVal
 
 const InputServerAddress = () => {
     const events = useContext(EventContext);
-    const address = useProperty("address", undefined);
+    const [address, setAddress] = useProperty("address", undefined);
     const valid = usePropertyValid("address", true);
     const newTab = useContext(ConnectDefaultNewTabContext);
 
@@ -64,16 +64,25 @@ const InputServerAddress = () => {
 
             invalid={valid ? undefined : <Translatable>Please enter a valid server address</Translatable>}
 
-            onInput={value => events.fire("action_set_address", { address: value, validate: false })}
-            onBlur={() => events.fire("action_set_address", { address: address?.currentAddress, validate: true })}
-            onEnter={() => events.fire("action_connect", { newTab })}
+            onInput={value => {
+                setAddress({ currentAddress: value, defaultAddress: address.defaultAddress });
+                events.fire("action_set_address", { address: value, validate: true, updateUi: false });
+            }}
+            onBlur={() => {
+                events.fire("action_set_address", { address: address?.currentAddress, validate: true, updateUi: true });
+            }}
+            onEnter={() => {
+                /* Setting the address just to ensure */
+                events.fire("action_set_address", { address: address?.currentAddress, validate: true, updateUi: true });
+                events.fire("action_connect", { newTab });
+            }}
         />
     )
 }
 
 const InputServerPassword = () => {
     const events = useContext(EventContext);
-    const password = useProperty("password", undefined);
+    const [password, setPassword] = useProperty("password", undefined);
 
     return (
         <FlatInputField
@@ -83,14 +92,22 @@ const InputServerPassword = () => {
             type={"password"}
             label={<Translatable>Server password</Translatable>}
             labelType={password?.hashed ? "static" : "floating"}
-            onInput={value => events.fire("action_set_password", { password: value, hashed: false })}
+            onInput={value => {
+                setPassword({ password: value, hashed: false });
+                events.fire("action_set_password", { password: value, hashed: false, updateUi: false });
+            }}
+            onBlur={() => {
+                if(password) {
+                    events.fire("action_set_password", { password: password.password, hashed: password.hashed, updateUi: true });
+                }
+            }}
         />
     )
 }
 
 const InputNickname = () => {
     const events = useContext(EventContext);
-    const nickname = useProperty("nickname", undefined);
+    const [nickname, setNickname] = useProperty("nickname", undefined);
     const valid = usePropertyValid("nickname", true);
 
     return (
@@ -101,15 +118,18 @@ const InputNickname = () => {
             label={<Translatable>Nickname</Translatable>}
             labelType={"static"}
             invalid={valid ? undefined : <Translatable>Nickname too short or too long</Translatable>}
-            onInput={value => events.fire("action_set_nickname", { nickname: value, validate: false })}
-            onBlur={() => events.fire("action_set_nickname", { nickname: nickname?.currentNickname, validate: true })}
+            onInput={value => {
+                setNickname({ currentNickname: value, defaultNickname: nickname.defaultNickname });
+                events.fire("action_set_nickname", { nickname: value, validate: true, updateUi: false });
+            }}
+            onBlur={() => events.fire("action_set_nickname", { nickname: nickname?.currentNickname, validate: true, updateUi: true })}
         />
     );
 }
 
 const InputProfile = () => {
     const events = useContext(EventContext);
-    const profiles = useProperty("profiles", undefined);
+    const [profiles] = useProperty("profiles", undefined);
     const selectedProfile = profiles?.profiles.find(profile => profile.id === profiles?.selected);
 
     let invalidMarker;
@@ -343,7 +363,7 @@ const HistoryTableEntry = React.memo((props: { entry: ConnectHistoryEntry, selec
 });
 
 const HistoryTable = () => {
-    const history = useProperty("history", undefined);
+    const [history] = useProperty("history", undefined);
     let body;
 
     if(history) {
