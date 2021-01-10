@@ -1,8 +1,7 @@
 import "broadcastchannel-polyfill";
-import * as log from "../log";
-import {LogCategory} from "../log";
+import {LogCategory, logDebug, logError, logWarn} from "../log";
 import {ConnectHandler} from "../ipc/ConnectHandler";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 export interface BroadcastMessage {
     timestamp: number;
@@ -67,7 +66,7 @@ export abstract class BasicIPCHandler {
 
         if(message.receiver === BasicIPCHandler.BROADCAST_UNIQUE_ID) {
             if(message.type == "process-query") {
-                log.debug(LogCategory.IPC, tr("Received a device query from %s."), message.sender);
+                logDebug(LogCategory.IPC, tr("Received a device query from %s."), message.sender);
                 this.sendMessage("process-query-response", {
                     request_query_id: (<ProcessQuery>message.data).query_id,
                     request_timestamp: (<ProcessQuery>message.data).timestamp,
@@ -83,14 +82,14 @@ export abstract class BasicIPCHandler {
                 if(this._query_results[response.request_query_id])
                     this._query_results[response.request_query_id].push(response);
                 else {
-                    log.warn(LogCategory.IPC, tr("Received a query response for an unknown request."));
+                    logWarn(LogCategory.IPC, tr("Received a query response for an unknown request."));
                 }
                 return;
             }
             else if(message.type == "certificate-accept-callback") {
                 const data: CertificateAcceptCallback = message.data;
                 if(!this._cert_accept_callbacks[data.request_id]) {
-                    log.warn(LogCategory.IPC, tr("Received certificate accept callback for an unknown request ID."));
+                    logWarn(LogCategory.IPC, tr("Received certificate accept callback for an unknown request ID."));
                     return;
                 }
                 this._cert_accept_callbacks[data.request_id]();
@@ -103,7 +102,7 @@ export abstract class BasicIPCHandler {
             }
             else if(message.type == "certificate-accept-succeeded") {
                 if(!this._cert_accept_succeeded[message.sender]) {
-                    log.warn(LogCategory.IPC, tr("Received certificate accept succeeded, but haven't a callback."));
+                    logWarn(LogCategory.IPC, tr("Received certificate accept succeeded, but haven't a callback."));
                     return;
                 }
                 this._cert_accept_succeeded[message.sender]();
@@ -230,7 +229,7 @@ class BroadcastChannelIPC extends BasicIPCHandler {
 
     private onMessage(event: MessageEvent) {
         if(typeof(event.data) !== "string") {
-            log.warn(LogCategory.IPC, tr("Received message with an invalid type (%s): %o"), typeof(event.data), event.data);
+            logWarn(LogCategory.IPC, tr("Received message with an invalid type (%s): %o"), typeof(event.data), event.data);
             return;
         }
 
@@ -238,14 +237,14 @@ class BroadcastChannelIPC extends BasicIPCHandler {
         try {
             message = JSON.parse(event.data);
         } catch(error) {
-            log.error(LogCategory.IPC, tr("Received an invalid encoded message: %o"), event.data);
+            logError(LogCategory.IPC, tr("Received an invalid encoded message: %o"), event.data);
             return;
         }
         super.handleMessage(message);
     }
 
     private onError(event: MessageEvent) {
-        log.warn(LogCategory.IPC, tr("Received error: %o"), event);
+        logWarn(LogCategory.IPC, tr("Received error: %o"), event);
     }
 
     sendMessage(type: string, data: any, target?: string) {

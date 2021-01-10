@@ -93,7 +93,6 @@ class IPCContextMenu implements ContextMenuFactory {
                 if(!entry.uniqueId) { break; }
 
                 entry.click = () => {
-                    console.error("Click: %O", this.remoteContextMenuSupplierId);
                     this.remoteContextMenuSupplierId && this.ipcChannel.sendMessage("notify-entry-click", { id: entry.uniqueId }, this.remoteContextMenuSupplierId);
                 };
                 break;
@@ -137,7 +136,6 @@ class IPCContextMenu implements ContextMenuFactory {
             /* close out context menu if we've any */
             reactContextMenuInstance.closeContextMenu();
         } else if(message.type === "notify-entry-click") {
-            console.error("Entry click: %o", message.data.id);
             const callback = this.menuCallbacks[message.data.id];
             if(!callback) { return; }
             callback();

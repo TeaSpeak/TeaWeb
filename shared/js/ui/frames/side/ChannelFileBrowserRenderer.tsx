@@ -1,13 +1,14 @@
+import * as React from "react";
 import {useState} from "react";
 import {Registry} from "tc-shared/events";
 import {ChannelFileBrowserUiEvents} from "tc-shared/ui/frames/side/ChannelFileBrowserDefinitions";
 import {channelPathPrefix, FileBrowserEvents} from "tc-shared/ui/modal/transfer/FileDefinitions";
 import {
     FileBrowserClassContext,
-    FileBrowserRenderer, FileBrowserRendererClasses,
+    FileBrowserRenderer,
+    FileBrowserRendererClasses,
     NavigationBar
 } from "tc-shared/ui/modal/transfer/FileBrowserRenderer";
-import * as React from "react";
 
 const cssStyle = require("./ChannelFileBrowserRenderer.scss");
 

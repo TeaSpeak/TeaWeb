@@ -3,7 +3,8 @@ import {
     Bookmark,
     ControlBarEvents,
     ControlBarMode,
-    HostButtonInfo, VideoDeviceInfo,
+    HostButtonInfo,
+    VideoDeviceInfo,
     VideoState
 } from "tc-shared/ui/frames/control-bar/Definitions";
 import {server_connections} from "tc-shared/ConnectionManager";
@@ -23,7 +24,7 @@ import {
 import {LogCategory, logWarn} from "tc-shared/log";
 import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import {VideoBroadcastType, VideoConnectionStatus} from "tc-shared/connection/VideoConnection";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 import {getVideoDriver} from "tc-shared/video/VideoSource";
 import {kLocalBroadcastChannels} from "tc-shared/ui/frames/video/Definitions";
 
@@ -412,7 +413,6 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
     });
     events.on("action_toggle_video", event => {
         if(infoHandler.getCurrentHandler()) {
-            /* TODO: Just update the stream and don't "rebroadcast" */
             global_client_actions.fire("action_toggle_video_broadcasting", {
                 connection: infoHandler.getCurrentHandler(),
                 broadcastType: event.broadcastType,

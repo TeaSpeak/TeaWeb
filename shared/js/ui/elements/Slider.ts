@@ -66,7 +66,6 @@ export function sliderfy(slider: JQuery, options?: SliderOptions) : Slider {
 
         tool.hide();
         slider.removeClass("active");
-        console.log("Events removed");
     };
 
     const mouse_listener = (event: MouseEvent | TouchEvent) => {

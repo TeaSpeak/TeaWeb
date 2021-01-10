@@ -13,7 +13,7 @@ import {
     TransferTargetType
 } from "tc-shared/file/Transfer";
 import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import {LogCategory, logError} from "tc-shared/log";
 import { tr } from "tc-shared/i18n/localize";
 
 TransferProvider.setProvider(new class extends TransferProvider {
@@ -40,7 +40,7 @@ TransferProvider.setProvider(new class extends TransferProvider {
             /* let the server notify us when the transfer has been finished */
             response.catch(error => {
                 if(typeof error !== "string")
-                    log.error(LogCategory.FILE_TRANSFER, tr("Failed to upload object via HTTPS connection: %o"), error);
+                    logError(LogCategory.FILE_TRANSFER, tr("Failed to upload object via HTTPS connection: %o"), error);
 
                 transfer.setFailed({
                     error: "connection",
@@ -50,7 +50,7 @@ TransferProvider.setProvider(new class extends TransferProvider {
             });
         } catch (error) {
             if(typeof error !== "string")
-                log.error(LogCategory.FILE_TRANSFER, tr("Failed to initialize transfer source: %o"), error);
+                logError(LogCategory.FILE_TRANSFER, tr("Failed to initialize transfer source: %o"), error);
 
             transfer.setFailed({
                 error: "io",
@@ -85,7 +85,7 @@ TransferProvider.setProvider(new class extends TransferProvider {
                 }
             }).catch(error => {
                 if(typeof error !== "string")
-                    log.error(LogCategory.FILE_TRANSFER, tr("Failed to download file to response object: %o"), error);
+                    logError(LogCategory.FILE_TRANSFER, tr("Failed to download file to response object: %o"), error);
 
                 transfer.setFailed({
                     error: "connection",
@@ -95,7 +95,7 @@ TransferProvider.setProvider(new class extends TransferProvider {
             });
         } catch (error) {
             if(typeof error !== "string")
-                log.error(LogCategory.FILE_TRANSFER, tr("Failed to initialize transfer target: %o"), error);
+                logError(LogCategory.FILE_TRANSFER, tr("Failed to initialize transfer target: %o"), error);
 
             transfer.setFailed({
                 error: "io",
@@ -190,7 +190,7 @@ async function performHTTPSTransfer(transfer: FileTransfer, body: FormData | und
                     transfer.setTransferState(FileTransferState.FINISHED);
             }).catch(error => {
                 if(typeof error !== "string")
-                    log.error(LogCategory.FILE_TRANSFER, tr("Failed to transfer data throw a HTTPS request: %o"), error);
+                    logError(LogCategory.FILE_TRANSFER, tr("Failed to transfer data throw a HTTPS request: %o"), error);
                 transfer.setFailed({
                     error: "io",
                     reason: "buffer-transfer-failed",

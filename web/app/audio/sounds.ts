@@ -1,4 +1,4 @@
-import {LogCategory} from "tc-shared/log";
+import {LogCategory, logError, logWarn} from "tc-shared/log";
 import * as log from "tc-shared/log";
 import {SoundFile} from "tc-shared/sound/Sounds";
 import * as aplayer from "./player";
@@ -57,17 +57,17 @@ function get_song_entry(file: SoundFile) : Promise<SoundEntry> {
                 try {
                     entry.cached = await context.decodeAudioData(xhr.response);
                 } catch(error) {
-                    log.error(LogCategory.AUDIO, error);
+                    logError(LogCategory.AUDIO, error);
                     throw tr("failed to decode audio data");
                 }
             } catch(error) {
-                log.error(LogCategory.AUDIO, tr("Failed to load audio file %s. Error: %o"), file, error);
+                logError(LogCategory.AUDIO, tr("Failed to load audio file %s. Error: %o"), file, error);
                 throw error_already_handled;
             }
         } else {
             if(!warned) {
                 warned = true;
-                log.warn(LogCategory.AUDIO, tr("Your browser does not support decodeAudioData! Using a node to playback! This bypasses the audio output and volume regulation!"));
+                logWarn(LogCategory.AUDIO, tr("Your browser does not support decodeAudioData! Using a node to playback! This bypasses the audio output and volume regulation!"));
             }
             const container = $("#sounds");
             const node = $.spawn("audio").attr("src", file.path);
@@ -82,7 +82,7 @@ function get_song_entry(file: SoundFile) : Promise<SoundEntry> {
 export async function play_sound(file: SoundFile) : Promise<void> {
     const entry = get_song_entry(file);
     if(!entry) {
-        log.warn(LogCategory.AUDIO, tr("Failed to replay sound %s because it could not be resolved."), file.path);
+        logWarn(LogCategory.AUDIO, tr("Failed to replay sound %s because it could not be resolved."), file.path);
         return;
     }
 
@@ -120,11 +120,11 @@ export async function play_sound(file: SoundFile) : Promise<void> {
         }
     } catch(error) {
         if(error === error_already_handled) {
-            log.warn(LogCategory.AUDIO, tr("Failed to replay sound %s because of an error while loading (see log above)."), file.path);
+            logWarn(LogCategory.AUDIO, tr("Failed to replay sound %s because of an error while loading (see log above)."), file.path);
             return;
         }
 
-        log.warn(LogCategory.AUDIO, tr("Failed to replay sound %s: %o"), file.path, error);
+        logWarn(LogCategory.AUDIO, tr("Failed to replay sound %s: %o"), file.path, error);
         return;
     }
 }

@@ -6,7 +6,8 @@ import {
     ControlBarEvents,
     ControlBarMode,
     HostButtonInfo,
-    MicrophoneState, VideoDeviceInfo,
+    MicrophoneState,
+    VideoDeviceInfo,
     VideoState
 } from "tc-shared/ui/frames/control-bar/Definitions";
 import * as React from "react";

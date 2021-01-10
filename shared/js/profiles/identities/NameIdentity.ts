@@ -4,8 +4,7 @@ import {
     IdentitifyType,
     Identity
 } from "../../profiles/Identity";
-import * as log from "../../log";
-import {LogCategory} from "../../log";
+import {LogCategory, logError} from "../../log";
 import {CommandResult} from "../../connection/ServerConnectionDeclaration";
 import {AbstractServerConnection} from "../../connection/ConnectionBase";
 import {HandshakeIdentityHandler} from "../../connection/HandshakeHandler";
@@ -30,7 +29,7 @@ class NameHandshakeHandler extends AbstractHandshakeIdentityHandler {
             authentication_method: this.identity.type(),
             client_nickname: this.identity.name()
         }).catch(error => {
-            log.error(LogCategory.IDENTITIES, tr("Failed to initialize name based handshake. Error: %o"), error);
+            logError(LogCategory.IDENTITIES, tr("Failed to initialize name based handshake. Error: %o"), error);
             if(error instanceof CommandResult)
                 error = error.extra_message || error.message;
             this.trigger_fail("failed to execute begin (" + error + ")");

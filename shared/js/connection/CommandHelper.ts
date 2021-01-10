@@ -1,6 +1,5 @@
 import {ServerCommand, SingleCommandHandler} from "../connection/ConnectionBase";
-import * as log from "../log";
-import {LogCategory} from "../log";
+import {LogCategory, logError} from "../log";
 import {
     ClientNameInfo,
     CommandResult,
@@ -221,7 +220,7 @@ export class CommandHelper extends AbstractCommandHandler {
                                 needed_power_song_remove: parseInt(entry["needed_power_song_remove"])
                             });
                         } catch(error) {
-                            log.error(LogCategory.NETWORKING, tr("Failed to parse playlist entry: %o"), error);
+                            logError(LogCategory.NETWORKING, tr("Failed to parse playlist entry: %o"), error);
                         }
                     }
 
@@ -281,7 +280,7 @@ export class CommandHelper extends AbstractCommandHandler {
                                     song_metadata: entry["song_metadata"]
                                 });
                             } catch(error) {
-                                log.error(LogCategory.NETWORKING, tr("Failed to parse playlist song entry: %o"), error);
+                                logError(LogCategory.NETWORKING, tr("Failed to parse playlist song entry: %o"), error);
                             }
                         }
 
@@ -319,7 +318,7 @@ export class CommandHelper extends AbstractCommandHandler {
                     const json = command.arguments;
 
                     if(json[0]["playlist_id"] != playlist_id) {
-                        log.error(LogCategory.NETWORKING, tr("Received invalid notification for playlist clients"));
+                        logError(LogCategory.NETWORKING, tr("Received invalid notification for playlist clients"));
                         return false;
                     }
 
@@ -355,7 +354,7 @@ export class CommandHelper extends AbstractCommandHandler {
                 command: "notifyservergroupclientlist",
                 function: command => {
                     if (command.arguments[0]["sgid"] != group_id) {
-                        log.error(LogCategory.NETWORKING, tr("Received invalid notification for server group client list"));
+                        logError(LogCategory.NETWORKING, tr("Received invalid notification for server group client list"));
                         return false;
                     }
 
@@ -372,7 +371,7 @@ export class CommandHelper extends AbstractCommandHandler {
                         }
                         resolve(result);
                     } catch (error) {
-                        log.error(LogCategory.NETWORKING, tr("Failed to parse server group client list: %o"), error);
+                        logError(LogCategory.NETWORKING, tr("Failed to parse server group client list: %o"), error);
                         reject("failed to parse info");
                     }
 
@@ -394,7 +393,7 @@ export class CommandHelper extends AbstractCommandHandler {
                 function: command => {
                     const json = command.arguments[0];
                     if (json["playlist_id"] != playlist_id) {
-                        log.error(LogCategory.NETWORKING, tr("Received invalid notification for playlist info"));
+                        logError(LogCategory.NETWORKING, tr("Received invalid notification for playlist info"));
                         return;
                     }
 
@@ -416,7 +415,7 @@ export class CommandHelper extends AbstractCommandHandler {
                             playlist_max_songs: parseInt(json["playlist_max_songs"])
                         });
                     } catch (error) {
-                        log.error(LogCategory.NETWORKING, tr("Failed to parse playlist info: %o"), error);
+                        logError(LogCategory.NETWORKING, tr("Failed to parse playlist info: %o"), error);
                         reject("failed to parse info");
                     }
 

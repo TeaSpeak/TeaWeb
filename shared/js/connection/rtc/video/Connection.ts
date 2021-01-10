@@ -1,8 +1,8 @@
 import {
-    VideoBroadcastConfig,
     LocalVideoBroadcast,
     LocalVideoBroadcastEvents,
     LocalVideoBroadcastState,
+    VideoBroadcastConfig,
     VideoBroadcastStatistics,
     VideoBroadcastType,
     VideoClient,
@@ -13,7 +13,7 @@ import {
 import {Registry} from "tc-shared/events";
 import {VideoSource} from "tc-shared/video/VideoSource";
 import {RTCBroadcastableTrackType, RTCConnection, RTCConnectionEvents, RTPConnectionState} from "../Connection";
-import {LogCategory, logError, logWarn} from "tc-shared/log";
+import {LogCategory, logError, logTrace, logWarn} from "tc-shared/log";
 import {Settings, settings} from "tc-shared/settings";
 import {RtpVideoClient} from "./VideoClient";
 import {tr} from "tc-shared/i18n/localize";
@@ -77,7 +77,7 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
         let sourceRef = source.ref();
         try {
             if(this.currentSource !== source) {
-                console.error("Source changed");
+                logTrace(LogCategory.VIDEO, tr("Video broadcast %s source changed"), this.type);
                 const videoTracks = source.getStream().getVideoTracks();
                 if(videoTracks.length === 0) {
                     throw tr("missing video stream track");
@@ -110,7 +110,7 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
 
                 this.setCurrentSource(sourceRef);
             } else if(!_.isEqual(this.currentConfig, constraints)) {
-                console.error("Constraints changed");
+                logTrace(LogCategory.VIDEO, tr("Video broadcast %s constraints changed"), this.type);
                 await this.applyConstraints(constraints);
             }
         } finally {

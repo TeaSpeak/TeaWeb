@@ -1,6 +1,6 @@
 import * as ppt from "tc-backend/ppt";
 import * as log from "./log";
-import {LogCategory, logWarn} from "./log";
+import {LogCategory, logError, logWarn} from "./log";
 import {KeyDescriptor, KeyHook} from "./PPTListener";
 import {Settings, settings} from "./settings";
 import {server_connections} from "tc-shared/ConnectionManager";
@@ -137,7 +137,7 @@ export function initializeKeyControl() {
     try {
         cfg = JSON.parse(settings.getValue(Settings.KEY_KEYCONTROL_DATA));
     } catch (e) {
-        log.error(LogCategory.GENERAL, tr("Failed to parse old key control data."));
+        logError(LogCategory.GENERAL, tr("Failed to parse old key control data."));
         cfg = {};
     }
 

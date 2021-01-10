@@ -1,7 +1,7 @@
 import {Registry} from "tc-shared/events";
 import {ChannelBarMode, ChannelBarModeData, ChannelBarUiEvents} from "tc-shared/ui/frames/side/ChannelBarDefinitions";
-import {useContext, useState} from "react";
 import * as React from "react";
+import {useContext, useState} from "react";
 import {ConversationPanel} from "tc-shared/ui/frames/side/AbstractConversationRenderer";
 import {useDependentState} from "tc-shared/ui/react-elements/Helper";
 import {ChannelDescriptionRenderer} from "tc-shared/ui/frames/side/ChannelDescriptionRenderer";

@@ -7,7 +7,10 @@ import {
     ChannelVideoEvents,
     ChannelVideoInfo,
     ChannelVideoStreamState,
-    kLocalVideoId, makeVideoAutoplay, VideoStreamState, VideoSubscribeInfo
+    kLocalVideoId,
+    makeVideoAutoplay,
+    VideoStreamState,
+    VideoSubscribeInfo
 } from "tc-shared/ui/frames/video/Definitions";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";

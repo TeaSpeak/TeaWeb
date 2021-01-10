@@ -162,14 +162,13 @@ import {CommandResult, QueryListEntry} from "../../connection/ServerConnectionDe
 import {SingleCommandHandler} from "../../connection/ConnectionBase";
 import {copyToClipboard} from "../../utils/helpers";
 import {spawnYesNo} from "../../ui/modal/ModalYesNo";
-import * as log from "../../log";
-import {LogCategory} from "../../log";
+import {LogCategory, logError} from "../../log";
 import PermissionType from "../../permission/PermissionType";
 import {ConnectionHandler} from "../../ConnectionHandler";
 import {spawnQueryCreate, spawnQueryCreated} from "../../ui/modal/ModalQuery";
 import {formatMessage} from "../../ui/frames/chat";
 import {ErrorCode} from "../../connection/ErrorCode";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 export function spawnQueryManage(client: ConnectionHandler) {
     let modal: Modal;
@@ -265,12 +264,12 @@ export function spawnQueryManage(client: ConnectionHandler) {
                             set_error(tr("No permissions"));
                             return;
                         }
-                        log.error(LogCategory.CLIENT, tr("Failed to request the query list: %o"), error);
+                        logError(LogCategory.CLIENT, tr("Failed to request the query list: %o"), error);
                         set_error(tr("Failed to request list"));
                     });
                 }).catch(error => {
                     button_update.prop('disabled', false);
-                    log.error(LogCategory.CLIENT, tr("Failed to get own virtual server id: %o"), error);
+                    logError(LogCategory.CLIENT, tr("Failed to get own virtual server id: %o"), error);
                     set_error(tr("Failed to query server id"));
                 });
             };

@@ -1,9 +1,6 @@
-import {
-    AbstractServerConnection,
-    ServerCommand,
-    SingleCommandHandler
-} from "../connection/ConnectionBase";
+import {AbstractServerConnection, ServerCommand, SingleCommandHandler} from "../connection/ConnectionBase";
 import {tr} from "../i18n/localize";
+import {LogCategory, logError, logWarn} from "tc-shared/log";
 
 export abstract class AbstractCommandHandler {
     readonly connection: AbstractServerConnection;
@@ -67,7 +64,7 @@ export abstract class AbstractCommandHandlerBoss {
 
     unregister_handler(handler: AbstractCommandHandler) {
         if(!handler.volatile_handler_boss && handler.handler_boss !== this) {
-            console.warn(tr("Tried to unregister command handler which does not belong to the handler boss"));
+            logWarn(LogCategory.NETWORKING, tr("Tried to unregister command handler which does not belong to the handler boss"));
             return;
         }
 
@@ -98,7 +95,7 @@ export abstract class AbstractCommandHandlerBoss {
                 if(!flag_consumed || handler.ignore_consumed)
                     flag_consumed = handler.handle_command(command) || flag_consumed;
             } catch(error) {
-                console.error(tr("Failed to invoke command handler. Invocation results in an exception: %o"), error);
+                logError(LogCategory.NETWORKING, tr("Failed to invoke command handler. Invocation results in an exception: %o"), error);
             }
         }
 
@@ -108,7 +105,7 @@ export abstract class AbstractCommandHandlerBoss {
                 try {
                     flag_consumed = handler(command, flag_consumed) || flag_consumed;
                 } catch(error) {
-                    console.error(tr("Failed to invoke command handler. Invocation results in an exception: %o"), error);
+                    logError(LogCategory.NETWORKING, tr("Failed to invoke command handler. Invocation results in an exception: %o"), error);
                 }
             }
         }
@@ -122,7 +119,7 @@ export abstract class AbstractCommandHandlerBoss {
                 if(handler.function(command))
                     this.single_command_handler.remove(handler);
             } catch(error) {
-                console.error(tr("Failed to invoke single command handler. Invocation results in an exception: %o"), error);
+                logError(LogCategory.NETWORKING, tr("Failed to invoke single command handler. Invocation results in an exception: %o"), error);
             }
         }
 

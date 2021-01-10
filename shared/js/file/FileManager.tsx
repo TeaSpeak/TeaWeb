@@ -1,5 +1,4 @@
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {ServerCommand} from "tc-shared/connection/ConnectionBase";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
@@ -172,7 +171,7 @@ class FileCommandHandler extends AbstractCommandHandler {
 
         const transfer = this.manager.findTransfer(parseInt(data["clientftfid"]));
         if(!transfer) {
-            log.warn(LogCategory.FILE_TRANSFER, tr("Received file transfer start notification for unknown transfer (%s)"), data["clientftfid"]);
+            logWarn(LogCategory.FILE_TRANSFER, tr("Received file transfer start notification for unknown transfer (%s)"), data["clientftfid"]);
             return;
         }
 
@@ -213,7 +212,7 @@ class FileCommandHandler extends AbstractCommandHandler {
 
         const transfer = this.manager.findTransfer(parseInt(data["clientftfid"])) as FileUploadTransfer;
         if(!transfer) {
-            log.warn(LogCategory.FILE_TRANSFER, tr("Received file transfer start notification for unknown transfer (%s)"), data["clientftfid"]);
+            logWarn(LogCategory.FILE_TRANSFER, tr("Received file transfer start notification for unknown transfer (%s)"), data["clientftfid"]);
             return;
         }
 
@@ -243,7 +242,7 @@ class FileCommandHandler extends AbstractCommandHandler {
 
         const transfer = this.manager.findTransfer(parseInt(data["clientftfid"])) as FileUploadTransfer;
         if(!transfer) {
-            log.warn(LogCategory.FILE_TRANSFER, tr("Received file transfer start notification for unknown transfer (%s)"), data["clientftfid"]);
+            logWarn(LogCategory.FILE_TRANSFER, tr("Received file transfer start notification for unknown transfer (%s)"), data["clientftfid"]);
             return;
         }
 
@@ -258,7 +257,7 @@ class FileCommandHandler extends AbstractCommandHandler {
 
         const transfer = this.manager.findTransfer(parseInt(data["clientftfid"])) as FileUploadTransfer;
         if(!transfer) {
-            log.warn(LogCategory.FILE_TRANSFER, tr("Received file transfer progress notification for unknown transfer (%s)"), data["clientftfid"]);
+            logWarn(LogCategory.FILE_TRANSFER, tr("Received file transfer progress notification for unknown transfer (%s)"), data["clientftfid"]);
             return;
         }
 
@@ -283,7 +282,7 @@ class FileCommandHandler extends AbstractCommandHandler {
 
         const transfer = this.manager.findTransfer(parseInt(data["clientftfid"])) as FileUploadTransfer;
         if(!transfer) {
-            log.warn(LogCategory.FILE_TRANSFER, tr("Received file transfer status notification for unknown transfer (%s)"), data["clientftfid"]);
+            logWarn(LogCategory.FILE_TRANSFER, tr("Received file transfer status notification for unknown transfer (%s)"), data["clientftfid"]);
             return;
         }
 
@@ -308,7 +307,7 @@ class FileCommandHandler extends AbstractCommandHandler {
     private handleNotifyFileList(data: any[]) {
         const query = this.pendingFileLists.find(e => e.path === data[0]["path"] && (e.channelId === parseInt(data[0]["cid"]) || e.channelId === undefined && !data[0]["cid"]));
         if(!query) {
-            log.warn(LogCategory.FILE_TRANSFER, tr("Received file list for not request path: %s (channel %s)"), data[0]["path"], data[0]["cid"]);
+            logWarn(LogCategory.FILE_TRANSFER, tr("Received file list for not request path: %s (channel %s)"), data[0]["path"], data[0]["cid"]);
             return;
         }
 
@@ -326,7 +325,7 @@ class FileCommandHandler extends AbstractCommandHandler {
     private handleNotifyFileListFinished(data) {
         const query = this.pendingFileLists.find(e => e.path === data[0]["path"] && (e.channelId === parseInt(data[0]["cid"]) || e.channelId === undefined && !data[0]["cid"]));
         if(!query) {
-            log.warn(LogCategory.FILE_TRANSFER, tr("Received file list finish for not request path: %s (channel %s)"), data[0]["path"], data[0]["cid"]);
+            logWarn(LogCategory.FILE_TRANSFER, tr("Received file list finish for not request path: %s (channel %s)"), data[0]["path"], data[0]["cid"]);
             return;
         }
 
@@ -336,11 +335,11 @@ class FileCommandHandler extends AbstractCommandHandler {
     private handleNotifyFileInfo(data: any[]) {
         const query = this.pendingFileInfos.find(e => e.returnCode === data[0]["return_code"]);
         if(!query) {
-            log.warn(LogCategory.FILE_TRANSFER, tr("Received file info for unknown return code: %s"), data[0]["return_code"]);
+            logWarn(LogCategory.FILE_TRANSFER, tr("Received file info for unknown return code: %s"), data[0]["return_code"]);
             return;
         }
         if(query.finished) {
-            log.warn(LogCategory.FILE_TRANSFER, tr("Received file info for already finished return code: %s"), data[0]["return_code"]);
+            logWarn(LogCategory.FILE_TRANSFER, tr("Received file info for already finished return code: %s"), data[0]["return_code"]);
             return;
         }
 
@@ -358,7 +357,7 @@ class FileCommandHandler extends AbstractCommandHandler {
     private handleNotifyFileInfoFinished(data) {
         const query = this.pendingFileInfos.find(e => e.returnCode === data[0]["return_code"]);
         if(!query) {
-            log.warn(LogCategory.FILE_TRANSFER, tr("Received file info for unknown return code: %s"), data[0]["return_code"]);
+            logWarn(LogCategory.FILE_TRANSFER, tr("Received file info for unknown return code: %s"), data[0]["return_code"]);
             return;
         }
 
@@ -656,7 +655,7 @@ export class FileManager {
 
                     const index = this.registeredTransfers_.findIndex(e => e.transfer === transfer);
                     if(index === -1) {
-                        log.error(LogCategory.FILE_TRANSFER, tr("Missing file transfer in file transfer list!"));
+                        logError(LogCategory.FILE_TRANSFER, tr("Missing file transfer in file transfer list!"));
                         return;
                     } else {
                         this.registeredTransfers_.splice(index, 1);
@@ -680,7 +679,7 @@ export class FileManager {
                             transferErrorMessage: transfer.currentErrorMessage(),
                         });
                     } else {
-                        log.warn(LogCategory.FILE_TRANSFER, tra("File transfer finished callback called with invalid transfer state ({0})", FileTransferState[state]));
+                        logWarn(LogCategory.FILE_TRANSFER, tra("File transfer finished callback called with invalid transfer state ({0})", FileTransferState[state]));
                     }
                 };
 

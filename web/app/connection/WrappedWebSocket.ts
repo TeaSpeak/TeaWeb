@@ -1,5 +1,5 @@
 import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import {LogCategory, logWarn} from "tc-shared/log";
 import {ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
 import { tr } from "tc-shared/i18n/localize";
 
@@ -149,7 +149,7 @@ export class WrappedWebSocket {
                     }
                 }
             } catch (error) {
-                log.warn(LogCategory.NETWORKING, tr("Failed to close the web socket to %s: %o"), this.socketUrl(), error);
+                logWarn(LogCategory.NETWORKING, tr("Failed to close the web socket to %s: %o"), this.socketUrl(), error);
             }
 
             this.socket = undefined;

@@ -14,8 +14,7 @@ import {Regex} from "../../ui/modal/ModalConnect";
 import {availableConnectProfiles} from "../../profiles/ConnectionProfile";
 import {spawnYesNo} from "../../ui/modal/ModalYesNo";
 import {Settings, settings} from "../../settings";
-import * as log from "../../log";
-import {LogCategory} from "../../log";
+import {LogCategory, logWarn} from "../../log";
 import * as i18nc from "../../i18n/country";
 import {formatMessage} from "../../ui/frames/chat";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
@@ -128,7 +127,7 @@ export function spawnBookmarkModal() {
 
                     let profile = input_connect_profile.find("option[value='" + entry.connect_profile + "']");
                     if (profile.length == 0) {
-                        log.warn(LogCategory.GENERAL, tr("Failed to find bookmark profile %s. Displaying default one."), entry.connect_profile);
+                        logWarn(LogCategory.GENERAL, tr("Failed to find bookmark profile %s. Displaying default one."), entry.connect_profile);
                         profile = input_connect_profile.find("option[value=default]");
                     }
                     profile.prop("selected", true);
@@ -365,7 +364,7 @@ export function spawnBookmarkModal() {
                         (selected_bookmark as Bookmark).connect_profile = id;
                         save_bookmark(selected_bookmark);
                     } else {
-                        log.warn(LogCategory.GENERAL, tr("Failed to change connect profile for profile %s to %s"), selected_bookmark.unique_id, id);
+                        logWarn(LogCategory.GENERAL, tr("Failed to change connect profile for profile %s to %s"), selected_bookmark.unique_id, id);
                     }
                 })
             }

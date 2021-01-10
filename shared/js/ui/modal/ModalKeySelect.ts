@@ -1,7 +1,7 @@
 import {createModal} from "../../ui/elements/Modal";
 import {EventType, key_description, KeyEvent} from "../../PPTListener";
 import * as ppt from "tc-backend/ppt";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 export function spawnKeySelect(callback: (key?: KeyEvent) => void) {
     let modal = createModal({

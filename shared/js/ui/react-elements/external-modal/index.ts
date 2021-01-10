@@ -1,4 +1,4 @@
-import {Registry, RegistryMap} from "../../../events";
+import {RegistryMap} from "../../../events";
 import "./Controller";
 import {ModalController} from "../../../ui/react-elements/ModalDefinitions"; /* we've to reference him here, else the client would not */
 

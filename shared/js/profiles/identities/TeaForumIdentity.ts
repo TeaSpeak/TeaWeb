@@ -4,8 +4,7 @@ import {
     IdentitifyType,
     Identity
 } from "../../profiles/Identity";
-import * as log from "../../log";
-import {LogCategory} from "../../log";
+import {LogCategory, logError} from "../../log";
 import {CommandResult} from "../../connection/ServerConnectionDeclaration";
 import {AbstractServerConnection} from "../../connection/ConnectionBase";
 import {HandshakeIdentityHandler} from "../../connection/HandshakeHandler";
@@ -30,7 +29,7 @@ class TeaForumHandshakeHandler extends AbstractHandshakeIdentityHandler {
             authentication_method: this.identity.type(),
             data: this.identity.data().data_json()
         }).catch(error => {
-            log.error(LogCategory.IDENTITIES, tr("Failed to initialize TeaForum based handshake. Error: %o"), error);
+            logError(LogCategory.IDENTITIES, tr("Failed to initialize TeaForum based handshake. Error: %o"), error);
 
             if(error instanceof CommandResult)
                 error = error.extra_message || error.message;
@@ -43,7 +42,7 @@ class TeaForumHandshakeHandler extends AbstractHandshakeIdentityHandler {
         this.connection.send_command("handshakeindentityproof", {
             proof: this.identity.data().data_sign()
         }).catch(error => {
-            log.error(LogCategory.IDENTITIES, tr("Failed to proof the identity. Error: %o"), error);
+            logError(LogCategory.IDENTITIES, tr("Failed to proof the identity. Error: %o"), error);
 
             if(error instanceof CommandResult)
                 error = error.extra_message || error.message;

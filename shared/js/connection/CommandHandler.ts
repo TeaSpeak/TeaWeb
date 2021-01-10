@@ -1,5 +1,4 @@
-import * as log from "../log";
-import {LogCategory, logError, logWarn} from "../log";
+import {LogCategory, logError, logInfo, logWarn} from "../log";
 import {AbstractServerConnection, CommandOptions, ServerCommand} from "../connection/ConnectionBase";
 import {Sound} from "../sound/Sounds";
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
@@ -125,7 +124,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 } else if(typeof(ex) === "string") {
                     this.connection_handler.log.log("connection.command.error", {error: ex});
                 } else {
-                    log.error(LogCategory.NETWORKING, tr("Invalid promise result type: %s. Result: %o"), typeof (ex), ex);
+                    logError(LogCategory.NETWORKING, tr("Invalid promise result type: %s. Result: %o"), typeof (ex), ex);
                 }
             }
 
@@ -160,7 +159,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
     handleCommandResult(json) {
         let code : string = json[0]["return_code"];
         if(!code || code.length == 0) {
-            log.warn(LogCategory.NETWORKING, tr("Invalid return code! (%o)"), json);
+            logWarn(LogCategory.NETWORKING, tr("Invalid return code! (%o)"), json);
             return;
         }
         let retListeners = this.connection["_retListener"] || this.connection["returnListeners"];
@@ -278,7 +277,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
         const client = this.connection_handler.channelTree.findClient(parseInt(json["clid"]));
         if(!client) {
-            log.warn(LogCategory.NETWORKING, tr("Received client connection info for unknown client (%o)"), json["clid"]);
+            logWarn(LogCategory.NETWORKING, tr("Received client connection info for unknown client (%o)"), json["clid"]);
             return;
         }
 
@@ -410,7 +409,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
         let playSound = false;
 
-        log.info(LogCategory.NETWORKING, tr("Got %d channel deletions"), json.length);
+        logInfo(LogCategory.NETWORKING, tr("Got %d channel deletions"), json.length);
         for(let index = 0; index < json.length; index++) {
             conversations.destroyConversation(parseInt(json[index]["cid"]));
             let channel = tree.findChannel(json[index]["cid"]);
@@ -442,7 +441,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
     handleCommandChannelHide(json) {
         let tree = this.connection.client.channelTree;
 
-        log.info(LogCategory.NETWORKING, tr("Got %d channel hides"), json.length);
+        logInfo(LogCategory.NETWORKING, tr("Got %d channel hides"), json.length);
         for(let index = 0; index < json.length; index++) {
             let channel = tree.findChannel(json[index]["cid"]);
             if(!channel) {
@@ -471,6 +470,12 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         for(const entry of json) {
             /* attempt to update properties if given */
             channel =  typeof(entry["ctid"]) !== "undefined" ? tree.findChannel(parseInt(entry["ctid"])) : channel;
+            if(!channel) {
+                /* TODO: Close the connection */
+                logError(LogCategory.NETWORKING, tr("Received client enter view for invalid target channel: %o"), entry["ctid"]);
+                continue;
+            }
+
             old_channel = typeof(entry["cfid"]) !== "undefined" ? tree.findChannel(parseInt(entry["cfid"])) : old_channel;
             reasonId = typeof(entry["reasonid"]) !== "undefined" ? entry["reasonid"] : reasonId;
             reasonMsg = typeof(entry["reason_msg"]) !== "undefined" ? entry["reason_msg"] : reasonMsg;
@@ -522,7 +527,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 } else if(reasonId == ViewReasonId.VREASON_SYSTEM) {
 
                 } else {
-                    console.warn(tr("Unknown reasonid for %o"), reasonId);
+                    logWarn(LogCategory.NETWORKING, tr("Unknown reasonid for %o"), reasonId);
                 }
             }
 
@@ -560,7 +565,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             let tree = this.connection.client.channelTree;
             let client = tree.findClient(entry["clid"]);
             if(!client) {
-                log.error(LogCategory.NETWORKING, tr("Unknown client left!"));
+                logError(LogCategory.NETWORKING, tr("Unknown client left!"));
                 return 0;
             }
             if(client == this.connection.client.getClient()) {
@@ -611,7 +616,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                     } else if(reason_id == ViewReasonId.VREASON_MOVED) {
                         this.connection_handler.sound.play(Sound.USER_LEFT_MOVED);
                     } else {
-                        log.error(LogCategory.NETWORKING, tr("Unknown client left reason %d!"), reason_id);
+                        logError(LogCategory.NETWORKING, tr("Unknown client left reason %d!"), reason_id);
                     }
                 }
             }
@@ -630,21 +635,21 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         let channelFrom = tree.findChannel(parseInt(json["cfid"]));
 
         if(!client) {
-            log.error(LogCategory.NETWORKING, tr("Unknown client move (Client)!"));
+            logError(LogCategory.NETWORKING, tr("Unknown client move (Client)!"));
             return 0;
         }
 
         if(!channel_to) {
-            log.error(LogCategory.NETWORKING, tr("Unknown client move (Channel to)!"));
+            logError(LogCategory.NETWORKING, tr("Unknown client move (Channel to)!"));
             return 0;
         }
 
         if(!self) {
             if(!channelFrom) {
-                log.error(LogCategory.NETWORKING, tr("Unknown client move (Channel from)!"));
+                logError(LogCategory.NETWORKING, tr("Unknown client move (Channel from)!"));
                 channelFrom = client.currentChannel();
             } else if(channelFrom != client.currentChannel()) {
-                log.error(LogCategory.NETWORKING,
+                logError(LogCategory.NETWORKING,
                     tr("Client move from invalid source channel! Local client registered in channel %d but server send %d."),
                     client.currentChannel().channelId, channelFrom.channelId
                 );
@@ -713,7 +718,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             else if(own_channel == channelFrom)
                 this.connection_handler.sound.play(Sound.USER_LEFT_KICKED_CHANNEL);
         } else {
-            console.warn(tr("Unknown reason id %o"), json["reasonid"]);
+            logWarn(LogCategory.NETWORKING, tr("Unknown reason id %o"), json["reasonid"]);
         }
     }
 
@@ -723,19 +728,19 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         let tree = this.connection.client.channelTree;
         let channel = tree.findChannel(json["cid"]);
         if(!channel) {
-            log.error(LogCategory.NETWORKING, tr("Unknown channel move (Channel)!"));
+            logError(LogCategory.NETWORKING, tr("Unknown channel move (Channel)!"));
             return 0;
         }
 
         let prev = tree.findChannel(json["order"]);
         if(!prev && json["order"] != 0) {
-            log.error(LogCategory.NETWORKING, tr("Unknown channel move (prev)!"));
+            logError(LogCategory.NETWORKING, tr("Unknown channel move (prev)!"));
             return 0;
         }
 
         let parent = tree.findChannel(json["cpid"]);
         if(!parent && json["cpid"] != 0) {
-            log.error(LogCategory.NETWORKING, tr("Unknown channel move (parent)!"));
+            logError(LogCategory.NETWORKING, tr("Unknown channel move (parent)!"));
             return 0;
         }
 
@@ -748,7 +753,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         let tree = this.connection.client.channelTree;
         let channel = tree.findChannel(json["cid"]);
         if(!channel) {
-            log.error(LogCategory.NETWORKING, tr("Unknown channel edit (Channel)!"));
+            logError(LogCategory.NETWORKING, tr("Unknown channel edit (Channel)!"));
             return 0;
         }
 
@@ -797,7 +802,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             const targetIsOwn = targetClientEntry instanceof LocalClientEntry;
 
             if(targetIsOwn && targetClientId === invokerClientId) {
-                log.error(LogCategory.NETWORKING, tr("Received conversation message from our self. This should be impossible."), json);
+                logError(LogCategory.NETWORKING, tr("Received conversation message from our self. This should be impossible."), json);
                 return;
             }
 
@@ -899,7 +904,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         const conversationManager = this.connection_handler.getPrivateConversations();
         const conversation = conversationManager.findConversation(json["cluid"]);
         if(!conversation) {
-            log.warn(LogCategory.GENERAL, tr("Received chat close for client, but we haven't a chat open."));
+            logWarn(LogCategory.GENERAL, tr("Received chat close for client, but we haven't a chat open."));
             return;
         }
 
@@ -911,7 +916,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
         let client = this.connection.client.channelTree.findClient(json["clid"]);
         if(!client) {
-            log.error(LogCategory.NETWORKING, tr("Tried to update an non existing client"));
+            logError(LogCategory.NETWORKING, tr("Tried to update an non existing client"));
             return;
         }
 
@@ -968,7 +973,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
         let bot = this.connection.client.channelTree.find_client_by_dbid(json["bot_id"]);
         if(!bot || !(bot instanceof MusicClientEntry)) {
-            log.warn(LogCategory.CLIENT, tr("Got music player info for unknown or invalid bot! (ID: %i, Entry: %o)"), json["bot_id"], bot);
+            logWarn(LogCategory.CLIENT, tr("Got music player info for unknown or invalid bot! (ID: %i, Entry: %o)"), json["bot_id"], bot);
             return;
         }
 
@@ -1026,7 +1031,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             for(const entry of json) {
                 const channel = this.connection.client.channelTree.findChannel(parseInt(entry["cid"]));
                 if(!channel) {
-                    console.warn(tr("Received channel subscribed for not visible channel (cid: %d)"), entry['cid']);
+                    logWarn(LogCategory.NETWORKING, tr("Received channel subscribed for not visible channel (cid: %o)"), entry["cid"]);
                     continue;
                 }
 
@@ -1041,7 +1046,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         for(const entry of json) {
             const channel = this.connection.client.channelTree.findChannel(entry["cid"]);
             if(!channel) {
-                console.warn(tr("Received channel unsubscribed for not visible channel (cid: %d)"), entry['cid']);
+                logWarn(LogCategory.NETWORKING, tr("Received channel unsubscribed for not visible channel (cid: %o)"), entry["cid"]);
                 continue;
             }
 
@@ -1058,7 +1063,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         const bot_id = parseInt(json["bot_id"]);
         const client = this.connection.client.channelTree.find_client_by_dbid(bot_id);
         if(!client || !(client instanceof MusicClientEntry)) {
-            log.warn(LogCategory.CLIENT, tr("Received music bot status update for unknown bot (%d)"), bot_id);
+            logWarn(LogCategory.CLIENT, tr("Received music bot status update for unknown bot (%d)"), bot_id);
             return;
         }
 
@@ -1074,7 +1079,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         const bot_id = parseInt(json["bot_id"]);
         const client = this.connection.client.channelTree.find_client_by_dbid(bot_id);
         if(!client || !(client instanceof MusicClientEntry)) {
-            log.warn(LogCategory.CLIENT, tr("Received music bot status update for unknown bot (%d)"), bot_id);
+            logWarn(LogCategory.CLIENT, tr("Received music bot status update for unknown bot (%d)"), bot_id);
             return;
         }
 

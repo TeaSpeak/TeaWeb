@@ -1,7 +1,8 @@
 import {getIpcInstance as getIPCInstance} from "../../../ipc/BrowserIPC";
 import {AppParameters} from "../../../settings";
 import {
-    Controller2PopoutMessages, EventControllerBase,
+    Controller2PopoutMessages,
+    EventControllerBase,
     PopoutIPCMessage
 } from "../../../ui/react-elements/external-modal/IPCMessage";
 import {Registry, RegistryMap} from "../../../events";

@@ -12,10 +12,8 @@ import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import * as Moment from "moment";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 import {BoxedInputField} from "tc-shared/ui/react-elements/InputField";
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import {LogCategory, logWarn} from "tc-shared/log";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
-import React = require("react");
 import {
     FileBrowserEvents,
     FileTransferUrlMediaType,
@@ -23,6 +21,7 @@ import {
     TransferStatus
 } from "tc-shared/ui/modal/transfer/FileDefinitions";
 import {joinClassList} from "tc-shared/ui/react-elements/Helper";
+import React = require("react");
 
 export interface FileBrowserRendererClasses {
     navigation?: {
@@ -130,7 +129,7 @@ const NavigationEntry = (props: { events: Registry<FileBrowserEvents>, path: str
                         files: [...event.dataTransfer.files]
                     });
                 } else {
-                    log.warn(LogCategory.FILE_TRANSFER, tr("Received an unknown drop media type (%o)"), types);
+                    logWarn(LogCategory.FILE_TRANSFER, tr("Received an unknown drop media type (%o)"), types);
                     event.preventDefault();
                     return;
                 }
@@ -1169,7 +1168,6 @@ export class FileBrowserRenderer extends ReactComponentBase<FileListTablePropert
 
         if (types[0] === FileTransferUrlMediaType) {
             /* TODO: Test if we moved cross some boundaries */
-            console.error(event.dataTransfer.getData(FileTransferUrlMediaType));
             const fileUrls = event.dataTransfer.getData(FileTransferUrlMediaType).split("&").map(e => decodeURIComponent(e));
             for (const fileUrl of fileUrls) {
                 const name = fileUrl.split("/").last();
@@ -1189,7 +1187,7 @@ export class FileBrowserRenderer extends ReactComponentBase<FileListTablePropert
                 files: [...event.dataTransfer.files]
             });
         } else {
-            log.warn(LogCategory.FILE_TRANSFER, tr("Received an unknown drop media type (%o)"), types);
+            logWarn(LogCategory.FILE_TRANSFER, tr("Received an unknown drop media type (%o)"), types);
             event.preventDefault();
             return;
         }
@@ -1414,7 +1412,7 @@ export class FileBrowserRenderer extends ReactComponentBase<FileListTablePropert
         let entry = this.fileList.find(e => e.name === event.name);
         if (!entry) {
             if (event.mode !== "upload") {
-                log.warn(LogCategory.FILE_TRANSFER, tr("Having file download start notification for current path, but target file is unknown (%s%s)"), event.path, event.name);
+                logWarn(LogCategory.FILE_TRANSFER, tr("Having file download start notification for current path, but target file is unknown (%s%s)"), event.path, event.name);
                 return;
             }
 

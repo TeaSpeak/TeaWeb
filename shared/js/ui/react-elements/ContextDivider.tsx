@@ -1,5 +1,6 @@
 import * as React from "react";
 import {Settings, settings} from "tc-shared/settings";
+
 const cssStyle = require("./ContextDivider.scss");
 
 export interface ContextDividerProperties {

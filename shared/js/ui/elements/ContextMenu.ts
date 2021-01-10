@@ -1,5 +1,6 @@
 import {closeContextMenu, ContextMenuEntry, spawnContextMenu} from "tc-shared/ui/ContextMenu";
 import {ClientIcon} from "svg-sprites/client-icons";
+import {LogCategory, logError} from "tc-shared/log";
 
 export interface MenuEntry {
     callback?: () => void;
@@ -57,7 +58,7 @@ export interface ContextMenuProvider {
 let provider: ContextMenuProvider;
 export function spawn_context_menu(x: number, y: number, ...entries: MenuEntry[]) {
     if(!provider) {
-        console.error(tr("Failed to spawn context menu! Missing provider!"));
+        logError(LogCategory.GENERAL, tr("Failed to spawn context menu! Missing provider!"));
         return;
     }
 

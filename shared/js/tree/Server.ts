@@ -2,7 +2,7 @@ import {ChannelTree} from "./ChannelTree";
 import {Settings, settings} from "../settings";
 import * as contextmenu from "../ui/elements/ContextMenu";
 import * as log from "../log";
-import {LogCategory, LogType} from "../log";
+import {LogCategory, logInfo, LogType} from "../log";
 import {Sound} from "../sound/Sounds";
 import * as bookmarks from "../bookmarks";
 import {spawnInviteEditor} from "../ui/modal/ModalInvite";
@@ -228,8 +228,7 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
                 name: tr("Edit"),
                 callback: () => {
                     createServerModal(this, properties => {
-                        log.info(LogCategory.SERVER, tr("Changing server properties %o"), properties);
-                        console.log(tr("Changed properties: %o"), properties);
+                        logInfo(LogCategory.SERVER, tr("Changing server properties %o"), properties);
                         if (Object.keys(properties || {}).length > 0) {
                             return this.channelTree.client.serverConnection.send_command("serveredit", properties).then(() => {
                                 this.channelTree.client.sound.play(Sound.SERVER_EDITED_SELF);

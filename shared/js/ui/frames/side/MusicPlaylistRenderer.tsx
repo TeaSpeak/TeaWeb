@@ -1,11 +1,11 @@
 import * as React from "react";
+import {useContext, useRef, useState} from "react";
 import {Registry} from "tc-shared/events";
 import {
     MusicPlaylistEntryInfo,
     MusicPlaylistStatus,
     MusicPlaylistUiEvents
 } from "tc-shared/ui/frames/side/MusicPlaylistDefinitions";
-import {useContext, useRef, useState} from "react";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
@@ -236,7 +236,6 @@ const PlaylistEntry = React.memo((props: { serverUniqueId: string, playlistId: n
             onDragEnd={() => setInsertMarker("none")}
             onDrop={event => {
                 const info = parseDragIds(event.dataTransfer);
-                console.error("Info: %o - %o - %o", info, insertMarker, { playlistId: props.playlistId, serverUniqueId: props.serverUniqueId });
                 if(!info) {
                     setInsertMarker("none");
                     return;

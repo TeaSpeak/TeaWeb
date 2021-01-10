@@ -1,6 +1,5 @@
-import {LogCategory} from "../../log";
+import {LogCategory, logWarn} from "../../log";
 import {createModal, Modal} from "../../ui/elements/Modal";
-import * as log from "../../log";
 import {ClientEntry} from "../../tree/Client";
 import {GroupManager, GroupType} from "../../permission/GroupManager";
 import PermissionType from "../../permission/PermissionType";
@@ -47,12 +46,12 @@ export function createServerGroupAssignmentModal(client: ClientEntry, callback: 
                     let group_id = parseInt(entry.attr("group-id"));
                     let group = client.channelTree.client.groups.findServerGroup(group_id);
                     if(!group) {
-                        console.warn(tr("Could not resolve target group!"));
+                        logWarn(LogCategory.GENERAL, tr("Could not resolve target group!"));
                         return false;
                     }
 
                     let target = entry.prop("checked");
-                    callback([group.id], target).catch(e => { log.warn(LogCategory.GENERAL, tr("Failed to change group assignment: %o"), e)}).then(update_groups);
+                    callback([group.id], target).catch(e => { logWarn(LogCategory.GENERAL, tr("Failed to change group assignment: %o"), e)}).then(update_groups);
                 });
             });
 
@@ -68,7 +67,7 @@ export function createServerGroupAssignmentModal(client: ClientEntry, callback: 
                     group_ids.push(parseInt(entry.attr("group-id")));
                 });
 
-                callback(group_ids, false).catch(e => { log.warn(LogCategory.GENERAL, tr("Failed to remove all group assignments: %o"), e)}).then(update_groups);
+                callback(group_ids, false).catch(e => { logWarn(LogCategory.GENERAL, tr("Failed to remove all group assignments: %o"), e)}).then(update_groups);
 
             });
 

@@ -276,7 +276,6 @@ export class MusicBotController {
         let playlistId: number = 0;
         if(this.currentConnection && this.currentBot) {
             playlistId = this.currentBot.properties.client_playlist_id;
-            console.error("Client playlist id: %o", playlistId);
         }
 
         let playlist: SubscribedPlaylist;

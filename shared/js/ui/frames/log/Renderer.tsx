@@ -1,7 +1,7 @@
 import {VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {Registry} from "tc-shared/events";
-import {useContext, useEffect, useRef, useState} from "react";
 import * as React from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import {findLogEventRenderer} from "./RendererEvent";
 import {LogMessage} from "tc-shared/connectionlog/Definitions";
 import {ServerEventLogUiEvents} from "tc-shared/ui/frames/log/Definitions";

@@ -1,13 +1,12 @@
 import * as React from "react";
+import {useContext, useEffect, useState} from "react";
 import {Registry} from "tc-shared/events";
 import {
     PrivateConversationInfo,
     PrivateConversationUIEvents
 } from "tc-shared/ui/frames/side/PrivateConversationDefinitions";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {ContextDivider} from "tc-shared/ui/react-elements/ContextDivider";
 import {ConversationPanel} from "./AbstractConversationRenderer";
-import {useContext, useEffect, useState} from "react";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {AvatarRenderer} from "tc-shared/ui/react-elements/Avatar";
 import {TimestampRenderer} from "tc-shared/ui/react-elements/TimestampRenderer";

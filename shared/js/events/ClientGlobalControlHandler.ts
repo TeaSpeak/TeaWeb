@@ -55,7 +55,7 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
 
     event_registry.on("action_open_window", event => {
         const handle_import_error = error => {
-            console.error("Failed to import script: %o", error);
+            logError(LogCategory.GENERAL, tr("Failed to import script: %o"), error);
             createErrorModal(tr("Failed to load window"), tr("Failed to load the bookmark window.\nSee the console for more details.")).open();
         };
 
@@ -136,7 +136,6 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                         }).then(() => {
                             createInfoModal(tr("Use token"), tr("Toke successfully used!")).open();
                         }).catch(error => {
-                            //TODO tr
                             createErrorModal(tr("Use token"), formatMessage(tr("Failed to use token: {}"), error instanceof CommandResult ? error.message : error)).open();
                         });
                 }).open();
@@ -166,7 +165,7 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                 break;
 
             default:
-                console.warn(tr("Received open window event for an unknown window: %s"), event.window);
+                logWarn(LogCategory.GENERAL, tr("Received open window event for an unknown window: %s"), event.window);
         }
     });
 
@@ -199,7 +198,6 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                 try {
                     const broadcast = connection.getServerConnection().getVideoConnection().getLocalBroadcast(event.broadcastType);
                     if(broadcast.getState().state === "initializing" || broadcast.getState().state === "broadcasting") {
-                        console.error("Change source");
                         broadcast.changeSource(source, config).catch(error => {
                             logError(LogCategory.VIDEO, tr("Failed to change broadcast source: %o"), event.broadcastType, error);
                             if(typeof error !== "string") {
@@ -213,7 +211,6 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                             }
                         });
                     } else {
-                        console.error("Start broadcast");
                         broadcast.startBroadcasting(source, config).catch(error => {
                             logError(LogCategory.VIDEO, tr("Failed to start %s broadcasting: %o"), event.broadcastType, error);
                             if(typeof error !== "string") {

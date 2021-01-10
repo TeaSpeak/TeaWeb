@@ -1,3 +1,5 @@
+import {LogCategory, logWarn} from "tc-shared/log";
+
 declare global {
     interface JQuery<TElement = HTMLElement> {
         asTabWidget(copy?: boolean) : JQuery<TElement>;
@@ -19,17 +21,14 @@ if(typeof (customElements) !== "undefined") {
         customElements.define('x-tag', X_Tag, { extends: 'div' });
         customElements.define('x-content', X_Content, { extends: 'div' });
     } catch(error) {
-        console.warn("failed to define costum elements");
+        logWarn(LogCategory.GENERAL, tr("failed to define costume elements"));
     }
 } else {
-    console.warn(tr("Could not defied tab customElements!"));
+    logWarn(LogCategory.GENERAL, tr("Could not defied tab customElements!"));
 }
 
 export const TabFunctions = {
     tabify(template: JQuery, copy: boolean = true) : JQuery {
-        console.log("Tabify: copy=" + copy);
-        console.log(template);
-
         let tag = $.spawn("div");
         tag.addClass("tab");
 
@@ -48,7 +47,6 @@ export const TabFunctions = {
         const update_height = () => {
             const height_watcher = tag.find("> .tab-content .height-watcher");
             const entries: JQuery = tag.find("> .tab-content-invisible x-content, > .tab-content x-content");
-            console.error(entries);
             let max_height = 0;
 
             entries.each((_, _e) => {
@@ -92,8 +90,6 @@ export const TabFunctions = {
                         } else {
                             element.first().trigger('click');
                         }
-                        console.log("Next: %o", tag_header.next('.entry:visible'));
-                        console.log("prev: %o", tag_header.prev('.entry:visible'));
                     }
                 });
             }
@@ -111,7 +107,6 @@ export const TabFunctions = {
                 let entries = tag_content.find(".tab-show-partitional");
                 entries.hide();
                 const show_next = index => {
-                    console.log("Show " + index);
                     if(index >= entries.length) return;
                     entries.eq(index).show();
 
@@ -123,7 +118,6 @@ export const TabFunctions = {
                 tag_content.show();
             });
 
-            console.log(this);
             header.append(tag_header);
         });
 

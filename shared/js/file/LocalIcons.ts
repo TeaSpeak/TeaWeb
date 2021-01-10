@@ -2,7 +2,6 @@ import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {ImageCache, ImageType, imageType2MediaType, responseImageType} from "tc-shared/file/ImageCache";
 import {AbstractIconManager, kIPCIconChannel, RemoteIcon, RemoteIconState, setIconManager} from "tc-shared/file/Icons";
-import * as log from "tc-shared/log";
 import {LogCategory, logDebug, logError, logWarn} from "tc-shared/log";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {ConnectionEvents, ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
@@ -292,7 +291,7 @@ class IconManager extends AbstractIconManager {
                     throw error.extra_message || error.message;
                 }
             }
-            log.error(LogCategory.FILE_TRANSFER, tr("Could not request download for icon %d: %o"), icon.iconId, error);
+            logError(LogCategory.FILE_TRANSFER, tr("Could not request download for icon %d: %o"), icon.iconId, error);
             if(error === transfer.currentError()) {
                 throw transfer.currentErrorMessage();
             }

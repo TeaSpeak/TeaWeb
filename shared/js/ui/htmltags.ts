@@ -1,11 +1,10 @@
-import * as log from "../log";
-import {LogCategory} from "../log";
+import {LogCategory, logDebug, logWarn} from "../log";
 import {ChannelEntry} from "../tree/Channel";
 import {ClientEntry} from "../tree/Client";
 import {htmlEscape} from "../ui/frames/chat";
 import {guid} from "../crypto/uid";
 import {server_connections} from "tc-shared/ConnectionManager";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 let mouse_coordinates: {x: number, y: number} = {x: 0, y: 0};
 
@@ -47,7 +46,7 @@ function generate_client_open(properties: ClientProperties) : string {
         try {
             result = result + "client-unique-id='" + encodeURIComponent(properties.client_unique_id) + "' ";
         } catch(error) {
-            console.warn(tr("Failed to generate client tag attribute 'client-unique-id': %o"), error);
+            logWarn(LogCategory.GENERAL, tr("Failed to generate client tag attribute 'client-unique-id': %o"), error);
         }
     }
 
@@ -55,7 +54,7 @@ function generate_client_open(properties: ClientProperties) : string {
         try {
             result = result + "client-name='" + encodeURIComponent(properties.client_name) + "' ";
         } catch(error) {
-            console.warn(tr("Failed to generate client tag attribute 'client-name': %o"), error);
+            logWarn(LogCategory.GENERAL, tr("Failed to generate client tag attribute 'client-name': %o"), error);
         }
     }
 
@@ -161,7 +160,7 @@ export namespace callbacks {
         if(!client) {
 
             /* we may should open a "offline" menu? */
-            log.debug(LogCategory.GENERAL, "Failed to resolve client from html tag. Client id: %o, Client unique id: %o, Client name: %o",
+            logDebug(LogCategory.GENERAL, "Failed to resolve client from html tag. Client id: %o, Client unique id: %o, Client name: %o",
                 client_id,
                 client_unique_id,
                 decodeURIComponent(element.attr("client-name"))

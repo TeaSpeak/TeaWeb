@@ -1,5 +1,4 @@
-import * as log from "../log";
-import {LogCategory} from "../log";
+import {LogCategory, logError, logInfo, logWarn} from "../log";
 import {guid} from "../crypto/uid";
 import {Settings, StaticSettings} from "../settings";
 import * as loader from "tc-loader";
@@ -54,7 +53,7 @@ export function tr(message: string, key?: string) {
     const sloppy = fast_translate[message];
     if(sloppy) return sloppy;
 
-    log.info(LogCategory.I18N, "Translating \"%s\". Default: \"%s\"", key, message);
+    logInfo(LogCategory.I18N, "Translating \"%s\". Default: \"%s\"", key, message);
 
     let translated = message;
     for(const translation of translations) {
@@ -116,7 +115,7 @@ async function load_translation_file(url: string, path: string) : Promise<Transl
                     //TODO: Validate file
                     resolve(file);
                 } catch(error) {
-                    log.warn(LogCategory.I18N, tr("Failed to load translation file %s. Failed to parse or process json: %o"), url, error);
+                    logWarn(LogCategory.I18N, tr("Failed to load translation file %s. Failed to parse or process json: %o"), url, error);
                     reject(tr("Failed to process or parse json!"));
                 }
             },
@@ -136,10 +135,10 @@ export function load_file(url: string, path: string) : Promise<void> {
             throw "dummy test failed";
         }
 
-        log.info(LogCategory.I18N, tr("Successfully initialized up translation file from %s"), url);
+        logInfo(LogCategory.I18N, tr("Successfully initialized up translation file from %s"), url);
         translations = result.translations;
     }).catch(error => {
-        log.warn(LogCategory.I18N, tr("Failed to load translation file from \"%s\". Error: %o"), url, error);
+        logWarn(LogCategory.I18N, tr("Failed to load translation file from \"%s\". Error: %o"), url, error);
         return Promise.reject(error);
     });
 }
@@ -210,7 +209,7 @@ export namespace config {
         try {
             config = config_string ? JSON.parse(config_string) : {};
         } catch(error) {
-            log.error(LogCategory.I18N, tr("Failed to parse repository config: %o"), error);
+            logError(LogCategory.I18N, tr("Failed to parse repository config: %o"), error);
         }
         config.repositories = config.repositories || [];
         for(const repo of config.repositories)
@@ -219,10 +218,10 @@ export namespace config {
         if(config.repositories.length == 0) {
             //Add the default TeaSpeak repository
             load_repository(StaticSettings.instance.static(Settings.KEY_I18N_DEFAULT_REPOSITORY)).then(repo => {
-                log.info(LogCategory.I18N, tr("Successfully added default repository from \"%s\"."), repo.url);
+                logInfo(LogCategory.I18N, tr("Successfully added default repository from \"%s\"."), repo.url);
                 register_repository(repo);
             }).catch(error => {
-                log.warn(LogCategory.I18N, tr("Failed to add default repository. Error: %o"), error);
+                logWarn(LogCategory.I18N, tr("Failed to add default repository. Error: %o"), error);
             });
         }
 
@@ -244,7 +243,7 @@ export namespace config {
         try {
             _cached_translation_config = config_string ? JSON.parse(config_string) : {};
         } catch(error) {
-            log.error(LogCategory.I18N, tr("Failed to initialize translation config. Using default one. Error: %o"), error);
+            logError(LogCategory.I18N, tr("Failed to initialize translation config. Using default one. Error: %o"), error);
             _cached_translation_config = {} as any;
         }
         return _cached_translation_config;
@@ -284,7 +283,7 @@ export async function iterate_repositories(callback_entry: (repository: Translat
 
     for(const repository of registered_repositories()) {
         promises.push(load_repository0(repository, false).then(() => callback_entry(repository)).catch(error => {
-            log.warn(LogCategory.I18N, "Failed to fetch repository %s. error: %o", repository.url, error);
+            logWarn(LogCategory.I18N, "Failed to fetch repository %s. error: %o", repository.url, error);
         }));
     }
 
@@ -318,7 +317,7 @@ export async function initialize() {
         try {
             await load_file(cfg.current_translation_url, cfg.current_translation_path);
         } catch (error) {
-            console.error(tr("Failed to initialize selected translation: %o"), error);
+            logError(LogCategory.I18N, tr("Failed to initialize selected translation: %o"), error);
             const show_error = () => {
                 import("../ui/elements/Modal").then(Modal => {
                     Modal.createErrorModal(tr("Translation System"), tra("Failed to load current selected translation file.{:br:}File: {0}{:br:}Error: {1}{:br:}{:br:}Using default fallback translations.", cfg.current_translation_url, error)).open()

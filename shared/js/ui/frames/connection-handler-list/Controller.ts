@@ -3,7 +3,7 @@ import {ConnectionListUIEvents, HandlerConnectionState} from "tc-shared/ui/frame
 import {server_connections} from "tc-shared/ConnectionManager";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 export function initializeConnectionListController(events: Registry<ConnectionListUIEvents>) {
     let registeredHandlerEvents: {[key: string]:(() => void)[]} = {};

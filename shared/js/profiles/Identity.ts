@@ -1,7 +1,8 @@
 import {AbstractServerConnection, ServerCommand} from "../connection/ConnectionBase";
 import {HandshakeIdentityHandler} from "../connection/HandshakeHandler";
 import {AbstractCommandHandler} from "../connection/AbstractCommandHandler";
-import { tr } from "tc-shared/i18n/localize";
+import {LogCategory, logError, logWarn} from "tc-shared/log";
+import {tr} from "tc-shared/i18n/localize";
 
 export enum IdentitifyType {
     TEAFORO,
@@ -45,8 +46,7 @@ export async function decode_identity(type: IdentitifyType, data: string) : Prom
     try {
         await identity.decode(data)
     } catch(error) {
-        /* todo better error handling! */
-        console.error(error);
+        logError(LogCategory.IDENTITIES, tr("Failed to decode identity: %o"), error);
         return undefined;
     }
 
@@ -87,7 +87,7 @@ export class HandshakeCommandHandler<T extends AbstractHandshakeIdentityHandler>
         } else if(command.command == "error") {
             return false;
         } else {
-            console.warn(tr("Received unknown command while handshaking (%o)"), command);
+            logWarn(LogCategory.IDENTITIES, tr("Received unknown command while handshaking (%o)"), command);
         }
         return true;
     }

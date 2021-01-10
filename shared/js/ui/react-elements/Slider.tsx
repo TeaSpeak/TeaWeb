@@ -1,6 +1,7 @@
 import * as React from "react";
-import {Tooltip} from "tc-shared/ui/react-elements/Tooltip";
 import {ReactElement} from "react";
+import {Tooltip} from "tc-shared/ui/react-elements/Tooltip";
+
 const cssStyle = require("./Slider.scss");
 
 export interface SliderProperties {

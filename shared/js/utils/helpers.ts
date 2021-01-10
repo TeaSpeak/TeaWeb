@@ -1,5 +1,6 @@
 import * as sha1 from "../crypto/sha";
-import { tr } from "tc-shared/i18n/localize";
+import {LogCategory, logDebug} from "tc-shared/log";
+import {tr} from "tc-shared/i18n/localize";
 
 export function hashPassword(password: string) : Promise<string> {
     return new Promise<string>((resolve, reject) => {
@@ -10,7 +11,7 @@ export function hashPassword(password: string) : Promise<string> {
 }
 
 export const copyToClipboard = str => {
-    console.log(tr("Copy text to clipboard: %s"), str);
+    logDebug(LogCategory.GENERAL, tr("Copy text to clipboard: %s"), str);
 
     const element = document.createElement('textarea');
     element.value = str;

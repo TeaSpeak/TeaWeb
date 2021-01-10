@@ -1,5 +1,6 @@
 import * as React from "react";
 import {ReactElement} from "react";
+
 const cssStyle = require("./Checkbox.scss");
 
 export interface CheckboxProperties {

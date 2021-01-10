@@ -2,13 +2,13 @@ import {Registry} from "tc-shared/events";
 import {MusicPlaylistUiEvents} from "tc-shared/ui/frames/side/MusicPlaylistDefinitions";
 import {DefaultThumbnail, formatPlaytime, MusicPlaylistList} from "tc-shared/ui/frames/side/MusicPlaylistRenderer";
 import * as React from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import {
     MusicBotPlayerState,
     MusicBotPlayerTimestamp,
     MusicBotSongInfo,
     MusicBotUiEvents
 } from "tc-shared/ui/frames/side/MusicBotDefinitions";
-import {useContext, useEffect, useRef, useState} from "react";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {preview_image} from "tc-shared/ui/frames/image_preview";
 import {Slider} from "tc-shared/ui/react-elements/Slider";

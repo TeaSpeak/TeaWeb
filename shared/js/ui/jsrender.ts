@@ -1,8 +1,7 @@
 import * as loader from "tc-loader";
 import * as moment from "moment";
-import * as log from "../log";
-import {LogCategory} from "../log";
-import { tr } from "tc-shared/i18n/localize";
+import {LogCategory, logError, logTrace} from "../log";
+import {tr} from "tc-shared/i18n/localize";
 
 export function setupJSRender() : boolean {
     if(!$.views) {
@@ -28,9 +27,9 @@ export function setupJSRender() : boolean {
 
     $(".jsrender-template").each((idx, _entry) => {
         if(!$.templates(_entry.id, _entry.innerHTML)) {
-            log.error(LogCategory.GENERAL, tr("Failed to setup cache for js renderer template %s!"), _entry.id);
+            logError(LogCategory.GENERAL, tr("Failed to setup cache for js renderer template %s!"), _entry.id);
         } else
-            log.trace(LogCategory.GENERAL, tr("Successfully loaded jsrender template %s"), _entry.id);
+            logTrace(LogCategory.GENERAL, tr("Successfully loaded jsrender template %s"), _entry.id);
     });
     return true;
 }

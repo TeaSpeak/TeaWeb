@@ -1,9 +1,9 @@
 import {Registry} from "tc-shared/events";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 import * as React from "react";
+import {useEffect, useRef} from "react";
 import {ChannelTreeView, PopoutButton} from "tc-shared/ui/tree/RendererView";
 import {RDPChannel, RDPChannelTree} from "./RendererDataProvider";
-import {useEffect, useRef} from "react";
 
 const viewStyle = require("./View.scss");
 

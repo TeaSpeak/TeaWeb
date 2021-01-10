@@ -1,5 +1,5 @@
 import * as log from "../log";
-import {LogCategory} from "../log";
+import {LogCategory, logError, logInfo, logWarn} from "../log";
 import {Settings, settings} from "../settings";
 import {ConnectionHandler} from "../ConnectionHandler";
 import * as sbackend from "tc-backend/audio/sounds";
@@ -199,7 +199,7 @@ export function initialize() : Promise<void> {
                 resolve();
             },
             error: error => {
-                log.error(LogCategory.AUDIO, "error: %o", error);
+                logError(LogCategory.AUDIO, "error: %o", error);
                 reject();
             },
             timeout: 5000,
@@ -239,7 +239,7 @@ export class SoundManager {
         options = options || {};
 
         const volume = get_sound_volume(_sound, options.default_volume);
-        log.info(LogCategory.AUDIO, tr("Replaying sound %s (Sound volume: %o | Master volume %o)"), _sound, volume, master_volume);
+        logInfo(LogCategory.AUDIO, tr("Replaying sound %s (Sound volume: %o | Master volume %o)"), _sound, volume, master_volume);
 
         if(volume == 0 || master_volume == 0)
             return;
@@ -251,7 +251,7 @@ export class SoundManager {
             if(!handle) return;
 
             if(!options.ignore_overlap && (this._playing_sounds[handle.filename] > 0) && !overlap_activated()) {
-                log.info(LogCategory.AUDIO, tr("Dropping requested playback for sound %s because it would overlap."), _sound);
+                logInfo(LogCategory.AUDIO, tr("Dropping requested playback for sound %s because it would overlap."), _sound);
                 return;
             }
 
@@ -263,14 +263,14 @@ export class SoundManager {
                 if(options.callback)
                     options.callback(true);
             }).catch(error => {
-                log.warn(LogCategory.AUDIO, tr("Failed to replay sound %s: %o"), handle.filename, error);
+                logWarn(LogCategory.AUDIO, tr("Failed to replay sound %s: %o"), handle.filename, error);
                 if(options.callback)
                     options.callback(false);
             }).then(() => {
                 this._playing_sounds[handle.filename]--;
             });
         }).catch(error => {
-            log.warn(LogCategory.AUDIO, tr("Failed to replay sound %o because it could not be resolved: %o"), _sound, error);
+            logWarn(LogCategory.AUDIO, tr("Failed to replay sound %o because it could not be resolved: %o"), _sound, error);
             if(options.callback)
                 options.callback(false);
         });

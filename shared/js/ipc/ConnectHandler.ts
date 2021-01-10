@@ -1,8 +1,7 @@
-import * as log from "../log";
-import {LogCategory} from "../log";
-import {BasicIPCHandler, IPCChannel, ChannelMessage} from "../ipc/BrowserIPC";
+import {LogCategory, logDebug, logError, logWarn} from "../log";
+import {BasicIPCHandler, ChannelMessage, IPCChannel} from "../ipc/BrowserIPC";
 import {guid} from "../crypto/uid";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 export type ConnectRequestData = {
     address: string;
@@ -91,7 +90,7 @@ export class ConnectHandler {
                 } as ConnectOfferAnswer;
 
                 if(response.accepted) {
-                    log.debug(LogCategory.IPC, tr("Received new connect offer from %s: %s"), sender, data.request_id);
+                    logDebug(LogCategory.IPC, tr("Received new connect offer from %s: %s"), sender, data.request_id);
 
                     const ld = {
                         remote_handler: sender,
@@ -101,7 +100,7 @@ export class ConnectHandler {
                     };
                     this._pending_connect_offers.push(ld);
                     ld.timeout = setTimeout(() => {
-                        log.debug(LogCategory.IPC, tr("Dropping connect request %s, because we never received an execute."), ld.id);
+                        logDebug(LogCategory.IPC, tr("Dropping connect request %s, because we never received an execute."), ld.id);
                         this._pending_connect_offers.remove(ld);
                     }, 120 * 1000) as any;
                 }
@@ -112,19 +111,19 @@ export class ConnectHandler {
                 const data = message.data as ConnectOfferAnswer;
                 const request = this._pending_connects_requests.find(e => e.id === data.request_id);
                 if(!request) {
-                    log.warn(LogCategory.IPC, tr("Received connect offer answer with unknown request id (%s)."), data.request_id);
+                    logWarn(LogCategory.IPC, tr("Received connect offer answer with unknown request id (%s)."), data.request_id);
                     return;
                 }
                 if(!data.accepted) {
-                    log.debug(LogCategory.IPC, tr("Client %s rejected the connect offer (%s)."), sender, request.id);
+                    logDebug(LogCategory.IPC, tr("Client %s rejected the connect offer (%s)."), sender, request.id);
                     return;
                 }
                 if(request.remote_handler) {
-                    log.debug(LogCategory.IPC, tr("Client %s accepted the connect offer (%s), but offer has already been accepted."), sender, request.id);
+                    logDebug(LogCategory.IPC, tr("Client %s accepted the connect offer (%s), but offer has already been accepted."), sender, request.id);
                     return;
                 }
 
-                log.debug(LogCategory.IPC, tr("Client %s accepted the connect offer (%s). Request local acceptance."), sender, request.id);
+                logDebug(LogCategory.IPC, tr("Client %s accepted the connect offer (%s). Request local acceptance."), sender, request.id);
                 request.remote_handler = sender;
                 clearTimeout(request.timeout);
 
@@ -134,7 +133,7 @@ export class ConnectHandler {
                         return;
                     }
 
-                    log.debug(LogCategory.IPC, tr("Executing connect with client %s"), request.remote_handler);
+                    logDebug(LogCategory.IPC, tr("Executing connect with client %s"), request.remote_handler);
                     this.ipc_channel.sendMessage("execute", {
                         request_id: request.id
                     } as ConnectExecute, request.remote_handler);
@@ -142,7 +141,7 @@ export class ConnectHandler {
                         request.callback_failed("connect execute timeout");
                     }, 1000) as any;
                 }).catch(error => {
-                    log.error(LogCategory.IPC, tr("Local avail callback caused an error: %o"), error);
+                    logError(LogCategory.IPC, tr("Local avail callback caused an error: %o"), error);
                     request.callback_failed(tr("local avail callback caused an error"));
                 });
 
@@ -151,16 +150,16 @@ export class ConnectHandler {
                 const data = message.data as ConnectExecuted;
                 const request = this._pending_connects_requests.find(e => e.id === data.request_id);
                 if(!request) {
-                    log.warn(LogCategory.IPC, tr("Received connect executed with unknown request id (%s)."), data.request_id);
+                    logWarn(LogCategory.IPC, tr("Received connect executed with unknown request id (%s)."), data.request_id);
                     return;
                 }
 
                 if(request.remote_handler != sender) {
-                    log.warn(LogCategory.IPC, tr("Received connect executed for request %s, but from wrong client: %s (expected %s)"), data.request_id, sender, request.remote_handler);
+                    logWarn(LogCategory.IPC, tr("Received connect executed for request %s, but from wrong client: %s (expected %s)"), data.request_id, sender, request.remote_handler);
                     return;
                 }
 
-                log.debug(LogCategory.IPC, tr("Received connect executed response from client %s for request %s. Succeeded: %o (%s)"), sender, data.request_id, data.succeeded, data.message);
+                logDebug(LogCategory.IPC, tr("Received connect executed response from client %s for request %s. Succeeded: %o (%s)"), sender, data.request_id, data.succeeded, data.message);
                 clearTimeout(request.timeout);
                 if(data.succeeded)
                     request.callback_success();
@@ -171,18 +170,18 @@ export class ConnectHandler {
                 const data = message.data as ConnectExecute;
                 const request = this._pending_connect_offers.find(e => e.id === data.request_id);
                 if(!request) {
-                    log.warn(LogCategory.IPC, tr("Received connect execute with unknown request id (%s)."), data.request_id);
+                    logWarn(LogCategory.IPC, tr("Received connect execute with unknown request id (%s)."), data.request_id);
                     return;
                 }
 
                 if(request.remote_handler != sender) {
-                    log.warn(LogCategory.IPC, tr("Received connect execute for request %s, but from wrong client: %s (expected %s)"), data.request_id, sender, request.remote_handler);
+                    logWarn(LogCategory.IPC, tr("Received connect execute for request %s, but from wrong client: %s (expected %s)"), data.request_id, sender, request.remote_handler);
                     return;
                 }
                 clearTimeout(request.timeout);
                 this._pending_connect_offers.remove(request);
 
-                log.debug(LogCategory.IPC, tr("Executing connect for %s"), data.request_id);
+                logDebug(LogCategory.IPC, tr("Executing connect for %s"), data.request_id);
                 const cr = this.callback_execute(request.data);
 
                 const response = {

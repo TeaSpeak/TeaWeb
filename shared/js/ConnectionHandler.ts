@@ -4,8 +4,7 @@ import {GroupManager} from "./permission/GroupManager";
 import {ServerSettings, Settings, settings, StaticSettings} from "./settings";
 import {Sound, SoundManager} from "./sound/Sounds";
 import {ConnectionProfile} from "./profiles/ConnectionProfile";
-import * as log from "./log";
-import {LogCategory, logError, logInfo, logWarn} from "./log";
+import {LogCategory, logError, logInfo, logTrace, logWarn} from "./log";
 import {createErrorModal, createInfoModal, createInputModal, Modal} from "./ui/elements/Modal";
 import {hashPassword} from "./utils/helpers";
 import {HandshakeHandler} from "./connection/HandshakeHandler";
@@ -375,7 +374,7 @@ export class ConnectionHandler {
         try {
             await this.serverConnection.disconnect();
         } catch (error) {
-            log.warn(LogCategory.CLIENT, tr("Failed to successfully disconnect from server: {}"), error);
+            logWarn(LogCategory.CLIENT, tr("Failed to successfully disconnect from server: {}"), error);
         }
         this.sound.play(Sound.CONNECTION_DISCONNECTED);
         this.log.log("disconnected", {});
@@ -525,7 +524,7 @@ export class ConnectionHandler {
                 }
                 break;
             case DisconnectReason.DNS_FAILED:
-                log.error(LogCategory.CLIENT, tr("Failed to resolve hostname: %o"), data);
+                logError(LogCategory.CLIENT, tr("Failed to resolve hostname: %o"), data);
                 this.log.log("connection.hostname.resolve.error", {
                     message: data as any
                 });
@@ -538,9 +537,9 @@ export class ConnectionHandler {
                 }
 
                 if(data) {
-                    log.error(LogCategory.CLIENT, tr("Could not connect to remote host! Extra data: %o"), data);
+                    logError(LogCategory.CLIENT, tr("Could not connect to remote host! Extra data: %o"), data);
                 } else {
-                    log.error(LogCategory.CLIENT, tr("Could not connect to remote host!"), data);
+                    logError(LogCategory.CLIENT, tr("Could not connect to remote host!"), data);
                 }
 
                 if(__build.target === "client" || !dns.resolve_address_ipv4) {
@@ -583,7 +582,7 @@ export class ConnectionHandler {
                 break;
             case DisconnectReason.HANDSHAKE_FAILED:
                 //TODO sound
-                log.error(LogCategory.CLIENT, tr("Failed to process handshake: %o"), data);
+                logError(LogCategory.CLIENT, tr("Failed to process handshake: %o"), data);
                 createErrorModal(
                     tr("Could not connect"),
                     tr("Failed to process handshake: ") + data as string
@@ -607,7 +606,7 @@ export class ConnectionHandler {
                 autoReconnect = false;
                 break;
             case DisconnectReason.CONNECTION_CLOSED:
-                log.error(LogCategory.CLIENT, tr("Lost connection to remote server!"));
+                logError(LogCategory.CLIENT, tr("Lost connection to remote server!"));
                 if(!this.autoReconnectAttempt) {
                     createErrorModal(
                         tr("Connection closed"),
@@ -619,7 +618,7 @@ export class ConnectionHandler {
                 autoReconnect = true;
                 break;
             case DisconnectReason.CONNECTION_PING_TIMEOUT:
-                log.error(LogCategory.CLIENT, tr("Connection ping timeout"));
+                logError(LogCategory.CLIENT, tr("Connection ping timeout"));
                 this.sound.play(Sound.CONNECTION_DISCONNECTED_TIMEOUT);
                 createErrorModal(
                     tr("Connection lost"),
@@ -699,8 +698,8 @@ export class ConnectionHandler {
                 this.sound.play(Sound.CONNECTION_BANNED);
                 break;
             default:
-                log.error(LogCategory.CLIENT, tr("Got uncaught disconnect!"));
-                log.error(LogCategory.CLIENT, tr("Type: %o Data: %o"), type, data);
+                logError(LogCategory.CLIENT, tr("Got uncaught disconnect!"));
+                logError(LogCategory.CLIENT, tr("Type: %o Data: %o"), type, data);
                 break;
         }
 
@@ -747,7 +746,7 @@ export class ConnectionHandler {
     }
 
     private on_connection_state_changed(old_state: ConnectionState, new_state: ConnectionState) {
-        console.log("From %s to %s", ConnectionState[old_state], ConnectionState[new_state]);
+        logTrace(LogCategory.CLIENT, tr("From %s to %s"), ConnectionState[old_state], ConnectionState[new_state]);
         this.events_.fire("notify_connection_state_changed", {
             oldState: old_state,
             newState: new_state
@@ -834,7 +833,7 @@ export class ConnectionHandler {
 
                     this.clientStatusSync = true;
                     this.serverConnection.send_command("clientupdate", localClientUpdates).catch(error => {
-                        log.warn(LogCategory.GENERAL, tr("Failed to update client audio hardware properties. Error: %o"), error);
+                        logWarn(LogCategory.GENERAL, tr("Failed to update client audio hardware properties. Error: %o"), error);
                         this.log.log("error.custom", { message: tr("Failed to update audio hardware properties.") });
                         this.clientStatusSync = false;
                     });
@@ -880,7 +879,7 @@ export class ConnectionHandler {
                 //client_input_hardware: this.client_status.sound_record_supported && this.getInputHardwareState() === InputHardwareState.VALID,
                 //client_output_hardware: this.client_status.sound_playback_supported
             }).catch(error => {
-                log.warn(LogCategory.GENERAL, tr("Failed to sync handler state with server. Error: %o"), error);
+                logWarn(LogCategory.GENERAL, tr("Failed to sync handler state with server. Error: %o"), error);
                 this.log.log("error.custom", {message: tr("Failed to sync handler state with server.")});
             });
     }
@@ -990,7 +989,7 @@ export class ConnectionHandler {
                 }).then(() => {
                     createInfoModal(tr("Avatar deleted"), tr("Avatar successfully deleted")).open();
                 }).catch(error => {
-                    log.error(LogCategory.GENERAL, tr("Failed to reset avatar flag: %o"), error);
+                    logError(LogCategory.GENERAL, tr("Failed to reset avatar flag: %o"), error);
 
                     let message;
                     if(error instanceof CommandResult) {
@@ -1021,7 +1020,7 @@ export class ConnectionHandler {
 
                     if(transfer.transferState() !== FileTransferState.FINISHED) {
                         if(transfer.transferState() === FileTransferState.ERRORED) {
-                            log.warn(LogCategory.FILE_TRANSFER, tr("Failed to upload clients avatar: %o"), transfer.currentError());
+                            logWarn(LogCategory.FILE_TRANSFER, tr("Failed to upload clients avatar: %o"), transfer.currentError());
                             createErrorModal(tr("Failed to upload avatar"), traj("Failed to upload avatar:{:br:}{0}", transfer.currentErrorMessage())).open();
                             return;
                         } else if(transfer.transferState() === FileTransferState.CANCELED) {
@@ -1038,7 +1037,7 @@ export class ConnectionHandler {
                             client_flag_avatar: md5(new Uint8Array(data))
                         });
                     } catch(error) {
-                        log.error(LogCategory.GENERAL, tr("Failed to update avatar flag: %o"), error);
+                        logError(LogCategory.GENERAL, tr("Failed to update avatar flag: %o"), error);
 
                         let message;
                         if(error instanceof CommandResult)
@@ -1217,7 +1216,7 @@ export class ConnectionHandler {
             client_away: typeof(this.client_status.away) === "string" || this.client_status.away,
             client_away_message: typeof(this.client_status.away) === "string" ? this.client_status.away : "",
         }).catch(error => {
-            log.warn(LogCategory.GENERAL, tr("Failed to update away status. Error: %o"), error);
+            logWarn(LogCategory.GENERAL, tr("Failed to update away status. Error: %o"), error);
             this.log.log("error.custom", {message: tr("Failed to update away status.")});
         });
 

@@ -1,5 +1,5 @@
 import * as log from "../log";
-import {LogCategory, LogType} from "../log";
+import {LogCategory, logDebug, logInfo, logTrace, LogType, logWarn} from "../log";
 import {PermissionType} from "../permission/PermissionType";
 import {LaterPromise} from "../utils/LaterPromise";
 import {ServerCommand} from "../connection/ConnectionBase";
@@ -51,7 +51,7 @@ export class PermissionValue {
         let result;
         result = this.value == -1 || this.value >= requiredValue || (this.value == -2 && requiredValue == -2 && !required);
 
-        log.trace(LogCategory.PERMISSIONS,
+        logTrace(LogCategory.PERMISSIONS,
             tr("Required permission test resulted for permission %s: %s. Required value: %s, Granted value: %s"),
             this.type ? this.type.name : "unknown",
             result ? tr("granted") : tr("denied"),
@@ -227,7 +227,7 @@ export class PermissionManager extends AbstractCommandHandler {
 
             let perm_info = manager.resolveInfo(perm_id);
             if(!perm_info) {
-                log.warn(LogCategory.PERMISSIONS, tr("Got unknown permission id (%o/%o (%o))!"), perm["permid"], perm_id, perm["permsid"]);
+                logWarn(LogCategory.PERMISSIONS, tr("Got unknown permission id (%o/%o (%o))!"), perm["permid"], perm_id, perm["permsid"]);
                 return;
             }
 
@@ -360,7 +360,7 @@ export class PermissionManager extends AbstractCommandHandler {
         log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Permission list", table_entries);
         group.end();
 
-        log.info(LogCategory.PERMISSIONS, tr("Got %i permissions"), this.permissionList.length);
+        logInfo(LogCategory.PERMISSIONS, tr("Got %i permissions"), this.permissionList.length);
         if(this._cacheNeededPermissions)
             this.onNeededPermissions(this._cacheNeededPermissions);
         for(let listener of this.initializedListener)
@@ -369,7 +369,7 @@ export class PermissionManager extends AbstractCommandHandler {
 
     private onNeededPermissions(json) {
         if(this.permissionList.length == 0) {
-            log.warn(LogCategory.PERMISSIONS, tr("Got needed permissions but don't have a permission list!"));
+            logWarn(LogCategory.PERMISSIONS, tr("Got needed permissions but don't have a permission list!"));
             this._cacheNeededPermissions = json;
             return;
         }
@@ -396,7 +396,7 @@ export class PermissionManager extends AbstractCommandHandler {
                     entry = new NeededPermissionValue(info, -2);
                     this.neededPermissions.push(entry);
                 } else {
-                    log.warn(LogCategory.PERMISSIONS, tr("Could not resolve perm for id %s (%o|%o)"), e["permid"], e, info);
+                    logWarn(LogCategory.PERMISSIONS, tr("Could not resolve perm for id %s (%o|%o)"), e["permid"], e, info);
                     continue;
                 }
                 addcount++;
@@ -417,7 +417,7 @@ export class PermissionManager extends AbstractCommandHandler {
         log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Needed client permissions", table_entries);
         group.end();
 
-        log.debug(LogCategory.PERMISSIONS, tr("Dropping %o needed permissions and added %o permissions."), copy.length, addcount);
+        logDebug(LogCategory.PERMISSIONS, tr("Dropping %o needed permissions and added %o permissions."), copy.length, addcount);
         for(let e of copy) {
             e.value = -2;
             for(const listener of this.needed_permission_change_listener[e.type.name] || [])
@@ -704,10 +704,10 @@ export class PermissionManager extends AbstractCommandHandler {
             if(perm.type.id == key || perm.type.name == key || perm.type == key)
                 return perm;
 
-        log.debug(LogCategory.PERMISSIONS, tr("Could not resolve grant permission %o. Creating a new one."), key);
+        logDebug(LogCategory.PERMISSIONS, tr("Could not resolve grant permission %o. Creating a new one."), key);
         let info = key instanceof PermissionInfo ? key : this.resolveInfo(key);
         if(!info) {
-            log.warn(LogCategory.PERMISSIONS, tr("Requested needed permission with invalid key! (%o)"), key);
+            logWarn(LogCategory.PERMISSIONS, tr("Requested needed permission with invalid key! (%o)"), key);
             return new NeededPermissionValue(undefined, -2);
         }
         let result = new NeededPermissionValue(info, -2);

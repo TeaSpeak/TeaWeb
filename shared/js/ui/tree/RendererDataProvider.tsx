@@ -1,7 +1,8 @@
 import {EventHandler, Registry} from "tc-shared/events";
 import {
     ChannelEntryInfo,
-    ChannelIcons, ChannelTreeDragEntry,
+    ChannelIcons,
+    ChannelTreeDragEntry,
     ChannelTreeUIEvents,
     ClientIcons,
     ClientNameInfo,

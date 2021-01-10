@@ -1,5 +1,6 @@
 import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
 import * as React from "react";
+
 const cssStyle = require("./Button.scss");
 
 export interface ButtonProperties {

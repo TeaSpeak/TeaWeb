@@ -1,5 +1,5 @@
 import * as log from "./log";
-import {LogCategory, logTrace} from "./log";
+import {LogCategory, logError, logTrace} from "./log";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {Registry} from "./events";
@@ -82,11 +82,11 @@ function resolveKey<ValueType extends RegistryValueType, DefaultType>(
 
     let value = resolver(key.key);
     if(typeof value === "string") {
-        return this.decodeValueFromString(value, key.valueType);
+        return decodeValueFromString(value, key.valueType);
     }
 
     /* trying fallback values */
-    for(const fallback of key.fallbackKeys) {
+    for(const fallback of key.fallbackKeys || []) {
         value = resolver(fallback);
         if(typeof value !== "string") {
             continue;
@@ -125,7 +125,7 @@ export namespace AppParameters {
 
         search.substr(1).split("&").forEach(part => {
             let item = part.split("=");
-            this.staticValues[item[0]] = decodeURIComponent(item[1]);
+            parameters[item[0]] = decodeURIComponent(item[1]);
         });
     }
 
@@ -793,7 +793,7 @@ export class Settings {
         try {
             this.cacheGlobal = JSON.parse(json);
         } catch(error) {
-            log.error(LogCategory.GENERAL, tr("Failed to load global settings!\nJson: %s\nError: %o"), json, error);
+            logError(LogCategory.GENERAL, tr("Failed to load global settings!\nJson: %s\nError: %o"), json, error);
 
             const show_popup = () => {
                 //FIXME: Readd this
@@ -823,6 +823,7 @@ export class Settings {
         } else if("defaultValue" in key) {
             return resolveKey(key, key => this.cacheGlobal[key], key.defaultValue);
         } else {
+            debugger;
             throw tr("missing default value");
         }
     }
@@ -900,7 +901,9 @@ export class ServerSettings {
         this.serverSaveWorker = undefined;
     }
 
-    getValue<V extends RegistryValueType, DV extends V | undefined = undefined>(key: RegistryKey<V> | ValuedRegistryKey<V>, defaultValue?: DV) : V | DV {
+    getValue<V extends RegistryValueType, DV>(key: RegistryKey<V>, defaultValue: DV) : V | DV;
+    getValue<V extends RegistryValueType>(key: ValuedRegistryKey<V>, defaultValue?: V) : V;
+    getValue(key, defaultValue) {
         if(this._destroyed) {
             throw "destroyed";
         }
@@ -910,6 +913,7 @@ export class ServerSettings {
         } else if("defaultValue" in key) {
             return resolveKey(key, key => this.cacheServer[key], key.defaultValue);
         } else {
+            debugger;
             throw tr("missing default value");
         }
     }
@@ -950,7 +954,7 @@ export class ServerSettings {
             try {
                 this.cacheServer = JSON.parse(json);
             } catch(error) {
-                log.error(LogCategory.GENERAL, tr("Failed to load server settings for server %s!\nJson: %s\nError: %o"), server_unique_id, json, error);
+                logError(LogCategory.GENERAL, tr("Failed to load server settings for server %s!\nJson: %s\nError: %o"), server_unique_id, json, error);
             }
             if(!this.cacheServer)
                 this.cacheServer = {};

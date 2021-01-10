@@ -1,7 +1,6 @@
 import {createModal} from "../../ui/elements/Modal";
-import * as log from "../../log";
-import {LogCategory} from "../../log";
-import { tr } from "tc-shared/i18n/localize";
+import {LogCategory, logError} from "../../log";
+import {tr} from "tc-shared/i18n/localize";
 
 function format_date(date: number) {
     const d = new Date(date);
@@ -34,7 +33,7 @@ export function spawnAbout() {
         (window as any).native.client_version().then(version => {
             connectModal.htmlTag.find(".version-client").text(version);
         }).catch(error => {
-            log.error(LogCategory.GENERAL, tr("Failed to load client version: %o"), error);
+            logError(LogCategory.GENERAL, tr("Failed to load client version: %o"), error);
             connectModal.htmlTag.find(".version-client").text("unknown");
         });
     }

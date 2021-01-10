@@ -3,14 +3,12 @@ import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 import {spawnExternalModal} from "tc-shared/ui/react-elements/external-modal";
 import {initializeChannelTreeController} from "tc-shared/ui/tree/Controller";
 import {ControlBarEvents} from "tc-shared/ui/frames/control-bar/Definitions";
-import {
-    initializePopoutControlBarController
-} from "tc-shared/ui/frames/control-bar/Controller";
+import {initializePopoutControlBarController} from "tc-shared/ui/frames/control-bar/Controller";
 import {ChannelTree} from "tc-shared/tree/ChannelTree";
 import {ModalController} from "tc-shared/ui/react-elements/ModalDefinitions";
 import {ChannelTreePopoutEvents} from "tc-shared/ui/tree/popout/Definitions";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
-import { tr, tra } from "tc-shared/i18n/localize";
+import {tr, tra} from "tc-shared/i18n/localize";
 
 export class ChannelTreePopoutController {
     readonly channelTree: ChannelTree;

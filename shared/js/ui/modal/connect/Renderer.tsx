@@ -2,7 +2,8 @@ import {
     ConnectHistoryEntry,
     ConnectHistoryServerInfo,
     ConnectProperties,
-    ConnectUiEvents, PropertyValidState
+    ConnectUiEvents,
+    PropertyValidState
 } from "tc-shared/ui/modal/connect/Definitions";
 import * as React from "react";
 import {useContext, useState} from "react";

@@ -2,7 +2,7 @@ import * as contextmenu from "../ui/elements/ContextMenu";
 import {Registry} from "../events";
 import {ChannelTree} from "./ChannelTree";
 import * as log from "../log";
-import {LogCategory, logInfo, LogType} from "../log";
+import {LogCategory, logDebug, logError, logInfo, LogType} from "../log";
 import {Settings, settings} from "../settings";
 import {Sound} from "../sound/Sounds";
 import {Group, GroupManager, GroupTarget, GroupType} from "../permission/GroupManager";
@@ -219,11 +219,11 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
 
     destroy() {
         if(this.voiceHandle) {
-            log.error(LogCategory.AUDIO, tr("Destroying client with an active audio handle. This could cause memory leaks!"));
+            logError(LogCategory.AUDIO, tr("Destroying client with an active audio handle. This could cause memory leaks!"));
             this.setVoiceClient(undefined);
         }
         if(this.videoHandle) {
-            log.error(LogCategory.AUDIO, tr("Destroying client with an active video handle. This could cause memory leaks!"));
+            logError(LogCategory.AUDIO, tr("Destroying client with an active video handle. This could cause memory leaks!"));
             this.setVideoClient(undefined);
         }
 
@@ -767,7 +767,7 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
                 const mute_status = this.channelTree.client.settings.getValue(Settings.FN_CLIENT_MUTED(this.clientUid()), false);
                 this.setMuted(mute_status, mute_status); /* force only needed when we want to mute the client */
                 this.updateVoiceVolume();
-                log.debug(LogCategory.CLIENT, tr("Loaded client (%s) server specific properties. Volume: %o Muted: %o."), this.clientUid(), this.voiceVolume, this.voiceMuted);
+                logDebug(LogCategory.CLIENT, tr("Loaded client (%s) server specific properties. Volume: %o Muted: %o."), this.clientUid(), this.voiceVolume, this.voiceMuted);
             }
             if(variable.key == "client_talk_power") {
                 reorder_channel = true;

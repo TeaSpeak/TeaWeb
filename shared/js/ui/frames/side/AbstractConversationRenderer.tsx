@@ -1,21 +1,22 @@
 import * as React from "react";
-import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import {Ref, useEffect, useRef, useState} from "react";
+import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import {AvatarRenderer} from "tc-shared/ui/react-elements/Avatar";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {Countdown} from "tc-shared/ui/react-elements/Countdown";
 import {
+    AbstractConversationUiEvents,
     ChatEvent,
     ChatEventLocalAction,
     ChatEventLocalUserSwitch,
     ChatEventMessageSendFailed,
+    ChatEventModeChanged,
+    ChatEventPartnerAction,
     ChatEventPartnerInstanceChanged,
     ChatEventQueryFailed,
-    ChatEventPartnerAction,
     ChatHistoryState,
-    ChatMessage,
-    AbstractConversationUiEvents, ChatEventModeChanged
+    ChatMessage
 } from "./AbstractConversationDefinitions";
 import {TimestampRenderer} from "tc-shared/ui/react-elements/TimestampRenderer";
 import {BBCodeRenderer} from "tc-shared/text/bbcode";

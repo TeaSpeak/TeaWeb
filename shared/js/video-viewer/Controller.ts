@@ -1,5 +1,5 @@
 import * as log from "../log";
-import {LogCategory, logError} from "../log";
+import {LogCategory, logError, logWarn} from "../log";
 import {spawnExternalModal} from "../ui/react-elements/external-modal";
 import {EventHandler, Registry} from "../events";
 import {VideoViewerEvents} from "./Definitions";
@@ -213,7 +213,7 @@ class VideoViewer {
             }
         }
 
-        log.warn(LogCategory.GENERAL, tr("Video viewer queried the watcher status of an unknown client: %s (%o)"), event.watcherId, info);
+        logWarn(LogCategory.GENERAL, tr("Video viewer queried the watcher status of an unknown client: %s (%o)"), event.watcherId, info);
     }
 
     @EventHandler<VideoViewerEvents>("query_watcher_info")
@@ -245,7 +245,7 @@ class VideoViewer {
             }
         }
 
-        log.warn(LogCategory.GENERAL, tr("Video viewer queried the watcher info of an unknown client: %s (%o)"), event.watcherId, info);
+        logWarn(LogCategory.GENERAL, tr("Video viewer queried the watcher info of an unknown client: %s (%o)"), event.watcherId, info);
     }
 
     @EventHandler<VideoViewerEvents>("query_followers")
@@ -262,7 +262,7 @@ class VideoViewer {
             return;
         }
 
-        log.warn(LogCategory.GENERAL, tr("Video viewer queried the watcher followers of an unknown client: %s (%o)"), event.watcherId, info);
+        logWarn(LogCategory.GENERAL, tr("Video viewer queried the watcher followers of an unknown client: %s (%o)"), event.watcherId, info);
     }
 
     @EventHandler<VideoViewerEvents>("query_video")
@@ -291,7 +291,7 @@ class VideoViewer {
                 return;
             }
 
-            log.warn(LogCategory.GENERAL, tr("Video viewer tried to follow an unknown client: %s (%o)"), event.watcherId, info);
+            logWarn(LogCategory.GENERAL, tr("Video viewer tried to follow an unknown client: %s (%o)"), event.watcherId, info);
         } else {
             this.plugin.setLocalWatcherStatus(this.currentVideoUrl, { status: "paused" });
         }

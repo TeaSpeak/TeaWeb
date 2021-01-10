@@ -9,8 +9,7 @@ import {IdentitifyType} from "tc-shared/profiles/Identity";
 import {TeaForumIdentity} from "tc-shared/profiles/identities/TeaForumIdentity";
 import {TeaSpeakIdentity} from "tc-shared/profiles/identities/TeamSpeakIdentity";
 import {NameIdentity} from "tc-shared/profiles/identities/NameIdentity";
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import {LogCategory, logDebug, logError, logTrace, logWarn} from "tc-shared/log";
 import * as i18n from "tc-shared/i18n/localize";
 import {RepositoryTranslation, TranslationRepository} from "tc-shared/i18n/localize";
 import * as events from "tc-shared/events";
@@ -28,7 +27,6 @@ import * as ReactDOM from "react-dom";
 import {NotificationSettings} from "tc-shared/ui/modal/settings/Notifications";
 import {initialize_audio_microphone_controller, MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/Microphone";
 import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
-import {server_connections} from "tc-shared/ConnectionManager";
 
 export function spawnSettingsModal(default_page?: string): Modal {
     let modal: Modal;
@@ -110,7 +108,7 @@ function settings_general_application(container: JQuery, modal: Modal) {
         select.on('change', event => {
             const value = parseInt(select.val() as string);
             settings.setValue(Settings.KEY_FONT_SIZE, value);
-            console.log("Changed font size to %dpx", value);
+            logDebug(LogCategory.GENERAL, "Changed font size to %dpx", value);
         });
     }
 
@@ -296,7 +294,7 @@ function settings_general_language(container: JQuery, modal: Modal) {
                     tag.insertAfter(repo_tag);
                 }
             }).then(() => tag_loading.hide()).catch(error => {
-                console.error(error);
+                logError(LogCategory.GENERAL, "Enexpected error happened: %o", error);
                 /* this should NEVER happen */
             })
         }
@@ -429,7 +427,7 @@ function settings_general_chat(container: JQuery, modal: Modal) {
         container_slider.on('change', event => {
             const value = parseInt(container_slider.attr("value") as string);
             settings.setValue(Settings.KEY_ICON_SIZE, value);
-            console.log("Changed icon size to %sem", (value / 100).toFixed(2));
+            logDebug(LogCategory.GENERAL, "Changed icon size to %sem", (value / 100).toFixed(2));
 
             set_icon_size((value / 100).toFixed(2) + "em");
         });
@@ -500,12 +498,12 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
                     tag.addClass("selected");
 
                     aplayer.set_device(device ? device.device_id : null).then(() => {
-                        console.debug(tr("Changed default speaker device"));
+                        logDebug(LogCategory.AUDIO, tr("Changed default speaker device"));
                     }).catch((error) => {
                         _old.addClass("selected");
                         tag.removeClass("selected");
 
-                        console.error(tr("Failed to change speaker to device %o: %o"), device, error);
+                        logError(LogCategory.AUDIO, tr("Failed to change speaker to device %o: %o"), device, error);
                         createErrorModal(tr("Failed to change speaker"), formatMessage(tr("Failed to change the speaker device to the target speaker{:br:}{}"), error)).open();
                     });
                 });
@@ -521,7 +519,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
                 if (typeof (error) === "string")
                     contianer_error.text(error).show();
 
-                console.log(tr("Failed to query available speaker devices: %o"), error);
+                logDebug(LogCategory.GENERAL, tr("Failed to query available speaker devices: %o"), error);
                 contianer_error.text(tr("Errors occurred (View console)")).show();
             });
         };
@@ -533,7 +531,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
             try {
                 update_devices();
             } catch (error) {
-                console.error(tr("Failed to build new speaker device list: %o"), error);
+                logError(LogCategory.GENERAL, tr("Failed to build new speaker device list: %o"), error);
             }
             button_update.prop("disabled", false);
         });
@@ -649,7 +647,7 @@ function settings_audio_sounds(contianer: JQuery, modal: Modal) {
             tag_input_muted.on('change', event => {
                 const volume = tag_input_muted.prop("checked") ? 1 : 0;
                 sound.set_sound_volume(_sound, volume);
-                console.log(tr("Changed sound volume to %o for sound %o"), volume, _sound);
+                logDebug(LogCategory.GENERAL, tr("Changed sound volume to %o for sound %o"), volume, _sound);
             });
 
             return tag;
@@ -710,7 +708,7 @@ export namespace modal_settings {
         event_registry.on("delete-profile", event => {
             const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
-                log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                logWarn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("delete-profile-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
@@ -753,7 +751,7 @@ export namespace modal_settings {
         event_registry.on("query-profile", event => {
             const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
-                log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                logWarn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("query-profile-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
@@ -768,7 +766,7 @@ export namespace modal_settings {
         event_registry.on("set-default-profile", event => {
             const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
-                log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                logWarn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("set-default-profile-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
@@ -784,7 +782,7 @@ export namespace modal_settings {
         event_registry.on("set-profile-name", event => {
             const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
-                log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                logWarn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("set-profile-name-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
@@ -801,7 +799,7 @@ export namespace modal_settings {
         event_registry.on("set-default-name", event => {
             const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
-                log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                logWarn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("set-default-name-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
@@ -818,7 +816,7 @@ export namespace modal_settings {
         event_registry.on("set-identity-name-name", event => {
             const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
-                log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                logWarn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("set-identity-name-name-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
@@ -839,7 +837,7 @@ export namespace modal_settings {
         event_registry.on("query-profile-validity", event => {
             const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
-                log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                logWarn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("query-profile-validity-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
@@ -854,7 +852,7 @@ export namespace modal_settings {
         event_registry.on("query-identity-teamspeak", event => {
             const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
-                log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                logWarn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("query-identity-teamspeak-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
@@ -888,7 +886,7 @@ export namespace modal_settings {
 
             const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
-                log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                logWarn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 return;
             }
 
@@ -899,7 +897,7 @@ export namespace modal_settings {
         event_registry.on("generate-identity-teamspeak", event => {
             const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
-                log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                logWarn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("generate-identity-teamspeak-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
@@ -916,11 +914,11 @@ export namespace modal_settings {
                         level: level
                     });
                 }).catch(error => {
-                    console.error(tr("Failed to calculate level for a new identity. Error object: %o"), error);
+                    logError(LogCategory.GENERAL, tr("Failed to calculate level for a new identity. Error object: %o"), error);
                     send_error("generate-identity-teamspeak-result", event.profile_id, tr("failed to calculate level: ") + error);
                 })
             }).catch(error => {
-                console.error(tr("Failed to generate a new identity. Error object: %o"), error);
+                logError(LogCategory.GENERAL, tr("Failed to generate a new identity. Error object: %o"), error);
                 send_error("generate-identity-teamspeak-result", event.profile_id, tr("failed to generate identity: ") + error);
             });
         });
@@ -928,7 +926,7 @@ export namespace modal_settings {
         event_registry.on("import-identity-teamspeak", event => {
             const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
-                log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                logWarn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 return;
             }
 
@@ -937,7 +935,7 @@ export namespace modal_settings {
                 profiles.mark_need_save();
 
                 identity.level().catch(error => {
-                    console.error(tr("Failed to calculate level for a new imported identity. Error object: %o"), error);
+                    logError(LogCategory.GENERAL, tr("Failed to calculate level for a new imported identity. Error object: %o"), error);
                     return Promise.resolve(undefined);
                 }).then(level => {
                     event_registry.fire_react("import-identity-teamspeak-result", {
@@ -952,7 +950,7 @@ export namespace modal_settings {
         event_registry.on("improve-identity-teamspeak-level", event => {
             const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
-                log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                logWarn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 return;
             }
 
@@ -968,7 +966,7 @@ export namespace modal_settings {
                         new_level: level
                     });
                 }).catch(error => {
-                    log.error(LogCategory.CLIENT, tr("Failed to calculate identity level after improvement (%o)"), error);
+                    logError(LogCategory.CLIENT, tr("Failed to calculate identity level after improvement (%o)"), error);
                 });
             });
         });
@@ -976,7 +974,7 @@ export namespace modal_settings {
         event_registry.on("export-identity-teamspeak", event => {
             const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
-                log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                logWarn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 return;
             }
 
@@ -993,7 +991,7 @@ export namespace modal_settings {
                 element[0].click();
                 element.remove();
             }).catch(error => {
-                console.error(error);
+                logError(LogCategory.IDENTITIES, tr("Failed to export identity: %o"), error);
                 createErrorModal(tr("Failed to export identity"), tr("Failed to export and save identity.<br>Error: ") + error).open();
             });
         });
@@ -1119,7 +1117,7 @@ export namespace modal_settings {
             });
             event_registry.on(["set-default-name-result", "set-profile-name-result", "set-identity-name-name-result", "generate-identity-teamspeak-result"], event => {
                 if (!('status' in event) || !('profile_id' in event)) {
-                    log.warn(LogCategory.CLIENT, tr("Profile status watcher encountered an unuseal event!"));
+                    logWarn(LogCategory.CLIENT, tr("Profile status watcher encountered an unuseal event!"));
                     return;
                 }
                 if ((event as any).status !== "success") return;
@@ -1807,7 +1805,7 @@ function settings_identity_forum(container: JQuery, modal: Modal, update_profile
             forum.login(input_username.val() as string, input_password.val() as string, typeof (captcha) === "string" ? captcha : undefined).then(state => {
                 captcha = false;
 
-                console.debug(tr("Forum login result: %o"), state);
+                logTrace(LogCategory.GENERAL, tr("Forum login result: %o"), state);
                 if (state.status === "success") {
                     update_state();
                     update_profiles();
@@ -1827,15 +1825,15 @@ function settings_identity_forum(container: JQuery, modal: Modal, update_profile
 
                     captcha = "";
 
-                    console.log(tr("Showing captcha for site-key: %o"), state.captcha.data);
+                    logDebug(LogCategory.GENERAL, tr("Showing captcha for site-key: %o"), state.captcha.data);
                     forum.gcaptcha.spawn(container_captcha_g, state.captcha.data, token => {
                         captcha = token;
-                        console.debug(tr("Got captcha token: %o"), token);
+                        logTrace(LogCategory.GENERAL, tr("Got captcha token: %o"), token);
                         container_captcha_g.hide();
                         button_login.show();
                         update_button_state();
                     }).catch(error => {
-                        console.error(tr("Failed to initialize forum captcha: %o"), error);
+                        logError(LogCategory.GENERAL, tr("Failed to initialize forum captcha: %o"), error);
                         container_error.text("Failed to initialize GReCaptcha! No authentication possible.").addClass("shown");
                         container_captcha_g.hide();
                         button_login.hide();
@@ -1845,7 +1843,7 @@ function settings_identity_forum(container: JQuery, modal: Modal, update_profile
                     container_error.text(state.error_message || tr("Unknown error")).addClass("shown");
                 }
             }).catch(error => {
-                console.error(tr("Failed to login within the forum. Error: %o"), error);
+                logError(LogCategory.GENERAL, tr("Failed to login within the forum. Error: %o"), error);
                 createErrorModal(tr("Forum login failed."), tr("Forum login failed. Lookup the console for more information")).open();
             }).then(() => {
                 input_username.prop("disabled", false);
@@ -1860,7 +1858,7 @@ function settings_identity_forum(container: JQuery, modal: Modal, update_profile
     {
         container.find(".button-logout").on('click', event => {
             forum.logout().catch(error => {
-                console.error(tr("Failed to logout from forum: %o"), error);
+                logError(LogCategory.IDENTITIES, tr("Failed to logout from forum: %o"), error);
                 createErrorModal(tr("Forum logout failed"), formatMessage(tr("Failed to logout from forum account.{:br:}Error: {}"), error)).open();
             }).then(() => {
                 if (modal.shown)

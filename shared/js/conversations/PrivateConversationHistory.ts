@@ -1,6 +1,6 @@
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 import {LogCategory, logDebug, logError, logInfo, logWarn} from "tc-shared/log";
 import {ChatEvent} from "../ui/frames/side/AbstractConversationDefinitions";
 
@@ -176,7 +176,7 @@ async function doOpenDatabase(forceUpgrade: boolean) {
             };
 
             openRequest.onerror = () => {
-                console.error("Private conversation history opening error: %o", openRequest.error);
+                logWarn(LogCategory.CHAT, tr("Private conversation history opening error: %o"), openRequest.error);
                 reject(openRequest.error.message);
             };
 

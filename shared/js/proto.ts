@@ -1,6 +1,7 @@
 /* setup jsrenderer */
 import "jsrender";
-import { tr } from "./i18n/localize";
+import {tr} from "./i18n/localize";
+import {LogCategory, logTrace} from "tc-shared/log";
 
 if(__build.target === "web") {
     (window as any).$ = require("jquery");
@@ -114,11 +115,11 @@ if(!JSON.map_to) {
         let updates = 0;
         for (let field of variables) {
             if (typeof json[field] === "undefined") {
-                console.trace(tr("Json does not contains %s"), field);
+                logTrace(LogCategory.GENERAL, tr("Json does not contains %s"), field);
                 continue;
             }
             if (!validator(field, json[field])) {
-                console.trace(tr("Validator results in false for %s"), field);
+                logTrace(LogCategory.GENERAL, tr("Validator results in false for %s"), field);
                 continue;
             }
 

@@ -3,7 +3,7 @@ import {useEffect, useRef, useState} from "react";
 import {Registry} from "tc-shared/events";
 
 import '!style-loader!css-loader!emoji-mart/css/emoji-mart.css'
-import { Picker } from 'emoji-mart'
+import {Picker} from 'emoji-mart'
 import {settings, Settings} from "tc-shared/settings";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 

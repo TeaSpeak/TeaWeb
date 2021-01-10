@@ -1,5 +1,4 @@
-import * as log from "./log";
-import {LogCategory} from "./log";
+import {LogCategory, logTrace, logWarn} from "./log";
 import {guid} from "./crypto/uid";
 import * as React from "react";
 import {useEffect} from "react";
@@ -181,7 +180,7 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
 
     fire<T extends keyof Events>(event_type: T, data?: Events[T], overrideTypeKey?: boolean) {
         if(this.debugPrefix)
-            log.trace(LogCategory.EVENT_REGISTRY, tr("[%s] Trigger event: %s"), this.debugPrefix, event_type);
+            logTrace(LogCategory.EVENT_REGISTRY, tr("[%s] Trigger event: %s"), this.debugPrefix, event_type);
 
         if(typeof data === "object" && 'type' in data && !overrideTypeKey) {
             if((data as any).type !== event_type) {
@@ -222,7 +221,7 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
             invokeCount++;
         }
         if(this.warnUnhandledEvents && invokeCount === 0) {
-            log.warn(LogCategory.EVENT_REGISTRY, tr("Event handler (%s) triggered event %s which has no consumers."), this.debugPrefix, type);
+            logWarn(LogCategory.EVENT_REGISTRY, tr("Event handler (%s) triggered event %s which has no consumers."), this.debugPrefix, type);
         }
     }
 
@@ -328,7 +327,7 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
                 break;
         } while ((currentPrototype = Object.getPrototypeOf(currentPrototype)));
         if(Object.keys(registered_events).length === 0) {
-            log.warn(LogCategory.EVENT_REGISTRY, tr("No events found in event handler which has been registered."));
+            logWarn(LogCategory.EVENT_REGISTRY, tr("No events found in event handler which has been registered."));
             return;
         }
 

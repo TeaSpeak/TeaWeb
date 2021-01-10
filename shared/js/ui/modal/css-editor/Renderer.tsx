@@ -163,7 +163,7 @@ const CssVariableListRenderer = (props: { events: Registry<CssEditorEvents> }) =
         <div className={cssStyle.header}>
             <a><Translatable>CSS Variable list</Translatable></a>
         </div>
-        <div className={cssStyle.list} onKeyPress={event => console.error(event.key)}>
+        <div className={cssStyle.list}>
             <CssVariableListBodyRenderer events={props.events}/>
             <CssVariableListSearchRenderer events={props.events}/>
         </div>

@@ -4,7 +4,7 @@ import {copyToClipboard} from "../../utils/helpers";
 import * as tooltip from "../../ui/elements/Tooltip";
 import {formatMessage} from "../../ui/frames/chat";
 import {renderBBCodeAsJQuery} from "tc-shared/text/bbcode";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 export function openChannelInfo(channel: ChannelEntry) {
     let modal: Modal;

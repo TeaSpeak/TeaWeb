@@ -2,6 +2,7 @@ import * as React from "react";
 import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
 import {IconRenderer, RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {getIconManager, RemoteIconInfo} from "tc-shared/file/Icons";
+
 const cssStyle = require("./Button.scss");
 
 export interface DropdownEntryProperties {

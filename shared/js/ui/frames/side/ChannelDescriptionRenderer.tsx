@@ -7,8 +7,7 @@ import * as React from "react";
 import {useState} from "react";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
-import {allowedBBCodes, BBCodeRenderer} from "tc-shared/text/bbcode";
-import {parse as parseBBCode} from "vendor/xbbcode/parser";
+import {BBCodeRenderer} from "tc-shared/text/bbcode";
 
 const cssStyle = require("./ChannelDescriptionRenderer.scss");
 
