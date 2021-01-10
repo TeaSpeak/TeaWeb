@@ -62,12 +62,20 @@ export class InternalModalRenderer extends React.PureComponent<{ modal: Abstract
         let modalExtraClass = "";
 
         const type = this.props.modal.type();
-        if(typeof type === "string" && type !== "none")
+        if(typeof type === "string" && type !== "none") {
             modalExtraClass = cssStyle["modal-type-" + type];
+        }
 
         const showClass = this.state.show ? cssStyle.shown : "";
         return (
-            <div className={cssStyle.modal + " " + modalExtraClass + " " + showClass} tabIndex={-1} role={"dialog"} aria-hidden={true} onClick={event => this.onBackdropClick(event)} ref={this.refModal}>
+            <div
+                className={cssStyle.modal + " " + modalExtraClass + " " + showClass + " " + cssStyle["align-" + this.props.modal.verticalAlignment()]}
+                tabIndex={-1}
+                role={"dialog"}
+                aria-hidden={true}
+                onClick={event => this.onBackdropClick(event)}
+                ref={this.refModal}
+            >
                 <div className={cssStyle.dialog}>
                     <InternalModalContentRenderer
                         modal={this.props.modal}

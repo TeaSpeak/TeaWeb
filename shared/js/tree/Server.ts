@@ -122,6 +122,33 @@ export interface ServerAddress {
     port: number;
 }
 
+export function parseServerAddress(address: string) : ServerAddress | undefined {
+    let ipv6End = address.indexOf(']');
+    let lastColonIndex = address.lastIndexOf(':');
+
+    if(lastColonIndex != -1 && lastColonIndex > ipv6End) {
+        const portStr = address.substr(lastColonIndex + 1);
+        if(!portStr.match(/^[0-9]{1,5}$/)) {
+            return undefined;
+        }
+
+        const port = parseInt(portStr);
+        if(port > 65565) {
+            return undefined;
+        }
+
+        return {
+            port: port,
+            host: address.substr(0, lastColonIndex)
+        };
+    } else {
+        return {
+            port: 9987,
+            host: address
+        };
+    }
+}
+
 export interface ServerEvents extends ChannelTreeEntryEvents {
     notify_properties_updated: {
         updated_properties: Partial<ServerProperties>;

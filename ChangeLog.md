@@ -1,4 +1,7 @@
 # Changelog:
+* **09.01.21**
+    - The connect modal now connects when pressing `Enter` on the address line
+    
 * **08.01.21**
     - Fixed a bug where the microphone did not started recording after switching the device
     - Fixed bug that the web client was only able to use the default microphone

@@ -102,11 +102,13 @@ export abstract class AbstractHandshakeIdentityHandler implements HandshakeIdent
         this.connection = connection;
     }
 
-    register_callback(callback: (success: boolean, message?: string) => any) {
+    registerCallback(callback: (success: boolean, message?: string) => any) {
         this.callbacks.push(callback);
     }
 
-    abstract start_handshake();
+    fillClientInitData(data: any) { }
+
+    abstract executeHandshake();
 
     protected trigger_success() {
         for(const callback of this.callbacks)

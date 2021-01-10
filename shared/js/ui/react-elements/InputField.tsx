@@ -116,6 +116,105 @@ export class BoxedInputField extends React.Component<BoxedInputFieldProperties, 
     }
 }
 
+export const ControlledFlatInputField = (props: {
+    type?: "text" | "password" | "number",
+
+    value: string,
+    placeholder?: string,
+
+    className?: string,
+
+    label?: React.ReactNode,
+    labelType?: "static" | "floating",
+    labelClassName?: string,
+    labelFloatingClassName?: string,
+
+    help?: React.ReactNode,
+    helpClassName?: string,
+
+    invalid?: React.ReactNode,
+    invalidClassName?: string,
+
+    disabled?: boolean,
+    editable?: boolean,
+
+    onFocus?: () => void,
+    onBlur?: () => void,
+
+    onChange?: (newValue?: string) => void,
+    onInput?: (newValue?: string) => void,
+    onEnter?: () => void,
+
+    finishOnEnter?: boolean,
+}) => {
+    const filled = props.value.length > 0;
+    return (
+        <div
+            className={joinClassList(
+                cssStyle.containerFlat,
+                props.invalid && cssStyle.isInvalid,
+                filled && cssStyle.isFilled,
+                props.className
+            )}
+        >
+            {props.label ? (
+                <label
+                    className={joinClassList(
+                        cssStyle["type-" + (props.labelType || "static")],
+                        props.labelClassName,
+                        filled && props.labelFloatingClassName
+                    )}
+                    key={"label"}
+                >
+                    {props.label}
+                </label>
+            ) : undefined}
+            <input
+                key={"input"}
+                type={props.type || "text"}
+
+                value={props.value}
+                placeholder={props.placeholder}
+
+                readOnly={typeof props.editable === "boolean" ? !props.editable : false}
+                disabled={typeof props.disabled === "boolean" ? props.disabled : false}
+
+                onFocus={props.onFocus}
+                onBlur={props.onBlur}
+                onChange={event => props.onChange && props.onChange(event.currentTarget.value)}
+                onInput={event => props.onInput && props.onInput(event.currentTarget.value)}
+                onKeyPress={event => {
+                    if(event.key === "Enter") {
+                        if(props.finishOnEnter) {
+                            event.currentTarget.blur();
+                        }
+
+                        if(props.onEnter) {
+                            props.onEnter();
+                        }
+                    }
+                }}
+            />
+            {props.invalid ? (
+                <small
+                    className={joinClassList(cssStyle.invalidFeedback, props.invalidClassName)}
+                    key={"invalid"}
+                >
+                    {props.invalid}
+                </small>
+            ) : undefined}
+            {props.help ? (
+                <small
+                    className={joinClassList(cssStyle.invalidFeedback, props.helpClassName)}
+                    key={"help"}
+                >
+                    {props.help}
+                </small>
+            ) : undefined}
+        </div>
+    );
+}
+
 export interface FlatInputFieldProperties {
     defaultValue?: string;
     value?: string;
@@ -144,6 +243,7 @@ export interface FlatInputFieldProperties {
 
     onChange?: (newValue?: string) => void;
     onInput?: (newValue?: string) => void;
+    onEnter?: () => void;
 
     finishOnEnter?: boolean;
 }
@@ -160,7 +260,7 @@ export interface FlatInputFieldState {
 }
 
 export class FlatInputField extends React.Component<FlatInputFieldProperties, FlatInputFieldState> {
-    private refInput = React.createRef<HTMLInputElement>();
+    private readonly refInput = React.createRef<HTMLInputElement>();
 
     constructor(props) {
         super(props);
@@ -199,7 +299,16 @@ export class FlatInputField extends React.Component<FlatInputFieldProperties, Fl
                     onBlur={this.props.onBlur}
                     onChange={() => this.onChange()}
                     onInput={e => this.props.onInput && this.props.onInput(e.currentTarget.value)}
-                    onKeyPress={e => this.props.finishOnEnter && e.key === "Enter" && this.refInput.current?.blur()}
+                    onKeyPress={e => {
+                        if(e.key === "Enter") {
+                            if(this.props.finishOnEnter) {
+                                this.refInput.current?.blur();
+                            }
+                            if(this.props.onEnter) {
+                                this.props.onEnter();
+                            }
+                        }
+                    }}
                 />
                 {this.state.invalidMessage ? <small className={cssStyle.invalidFeedback + " " + (this.props.invalidClassName || "")}>{this.state.invalidMessage}</small> : undefined}
                 {this.props.help ? <small className={cssStyle.help + " " + (this.props.helpClassName || "")}>{this.props.help}</small> : undefined}

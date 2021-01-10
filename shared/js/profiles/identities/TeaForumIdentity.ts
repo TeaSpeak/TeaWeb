@@ -23,7 +23,7 @@ class TeaForumHandshakeHandler extends AbstractHandshakeIdentityHandler {
         this.handler["handshakeidentityproof"] = this.handle_proof.bind(this);
     }
 
-    start_handshake() {
+    executeHandshake() {
         this.connection.command_handler_boss().register_handler(this.handler);
         this.connection.send_command("handshakebegin", {
             intention: 0,

@@ -15,17 +15,17 @@ import {CommandResult} from "../../connection/ServerConnectionDeclaration";
 import {HandshakeIdentityHandler} from "../../connection/HandshakeHandler";
 
 export namespace CryptoHelper {
-    export function base64_url_encode(str){
+    export function base64UrlEncode(str){
         return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
 
-    export function base64_url_decode(str: string, pad?: boolean){
+    export function base64UrlDecode(str: string, pad?: boolean){
         if(typeof(pad) === 'undefined' || pad)
             str = (str + '===').slice(0, str.length + (str.length % 4));
         return str.replace(/-/g, '+').replace(/_/g, '/');
     }
 
-    export function arraybuffer_to_string(buf) : string {
+    export function arraybufferToString(buf) : string {
         return String.fromCharCode.apply(null, new Uint16Array(buf));
     }
 
@@ -77,7 +77,7 @@ export namespace CryptoHelper {
             buffer[index++] = 0x02; /* type */
             buffer[index++] = 0x20; /* length */
 
-            const raw = atob(base64_url_decode(key_data.x, false));
+            const raw = atob(base64UrlDecode(key_data.x, false));
             if(raw.charCodeAt(0) > 0x7F) {
                 buffer[index - 1] += 1;
                 buffer[index++] = 0;
@@ -95,7 +95,7 @@ export namespace CryptoHelper {
             buffer[index++] = 0x02; /* type */
             buffer[index++] = 0x20; /* length */
 
-            const raw = atob(base64_url_decode(key_data.y, false));
+            const raw = atob(base64UrlDecode(key_data.y, false));
             if(raw.charCodeAt(0) > 0x7F) {
                 buffer[index - 1] += 1;
                 buffer[index++] = 0;
@@ -114,7 +114,7 @@ export namespace CryptoHelper {
                 buffer[index++] = 0x02; /* type */
                 buffer[index++] = 0x20; /* length */
 
-                const raw = atob(base64_url_decode(key_data.d, false));
+                const raw = atob(base64UrlDecode(key_data.d, false));
                 if(raw.charCodeAt(0) > 0x7F) {
                     buffer[index - 1] += 1;
                     buffer[index++] = 0;
@@ -134,7 +134,7 @@ export namespace CryptoHelper {
         return base64_encode_ab(buffer.buffer.slice(0, index));
     }
 
-    const crypt_key = "b9dfaa7bee6ac57ac7b65f1094a1c155e747327bc2fe5d51c512023fe54a280201004e90ad1daaae1075d53b7d571c30e063b5a62a4a017bb394833aa0983e6e";
+    const kCryptKey = "b9dfaa7bee6ac57ac7b65f1094a1c155e747327bc2fe5d51c512023fe54a280201004e90ad1daaae1075d53b7d571c30e063b5a62a4a017bb394833aa0983e6e";
     function c_strlen(buffer: Uint8Array, offset: number) : number {
         let index = 0;
         while(index + offset < buffer.length && buffer[index + offset] != 0)
@@ -142,7 +142,7 @@ export namespace CryptoHelper {
         return index;
     }
 
-    export async function decrypt_ts_identity(buffer: Uint8Array) : Promise<string> {
+    export async function decryptTeaSpeakIdentity(buffer: Uint8Array) : Promise<string> {
         /* buffer could contains a zero! */
         const hash = new Uint8Array(await sha.sha1(buffer.buffer.slice(20, 20 + c_strlen(buffer, 20))));
         for(let i = 0; i < 20; i++)
@@ -150,15 +150,15 @@ export namespace CryptoHelper {
 
         const length = Math.min(buffer.length, 100);
         for(let i = 0; i < length; i++)
-            buffer[i] ^= crypt_key.charCodeAt(i);
+            buffer[i] ^= kCryptKey.charCodeAt(i);
 
-        return arraybuffer_to_string(buffer);
+        return arraybufferToString(buffer);
     }
 
-    export async function encrypt_ts_identity(buffer: Uint8Array) : Promise<string> {
+    export async function encryptTeaSpeakIdentity(buffer: Uint8Array) : Promise<string> {
         const length = Math.min(buffer.length, 100);
         for(let i = 0; i < length; i++)
-            buffer[i] ^= crypt_key.charCodeAt(i);
+            buffer[i] ^= kCryptKey.charCodeAt(i);
 
         const hash = new Uint8Array(await sha.sha1(buffer.buffer.slice(20, 20 + c_strlen(buffer, 20))));
         for(let i = 0; i < 20; i++)
@@ -170,14 +170,16 @@ export namespace CryptoHelper {
     /**
      * @param buffer base64 encoded ASN.1 string
      */
-    export function decode_tomcrypt_key(buffer: string) {
+    export function decodeTomCryptKey(buffer: string) {
         let decoded;
 
         try {
             decoded = asn1.decode(atob(buffer));
         } catch(error) {
-            if(error instanceof DOMException)
+            if(error instanceof DOMException) {
                 throw "failed to parse key buffer (invalid base64)";
+            }
+
             throw error;
         }
 
@@ -188,28 +190,34 @@ export namespace CryptoHelper {
         };
 
         if(x.length > 32) {
-            if(x.charCodeAt(0) != 0)
+            if(x.charCodeAt(0) != 0) {
                 throw "Invalid X coordinate! (Too long)";
+            }
+
             x = x.substr(1);
         }
 
         if(y.length > 32) {
-            if(y.charCodeAt(0) != 0)
+            if(y.charCodeAt(0) != 0) {
                 throw "Invalid Y coordinate! (Too long)";
+            }
+
             y = y.substr(1);
         }
 
         if(k.length > 32) {
-            if(k.charCodeAt(0) != 0)
+            if(k.charCodeAt(0) != 0) {
                 throw "Invalid private coordinate! (Too long)";
+            }
+
             k = k.substr(1);
         }
 
         return {
             crv: "P-256",
-            d: base64_url_encode(btoa(k)),
-            x: base64_url_encode(btoa(x)),
-            y: base64_url_encode(btoa(y)),
+            d: base64UrlEncode(btoa(k)),
+            x: base64UrlEncode(btoa(x)),
+            y: base64UrlEncode(btoa(y)),
 
             ext: true,
             key_ops:["deriveKey", "sign"],
@@ -217,7 +225,6 @@ export namespace CryptoHelper {
         };
     }
 }
-import arraybuffer_to_string = CryptoHelper.arraybuffer_to_string;
 
 export class TeaSpeakHandshakeHandler extends AbstractHandshakeIdentityHandler {
     identity: TeaSpeakIdentity;
@@ -230,7 +237,7 @@ export class TeaSpeakHandshakeHandler extends AbstractHandshakeIdentityHandler {
         this.handler["handshakeidentityproof"] = this.handle_proof.bind(this);
     }
 
-    start_handshake() {
+    executeHandshake() {
         this.connection.command_handler_boss().register_handler(this.handler);
         this.connection.send_command("handshakebegin", {
             intention: 0,
@@ -272,6 +279,12 @@ export class TeaSpeakHandshakeHandler extends AbstractHandshakeIdentityHandler {
     protected trigger_success() {
         this.connection.command_handler_boss().unregister_handler(this.handler);
         super.trigger_success();
+    }
+
+    fillClientInitData(data: any) {
+        super.fillClientInitData(data);
+
+        data["client_key_offset"] = this.identity.hash_number;
     }
 }
 
@@ -499,7 +512,7 @@ export class TeaSpeakIdentity implements Identity {
             log.error(LogCategory.IDENTITIES, tr("Failed to decode given base64 data (%s)"), data);
             throw "failed to base data (base64 decode failed)";
         }
-        const key64 = await CryptoHelper.decrypt_ts_identity(buffer);
+        const key64 = await CryptoHelper.decryptTeaSpeakIdentity(buffer);
 
         const identity = new TeaSpeakIdentity(key64, hash, name, false);
         await identity.initialize();
@@ -843,7 +856,7 @@ export class TeaSpeakIdentity implements Identity {
             incrementCounter();
             const newLevel = await TeaSpeakIdentity.calculateLevel(new Uint8Array(await crypto.subtle.digest("SHA-1", bufferView)));
             if(newLevel > currentLevel) {
-                this.hash_number = arraybuffer_to_string(buffer.subarray(publicKey.byteLength, numberIndex));
+                this.hash_number = CryptoHelper.arraybufferToString(buffer.subarray(publicKey.byteLength, numberIndex));
                 logTrace(LogCategory.IDENTITIES, tr("Found a new identity level at %s. Previous level %d now %d (%d hashes/second)"),
                     this.hash_number, currentLevel, newLevel, iteration * 1000 / (Date.now() - timeBegin));
                 currentLevel = newLevel;
@@ -859,7 +872,7 @@ export class TeaSpeakIdentity implements Identity {
 
         let jwk: any;
         try {
-            jwk = await CryptoHelper.decode_tomcrypt_key(this.private_key);
+            jwk = await CryptoHelper.decodeTomCryptKey(this.private_key);
             if(!jwk)
                 throw tr("result undefined");
         } catch(error) {
@@ -895,7 +908,7 @@ export class TeaSpeakIdentity implements Identity {
         if(!this.private_key)
             throw "Invalid private key";
 
-        const identity = this.hash_number + "V" + await CryptoHelper.encrypt_ts_identity(new Uint8Array(str2ab8(this.private_key)));
+        const identity = this.hash_number + "V" + await CryptoHelper.encryptTeaSpeakIdentity(new Uint8Array(str2ab8(this.private_key)));
         if(!ini) return identity;
 
         return "[Identity]\n" +

@@ -26,8 +26,9 @@ export class ConnectionProfile {
     }
 
     connectUsername(): string {
-        if (this.defaultUsername && this.defaultUsername !== "Another TeaSpeak user")
+        if (this.defaultUsername && this.defaultUsername !== "Another TeaSpeak user") {
             return this.defaultUsername;
+        }
 
         let selected = this.selectedIdentity();
         let name = selected ? selected.fallback_name() : undefined;
