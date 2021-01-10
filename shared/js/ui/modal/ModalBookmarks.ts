@@ -10,7 +10,7 @@ import {
     DirectoryBookmark,
     save_bookmark
 } from "../../bookmarks";
-import {connection_log, Regex} from "../../ui/modal/ModalConnect";
+import {Regex} from "../../ui/modal/ModalConnect";
 import {availableConnectProfiles} from "../../profiles/ConnectionProfile";
 import {spawnYesNo} from "../../ui/modal/ModalYesNo";
 import {Settings, settings} from "../../settings";
@@ -19,7 +19,8 @@ import {LogCategory} from "../../log";
 import * as i18nc from "../../i18n/country";
 import {formatMessage} from "../../ui/frames/chat";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
+import {connectionHistory} from "tc-shared/connectionlog/History";
 
 export function spawnBookmarkModal() {
     let modal: Modal;
@@ -63,25 +64,40 @@ export function spawnBookmarkModal() {
                 if (selected_bookmark && selected_bookmark.type === BookmarkType.ENTRY) {
                     const entry = selected_bookmark as Bookmark;
 
-                    const history = connection_log.history().find(e => e.address.hostname === entry.server_properties.server_address && e.address.port === entry.server_properties.server_port);
-                    if (history) {
-                        label_server_name.text(history.name);
-                        label_server_region.empty().append(
-                            $.spawn("div").addClass("country flag-" + history.country.toLowerCase()),
-                            $.spawn("div").text(i18nc.country_name(history.country, tr("Global")))
-                        );
-                        label_client_count.text(history.clients_online + "/" + history.clients_total);
-                        label_connection_count.empty().append(
-                            ...formatMessage(tr("You've connected {} times"), $.spawn("div").addClass("connect-count").text(history.total_connection))
-                        );
-                    } else {
-                        label_server_name.text(tr("Unknown"));
-                        label_server_region.empty().text(tr("Unknown"));
-                        label_client_count.text(tr("Unknown"));
-                        label_connection_count.empty().append(
-                            ...formatMessage(tr("You {} connected to that server address"), $.spawn("div").addClass("connect-never").text("never"))
-                        );
-                    }
+                    label_server_name.text(tr("Unknown"));
+                    label_server_region.empty().text(tr("Unknown"));
+                    label_client_count.text(tr("Unknown"));
+                    label_connection_count.empty().append(
+                        ...formatMessage(tr("You {} connected to that server address"), $.spawn("div").addClass("connect-never").text("never"))
+                    );
+
+                    const targetAddress = entry.server_properties.server_address + (entry.server_properties.server_port === 9987 ? "" : ":" + entry.server_properties.server_port);
+                    connectionHistory.lastConnectInfo(targetAddress, "address", true).then(async connectionInfo => {
+                        if(!connectionInfo) {
+                            return;
+                        }
+
+                        const info = await connectionHistory.queryServerInfo(connectionInfo.serverUniqueId);
+                        if(info) {
+                            label_server_name.text(info.name);
+                            label_server_region.empty().append(
+                                $.spawn("div").addClass("country flag-" + (info.country || "xx").toLowerCase()),
+                                $.spawn("div").text(i18nc.country_name(info.country || "xx", tr("Global")))
+                            );
+                            label_client_count.text(info.clientsOnline + "/" + info.clientsMax);
+                        }
+
+                        {
+                            const count = await connectionHistory.countConnectCount(targetAddress, "address");
+                            if(count > 0) {
+                                label_connection_count.empty().append(
+                                    ...formatMessage(tr("You've connected {} times"), $.spawn("div").addClass("connect-count").text(count))
+                                );
+                            }
+                        }
+
+                    });
+
                     label_last_ping.text(tr("Average ping isn't yet supported"));
                 } else {
                     label_server_name.text("--");
