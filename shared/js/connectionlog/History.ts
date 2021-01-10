@@ -387,6 +387,13 @@ export class ConnectionHistory {
                 if(result.findIndex(entry => entry.serverUniqueId === parsedEntry.serverUniqueId) !== -1) {
                     continue;
                 }
+
+                const failedEntry = result.find(entry => entry.targetAddress === parsedEntry.targetAddress);
+                if(failedEntry) {
+                    /* We've a newer, but failed attempt to that address. Since we've connected to that address already we could just use that attempt */
+                    failedEntry.serverUniqueId = parsedEntry.serverUniqueId;
+                    continue;
+                }
             } else {
                 if(result.findIndex(entry => entry.targetAddress === parsedEntry.targetAddress) !== -1) {
                     continue;
