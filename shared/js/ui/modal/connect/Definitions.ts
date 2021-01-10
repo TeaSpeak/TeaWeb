@@ -69,9 +69,9 @@ export interface ConnectUiEvents {
         target: string,
         targetType: "address" | "server-unique-id"
     },
-    action_set_nickname: { nickname: string, validate: boolean },
-    action_set_address: { address: string, validate: boolean },
-    action_set_password: { password: string, hashed: boolean },
+    action_set_nickname: { nickname: string, validate: boolean, updateUi: boolean },
+    action_set_address: { address: string, validate: boolean, updateUi: boolean },
+    action_set_password: { password: string, hashed: boolean, updateUi: boolean },
 
     query_property: {
         property: keyof ConnectProperties

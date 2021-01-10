@@ -181,6 +181,16 @@ class ConnectController {
             settings.changeGlobal(Settings.KEY_CONNECT_SHOW_HISTORY, event.enabled);
         });
 
+
+        this.uiEvents.on("action_delete_history", event => {
+            connectionHistory.deleteConnectionAttempts(event.target, event.targetType).then(() => {
+                this.history = undefined;
+                this.sendProperty("history").then(undefined);
+            }).catch(error => {
+                logWarn(LogCategory.GENERAL, tr("Failed to delete connection attempts: %o"), error);
+            })
+        });
+
         this.uiEvents.on("action_manage_profiles", () => {
             /* TODO: This is more a hack. Proper solution is that the connection profiles fire events if they've been changed... */
             const modal = spawnSettingsModal("identity-profiles");
@@ -199,13 +209,16 @@ class ConnectController {
             this.setSelectedProfile(profile);
         });
 
-        this.uiEvents.on("action_set_address", event => this.setSelectedAddress(event.address, event.validate));
+        this.uiEvents.on("action_set_address", event => this.setSelectedAddress(event.address, event.validate, event.updateUi));
 
         this.uiEvents.on("action_set_nickname", event => {
             if(this.currentNickname !== event.nickname) {
                 this.currentNickname = event.nickname;
-                this.sendProperty("nickname").then(undefined);
                 settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, event.nickname);
+
+                if(event.updateUi) {
+                    this.sendProperty("nickname").then(undefined);
+                }
             }
 
             this.validateStates["nickname"] = event.validate;
@@ -219,7 +232,9 @@ class ConnectController {
 
             this.currentPassword = event.password;
             this.currentPasswordHashed = event.hashed;
-            this.sendProperty("password").then(undefined);
+            if(event.updateUi) {
+                this.sendProperty("password").then(undefined);
+            }
 
             this.validateStates["password"] = true;
             this.updateValidityStates();
@@ -279,12 +294,15 @@ class ConnectController {
         this.sendProperty("nickname").then(undefined);
     }
 
-    setSelectedAddress(address: string | undefined, validate: boolean) {
+    setSelectedAddress(address: string | undefined, validate: boolean, updateUi: boolean) {
         if(this.currentAddress !== address) {
             this.currentAddress = address;
-            this.sendProperty("address").then(undefined);
             settings.changeGlobal(Settings.KEY_CONNECT_ADDRESS, address);
             this.setSelectedHistoryId(-1);
+
+            if(updateUi) {
+                this.sendProperty("address").then(undefined);
+            }
         }
 
         this.validateStates["address"] = validate;
@@ -301,7 +319,7 @@ class ConnectController {
         settings.changeGlobal(Settings.KEY_CONNECT_PROFILE, profile.id);
 
         /* Clear out the nickname on profile switch and use the default nickname */
-        this.uiEvents.fire("action_set_nickname", { nickname: undefined, validate: true });
+        this.uiEvents.fire("action_set_nickname", { nickname: undefined, validate: true, updateUi: true });
 
         this.validateStates["profile"] = true;
         this.updateValidityStates();
@@ -367,7 +385,7 @@ export function spawnConnectModalNew(options: ConnectModalOptions) {
     const controller = new ConnectController();
 
     if(typeof options.selectedAddress === "string") {
-        controller.setSelectedAddress(options.selectedAddress, false);
+        controller.setSelectedAddress(options.selectedAddress, false, true);
     }
 
     if(typeof options.selectedProfile === "object") {

@@ -313,6 +313,41 @@ export class ConnectionHistory {
         });
     }
 
+    async deleteConnectionAttempts(target: string, targetType: "address" | "server-unique-id") {
+        if(!this.database) {
+            return;
+        }
+
+        const transaction = this.database.transaction(["attempt-history"], "readwrite");
+        const store = transaction.objectStore("attempt-history");
+
+        const cursor = store.index(targetType === "server-unique-id" ? "serverUniqueId" : "targetAddress").openCursor(target);
+        const promises = [];
+        while(true) {
+            const entry = await new Promise<IDBCursorWithValue | null>((resolve, reject) => {
+                cursor.onsuccess = () => resolve(cursor.result);
+                cursor.onerror = () => reject(cursor.error);
+            });
+
+            if (!entry) {
+                break;
+            }
+
+            promises.push(new Promise(resolve => {
+                const deleteRequest = entry.delete();
+                deleteRequest.onsuccess = resolve;
+                deleteRequest.onerror = () => {
+                    logWarn(LogCategory.GENERAL, tr("Failed to delete a connection attempt: %o"), deleteRequest.error);
+                    resolve();
+                }
+            }));
+
+            entry.continue();
+        }
+
+        await Promise.all(promises);
+    }
+
     /**
      * Query the server info of a given server unique id
      * @param serverUniqueId
