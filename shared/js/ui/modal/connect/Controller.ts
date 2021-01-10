@@ -11,13 +11,13 @@ import {
 } from "tc-shared/profiles/ConnectionProfile";
 import {Settings, settings} from "tc-shared/settings";
 import {connectionHistory, ConnectionHistoryEntry} from "tc-shared/connectionlog/History";
-import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {server_connections} from "tc-shared/ConnectionManager";
-import _ = require("lodash");
 import {parseServerAddress} from "tc-shared/tree/Server";
+import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
 import * as ipRegex from "ip-regex";
+import _ = require("lodash");
 
 const kRegexDomain = /^(localhost|((([a-zA-Z0-9_-]{0,63}\.){0,253})?[a-zA-Z0-9_-]{0,63}\.[a-zA-Z]{2,64}))$/i;
 
@@ -83,6 +83,8 @@ class ConnectController {
         this.uiEvents = new Registry<ConnectUiEvents>();
         this.uiEvents.enableDebug("modal-connect");
 
+        this.history = undefined;
+
         this.defaultAddress = "ts.teaspeak.de";
         this.historyShown = settings.static_global(Settings.KEY_CONNECT_SHOW_HISTORY);
 
@@ -93,22 +95,21 @@ class ConnectController {
         this.addressChanged = false;
         this.nicknameChanged = false;
 
-        this.propertyProvider["nickname"] = async () => {
-            return {
-                defaultNickname: this.currentProfile?.connectUsername(),
-                currentNickname: this.currentNickname,
-            };
-        };
-        this.propertyProvider["address"] = async () => {
-            return {
-                currentAddress: this.currentAddress,
-                defaultAddress: this.defaultAddress,
-            };
-        };
+        this.propertyProvider["nickname"] = async () => ({
+            defaultNickname: this.currentProfile?.connectUsername(),
+            currentNickname: this.currentNickname,
+        });
+
+        this.propertyProvider["address"] = async () => ({
+            currentAddress: this.currentAddress,
+            defaultAddress: this.defaultAddress,
+        });
+
         this.propertyProvider["password"] = async () => this.currentPassword ? ({
             hashed: this.currentPasswordHashed,
             password: this.currentPassword
         }) : undefined;
+
         this.propertyProvider["profiles"] = async () => ({
             selected: this.currentProfile?.id,
             profiles: availableConnectProfiles().map(profile => ({
@@ -117,6 +118,7 @@ class ConnectController {
                 name: profile.profileName
             }))
         });
+
         this.propertyProvider["historyShown"] = async () => this.historyShown;
         this.propertyProvider["history"] = async () => {
             if(!this.history) {
@@ -180,8 +182,11 @@ class ConnectController {
         });
 
         this.uiEvents.on("action_manage_profiles", () => {
-            /* FIXME: Reload profiles if their status have changed... */
-            global_client_actions.fire("action_open_window_settings", { defaultCategory: "identity-profiles" });
+            /* TODO: This is more a hack. Proper solution is that the connection profiles fire events if they've been changed... */
+            const modal = spawnSettingsModal("identity-profiles");
+            modal.close_listener.push(() => {
+                this.sendProperty("profiles").then(undefined);
+            });
         });
 
         this.uiEvents.on("action_select_profile", event => {
