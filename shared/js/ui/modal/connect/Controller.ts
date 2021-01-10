@@ -196,28 +196,10 @@ class ConnectController {
                 return;
             }
 
-            this.currentProfile = profile;
-            this.sendProperty("profiles").then(undefined);
-            settings.changeGlobal(Settings.KEY_CONNECT_PROFILE, profile.id);
-
-            /* Clear out the nickname on profile switch and use the default nickname */
-            this.uiEvents.fire("action_set_nickname", { nickname: undefined, validate: true });
-
-            this.validateStates["profile"] = true;
-            this.updateValidityStates();
+            this.setSelectedProfile(profile);
         });
 
-        this.uiEvents.on("action_set_address", event => {
-            if(this.currentAddress !== event.address) {
-                this.currentAddress = event.address;
-                this.sendProperty("address").then(undefined);
-                settings.changeGlobal(Settings.KEY_CONNECT_ADDRESS, event.address);
-                this.setSelectedHistoryId(-1);
-            }
-
-            this.validateStates["address"] = event.validate;
-            this.updateValidityStates();
-        });
+        this.uiEvents.on("action_set_address", event => this.setSelectedAddress(event.address, event.validate));
 
         this.uiEvents.on("action_set_nickname", event => {
             if(this.currentNickname !== event.nickname) {
@@ -297,6 +279,34 @@ class ConnectController {
         this.sendProperty("nickname").then(undefined);
     }
 
+    setSelectedAddress(address: string | undefined, validate: boolean) {
+        if(this.currentAddress !== address) {
+            this.currentAddress = address;
+            this.sendProperty("address").then(undefined);
+            settings.changeGlobal(Settings.KEY_CONNECT_ADDRESS, address);
+            this.setSelectedHistoryId(-1);
+        }
+
+        this.validateStates["address"] = validate;
+        this.updateValidityStates();
+    }
+
+    setSelectedProfile(profile: ConnectionProfile | undefined) {
+        if(this.currentProfile === profile) {
+            return;
+        }
+
+        this.currentProfile = profile;
+        this.sendProperty("profiles").then(undefined);
+        settings.changeGlobal(Settings.KEY_CONNECT_PROFILE, profile.id);
+
+        /* Clear out the nickname on profile switch and use the default nickname */
+        this.uiEvents.fire("action_set_nickname", { nickname: undefined, validate: true });
+
+        this.validateStates["profile"] = true;
+        this.updateValidityStates();
+    }
+
     private updateValidityStates() {
         const newStates = Object.assign({}, kDefaultValidityStates);
         if(this.validateStates["nickname"]) {
@@ -348,12 +358,22 @@ class ConnectController {
 
 export type ConnectModalOptions = {
     connectInANewTab?: boolean,
-    defaultAddress?: string,
-    defaultProfile?: string
+
+    selectedAddress?: string,
+    selectedProfile?: ConnectionProfile,
 }
 
 export function spawnConnectModalNew(options: ConnectModalOptions) {
     const controller = new ConnectController();
+
+    if(typeof options.selectedAddress === "string") {
+        controller.setSelectedAddress(options.selectedAddress, false);
+    }
+
+    if(typeof options.selectedProfile === "object") {
+        controller.setSelectedProfile(options.selectedProfile);
+    }
+
     const modal = spawnReactModal(ConnectModal, controller.uiEvents, options.connectInANewTab || false);
     modal.show();
 
@@ -384,5 +404,3 @@ export function spawnConnectModalNew(options: ConnectModalOptions) {
         connection.startConnectionNew(parameters, false).then(undefined);
     });
 }
-
-(window as any).spawnConnectModalNew = spawnConnectModalNew;

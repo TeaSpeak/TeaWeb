@@ -3,10 +3,10 @@ import {LogCategory} from "./log";
 import {guid} from "./crypto/uid";
 import {createErrorModal, createInfoModal, createInputModal} from "./ui/elements/Modal";
 import {defaultConnectProfile, findConnectProfile} from "./profiles/ConnectionProfile";
-import {spawnConnectModal} from "./ui/modal/ModalConnect";
 import {ConnectionHandler} from "./ConnectionHandler";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {Registry} from "tc-shared/events";
+import {spawnConnectModalNew} from "tc-shared/ui/modal/connect/Controller";
 
 /* TODO: much better events? */
 export interface BookmarkEvents {
@@ -36,13 +36,10 @@ export const boorkmak_connect = (mark: Bookmark, new_tab?: boolean) => {
             }
         );
     } else {
-        spawnConnectModal({}, {
-            url: mark.server_properties.server_address + ":" + mark.server_properties.server_port,
-            enforce: true
-        }, {
-            profile: profile,
-            enforce: true
-        })
+        spawnConnectModalNew({
+            selectedAddress: mark.server_properties.server_address + ":" + mark.server_properties.server_port,
+            selectedProfile: profile
+        });
     }
 };
 

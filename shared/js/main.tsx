@@ -12,7 +12,6 @@ import {createInfoModal} from "tc-shared/ui/elements/Modal";
 import * as stats from "./stats";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
 import {defaultRecorder, RecorderProfile, setDefaultRecorder} from "tc-shared/voice/RecorderProfile";
-import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {openModalNewcomer} from "tc-shared/ui/modal/ModalNewcomer";
@@ -53,6 +52,7 @@ import {server_connections} from "tc-shared/ConnectionManager";
 import ContextMenuEvent = JQuery.ContextMenuEvent;
 
 import "./ui/modal/connect/Controller";
+import {spawnConnectModalNew} from "tc-shared/ui/modal/connect/Controller";
 
 let preventWelcomeUI = false;
 async function initialize() {
@@ -137,12 +137,9 @@ export function handle_connect_request(properties: ConnectRequestData, connectio
         });
         server_connections.set_active_connection(connection);
     } else {
-        spawnConnectModal({},{
-            url: properties.address,
-            enforce: true
-        }, {
-            profile: profile,
-            enforce: true
+        spawnConnectModalNew({
+            selectedAddress: properties.address,
+            selectedProfile: profile
         });
     }
 }
