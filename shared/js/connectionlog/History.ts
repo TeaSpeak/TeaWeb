@@ -406,6 +406,41 @@ export class ConnectionHistory {
         return result;
     }
 
+    async lastConnectInfo(target: string, targetType: "address" | "server-unique-id", onlySucceeded?: boolean) : Promise<ConnectionHistoryEntry | undefined> {
+        if(!this.database) {
+            return undefined;
+        }
+
+        const transaction = this.database.transaction(["attempt-history"], "readonly");
+        const store = transaction.objectStore("attempt-history");
+
+        const cursor = store.index(targetType === "server-unique-id" ? "serverUniqueId" : "targetAddress").openCursor(target, "prev");
+        while(true) {
+            const entry = await new Promise<IDBCursorWithValue | null>((resolve, reject) => {
+                cursor.onsuccess = () => resolve(cursor.result);
+                cursor.onerror = () => reject(cursor.error);
+            });
+
+            if(!entry) {
+                return undefined;
+            }
+
+            if(entry.value.serverUniqueId === kUnknownHistoryServerUniqueId && onlySucceeded) {
+                continue;
+            }
+
+            return {
+                id: entry.value.id,
+                timestamp: entry.value.timestamp,
+                serverUniqueId: entry.value.serverUniqueId,
+
+                nickname: entry.value.nickname,
+                hashedPassword: entry.value.hashedPassword,
+                targetAddress: entry.value.targetAddress,
+            };
+        }
+    }
+
     async countConnectCount(target: string, targetType: "address" | "server-unique-id") : Promise<number> {
         if(!this.database) {
             return -1;

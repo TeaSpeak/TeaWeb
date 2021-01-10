@@ -1,7 +1,4 @@
 import {Settings, settings} from "../../settings";
-import * as log from "../../log";
-import {LogCategory} from "../../log";
-import * as loader from "tc-loader";
 import {createModal} from "../../ui/elements/Modal";
 import {ConnectionProfile, defaultConnectProfile, findConnectProfile, availableConnectProfiles} from "../../profiles/ConnectionProfile";
 import * as i18nc from "../../i18n/country";
@@ -9,102 +6,6 @@ import {spawnSettingsModal} from "../../ui/modal/ModalSettings";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 import { tr } from "tc-shared/i18n/localize";
-
-//FIXME: Move this shit out of this file!
-export namespace connection_log {
-    //TODO: Save password data
-    export type ConnectionData = {
-        name: string;
-
-        icon_id: number;
-        server_unique_id: string;
-
-        country: string;
-        clients_online: number;
-        clients_total: number;
-
-        flag_password: boolean;
-        password_hash: string;
-    }
-
-    export type ConnectionEntry = ConnectionData & {
-        address: { hostname: string; port: number },
-        total_connection: number;
-
-        first_timestamp: number;
-        last_timestamp: number;
-    }
-
-    let _history: ConnectionEntry[] = [];
-
-    export function log_connect(address: { hostname: string; port: number }) {
-        let entry = _history.find(e => e.address.hostname.toLowerCase() == address.hostname.toLowerCase() && e.address.port == address.port);
-        if (!entry) {
-            _history.push(entry = {
-                last_timestamp: Date.now(),
-                first_timestamp: Date.now(),
-                address: address,
-                clients_online: 0,
-                clients_total: 0,
-                country: 'unknown',
-                name: 'Unknown',
-                icon_id: 0,
-                server_unique_id: "unknown",
-                total_connection: 0,
-
-                flag_password: false,
-                password_hash: undefined
-            });
-        }
-        entry.last_timestamp = Date.now();
-        entry.total_connection++;
-        _save();
-    }
-
-    export function update_address_info(address: { hostname: string; port: number }, data: ConnectionData) {
-        _history.filter(e => e.address.hostname.toLowerCase() == address.hostname.toLowerCase() && e.address.port == address.port).forEach(e => {
-            for (const key of Object.keys(data)) {
-                if (typeof (data[key]) !== "undefined") {
-                    e[key] = data[key];
-                }
-            }
-        });
-        _save();
-    }
-
-    export function update_address_password(address: { hostname: string; port: number }, password_hash: string) {
-        _history.filter(e => e.address.hostname.toLowerCase() == address.hostname.toLowerCase() && e.address.port == address.port).forEach(e => {
-            e.password_hash = password_hash;
-        });
-        _save();
-    }
-
-    function _save() {
-        settings.changeGlobal(Settings.KEY_CONNECT_HISTORY, JSON.stringify(_history));
-    }
-
-    export function history(): ConnectionEntry[] {
-        return _history.sort((a, b) => b.last_timestamp - a.last_timestamp);
-    }
-
-    export function delete_entry(address: { hostname: string; port: number }) {
-        _history = _history.filter(e => !(e.address.hostname.toLowerCase() == address.hostname.toLowerCase() && e.address.port == address.port));
-        _save();
-    }
-
-    loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
-        name: 'connection history load',
-        priority: 1,
-        function: async () => {
-            _history = [];
-            try {
-                _history = JSON.parse(settings.global(Settings.KEY_CONNECT_HISTORY, "[]"));
-            } catch (error) {
-                log.warn(LogCategory.CLIENT, tr("Failed to load connection history: {}"), error);
-            }
-        }
-    });
-}
 
 declare const native_client;
 
@@ -155,7 +56,6 @@ export function spawnConnectModal(options: {
     const apply = (header, body, footer) => {
         const container_last_server_body = modal.htmlTag.find(".container-last-servers .table .body");
         const container_empty = container_last_server_body.find(".body-empty");
-        let current_connect_data: connection_log.ConnectionEntry;
 
         const button_connect = footer.find(".button-connect");
         const button_connect_tab = footer.find(".button-connect-new-tab");
@@ -168,7 +68,6 @@ export function spawnConnectModal(options: {
 
         let updateFields = (reset_current_data: boolean) => {
             if (reset_current_data) {
-                current_connect_data = undefined;
                 container_last_server_body.find(".selected").removeClass("selected");
             }
 
@@ -291,8 +190,8 @@ export function spawnConnectModal(options: {
 
         /* connect history show */
         {
-
-            for (const entry of connection_log.history().slice(0, 10)) {
+            /* connection_log.history().slice(0, 10) */
+            for (const entry of []) {
                 $.spawn("div").addClass("row").append(
                     $.spawn("div").addClass("column delete").append($.spawn("div").addClass("icon_em client-delete")).on('click', event => {
                         event.preventDefault();
@@ -301,7 +200,7 @@ export function spawnConnectModal(options: {
                         row.hide(250, () => {
                             row.detach();
                         });
-                        connection_log.delete_entry(entry.address);
+                        //connection_log.delete_entry(entry.address);
                         container_empty.toggle(container_last_server_body.children().length > 1);
                     })
                 ).append(

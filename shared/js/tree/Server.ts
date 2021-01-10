@@ -10,7 +10,6 @@ import {openServerInfo} from "../ui/modal/ModalServerInfo";
 import {createServerModal} from "../ui/modal/ModalServerEdit";
 import {spawnIconSelect} from "../ui/modal/ModalIconSelect";
 import {spawnAvatarList} from "../ui/modal/ModalAvatarList";
-import {connection_log} from "../ui/modal/ModalConnect";
 import {Registry} from "../events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 import { tr } from "tc-shared/i18n/localize";
@@ -334,21 +333,6 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
             this.info_request_promise_reject = undefined;
             this.info_request_promise_resolve = undefined;
         }
-
-        connection_log.update_address_info({
-            hostname: this.remote_address.host,
-            port: this.remote_address.port
-        }, {
-            clients_online: this.properties.virtualserver_clientsonline,
-            clients_total: this.properties.virtualserver_maxclients,
-            country: this.properties.virtualserver_country_code,
-            flag_password: this.properties.virtualserver_flag_password,
-            name: this.properties.virtualserver_name,
-            icon_id: this.properties.virtualserver_icon_id,
-            server_unique_id: this.properties.virtualserver_unique_identifier,
-
-            password_hash: undefined /* we've here no clue */
-        });
     }
 
     /* this result !must! be cached for at least a second */
