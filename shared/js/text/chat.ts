@@ -69,8 +69,8 @@ function bbcodeLinkUrls(message: string, ignore: { start: number, end: number }[
 }
 
 export function preprocessChatMessageForSend(message: string) : string {
-    const parseMarkdown = settings.static_global(Settings.KEY_CHAT_ENABLE_MARKDOWN);
-    const escapeBBCodes = !settings.static_global(Settings.KEY_CHAT_ENABLE_BBCODE);
+    const parseMarkdown = settings.getValue(Settings.KEY_CHAT_ENABLE_MARKDOWN);
+    const escapeBBCodes = !settings.getValue(Settings.KEY_CHAT_ENABLE_BBCODE);
 
     if(parseMarkdown) {
         message = renderMarkdownAsBBCode(message, text => escapeBBCodes ? escapeBBCode(text) : text);
@@ -78,7 +78,7 @@ export function preprocessChatMessageForSend(message: string) : string {
         message = escapeBBCode(message);
     }
 
-    if(settings.static_global(Settings.KEY_CHAT_TAG_URLS)) {
+    if(settings.getValue(Settings.KEY_CHAT_TAG_URLS)) {
         const bbcodeElements = parseBBCode(message, {});
         const noParseRanges: { start: number, end: number }[] = [];
 

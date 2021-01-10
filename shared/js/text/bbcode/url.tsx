@@ -1,5 +1,5 @@
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
-import {copy_to_clipboard} from "tc-shared/utils/helpers";
+import {copyToClipboard} from "tc-shared/utils/helpers";
 import * as loader from "tc-loader";
 import {ElementRenderer} from "vendor/xbbcode/renderer/base";
 import {TagElement} from "vendor/xbbcode/elements";
@@ -26,7 +26,7 @@ function spawnUrlContextMenu(pageX: number, pageY: number, target: string) {
         type: contextmenu.MenuEntryType.ENTRY,
         visible: __build.target === "client" && false // Currently not possible
     }, contextmenu.Entry.HR(), {
-        callback: () => copy_to_clipboard(target),
+        callback: () => copyToClipboard(target),
         name: tr("Copy URL to clipboard"),
         type: contextmenu.MenuEntryType.ENTRY,
         icon_class: "client-copy"

@@ -92,8 +92,8 @@ function settings_general_application(container: JQuery, modal: Modal) {
     {
         const option = container.find(".option-hostbanner-background") as JQuery<HTMLInputElement>;
         option.on('change', event => {
-            settings.changeGlobal(Settings.KEY_HOSTBANNER_BACKGROUND, option[0].checked);
-        }).prop("checked", settings.static_global(Settings.KEY_HOSTBANNER_BACKGROUND));
+            settings.setValue(Settings.KEY_HOSTBANNER_BACKGROUND, option[0].checked);
+        }).prop("checked", settings.getValue(Settings.KEY_HOSTBANNER_BACKGROUND));
     }
 
     /* font size */
@@ -109,7 +109,7 @@ function settings_general_application(container: JQuery, modal: Modal) {
 
         select.on('change', event => {
             const value = parseInt(select.val() as string);
-            settings.changeGlobal(Settings.KEY_FONT_SIZE, value);
+            settings.setValue(Settings.KEY_FONT_SIZE, value);
             console.log("Changed font size to %dpx", value);
         });
     }
@@ -118,8 +118,8 @@ function settings_general_application(container: JQuery, modal: Modal) {
     {
         const option = container.find(".option-all-permissions") as JQuery<HTMLInputElement>;
         option.on('change', event => {
-            settings.changeGlobal(Settings.KEY_HOSTBANNER_BACKGROUND, option[0].checked);
-        }).prop("checked", settings.global(Settings.KEY_PERMISSIONS_SHOW_ALL));
+            settings.setValue(Settings.KEY_HOSTBANNER_BACKGROUND, option[0].checked);
+        }).prop("checked", settings.getValue(Settings.KEY_PERMISSIONS_SHOW_ALL));
     }
 }
 
@@ -359,58 +359,58 @@ function settings_general_chat(container: JQuery, modal: Modal) {
         const option_colloquial = container.find(".option-colloquial-timestamps") as JQuery<HTMLInputElement>;
 
         option_colloquial.on('change', event => {
-            settings.changeGlobal(Settings.KEY_CHAT_COLLOQUIAL_TIMESTAMPS, option_colloquial[0].checked);
+            settings.setValue(Settings.KEY_CHAT_COLLOQUIAL_TIMESTAMPS, option_colloquial[0].checked);
         });
 
         option_fixed.on('change', event => {
-            settings.changeGlobal(Settings.KEY_CHAT_FIXED_TIMESTAMPS, option_fixed[0].checked);
+            settings.setValue(Settings.KEY_CHAT_FIXED_TIMESTAMPS, option_fixed[0].checked);
             option_colloquial
                 .prop("disabled", option_fixed[0].checked)
                 .parents("label").toggleClass("disabled", option_fixed[0].checked);
             if (option_fixed[0].checked) {
                 option_colloquial.prop("checked", false);
             } else {
-                option_colloquial.prop("checked", settings.static_global(Settings.KEY_CHAT_COLLOQUIAL_TIMESTAMPS));
+                option_colloquial.prop("checked", settings.getValue(Settings.KEY_CHAT_COLLOQUIAL_TIMESTAMPS));
             }
-        }).prop("checked", settings.static_global(Settings.KEY_CHAT_FIXED_TIMESTAMPS)).trigger('change');
+        }).prop("checked", settings.getValue(Settings.KEY_CHAT_FIXED_TIMESTAMPS)).trigger('change');
     }
 
     {
         const option = container.find(".option-instant-channel-switch") as JQuery<HTMLInputElement>;
         option.on('change', event => {
-            settings.changeGlobal(Settings.KEY_SWITCH_INSTANT_CHAT, option[0].checked);
-        }).prop("checked", settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT));
+            settings.setValue(Settings.KEY_SWITCH_INSTANT_CHAT, option[0].checked);
+        }).prop("checked", settings.getValue(Settings.KEY_SWITCH_INSTANT_CHAT));
     }
     {
         const option = container.find(".option-instant-client-switch") as JQuery<HTMLInputElement>;
         option.on('change', event => {
-            settings.changeGlobal(Settings.KEY_SWITCH_INSTANT_CLIENT, option[0].checked);
-        }).prop("checked", settings.static_global(Settings.KEY_SWITCH_INSTANT_CLIENT));
+            settings.setValue(Settings.KEY_SWITCH_INSTANT_CLIENT, option[0].checked);
+        }).prop("checked", settings.getValue(Settings.KEY_SWITCH_INSTANT_CLIENT));
     }
     {
         const option = container.find(".option-colored-emojies") as JQuery<HTMLInputElement>;
         option.on('change', event => {
-            settings.changeGlobal(Settings.KEY_CHAT_COLORED_EMOJIES, option[0].checked);
-        }).prop("checked", settings.static_global(Settings.KEY_CHAT_COLORED_EMOJIES));
+            settings.setValue(Settings.KEY_CHAT_COLORED_EMOJIES, option[0].checked);
+        }).prop("checked", settings.getValue(Settings.KEY_CHAT_COLORED_EMOJIES));
     }
 
     {
         const option = container.find(".option-support-markdown") as JQuery<HTMLInputElement>;
         option.on('change', event => {
-            settings.changeGlobal(Settings.KEY_CHAT_ENABLE_MARKDOWN, option[0].checked);
-        }).prop("checked", settings.static_global(Settings.KEY_CHAT_ENABLE_MARKDOWN));
+            settings.setValue(Settings.KEY_CHAT_ENABLE_MARKDOWN, option[0].checked);
+        }).prop("checked", settings.getValue(Settings.KEY_CHAT_ENABLE_MARKDOWN));
     }
     {
         const option = container.find(".option-support-bbcode") as JQuery<HTMLInputElement>;
         option.on('change', event => {
-            settings.changeGlobal(Settings.KEY_CHAT_ENABLE_BBCODE, option[0].checked);
-        }).prop("checked", settings.static_global(Settings.KEY_CHAT_ENABLE_BBCODE));
+            settings.setValue(Settings.KEY_CHAT_ENABLE_BBCODE, option[0].checked);
+        }).prop("checked", settings.getValue(Settings.KEY_CHAT_ENABLE_BBCODE));
     }
     {
         const option = container.find(".option-url-tagging") as JQuery<HTMLInputElement>;
         option.on('change', event => {
-            settings.changeGlobal(Settings.KEY_CHAT_TAG_URLS, option[0].checked);
-        }).prop("checked", settings.static_global(Settings.KEY_CHAT_TAG_URLS));
+            settings.setValue(Settings.KEY_CHAT_TAG_URLS, option[0].checked);
+        }).prop("checked", settings.getValue(Settings.KEY_CHAT_TAG_URLS));
     }
     /* Icon size */
     {
@@ -422,13 +422,13 @@ function settings_general_chat(container: JQuery, modal: Modal) {
             min_value: 25,
             max_value: 300,
             step: 5,
-            initial_value: settings.static_global(Settings.KEY_ICON_SIZE),
+            initial_value: settings.getValue(Settings.KEY_ICON_SIZE),
             value_field: container_value
         });
 
         container_slider.on('change', event => {
             const value = parseInt(container_slider.attr("value") as string);
-            settings.changeGlobal(Settings.KEY_ICON_SIZE, value);
+            settings.setValue(Settings.KEY_ICON_SIZE, value);
             console.log("Changed icon size to %sem", (value / 100).toFixed(2));
 
             set_icon_size((value / 100).toFixed(2) + "em");
@@ -549,7 +549,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
                 min_value: 0,
                 max_value: 100,
                 step: 1,
-                initial_value: settings.static_global(Settings.KEY_SOUND_MASTER, 100),
+                initial_value: settings.getValue(Settings.KEY_SOUND_MASTER, 100),
                 value_field: [container_master.find(".container-value")]
             });
             slider.on('change', event => {
@@ -557,7 +557,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
 
                 if (aplayer.set_master_volume)
                     aplayer.set_master_volume(volume / 100);
-                settings.changeGlobal(Settings.KEY_SOUND_MASTER, volume);
+                settings.setValue(Settings.KEY_SOUND_MASTER, volume);
             });
         }
 
@@ -568,13 +568,13 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
                 min_value: 0,
                 max_value: 100,
                 step: 1,
-                initial_value: settings.static_global(Settings.KEY_SOUND_MASTER_SOUNDS, 100),
+                initial_value: settings.getValue(Settings.KEY_SOUND_MASTER_SOUNDS, 100),
                 value_field: [container_soundpack.find(".container-value")]
             });
             slider.on('change', event => {
                 const volume = parseInt(slider.attr('value'));
                 set_master_volume(volume / 100);
-                settings.changeGlobal(Settings.KEY_SOUND_MASTER_SOUNDS, volume);
+                settings.setValue(Settings.KEY_SOUND_MASTER_SOUNDS, volume);
             });
         }
     }

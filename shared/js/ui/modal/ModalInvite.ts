@@ -186,18 +186,18 @@ export function spawnInviteEditor(connection: ConnectionHandler) {
 
     for (const s of invite_settings) {
         s.node.on('change keyup', () => {
-            settings.changeGlobal(Settings.FN_INVITE_LINK_SETTING(s.key), s.value(s.node));
+            settings.setValue(Settings.FN_INVITE_LINK_SETTING(s.key), s.value(s.node));
             update_link()
         });
 
-        s.set_value(s.node, settings.global(Settings.FN_INVITE_LINK_SETTING(s.key), DefaultGeneratorSettings[s.key]));
+        s.set_value(s.node, settings.getValue(Settings.FN_INVITE_LINK_SETTING(s.key), DefaultGeneratorSettings[s.key]));
     }
 
     input_type.on('change', () => {
-        settings.changeGlobal(Settings.KEY_LAST_INVITE_LINK_TYPE, input_type.val() as string);
+        settings.setValue(Settings.KEY_LAST_INVITE_LINK_TYPE, input_type.val() as string);
         update_buttons();
         update_link();
-    }).val(settings.global(Settings.KEY_LAST_INVITE_LINK_TYPE));
+    }).val(settings.getValue(Settings.KEY_LAST_INVITE_LINK_TYPE));
 
     button_copy.on('click', event => {
         label_output.select();

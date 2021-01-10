@@ -9,7 +9,7 @@ import {
     setGlobalAvatarManagerFactory, uniqueId2AvatarId
 } from "../file/Avatars";
 import {IPCChannel} from "../ipc/BrowserIPC";
-import {Settings} from "../settings";
+import {AppParameters} from "../settings";
 import {ChannelMessage} from "../ipc/BrowserIPC";
 import {guid} from "../crypto/uid";
 import { tr } from "tc-shared/i18n/localize";
@@ -159,7 +159,7 @@ class RemoteAvatarManagerFactory extends AbstractAvatarManagerFactory {
     constructor() {
         super();
 
-        this.ipcChannel = ipc.getIpcInstance().createChannel(Settings.instance.static(Settings.KEY_IPC_REMOTE_ADDRESS, "invalid"), kIPCAvatarChannel);
+        this.ipcChannel = ipc.getIpcInstance().createChannel(AppParameters.getValue(AppParameters.KEY_IPC_REMOTE_ADDRESS, "invalid"), kIPCAvatarChannel);
         this.ipcChannel.messageHandler = this.handleIpcMessage.bind(this);
     }
 
@@ -187,7 +187,7 @@ class RemoteAvatarManagerFactory extends AbstractAvatarManagerFactory {
         return typeof this.manager[handlerId] !== "undefined";
     }
 
-    private handleIpcMessage(remoteId: string, broadcast: boolean, message: ChannelMessage) {
+    private handleIpcMessage(_remoteId: string, broadcast: boolean, message: ChannelMessage) {
         if(broadcast) {
             if(message.type === "notify-handler-destroyed") {
                 const manager = this.manager[message.data.handler];

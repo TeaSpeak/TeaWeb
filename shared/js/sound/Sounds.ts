@@ -157,7 +157,7 @@ export function save() {
         data.overlap = overlap_sounds;
         data.ignore_muted = ignore_muted;
 
-        settings.changeGlobal(Settings.KEY_SOUND_VOLUMES, JSON.stringify(data));
+        settings.setValue(Settings.KEY_SOUND_VOLUMES, JSON.stringify(data));
     }
 }
 
@@ -173,7 +173,7 @@ export function initialize() : Promise<void> {
 
     /* volumes */
     {
-        const data = JSON.parse(settings.static_global(Settings.KEY_SOUND_VOLUMES, "{}"));
+        const data = JSON.parse(settings.getValue(Settings.KEY_SOUND_VOLUMES, "{}"));
         for(const sound_key of Object.keys(Sound)) {
             if(typeof(data[Sound[sound_key]]) !== "undefined")
                 speech_volume[Sound[sound_key]] = data[Sound[sound_key]];

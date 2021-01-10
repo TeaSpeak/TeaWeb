@@ -57,11 +57,11 @@ function initializeController(connection: ConnectionHandler, events: Registry<Ec
     });
 
     events.on("action_toggle_tests", event => {
-        settings.changeGlobal(Settings.KEY_VOICE_ECHO_TEST_ENABLED, event.enabled);
+        settings.setValue(Settings.KEY_VOICE_ECHO_TEST_ENABLED, event.enabled);
     });
 
     events.on("query_test_state", () => {
-        events.fire_react("notify_tests_toggle", {enabled: settings.global(Settings.KEY_VOICE_ECHO_TEST_ENABLED)});
+        events.fire_react("notify_tests_toggle", {enabled: settings.getValue(Settings.KEY_VOICE_ECHO_TEST_ENABLED)});
     });
 
     events.on("notify_destroy", settings.globalChangeListener(Settings.KEY_VOICE_ECHO_TEST_ENABLED, value => {

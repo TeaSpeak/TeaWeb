@@ -14,7 +14,7 @@ import {Button} from "tc-shared/ui/react-elements/Button";
 import {IconRenderer, RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
-import {copy_to_clipboard} from "tc-shared/utils/helpers";
+import {copyToClipboard} from "tc-shared/utils/helpers";
 import {createInfoModal} from "tc-shared/ui/elements/Modal";
 import {getIconManager} from "tc-shared/file/Icons";
 
@@ -661,7 +661,7 @@ const PermissionEntryRow = (props: {
                 entries.push({
                     type: contextmenu.MenuEntryType.ENTRY,
                     name: tr("Copy permission name"),
-                    callback: () => copy_to_clipboard(props.permission)
+                    callback: () => copyToClipboard(props.permission)
                 });
 
                 contextmenu.spawn_context_menu(e.pageX, e.pageY, ...entries);

@@ -160,7 +160,7 @@ export function spawnQueryManage(client: ConnectionHandler) {
 import {createErrorModal, createInfoModal, createInputModal, createModal, Modal} from "../../ui/elements/Modal";
 import {CommandResult, QueryListEntry} from "../../connection/ServerConnectionDeclaration";
 import {SingleCommandHandler} from "../../connection/ConnectionBase";
-import {copy_to_clipboard} from "../../utils/helpers";
+import {copyToClipboard} from "../../utils/helpers";
 import {spawnYesNo} from "../../ui/modal/ModalYesNo";
 import * as log from "../../log";
 import {LogCategory} from "../../log";
@@ -326,7 +326,7 @@ export function spawnQueryManage(client: ConnectionHandler) {
                 detail_unique_id_copy.on('click', event => {
                     if (!selected_query) return;
 
-                    copy_to_clipboard(selected_query.unique_id);
+                    copyToClipboard(selected_query.unique_id);
                     createInfoModal(tr("Unique ID copied"), tr("The unique id has been successfully copied to your clipboard.")).open();
                 });
 

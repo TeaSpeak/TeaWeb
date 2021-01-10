@@ -299,7 +299,7 @@ class VideoViewer {
 
     @EventHandler<VideoViewerEvents>("action_toggle_side_bar")
     private handleActionToggleSidebar(event: VideoViewerEvents["action_toggle_side_bar"]) {
-        settings.changeGlobal(Settings.KEY_W2G_SIDEBAR_COLLAPSED, !event.shown);
+        settings.setValue(Settings.KEY_W2G_SIDEBAR_COLLAPSED, !event.shown);
     }
 
     @EventHandler<VideoViewerEvents>("notify_video")

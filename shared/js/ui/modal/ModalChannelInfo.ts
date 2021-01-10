@@ -1,6 +1,6 @@
 import {createInfoModal, createModal, Modal} from "../../ui/elements/Modal";
 import {ChannelEntry} from "../../tree/Channel";
-import {copy_to_clipboard} from "../../utils/helpers";
+import {copyToClipboard} from "../../utils/helpers";
 import * as tooltip from "../../ui/elements/Tooltip";
 import {formatMessage} from "../../ui/frames/chat";
 import {renderBBCodeAsJQuery} from "tc-shared/text/bbcode";
@@ -21,7 +21,7 @@ export function openChannelInfo(channel: ChannelEntry) {
             };
 
             template.find(".button-copy").on('click', event => {
-                copy_to_clipboard(channel.properties.channel_description);
+                copyToClipboard(channel.properties.channel_description);
                 createInfoModal(tr("Description copied"), tr("The channel description has been copied to your clipboard!")).open();
             });
 

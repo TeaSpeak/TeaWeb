@@ -12,7 +12,7 @@ import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {preview_image} from "tc-shared/ui/frames/image_preview";
 import {joinClassList, useTr} from "tc-shared/ui/react-elements/Helper";
 import {spawnContextMenu} from "tc-shared/ui/ContextMenu";
-import {copy_to_clipboard} from "tc-shared/utils/helpers";
+import {copyToClipboard} from "tc-shared/utils/helpers";
 
 const cssStyle = require("./MusicPlaylistRenderer.scss");
 
@@ -141,13 +141,13 @@ const PlaylistEntry = React.memo((props: { serverUniqueId: string, playlistId: n
                     {
                         type: "normal",
                         label: tr("Copy URL"),
-                        click: () => { status.type === "song" ? copy_to_clipboard(status.url) : undefined; },
+                        click: () => { status.type === "song" ? copyToClipboard(status.url) : undefined; },
                         visible: status.type === "song"
                     },
                     {
                         type: "normal",
                         label: tr("Copy description"),
-                        click: () => { status.type === "song" ? copy_to_clipboard(status.description) : undefined; },
+                        click: () => { status.type === "song" ? copyToClipboard(status.description) : undefined; },
                         visible: status.type === "song" && !!status.description
                     },
                     {

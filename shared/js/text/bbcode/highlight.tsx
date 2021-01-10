@@ -6,7 +6,7 @@ import {TagElement} from "vendor/xbbcode/elements";
 import * as React from "react";
 import {tra} from "tc-shared/i18n/localize";
 import * as DOMPurify from "dompurify";
-import {copy_to_clipboard} from "tc-shared/utils/helpers";
+import {copyToClipboard} from "tc-shared/utils/helpers";
 import {rendererReact, rendererText} from "tc-shared/text/bbcode/renderer";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 
@@ -87,7 +87,7 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     function: async () => {
         let reactId = 0;
 
-        if(!settings.static_global(Settings.KEY_CHAT_HIGHLIGHT_CODE)) {
+        if(!settings.getValue(Settings.KEY_CHAT_HIGHLIGHT_CODE)) {
             return;
         }
         /* override default parser */
@@ -127,7 +127,7 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
                             onContextMenu={event => {
                                 event.preventDefault();
                                 spawn_context_menu(event.pageX, event.pageY, {
-                                    callback: () => copy_to_clipboard(lines.join("\n")),
+                                    callback: () => copyToClipboard(lines.join("\n")),
                                     name: tr("Copy code"),
                                     type: MenuEntryType.ENTRY,
                                     icon_class: "client-copy"

@@ -171,7 +171,7 @@ export class ChannelTree {
         this.events.fire("notify_selected_entry_changed", { newEntry: entry, oldEntry: oldEntry });
 
         if(this.selectedEntry instanceof ClientEntry) {
-            if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CLIENT)) {
+            if(settings.getValue(Settings.KEY_SWITCH_INSTANT_CLIENT)) {
                 if(this.selectedEntry instanceof MusicClientEntry) {
                     this.client.getSideBar().showMusicPlayer(this.selectedEntry);
                 } else {
@@ -179,13 +179,13 @@ export class ChannelTree {
                 }
             }
         } else if(this.selectedEntry instanceof ChannelEntry) {
-            if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
+            if(settings.getValue(Settings.KEY_SWITCH_INSTANT_CHAT)) {
                 const conversation = this.client.getChannelConversations().findOrCreateConversation(this.selectedEntry.channelId);
                 this.client.getChannelConversations().setSelectedConversation(conversation);
                 this.client.getSideBar().showChannel();
             }
         } else if(this.selectedEntry instanceof ServerEntry) {
-            if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
+            if(settings.getValue(Settings.KEY_SWITCH_INSTANT_CHAT)) {
                 const conversation = this.client.getChannelConversations().findOrCreateConversation(0);
                 this.client.getChannelConversations().setSelectedConversation(conversation);
                 this.client.getSideBar().showServer();

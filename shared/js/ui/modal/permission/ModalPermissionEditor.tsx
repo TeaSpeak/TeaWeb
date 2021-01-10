@@ -889,7 +889,7 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
         };
 
         events.fire_react("query_permission_list_result", {
-            hideSenselessPermissions: !settings.static_global(Settings.KEY_PERMISSIONS_SHOW_ALL),
+            hideSenselessPermissions: !settings.getValue(Settings.KEY_PERMISSIONS_SHOW_ALL),
             permissions: (groups || []).map(visitGroup)
         });
     });

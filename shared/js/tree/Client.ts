@@ -345,7 +345,7 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
         }
         this.voiceMuted = flagMuted;
 
-        this.channelTree.client.settings.changeServer(Settings.FN_CLIENT_MUTED(this.clientUid()), flagMuted);
+        this.channelTree.client.settings.setValue(Settings.FN_CLIENT_MUTED(this.clientUid()), flagMuted);
         this.updateVoiceVolume();
 
         this.events.fire("notify_mute_state_change", { muted: flagMuted });
@@ -366,12 +366,12 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
                     this.channelTree.client.getSideBar().showClientInfo(this as any);
                 },
                 icon_class: "client-about",
-                visible: !settings.static_global(Settings.KEY_SWITCH_INSTANT_CLIENT)
+                visible: !settings.getValue(Settings.KEY_SWITCH_INSTANT_CLIENT)
             }, {
                 callback: () => {},
                 type: contextmenu.MenuEntryType.HR,
                 name: "",
-                visible: !settings.static_global(Settings.KEY_SWITCH_INSTANT_CLIENT)
+                visible: !settings.getValue(Settings.KEY_SWITCH_INSTANT_CLIENT)
             }
         ]
     }
@@ -763,8 +763,8 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
                 reorder_channel = true;
             }
             if(variable.key == "client_unique_identifier") {
-                this.voiceVolume = this.channelTree.client.settings.server(Settings.FN_CLIENT_VOLUME(this.clientUid()), 1);
-                const mute_status = this.channelTree.client.settings.server(Settings.FN_CLIENT_MUTED(this.clientUid()), false);
+                this.voiceVolume = this.channelTree.client.settings.getValue(Settings.FN_CLIENT_VOLUME(this.clientUid()), 1);
+                const mute_status = this.channelTree.client.settings.getValue(Settings.FN_CLIENT_MUTED(this.clientUid()), false);
                 this.setMuted(mute_status, mute_status); /* force only needed when we want to mute the client */
                 this.updateVoiceVolume();
                 log.debug(LogCategory.CLIENT, tr("Loaded client (%s) server specific properties. Volume: %o Muted: %o."), this.clientUid(), this.voiceVolume, this.voiceMuted);
@@ -917,7 +917,7 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
         this.voiceVolume = value;
 
         this.updateVoiceVolume();
-        this.channelTree.client.settings.changeServer(Settings.FN_CLIENT_VOLUME(this.clientUid()), value);
+        this.channelTree.client.settings.setValue(Settings.FN_CLIENT_VOLUME(this.clientUid()), value);
 
         this.events.fire("notify_audio_level_changed", { newValue: value });
     }
@@ -972,7 +972,7 @@ export class LocalClientEntry extends ClientEntry {
         const old_name = this.properties.client_nickname;
         this.updateVariables({ key: "client_nickname", value: new_name }); /* change it locally */
         return this.handle.serverConnection.send_command("clientupdate", { client_nickname: new_name }).then(() => {
-            settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, new_name);
+            settings.setValue(Settings.KEY_CONNECT_USERNAME, new_name);
             this.channelTree.client.log.log("client.nickname.changed.own", {
                 client: this.log_data(),
                 old_name: old_name,

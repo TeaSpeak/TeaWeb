@@ -46,7 +46,7 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
 
         rendererReact.setTextRenderer(new class extends ElementRenderer<TextElement, React.ReactNode> {
             render(element: TextElement, renderer: ReactRenderer): React.ReactNode {
-                if(!settings.static_global(Settings.KEY_CHAT_COLORED_EMOJIES))
+                if(!settings.getValue(Settings.KEY_CHAT_COLORED_EMOJIES))
                     return element.text();
 
                 let text = element.text();

@@ -446,7 +446,7 @@ function initializeController(events: Registry<NotificationSettingsEvents>) {
         events.fire_react("notify_event_info", {
             key: event.key,
             name: groupNames[event.key] || event.key,
-            log: settings.global(Settings.FN_EVENTS_LOG_ENABLED(event.key), true) ? "enabled" : "disabled",
+            log: settings.getValue(Settings.FN_EVENTS_LOG_ENABLED(event.key), true) ? "enabled" : "disabled",
             notification: getRegisteredNotificationDispatchers().findIndex(e => e as any === event.key) === -1 ? "unavailable" : isNotificationEnabled(event.key as any) ? "enabled" : "disabled",
             focus: isFocusRequestEnabled(event.key as any) ? "enabled" : "disabled"
         });
@@ -455,15 +455,15 @@ function initializeController(events: Registry<NotificationSettingsEvents>) {
     events.on("action_set_state", event => {
         switch (event.state) {
             case "log":
-                settings.changeGlobal(Settings.FN_EVENTS_LOG_ENABLED(event.key), event.value === "enabled");
+                settings.setValue(Settings.FN_EVENTS_LOG_ENABLED(event.key), event.value === "enabled");
                 break;
 
             case "notification":
-                settings.changeGlobal(Settings.FN_EVENTS_NOTIFICATION_ENABLED(event.key), event.value === "enabled");
+                settings.setValue(Settings.FN_EVENTS_NOTIFICATION_ENABLED(event.key), event.value === "enabled");
                 break;
 
             case "focus":
-                settings.changeGlobal(Settings.FN_EVENTS_FOCUS_ENABLED(event.key), event.value === "enabled");
+                settings.setValue(Settings.FN_EVENTS_FOCUS_ENABLED(event.key), event.value === "enabled");
                 break;
         }
 

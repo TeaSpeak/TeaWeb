@@ -148,7 +148,7 @@ export class ServerConnection extends AbstractServerConnection {
         let availableSockets: WrappedWebSocket[] = [];
 
         proxySocket:
-        if(!settings.static_global(Settings.KEY_CONNECT_NO_DNSPROXY)) {
+        if(!settings.getValue(Settings.KEY_CONNECT_NO_DNSPROXY)) {
             let host;
             if(Regex.IP_V4.test(address.host)) {
                 host = address.host.replace(/\./g, "-") + ".con-gate.work";

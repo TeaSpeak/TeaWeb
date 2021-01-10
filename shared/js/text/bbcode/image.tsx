@@ -4,7 +4,7 @@ import * as React from "react";
 import * as loader from "tc-loader";
 import {rendererReact, rendererText} from "tc-shared/text/bbcode/renderer";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
-import {copy_to_clipboard} from "tc-shared/utils/helpers";
+import {copyToClipboard} from "tc-shared/utils/helpers";
 import * as image_preview from "tc-shared/ui/frames/image_preview";
 
 export const regexImage = /^(?:https?):(?:\/{1,3}|\\)[-a-zA-Z0-9:;,@#%&()~_?+=\/\\.]*$/g;
@@ -43,7 +43,7 @@ function loadImageForElement(element: HTMLImageElement) {
             type: contextmenu.MenuEntryType.ENTRY,
             icon_class: "client-browse-addon-online"
         }, contextmenu.Entry.HR(), {
-            callback: () => copy_to_clipboard(url),
+            callback: () => copyToClipboard(url),
             name: tr("Copy image URL to clipboard"),
             type: contextmenu.MenuEntryType.ENTRY,
             icon_class: "client-copy"

@@ -651,7 +651,7 @@ class ChannelVideoController {
         let videoStreamingCount = 0;
         if(this.localVideoController) {
             const localBroadcasting = this.localVideoController.isBroadcasting();
-            if(localBroadcasting || settings.static_global(Settings.KEY_VIDEO_FORCE_SHOW_OWN_VIDEO)) {
+            if(localBroadcasting || settings.getValue(Settings.KEY_VIDEO_FORCE_SHOW_OWN_VIDEO)) {
                 videoIds.push(this.localVideoController.videoId);
                 if(localBroadcasting) {
                     videoStreamingCount++;
@@ -675,7 +675,7 @@ class ChannelVideoController {
                 const controller = this.clientVideos[client.clientId()];
                 if(controller.isBroadcasting()) {
                     videoStreamingCount++;
-                } else if(!settings.static_global(Settings.KEY_VIDEO_SHOW_ALL_CLIENTS)) {
+                } else if(!settings.getValue(Settings.KEY_VIDEO_SHOW_ALL_CLIENTS)) {
                     continue;
                 }
                 videoIds.push(controller.videoId);

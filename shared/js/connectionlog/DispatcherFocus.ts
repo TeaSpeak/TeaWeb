@@ -15,5 +15,5 @@ export function requestWindowFocus() {
 }
 
 export function isFocusRequestEnabled(type: EventType) {
-    return settings.global(Settings.FN_EVENTS_FOCUS_ENABLED(type), focusDefaultStatus[type as any] || false);
+    return settings.getValue(Settings.FN_EVENTS_FOCUS_ENABLED(type), focusDefaultStatus[type as any] || false);
 }

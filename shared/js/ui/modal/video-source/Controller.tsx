@@ -119,8 +119,8 @@ function updateBroadcastConfigFromSource(source: VideoSource, constraints: Video
 async function generateAndApplyDefaultConfig(source: VideoSource) : Promise<VideoBroadcastConfig> {
     const videoTrack = source.getStream().getVideoTracks()[0];
 
-    let maxHeight = settings.static_global(Settings.KEY_VIDEO_DEFAULT_MAX_HEIGHT);
-    let maxWidth = settings.static_global(Settings.KEY_VIDEO_DEFAULT_MAX_WIDTH);
+    let maxHeight = settings.getValue(Settings.KEY_VIDEO_DEFAULT_MAX_HEIGHT);
+    let maxWidth = settings.getValue(Settings.KEY_VIDEO_DEFAULT_MAX_WIDTH);
 
     const trackSettings = videoTrack.getSettings();
     const capabilities = source.getCapabilities();
@@ -154,8 +154,8 @@ async function generateAndApplyDefaultConfig(source: VideoSource) : Promise<Vide
         }
     }
 
-    broadcastConstraints.dynamicQuality = settings.static_global(Settings.KEY_VIDEO_DYNAMIC_QUALITY);
-    broadcastConstraints.dynamicFrameRate = settings.static_global(Settings.KEY_VIDEO_DYNAMIC_FRAME_RATE);
+    broadcastConstraints.dynamicQuality = settings.getValue(Settings.KEY_VIDEO_DYNAMIC_QUALITY);
+    broadcastConstraints.dynamicFrameRate = settings.getValue(Settings.KEY_VIDEO_DYNAMIC_FRAME_RATE);
 
     try {
         await applyBroadcastConfig(source, broadcastConstraints);

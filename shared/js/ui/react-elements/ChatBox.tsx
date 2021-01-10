@@ -96,7 +96,7 @@ const nodeToText = (element: Node) => {
             const content = [...element.childNodes].map(nodeToText).join("");
 
             if(element.href) {
-                if(settings.static_global(Settings.KEY_CHAT_ENABLE_MARKDOWN)) {
+                if(settings.getValue(Settings.KEY_CHAT_ENABLE_MARKDOWN)) {
                     if(content && element.title) {
                         return `[${content}](${element.href} "${element.title}")`;
                     } else if(content) {
@@ -104,7 +104,7 @@ const nodeToText = (element: Node) => {
                     } else {
                         return `[${element.href}](${element.href})`;
                     }
-                } else if(settings.static_global(Settings.KEY_CHAT_ENABLE_BBCODE)) {
+                } else if(settings.getValue(Settings.KEY_CHAT_ENABLE_BBCODE)) {
                     if(content) {
                         return `[url=${element.href}]${content}"[/url]`;
                     } else {
@@ -308,14 +308,14 @@ export interface ChatBoxState {
 }
 
 const MarkdownFormatHelper = () => {
-    const [ visible, setVisible ] = useState(settings.global(Settings.KEY_CHAT_ENABLE_MARKDOWN));
+    const [ visible, setVisible ] = useState(settings.getValue(Settings.KEY_CHAT_ENABLE_MARKDOWN));
 
     settings.events.reactUse("notify_setting_changed", event => {
         if(event.setting !== Settings.KEY_CHAT_ENABLE_MARKDOWN.key) {
             return;
         }
 
-        setVisible(settings.global(Settings.KEY_CHAT_ENABLE_MARKDOWN));
+        setVisible(settings.getValue(Settings.KEY_CHAT_ENABLE_MARKDOWN));
     });
 
     if(visible) {

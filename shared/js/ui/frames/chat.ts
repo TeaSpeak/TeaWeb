@@ -324,7 +324,7 @@ export function set_icon_size(size: string) {
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     name: "icon size init",
     function: async () => {
-        set_icon_size((settings.static_global(Settings.KEY_ICON_SIZE) / 100).toFixed(2) + "em");
+        set_icon_size((settings.getValue(Settings.KEY_ICON_SIZE) / 100).toFixed(2) + "em");
     },
     priority: 10
 });

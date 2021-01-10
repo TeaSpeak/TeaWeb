@@ -9,21 +9,22 @@ export function hashPassword(password: string) : Promise<string> {
     });
 }
 
-export const copy_to_clipboard = str => {
+export const copyToClipboard = str => {
     console.log(tr("Copy text to clipboard: %s"), str);
-    const el = document.createElement('textarea');
-    el.value = str;
-    el.setAttribute('readonly', '');
-    el.style.position = 'absolute';
-    el.style.left = '-9999px';
-    document.body.appendChild(el);
-    const selected =
-        document.getSelection().rangeCount > 0
-            ? document.getSelection().getRangeAt(0)
-            : false;
-    el.select();
+
+    const element = document.createElement('textarea');
+    element.value = str;
+    element.setAttribute('readonly', '');
+    element.style.position = 'absolute';
+    element.style.left = '-9999px';
+    document.body.appendChild(element);
+
+    const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false;
+
+    element.select();
     document.execCommand('copy');
-    document.body.removeChild(el);
+
+    document.body.removeChild(element);
     if (selected) {
         document.getSelection().removeAllRanges();
         document.getSelection().addRange(selected);

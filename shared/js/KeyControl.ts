@@ -135,7 +135,7 @@ let config: Config;
 export function initialize() {
     let cfg: Config;
     try {
-        cfg = JSON.parse(settings.global(Settings.KEY_KEYCONTROL_DATA));
+        cfg = JSON.parse(settings.getValue(Settings.KEY_KEYCONTROL_DATA));
     } catch (e) {
         log.error(LogCategory.GENERAL, tr("Failed to parse old key control data."));
         cfg = {};
@@ -163,7 +163,7 @@ export function initialize() {
 }
 
 function save_config() {
-    settings.changeGlobal(Settings.KEY_KEYCONTROL_DATA, JSON.stringify(config));
+    settings.setValue(Settings.KEY_KEYCONTROL_DATA, JSON.stringify(config));
 }
 
 function bind_key(action: string, key: KeyDescriptor) {

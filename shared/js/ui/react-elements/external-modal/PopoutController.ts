@@ -1,15 +1,10 @@
 import {getIpcInstance as getIPCInstance} from "../../../ipc/BrowserIPC";
-import {Settings, SettingsKey} from "../../../settings";
+import {AppParameters} from "../../../settings";
 import {
     Controller2PopoutMessages, EventControllerBase,
     PopoutIPCMessage
 } from "../../../ui/react-elements/external-modal/IPCMessage";
 import {Registry, RegistryMap} from "../../../events";
-
-const kSettingIPCChannel: SettingsKey<string> = {
-    key: "ipc-channel",
-    valueType: "string"
-};
 
 let controller: PopoutController;
 export function getPopoutController() {
@@ -25,9 +20,9 @@ class PopoutController extends EventControllerBase<"popout"> {
 
     constructor() {
         super();
-        this.ipcRemoteId = Settings.instance.static(Settings.KEY_IPC_REMOTE_ADDRESS, "invalid");
+        this.ipcRemoteId = AppParameters.getValue(AppParameters.KEY_IPC_REMOTE_ADDRESS, "invalid");
 
-        this.ipcChannel = getIPCInstance().createChannel(this.ipcRemoteId, Settings.instance.static(kSettingIPCChannel, "invalid"));
+        this.ipcChannel = getIPCInstance().createChannel(this.ipcRemoteId, AppParameters.getValue(AppParameters.KEY_IPC_REMOTE_ADDRESS, "invalid"));
         this.ipcChannel.messageHandler = this.handleIPCMessage.bind(this);
     }
 

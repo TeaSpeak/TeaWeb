@@ -34,7 +34,7 @@ export class ContextDivider extends React.Component<ContextDividerProperties, Co
 
         this.value = this.props.defaultValue;
         try {
-            const config = JSON.parse(settings.global(Settings.FN_SEPARATOR_STATE(this.props.id), undefined));
+            const config = JSON.parse(settings.getValue(Settings.FN_SEPARATOR_STATE(this.props.id), undefined));
             if(typeof config.value !== "number")
                 throw "Invalid value";
 
@@ -150,7 +150,7 @@ export class ContextDivider extends React.Component<ContextDividerProperties, Co
         document.removeEventListener('touchcancel', this.listenerUp);
         document.documentElement.classList.remove(cssStyle.documentActiveClass);
 
-        settings.changeGlobal(Settings.FN_SEPARATOR_STATE(this.props.id), JSON.stringify({
+        settings.setValue(Settings.FN_SEPARATOR_STATE(this.props.id), JSON.stringify({
             value: this.value
         }));
     }

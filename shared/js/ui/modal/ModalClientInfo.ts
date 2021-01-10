@@ -1,7 +1,7 @@
 import {ClientConnectionInfo, ClientEntry} from "../../tree/Client";
 import PermissionType from "../../permission/PermissionType";
 import {createInfoModal, createModal, Modal} from "../../ui/elements/Modal";
-import {copy_to_clipboard} from "../../utils/helpers";
+import {copyToClipboard} from "../../utils/helpers";
 import * as i18nc from "../../i18n/country";
 import * as tooltip from "../../ui/elements/Tooltip";
 import * as moment from "moment";
@@ -142,7 +142,7 @@ function apply_basic_info(client: ClientEntry, tag: JQuery, modal: Modal, callba
         container.find(".value-dbid").text(client.properties.client_database_id);
 
         container.find(".button-copy").on('click', event => {
-            copy_to_clipboard(client.clientUid());
+            copyToClipboard(client.clientUid());
             createInfoModal(tr("Unique ID copied"), tr("The unique id has been copied to your clipboard!")).open();
         });
     }
@@ -216,7 +216,7 @@ function apply_basic_info(client: ClientEntry, tag: JQuery, modal: Modal, callba
         value.text(tr("loading..."));
 
         container.find(".button-copy").on('click', event => {
-            copy_to_clipboard(value.text());
+            copyToClipboard(value.text());
             createInfoModal(tr("Client IP copied"), tr("The client IP has been copied to your clipboard!")).open();
         });
 

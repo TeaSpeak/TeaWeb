@@ -1,6 +1,6 @@
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
-import {settings, Settings} from "tc-shared/settings";
+import {AppParameters, settings, Settings} from "tc-shared/settings";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import * as bipc from "./ipc/BrowserIPC";
@@ -23,7 +23,7 @@ import * as global_ev_handler from "./events/ClientGlobalControlHandler";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {FileTransferState, TransferProvider,} from "tc-shared/file/Transfer";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
-import {copy_to_clipboard} from "tc-shared/utils/helpers";
+import {copyToClipboard} from "tc-shared/utils/helpers";
 import {checkForUpdatedApp} from "tc-shared/update";
 import {setupJSRender} from "tc-shared/ui/jsrender";
 import {ConnectRequestData} from "tc-shared/ipc/ConnectHandler";
@@ -81,12 +81,7 @@ async function initialize_app() {
         console.warn(tr("Failed to initialize audio controller!"));
     }
 
-    aplayer.on_ready(() => {
-        if(aplayer.set_master_volume)
-            aplayer.on_ready(() => aplayer.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER) / 100));
-        else
-            log.warn(LogCategory.GENERAL, tr("Client does not support aplayer.set_master_volume()... May client is too old?"));
-    });
+    aplayer.on_ready(() => aplayer.set_master_volume(settings.getValue(Settings.KEY_SOUND_MASTER) / 100));
 
     setDefaultRecorder(new RecorderProfile("default"));
     defaultRecorder.initialize().catch(error => {
@@ -96,7 +91,7 @@ async function initialize_app() {
     sound.initialize().then(() => {
         log.info(LogCategory.AUDIO, tr("Sounds initialized"));
     });
-    sound.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER_SOUNDS) / 100);
+    sound.set_master_volume(settings.getValue(Settings.KEY_SOUND_MASTER_SOUNDS) / 100);
 
     try {
         await ppt.initialize();
@@ -116,7 +111,7 @@ export function handle_connect_request(properties: ConnectRequestData, connectio
     const password_hashed = properties.password ? properties.password.hashed : false;
 
     if(profile && profile.valid()) {
-        settings.changeGlobal(Settings.KEY_USER_IS_NEW, false);
+        settings.setValue(Settings.KEY_USER_IS_NEW, false);
 
         if(!aplayer.initialized()) {
             spawnYesNo(tra("Connect to {}", properties.address), tra("Would you like to connect to {}?", properties.address), result => {
@@ -147,7 +142,7 @@ export function handle_connect_request(properties: ConnectRequestData, connectio
 function main() {
     /* initialize font */
     {
-        const font = settings.static_global(Settings.KEY_FONT_SIZE);
+        const font = settings.getValue(Settings.KEY_FONT_SIZE);
         $(document.body).css("font-size", font + "px");
         settings.globalChangeListener(Settings.KEY_FONT_SIZE, value => {
             $(document.body).css("font-size", value + "px");
@@ -165,9 +160,7 @@ function main() {
                 spawn_context_menu(event.pageX, event.pageY, {
                     type: MenuEntryType.ENTRY,
                     name: tr("Copy"),
-                    callback: () => {
-                        copy_to_clipboard(event.target.value);
-                    },
+                    callback: () => copyToClipboard(event.target.value),
                     icon_class: "client-copy",
                     visible: !!event.target.value
                 }, {
@@ -181,21 +174,20 @@ function main() {
                     visible: __build.target === "client",
                 });
             }
+
             event.preventDefault();
             return;
         }
 
-        if(settings.static_global(Settings.KEY_DISABLE_GLOBAL_CONTEXT_MENU)) {
+        if(settings.getValue(Settings.KEY_DISABLE_GLOBAL_CONTEXT_MENU)) {
             event.preventDefault();
         }
     });
     window.removeLoaderContextMenuHook();
 
-    //top_menu.initialize();
-
-    const initial_handler = server_connections.spawn_server_connection();
-    initial_handler.acquireInputHardware().then(() => {});
-    server_connections.set_active_connection(initial_handler);
+    const initialHandler = server_connections.spawn_server_connection();
+    server_connections.set_active_connection(initialHandler);
+    initialHandler.acquireInputHardware().then(() => {});
 
     /** Setup the XF forum identity **/
     fidentity.update_forum();
@@ -206,113 +198,17 @@ function main() {
         anonymize_ip_addresses: true,
         volatile_collection_only: false
     });
+
     stats.register_user_count_listener(status => {
         log.info(LogCategory.STATISTICS, tr("Received user count update: %o"), status);
     });
 
-    server_connections.set_active_connection(server_connections.all_connections()[0]);
     checkForUpdatedApp();
 
-    (window as any).test_download = async () => {
-        const connection = server_connections.active_connection();
-        const download = connection.fileManager.initializeFileDownload({
-            targetSupplier: async () => await TransferProvider.provider().createDownloadTarget(),
-            name: "HomeStudent2019Retail.img",
-            path: "/",
-            channel: 4
-        });
-
-        console.log("Download stated");
-        await download.awaitFinished();
-        console.log("Download finished (%s)", FileTransferState[download.transferState()]);
-        //console.log(await (download.target as ResponseTransferTarget).getResponse().blob());
-        console.log("Have buffer");
-    };
-
-    (window as any).test_upload = async () => {
-        const connection = server_connections.active_connection();
-        const download = connection.fileManager.initializeFileUpload({
-            source: async () => await TransferProvider.provider().createTextSource("Hello my lovely world...."),
-            name: "test-upload.txt",
-            path: "/",
-            channel: 4
-        });
-
-        console.log("Download stated");
-        await download.awaitFinished();
-        console.log("Download finished (%s)", FileTransferState[download.transferState()]);
-        //console.log(await (download.target as ResponseTransferTarget).getResponse().blob());
-        console.log("Have buffer");
-    };
-
-    /* schedule it a bit later then the main because the main function is still within the loader */
-    setTimeout(() => {
-        //(window as any).spawnVideo();
-        /*
-        Modals.createChannelModal(connection, undefined, undefined, connection.permissions, (cb, perms) => {
-            
-        });
-        */
-       // Modals.openServerInfo(connection.channelTree.server);
-        //Modals.createServerModal(connection.channelTree.server, properties => Promise.resolve());
-
-        //Modals.openClientInfo(connection.getClient());
-        //Modals.openServerInfoBandwidth(connection.channelTree.server);
-
-        //Modals.openBanList(connection);
-        /*
-        Modals.spawnBanClient(connection,[
-            {name: "WolverinDEV", unique_id: "XXXX"},
-            {name: "WolverinDEV", unique_id: "XXXX"},
-            {name: "WolverinDEV", unique_id: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"},
-            {name: "WolverinDEV", unique_id: "YYY"}
-        ], () => {});
-        */
-    }, 4000);
-    //spawnSettingsModal("general-keymap");
-    //Modals.spawnKeySelect(console.log);
-    //Modals.spawnBookmarkModal();
-
-    /*
-    {
-        const modal = createModal({
-            header: tr("Test Net Graph"),
-            body: () => {
-                const canvas = $.spawn("canvas")
-                    .css("position", "absolute")
-                    .css({
-                        top: 0,
-                        bottom: 0,
-                        right: 0,
-                        left: 0
-                    });
-
-                return $.spawn("div")
-                    .css("height", "5em")
-                    .css("width", "30em")
-                    .css("position", "relative")
-                    .append(canvas);
-            },
-            footer: null
-        });
-
-        const graph = new net.graph.Graph(modal.htmlTag.find("canvas")[0] as any);
-        graph.initialize();
-
-        modal.close_listener.push(() => graph.terminate());
-        modal.open();
-    }
-     */
-    //setTimeout(() => spawnPermissionEditorModal(server_connections.active_connection()), 3000);
-    //setTimeout(() => spawnGroupCreate(server_connections.active_connection(), "server"), 3000);
-
-    if(settings.static_global(Settings.KEY_USER_IS_NEW) && !preventWelcomeUI) {
+    if(settings.getValue(Settings.KEY_USER_IS_NEW) && !preventWelcomeUI) {
         const modal = openModalNewcomer();
-        modal.close_listener.push(() => settings.changeGlobal(Settings.KEY_USER_IS_NEW, false));
+        modal.close_listener.push(() => settings.setValue(Settings.KEY_USER_IS_NEW, false));
     }
-
-    //spawnGlobalSettingsEditor();
-    //spawnVideoPopout(server_connections.active_connection(), "https://www.youtube.com/watch?v=9683D18fyvs");
 }
 
 const task_teaweb_starter: loader.Task = {
@@ -325,14 +221,17 @@ const task_teaweb_starter: loader.Task = {
                 log.info(LogCategory.VOICE, tr("Initialize audio controller later!"));
                 if(!aplayer.initializeFromGesture) {
                     console.error(tr("Missing aplayer.initializeFromGesture"));
-                } else
+                } else {
                     $(document).one('click', () => aplayer.initializeFromGesture());
+                }
             }
-            loader.config.abortAnimationOnFinish = settings.static_global(Settings.KEY_LOADER_ANIMATION_ABORT);
+
+            loader.config.abortAnimationOnFinish = settings.getValue(Settings.KEY_LOADER_ANIMATION_ABORT);
         } catch (ex) {
             console.error(ex.stack);
-            if(ex instanceof ReferenceError || ex instanceof TypeError)
+            if(ex instanceof ReferenceError || ex instanceof TypeError) {
                 ex = ex.name + ": " + ex.message;
+            }
             loader.critical_error("Failed to invoke main function:<br>" + ex);
         }
     },
@@ -342,77 +241,74 @@ const task_teaweb_starter: loader.Task = {
 const task_connect_handler: loader.Task = {
     name: "Connect handler",
     function: async () => {
-        const address = settings.static(Settings.KEY_CONNECT_ADDRESS, "");
+        const address = AppParameters.getValue(AppParameters.KEY_CONNECT_ADDRESS, undefined);
+        if(typeof address === "undefined") {
+            loader.register_task(loader.Stage.LOADED, task_teaweb_starter);
+            return;
+        }
+
+        /* FIXME: All additional parameters! */
+        const connectData = {
+            address: address,
+
+            profile: AppParameters.getValue(AppParameters.KEY_CONNECT_PROFILE, ""),
+            username: AppParameters.getValue(AppParameters.KEY_CONNECT_NICKNAME, ""),
+
+            password: {
+                value: AppParameters.getValue(AppParameters.KEY_CONNECT_SERVER_PASSWORD, ""),
+                hashed: true
+            }
+        };
+
         const chandler = bipc.getInstanceConnectHandler();
-        if(settings.static(Settings.KEY_FLAG_CONNECT_DEFAULT, false) && address) {
-            const connect_data = {
-                address: address,
+        if(chandler && AppParameters.getValue(AppParameters.KEY_CONNECT_NO_SINGLE_INSTANCE)) {
+            try {
+                await chandler.post_connect_request(connectData, () => new Promise<boolean>(resolve => {
+                    spawnYesNo(tr("Another TeaWeb instance is already running"), tra("Another TeaWeb instance is already running.{:br:}Would you like to connect there?"), response => {
+                        resolve(response);
+                    }, {
+                        closeable: false
+                    }).open();
+                }));
+                log.info(LogCategory.CLIENT, tr("Executed connect successfully in another browser window. Closing this window"));
 
-                profile: settings.static(Settings.KEY_CONNECT_PROFILE, ""),
-                username: settings.static(Settings.KEY_CONNECT_USERNAME, ""),
-
-                password: {
-                    value: settings.static(Settings.KEY_CONNECT_PASSWORD, ""),
-                    hashed: settings.static(Settings.KEY_FLAG_CONNECT_PASSWORD, false)
-                }
-            };
-
-            if(chandler && !settings.static(Settings.KEY_CONNECT_NO_SINGLE_INSTANCE)) {
-                try {
-                    await chandler.post_connect_request(connect_data, () => new Promise<boolean>(resolve => {
-                        spawnYesNo(tr("Another TeaWeb instance is already running"), tra("Another TeaWeb instance is already running.{:br:}Would you like to connect there?"), response => {
-                            resolve(response);
-                        }, {
-                            closeable: false
-                        }).open();
-                    }));
-                    log.info(LogCategory.CLIENT, tr("Executed connect successfully in another browser window. Closing this window"));
-
-                    const message =
-                        "You're connecting to {0} within the other TeaWeb instance.{:br:}" +
-                        "You could now close this page.";
-                    createInfoModal(
-                        tr("Connecting successfully within other instance"),
-                        formatMessage(/* @tr-ignore */ tr(message), connect_data.address),
-                        {
-                            closeable: false,
-                            footer: undefined
-                        }
-                    ).open();
-                    return;
-                } catch(error) {
-                    log.info(LogCategory.CLIENT, tr("Failed to execute connect within other TeaWeb instance. Using this one. Error: %o"), error);
-                }
+                const message =
+                    "You're connecting to {0} within the other TeaWeb instance.{:br:}" +
+                    "You could now close this page.";
+                createInfoModal(
+                    tr("Connecting successfully within other instance"),
+                    formatMessage(/* @tr-ignore */ tr(message), connectData.address),
+                    {
+                        closeable: false,
+                        footer: undefined
+                    }
+                ).open();
+                return;
+            } catch(error) {
+                log.info(LogCategory.CLIENT, tr("Failed to execute connect within other TeaWeb instance. Using this one. Error: %o"), error);
             }
 
-            preventWelcomeUI = true;
-            loader.register_task(loader.Stage.LOADED, {
-                priority: 0,
-                function: async () => handle_connect_request(connect_data, server_connections.active_connection() || server_connections.spawn_server_connection()),
-                name: tr("default url connect")
-            });
-        }
-        if(chandler) {
-            /* no instance avail, so lets make us avail */
-            chandler.callback_available = data => {
-                return !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION);
-            };
+            if(chandler) {
+                /* no instance avail, so lets make us avail */
+                chandler.callback_available = () => {
+                    return !settings.getValue(Settings.KEY_DISABLE_MULTI_SESSION);
+                };
 
-            chandler.callback_execute = data => {
-                preventWelcomeUI = true;
-                handle_connect_request(data, server_connections.spawn_server_connection());
-                return true;
+                chandler.callback_execute = data => {
+                    preventWelcomeUI = true;
+                    handle_connect_request(data, server_connections.spawn_server_connection());
+                    return true;
+                }
             }
         }
+
+        preventWelcomeUI = true;
+        loader.register_task(loader.Stage.LOADED, {
+            priority: 0,
+            function: async () => handle_connect_request(connectData, server_connections.active_connection() || server_connections.spawn_server_connection()),
+            name: tr("default url connect")
+        });
         loader.register_task(loader.Stage.LOADED, task_teaweb_starter);
-    },
-    priority: 10
-};
-
-const task_certificate_callback: loader.Task = {
-    name: "certificate accept tester",
-    function: async () => {
-        loader.register_task(loader.Stage.LOADED, task_connect_handler);
     },
     priority: 10
 };
@@ -439,16 +335,19 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
             await initialize();
 
             if(__build.target == "web") {
-                loader.register_task(loader.Stage.LOADED, task_certificate_callback);
+                loader.register_task(loader.Stage.LOADED, task_connect_handler);
             } else {
                 loader.register_task(loader.Stage.LOADED, task_teaweb_starter);
             }
         } catch (ex) {
-            if(ex instanceof Error || typeof(ex.stack) !== "undefined")
+            if(ex instanceof Error || typeof(ex.stack) !== "undefined") {
                 console.error((tr || (msg => msg))("Critical error stack trace: %o"), ex.stack);
+            }
 
-            if(ex instanceof ReferenceError || ex instanceof TypeError)
+            if(ex instanceof ReferenceError || ex instanceof TypeError) {
                 ex = ex.name + ": " + ex.message;
+            }
+
             loader.critical_error("Failed to boot app function:<br>" + ex);
         }
     },
@@ -458,12 +357,12 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
 loader.register_task(loader.Stage.LOADED, {
     name: "error task",
     function: async () => {
-        if(Settings.instance.static(Settings.KEY_LOAD_DUMMY_ERROR, false)) {
-            loader.critical_error("The tea is cold!", "Argh, this is evil! Cold tea dosn't taste good.");
+        if(AppParameters.getValue(AppParameters.KEY_LOAD_DUMMY_ERROR)) {
+            loader.critical_error("The tea is cold!", "Argh, this is evil! Cold tea does not taste good.");
             throw "The tea is cold!";
         }
     },
-    priority: 20
+    priority: 2000
 });
 
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING,{
@@ -471,7 +370,7 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING,{
     function: async () => {
         try { //Initialize main template
             const main = $("#tmpl_main").renderTag({
-                multi_session:  !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION),
+                multi_session:  !settings.getValue(Settings.KEY_DISABLE_MULTI_SESSION),
                 app_version: __build.version
             }).dividerfy();
 
