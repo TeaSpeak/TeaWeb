@@ -901,7 +901,7 @@
       }
     },
     {
-      "translated": "отменить",
+      "translated": "Отменить",
       "flags": [
         "google-translate"
       ],
@@ -4767,7 +4767,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "Server Permissions"
+        "message": "Server permissions"
       }
     },
     {
@@ -5437,6 +5437,15 @@
       }
     },
     {
+      "translated": "Отключиться от всех серверов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Disconnect from all servers"
+      }
+    },
+    {
       "translated": "Закладки",
       "flags": [
         "google-translate"
@@ -5725,6 +5734,15 @@
       }
     },
     {
+      "translated": "Тип канала и боковой панели",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Channel and Sidebar Type"
+      }
+    },
+    {
       "translated": "Тип канала",
       "flags": [
         "google-translate"
@@ -5770,12 +5788,48 @@
       }
     },
     {
-      "translated": "Сортировать этот канал после:",
+      "translated": "Тип боковой панели",
       "flags": [
         "google-translate"
       ],
       "key": {
-        "message": "Sort this channel after:"
+        "message": "Sidebar Type"
+      }
+    },
+    {
+      "translated": "Чат",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Conversation"
+      }
+    },
+    {
+      "translated": "Описание канала",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Channel description"
+      }
+    },
+    {
+      "translated": "Просмотр файлов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "File browser"
+      }
+    },
+    {
+      "translated": "Сортировать этот канал после",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Sort this channel after"
       }
     },
     {
@@ -5811,7 +5865,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "Voice Mobile"
+        "message": "Mobile"
       }
     },
     {
@@ -5820,7 +5874,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "Voice Desktop"
+        "message": "Voice"
       }
     },
     {
@@ -5860,7 +5914,7 @@
       }
     },
     {
-      "translated": "Качественный:",
+      "translated": "Качество:",
       "flags": [
         "google-translate"
       ],
@@ -5923,15 +5977,6 @@
       }
     },
     {
-      "translated": "Представление описания:",
-      "flags": [
-        "google-translate"
-      ],
-      "key": {
-        "message": "Subscribe:"
-      }
-    },
-    {
       "translated": "Требуемая мощность для подписки на этот канал",
       "flags": [
         "google-translate"
@@ -5941,12 +5986,12 @@
       }
     },
     {
-      "translated": "Изменить:",
+      "translated": "Изменить",
       "flags": [
         "google-translate"
       ],
       "key": {
-        "message": "Modify:"
+        "message": "Modify"
       }
     },
     {
@@ -5959,12 +6004,12 @@
       }
     },
     {
-      "translated": "Удалять:",
+      "translated": "Удалить",
       "flags": [
         "google-translate"
       ],
       "key": {
-        "message": "Delete:"
+        "message": "Delete"
       }
     },
     {
@@ -6157,12 +6202,12 @@
       }
     },
     {
-      "translated": "Максимальное количество пользователей в семье",
+      "translated": "Макс. количество пользователей в семье",
       "flags": [
         "google-translate"
       ],
       "key": {
-        "message": "Family Max users"
+        "message": "Max family users"
       }
     },
     {
@@ -7566,7 +7611,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "filter permissions"
+        "message": "Filter permissions"
       }
     },
     {
@@ -8146,12 +8191,12 @@
       }
     },
     {
-      "translated": "Кодек:",
+      "translated": "Кодек",
       "flags": [
         "google-translate"
       ],
       "key": {
-        "message": "Codec:"
+        "message": "Codec"
       }
     },
     {
@@ -9271,7 +9316,7 @@
       }
     },
     {
-      "translated": "Уведомления",
+      "translated": "Звуковые уведомления",
       "flags": [
         "google-translate"
       ],
@@ -9366,7 +9411,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "You're chatting in Server"
+        "message": "You're chatting on Server"
       }
     },    
     {
@@ -9375,7 +9420,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "Private chats"
+        "message": "Private Chats"
       }
     },
     {
@@ -9384,7 +9429,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "Your ping"
+        "message": "Your Ping"
       }
     },
     {
@@ -10752,7 +10797,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "Description view"
+        "message": "View description"
       }
     },
     {
@@ -10788,7 +10833,16 @@
         "google-translate"
       ],
       "key": {
-        "message": "Directory create"
+        "message": "Create directory"
+      }
+    },
+    {
+      "translated": "Удалить файлы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Delete file"
       }
     },
     {
@@ -11284,7 +11338,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "Manage Bot"
+        "message": "Manage bot"
       }
     },
     {
@@ -12024,7 +12078,358 @@
       "key": {
         "message": "Do you really want to delete the group "
       }
-    }                                 
+    },
+    {
+      "translated": "Не подключен ни к одному серверу",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Not connected to any server"
+      }
+    },    
+    {
+      "translated": "Горячие клавиши",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Keymap"
+      }
+    },
+    {
+      "translated": "Всплывающие уведомления",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Notifications"
+      }
+    },
+    {
+      "translated": "Состояние подключения:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Connection status:"
+      }
+    },
+    {
+      "translated": "Не подключен",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Disconnected"
+      }
+    },
+    {
+      "translated": "Хорошее",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Healthy"
+      }
+    },
+    {
+      "translated": "Детали подключения",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Connection Details"
+      }
+    },
+    {
+      "translated": "Введите здесь своё сообщение...",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Type your message here..."
+      }
+    },
+    {
+      "translated": "Начать демонстарцию экрана",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Start screen sharing"
+      }
+    },
+    {
+      "translated": "Завершить демонстарцию экрана",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Stop screen sharing"
+      }
+    },
+    {
+      "translated": "Параметры демонстарции экрана",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Configure/change screen sharing"
+      }
+    },
+    {
+      "translated": "Начать видеоконференцию",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Start video broadcasting"
+      }
+    },
+    {
+      "translated": "Завершить видеоконференцию",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Stop video broadcasting"
+      }
+    },
+    {
+      "translated": "Параметры видеоконференции",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Configure/change video broadcasting"
+      }
+    },
+    {
+      "translated": "Видеотрансляция",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Start video Broadcasting"
+      }
+    },
+    {
+      "translated": "Выберите источник",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Select your source"
+      }
+    },
+    {
+      "translated": "Применить изменения",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Apply Changed"
+      }
+    },
+    {
+      "translated": "Полный экран",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Full Screen"
+      }
+    },
+    {
+      "translated": "Окно программы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Window"
+      }
+    },
+    {
+      "translated": "Экран ",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Screen "
+      }
+    },
+    {
+      "translated": "Выбрать Источник",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Select Source"
+      }
+    },
+    {
+      "translated": "Предварительный просмотр видео",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Video preview"
+      }
+    },
+    {
+      "translated": "Размер",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Dimension"
+      }
+    },
+    {
+      "translated": "Соотношение сторон",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Aspect ratio"
+      }
+    },
+    {
+      "translated": "Ширина",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Width"
+      }
+    },
+    {
+      "translated": "Высота",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Height"
+      }
+    },
+    {
+      "translated": "Частота кадров",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Framerate"
+      }
+    },
+    {
+      "translated": "Битрейт",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Bitrate"
+      }
+    },
+    {
+      "translated": "Расчетный Битрейт",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Estimated Bitrate"
+      }
+    },
+    {
+      "translated": "Это приблизительная оценка битрейта, используемого для передачи видео такого качества. Реальный битрейт может иметь более высокие пики, но средние значения ниже оценки. Влиятельными факторами являются размер видео, а также частота кадров.",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "This is a rough estimate of the bitrate used to transfer video of that quality. The real bitrate might have higher peaks but averages below the estimate. Influential factors are the video size as well as the frame rate."
+      }
+    },
+    {
+      "translated": "Открыть просмотр файлов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Open channel file browser"
+      }
+    },
+    {
+      "translated": "Просмотр файлов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "File Browser"
+      }
+    },
+    {
+      "translated": "Посл.изменение",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Last changed"
+      }
+    },
+    {
+      "translated": "Выбрать унаследованный режим подписки",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Use inherited subscribe mode"
+      }
+    },
+    {
+      "translated": "Список зрителей",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Watcher list"
+      }
+    },
+    {
+      "translated": "Отписаться",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Unfollow"
+      }
+    },
+    {
+      "translated": "Изменение переменных CSS",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Modify CSS variables"
+      }
+    },
+    {
+      "translated": "Свернуть все каналы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Collapse all channels"
+      }
+    },
+    {
+      "translated": "Развернуть все каналы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Expend all channels"
+      }
+    }                                       
                     
 
   ]
