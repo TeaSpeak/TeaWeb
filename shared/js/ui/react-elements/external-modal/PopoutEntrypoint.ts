@@ -1,8 +1,7 @@
 import * as loader from "tc-loader";
+import {Stage} from "tc-loader";
 import * as ipc from "../../../ipc/BrowserIPC";
 import * as i18n from "../../../i18n/localize";
-
-import {Stage} from "tc-loader";
 import {AbstractModal, ModalRenderer} from "../../../ui/react-elements/ModalDefinitions";
 import {AppParameters} from "../../../settings";
 import {getPopoutController} from "./PopoutController";

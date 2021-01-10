@@ -9,7 +9,7 @@ import {formatMessage} from "../ui/frames/chat";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {LogCategory, logDebug, logError} from "tc-shared/log";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 export class ConnectionProfile {
     id: string;
@@ -135,7 +135,7 @@ async function loadConnectProfiles() {
         try {
             return profiles_json ? JSON.parse(profiles_json) : {version: 0} as any;
         } catch (error) {
-            console.error(tr("Invalid profile json! Resetting profiles :( (%o)"), profiles_json);
+            logError(LogCategory.IDENTITIES, tr("Invalid profile json! Resetting profiles :( (%o)"), profiles_json);
             createErrorModal(tr("Profile data invalid"), formatMessage(tr("The profile data is invalid.{:br:}This might cause data loss."))).open();
             return { version: 0 };
         }
@@ -151,7 +151,7 @@ async function loadConnectProfiles() {
         for (const profile_data of profiles_data.profiles) {
             const profile = await decodeProfile(profile_data);
             if (typeof profile === "string") {
-                console.error(tr("Failed to load profile. Reason: %s, Profile data: %s"), profile, profiles_data);
+                logError(LogCategory.IDENTITIES, tr("Failed to load profile. Reason: %s, Profile data: %s"), profile, profiles_data);
             } else {
                 availableProfiles_.push(profile as ConnectionProfile);
             }

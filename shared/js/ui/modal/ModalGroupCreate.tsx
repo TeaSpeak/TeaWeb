@@ -13,6 +13,7 @@ import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {LogCategory, logError} from "tc-shared/log";
 
 const cssStyle = require("./ModalGroupCreate.scss");
 
@@ -348,7 +349,7 @@ function initializeGroupCreateController(connection: ConnectionHandler, events: 
                 return;
             }
 
-            console.warn(tr("Failed to create group: %o"), error);
+            logError(LogCategory.GENERAL, tr("Failed to create group: %o"), error);
             createErrorModal(tr("Failed to create group"),
                 tra("Failed to create group.\n{}", stringifyError(error))).open();
         });

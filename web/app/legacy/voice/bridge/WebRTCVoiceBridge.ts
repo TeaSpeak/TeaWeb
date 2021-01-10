@@ -297,7 +297,7 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
     }
 
     private handleRtcConnectionStateChange() {
-        log.debug(LogCategory.WEBRTC, tr("Connection state changed to %s (Local connection state: %s)"), this.rtcConnection.connectionState, this.connectionState);
+        logDebug(LogCategory.WEBRTC, tr("Connection state changed to %s (Local connection state: %s)"), this.rtcConnection.connectionState, this.connectionState);
         switch (this.rtcConnection.connectionState) {
             case "connected":
                 if(this.callbackRtcConnected)
@@ -320,11 +320,11 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
     }
 
     private handleIceGatheringStateChange() {
-        log.trace(LogCategory.WEBRTC, tr("ICE gathering state changed to %s"), this.rtcConnection.iceGatheringState);
+        logTrace(LogCategory.WEBRTC, tr("ICE gathering state changed to %s"), this.rtcConnection.iceGatheringState);
     }
 
     private handleIceConnectionStateChange() {
-        log.trace(LogCategory.WEBRTC, tr("ICE connection state changed to %s"), this.rtcConnection.iceConnectionState);
+        logTrace(LogCategory.WEBRTC, tr("ICE connection state changed to %s"), this.rtcConnection.iceConnectionState);
     }
 
     private handleIceCandidate(event: RTCPeerConnectionIceEvent) {
@@ -334,7 +334,7 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
 
         if(event.candidate) {
             this.localIceCandidateCount++;
-            log.debug(LogCategory.WEBRTC, tr("Gathered local ice candidate for stream %d: %s"), event.candidate.sdpMLineIndex, event.candidate.candidate);
+            logDebug(LogCategory.WEBRTC, tr("Gathered local ice candidate for stream %d: %s"), event.candidate.sdpMLineIndex, event.candidate.candidate);
             this.callback_send_control_data("ice", { msg: event.candidate.toJSON() });
         } else if(this.localIceCandidateCount === 0) {
             logError(LogCategory.WEBRTC, tr("Failed to gather any local ice candidates... This is a fatal error."));
@@ -345,7 +345,7 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
                 this.callbackRtcConnectFailed(tr("failed to gather any local ICE candidates"));
             }
         } else {
-            log.debug(LogCategory.WEBRTC, tr("Local ICE candidate gathering finish."));
+            logDebug(LogCategory.WEBRTC, tr("Local ICE candidate gathering finish."));
             this.callback_send_control_data("ice_finish", {});
         }
 
@@ -353,10 +353,10 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
 
     private handleIceCandidateError(event: RTCPeerConnectionIceErrorEvent) {
         if(this.rtcConnection.iceGatheringState === "gathering") {
-            log.warn(LogCategory.WEBRTC, tr("Received error while gathering the ice candidates: %d/%s for %s (url: %s)"),
+            logWarn(LogCategory.WEBRTC, tr("Received error while gathering the ice candidates: %d/%s for %s (url: %s)"),
                 event.errorCode, event.errorText, event.hostCandidate, event.url);
         } else {
-            log.trace(LogCategory.WEBRTC, tr("Ice candidate %s (%s) errored: %d/%s"),
+            logTrace(LogCategory.WEBRTC, tr("Ice candidate %s (%s) errored: %d/%s"),
                 event.url, event.hostCandidate, event.errorCode, event.errorText);
         }
     }

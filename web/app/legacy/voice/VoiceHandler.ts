@@ -90,7 +90,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         this.connection.events.off(this.serverConnectionStateListener);
         this.dropVoiceBridge();
         this.acquireVoiceRecorder(undefined, true).catch(error => {
-            log.warn(LogCategory.VOICE, tr("Failed to release voice recorder: %o"), error);
+            logWarn(LogCategory.VOICE, tr("Failed to release voice recorder: %o"), error);
         }).then(() => {
             for(const client of Object.keys(this.voiceClients).map(clientId => this.voiceClients[clientId]))  {
                 client.abortReplay();
@@ -270,7 +270,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
 
         let client = this.findVoiceClient(packet.clientId);
         if(!client) {
-            log.error(LogCategory.VOICE, tr("Having voice from unknown audio client? (ClientID: %o)"), packet.clientId);
+            logError(LogCategory.VOICE, tr("Having voice from unknown audio client? (ClientID: %o)"), packet.clientId);
             return;
         }
 
@@ -288,7 +288,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         if(chandler.isMicrophoneMuted())
             return false;
 
-        log.info(LogCategory.VOICE, tr("Local voice ended"));
+        logInfo(LogCategory.VOICE, tr("Local voice ended"));
         this.localAudioStarted = false;
 
         this.voiceBridge?.sendStopSignal(this.encoderCodec);
@@ -297,19 +297,19 @@ export class VoiceConnection extends AbstractVoiceConnection {
     private handleRecorderStart() {
         const chandler = this.connection.client;
         if(chandler.isMicrophoneMuted()) {
-            log.warn(LogCategory.VOICE, tr("Received local voice started event, even thou we're muted!"));
+            logWarn(LogCategory.VOICE, tr("Received local voice started event, even thou we're muted!"));
             return;
         }
 
         this.localAudioStarted = true;
-        log.info(LogCategory.VOICE, tr("Local voice started"));
+        logInfo(LogCategory.VOICE, tr("Local voice started"));
 
         const ch = chandler.getClient();
         if(ch) ch.speaking = true;
     }
 
     private handleRecorderUnmount() {
-        log.info(LogCategory.VOICE, "Lost recorder!");
+        logInfo(LogCategory.VOICE, "Lost recorder!");
         this.currentAudioSource = undefined;
         this.acquireVoiceRecorder(undefined, true); /* we can ignore the promise because we should finish this directly */
     }

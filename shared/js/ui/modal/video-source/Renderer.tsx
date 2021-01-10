@@ -1,22 +1,25 @@
 import {Registry} from "tc-shared/events";
 import * as React from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import {
     DeviceListResult,
-    ModalVideoSourceEvents, ScreenCaptureDeviceList, SettingBitrate, SettingFrameRate,
-    VideoPreviewStatus, VideoSourceState
+    ModalVideoSourceEvents,
+    ScreenCaptureDeviceList,
+    SettingBitrate,
+    SettingFrameRate,
+    VideoPreviewStatus,
+    VideoSourceState
 } from "tc-shared/ui/modal/video-source/Definitions";
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {BoxedInputField, Select} from "tc-shared/ui/react-elements/InputField";
 import {Button} from "tc-shared/ui/react-elements/Button";
-import {useContext, useEffect, useRef, useState} from "react";
 import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
 import {Slider} from "tc-shared/ui/react-elements/Slider";
 import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
 import {Tab, TabEntry} from "tc-shared/ui/react-elements/Tab";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {ScreenCaptureDevice} from "tc-shared/video/VideoSource";
-import {useTr} from "tc-shared/ui/react-elements/Helper";
 
 const cssStyle = require("./Renderer.scss");
 const ModalEvents = React.createContext<Registry<ModalVideoSourceEvents>>(undefined);

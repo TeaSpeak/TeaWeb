@@ -8,7 +8,6 @@ import * as React from "react";
 import {useContext, useEffect, useRef, useState} from "react";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {network} from "tc-shared/ui/frames/chat";
-import {date_format} from "tc-shared/utils/DateUtils";
 
 const cssStyle = require("./Renderer.scss");
 export const StatusEvents = React.createContext<Registry<ConnectionStatusEvents>>(undefined);

@@ -1,5 +1,4 @@
 import {InputStartError} from "tc-shared/voice/RecorderBase";
-import * as log from "tc-shared/log";
 import {LogCategory, logInfo, logWarn} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
 
@@ -28,17 +27,17 @@ export async function requestMediaStreamWithConstraints(constraints: MediaTrackC
         if('name' in error) {
             if(error.name === "NotAllowedError") {
                 if(Date.now() - beginTimestamp < 250) {
-                    log.warn(LogCategory.AUDIO, tr("Media stream request failed (System denied). Browser message: %o"), error.message);
+                    logWarn(LogCategory.AUDIO, tr("Media stream request failed (System denied). Browser message: %o"), error.message);
                     return InputStartError.ESYSTEMDENIED;
                 } else {
-                    log.warn(LogCategory.AUDIO, tr("Media stream request failed (No permissions). Browser message: %o"), error.message);
+                    logWarn(LogCategory.AUDIO, tr("Media stream request failed (No permissions). Browser message: %o"), error.message);
                     return InputStartError.ENOTALLOWED;
                 }
             } else {
-                log.warn(LogCategory.AUDIO, tr("Media stream request failed. Request resulted in error: %o: %o"), error.name, error);
+                logWarn(LogCategory.AUDIO, tr("Media stream request failed. Request resulted in error: %o: %o"), error.name, error);
             }
         } else {
-            log.warn(LogCategory.AUDIO, tr("Failed to initialize media stream (%o)"), error);
+            logWarn(LogCategory.AUDIO, tr("Failed to initialize media stream (%o)"), error);
         }
 
         return InputStartError.EUNKNOWN;

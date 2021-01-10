@@ -1,5 +1,5 @@
-import {useEffect, useState} from "react";
 import * as React from "react";
+import {useEffect, useState} from "react";
 
 export const LoadingDots = (props: { maxDots?: number, speed?: number, textOnly?: boolean, enabled?: boolean }) => {
     let { maxDots, speed } = props;

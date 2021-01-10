@@ -33,6 +33,7 @@ import {spawnModalGroupPermissionCopy} from "tc-shared/ui/modal/ModalGroupPermis
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {PermissionEditorTab} from "tc-shared/events/GlobalEvents";
+import {LogCategory, logError, logWarn} from "tc-shared/log";
 
 const cssStyle = require("./ModalPermissionEditor.scss");
 
@@ -540,7 +541,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
             connection.serverConnection.send_command(event.target + "grouprename", payload).then(() => {
                 events.fire("action_rename_group_result", {id: groupId, status: "success", target: event.target});
             }).catch(error => {
-                console.warn(tr("Failed to rename group: %o"), error);
+                logWarn(LogCategory.PERMISSIONS, tr("Failed to rename group: %o"), error);
                 events.fire("action_rename_group_result", {
                     id: groupId,
                     status: "error",
@@ -567,7 +568,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
             connection.serverConnection.send_command(event.target + "groupdel", payload).then(() => {
                 events.fire("action_delete_group_result", {id: groupId, status: "success", target: event.target});
             }).catch(error => {
-                console.warn(tr("Failed to delete group: %o"), error);
+                logWarn(LogCategory.PERMISSIONS, tr("Failed to delete group: %o"), error);
                 events.fire("action_delete_group_result", {
                     id: groupId,
                     status: "error",
@@ -628,7 +629,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
                 return;
             }
 
-            console.warn(tr("Failed to request server group client list: %o"), error);
+            logWarn(LogCategory.PERMISSIONS, tr("Failed to request server group client list: %o"), error);
             events.fire("query_group_clients_result", {id: event.id, status: "error", error: stringifyError(error)});
         });
     });
@@ -658,7 +659,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
                 return;
             }
 
-            console.warn(tr("Failed to add client %s to server group %d: %o"), event.client.toString(), event.id, error);
+            logWarn(LogCategory.PERMISSIONS, tr("Failed to add client %s to server group %d: %o"), event.client.toString(), event.id, error);
             events.fire("action_server_group_add_client_result", {
                 id: event.id,
                 client: event.client,
@@ -679,7 +680,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
                 status: "success"
             });
         }).catch(error => {
-            console.log(tr("Failed to delete client %d from server group %d: %o"), event.client, event.id, error);
+            logError(LogCategory.GENERAL, tr("Failed to delete client %d from server group %d: %o"), event.client, event.id, error);
             events.fire("action_server_group_remove_client_result", {
                 id: event.id,
                 client: event.client,
@@ -751,7 +752,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
                 return;
             }
 
-            console.warn(tr("Failed to query client info for %o: %o"), event.client, error);
+            logWarn(LogCategory.PERMISSIONS, tr("Failed to query client info for %o: %o"), event.client, error);
             events.fire("query_client_info_result", {
                 client: event.client,
                 state: "error",
@@ -969,7 +970,7 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
                 return;
             }
 
-            console.warn(tr("Failed to query permissions: %o"), error);
+            logWarn(LogCategory.PERMISSIONS, tr("Failed to query permissions: %o"), error);
             events.fire("query_permission_values_result", {status: "error", error: stringifyError(error)});
         });
     });
@@ -1066,7 +1067,7 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
                 }
             }
 
-            console.warn(tr("Failed to set permissions: %o"), error);
+            logWarn(LogCategory.PERMISSIONS, tr("Failed to set permissions: %o"), error);
             events.fire("action_set_permissions_result", {
                 permissions: event.permissions.map(permission => {
                     return {
@@ -1165,7 +1166,7 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
                 }
             }
 
-            console.warn(tr("Failed to remove permissions: %o"), error);
+            logWarn(LogCategory.PERMISSIONS, tr("Failed to remove permissions: %o"), error);
             events.fire("action_remove_permissions_result", {
                 permissions: event.permissions.map(permission => {
                     return {

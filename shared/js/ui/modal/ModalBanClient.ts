@@ -3,7 +3,7 @@ import {ConnectionHandler} from "../../ConnectionHandler";
 import {createModal} from "../../ui/elements/Modal";
 import {duration_data} from "../../ui/modal/ModalBanList";
 import * as tooltip from "../../ui/elements/Tooltip";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 export type BanEntry = {
     name?: string;

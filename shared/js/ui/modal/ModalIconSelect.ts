@@ -1,8 +1,7 @@
 import {ConnectionHandler} from "../../ConnectionHandler";
 import PermissionType from "../../permission/PermissionType";
 import {createErrorModal, createModal} from "../../ui/elements/Modal";
-import * as log from "../../log";
-import {LogCategory} from "../../log";
+import {LogCategory, logError, logInfo, logWarn} from "../../log";
 import {CommandResult} from "../../connection/ServerConnectionDeclaration";
 import {tra, traj} from "../../i18n/localize";
 import {arrayBufferBase64} from "../../utils/buffers";
@@ -106,7 +105,7 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
                 for (const icon of chunk) {
                     const iconId = parseInt((icon.name || "").substr("icon_".length));
                     if (Number.isNaN(iconId)) {
-                        log.warn(LogCategory.GENERAL, tr("Received an unparsable icon within icon list (%o)"), icon);
+                        logWarn(LogCategory.GENERAL, tr("Received an unparsable icon within icon list (%o)"), icon);
                         continue;
                     }
 
@@ -146,7 +145,7 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
             if (error instanceof CommandResult && error.id == ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                 container_no_permissions.show();
             } else {
-                log.error(LogCategory.GENERAL, tr("Failed to fetch icon list. Error: %o"), error);
+                logError(LogCategory.GENERAL, tr("Failed to fetch icon list. Error: %o"), error);
                 display_remote_error(tr("Failed to fetch icon list"));
             }
             container_loading.hide();
@@ -159,7 +158,7 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
 
         const selected = modal.htmlTag.find(".selected");
         if (selected.length != 1)
-            console.warn(tr("UI selected icon length does not equal with 1! (%o)"), selected.length);
+            logWarn(LogCategory.GENERAL, tr("UI selected icon length does not equal with 1! (%o)"), selected.length);
 
         if (selected_icon < 1000) return; /* we cant delete local icons */
 
@@ -168,7 +167,7 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
         }).catch(error => {
             if (error instanceof CommandResult && error.id == ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS)
                 return;
-            console.warn(tr("Failed to delete icon %d: %o"), selected_icon, error);
+            logWarn(LogCategory.GENERAL, tr("Failed to delete icon %d: %o"), selected_icon, error);
 
             error = error instanceof CommandResult ? error.extra_message || error.message : error;
 
@@ -214,14 +213,14 @@ function handle_icon_upload(file: File, client: ConnectionHandler): UploadingIco
     icon.upload_state = "unset";
 
     const file_too_big = () => {
-        console.error(tr("Failed to load file %s: File is too big!"), file.name);
+        logError(LogCategory.GENERAL, tr("Failed to load file %s: File is too big!"), file.name);
         createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.<br>The given file is too big!", file.name)).open();
         icon.state = "error";
     };
     if (file.size > 1024 * 1024 * 512) {
         file_too_big();
     } else if ((file.size | 0) <= 0) {
-        console.error(tr("Failed to load file %s: Your browser does not support file sizes!"), file.name);
+        logError(LogCategory.GENERAL, tr("Failed to load file %s: Your browser does not support file sizes!"), file.name);
         createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.<br>Your browser does not support file sizes!", file.name)).open();
         icon.state = "error";
         return;
@@ -237,8 +236,7 @@ function handle_icon_upload(file: File, client: ConnectionHandler): UploadingIco
                     reader.readAsDataURL(file);
                 });
             } catch (error) {
-                console.log("Image failed to load (%o)", error);
-                console.error(tr("Failed to load file %s: Image failed to load"), file.name);
+                logError(LogCategory.CLIENT, tr("Failed to load file %s: Image failed to load: %o"), file.name, error);
                 createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.<br>Failed to load image", file.name)).open();
                 icon.state = "error";
                 return;
@@ -246,7 +244,7 @@ function handle_icon_upload(file: File, client: ConnectionHandler): UploadingIco
 
             const result = reader.result as string;
             if (typeof (result) !== "string") {
-                console.error(tr("Failed to load file %s: Result is not an media string (%o)"), file.name, result);
+                logError(LogCategory.GENERAL, tr("Failed to load file %s: Result is not an media string (%o)"), file.name, result);
                 createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.<br>Result is not an media string", file.name)).open();
                 icon.state = "error";
                 return;
@@ -256,16 +254,16 @@ function handle_icon_upload(file: File, client: ConnectionHandler): UploadingIco
             /* get the CRC32 sum */
             {
                 if (!result.startsWith("data:image/")) {
-                    console.error(tr("Failed to load file %s: Invalid data media type (%o)"), file.name, result);
+                    logError(LogCategory.GENERAL, tr("Failed to load file %s: Invalid data media type (%o)"), file.name, result);
                     createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.<br>File is not an image", file.name)).open();
                     icon.state = "error";
                     return;
                 }
                 const semi = result.indexOf(';');
                 const type = result.substring(11, semi);
-                console.log(tr("Given image has type %s"), type);
+                logInfo(LogCategory.GENERAL, tr("Given image has type %s"), type);
                 if (!result.substr(semi + 1).startsWith("base64,")) {
-                    console.error(tr("Failed to load file %s: Mimetype isnt base64 encoded (%o)"), file.name, result.substr(semi + 1));
+                    logError(LogCategory.GENERAL, tr("Failed to load file %s: Mimetype isn't base64 encoded (%o)"), file.name, result.substr(semi + 1));
                     createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.<br>Decoder returned unknown result", file.name)).open();
                     icon.state = "error";
                     return;
@@ -285,14 +283,14 @@ function handle_icon_upload(file: File, client: ConnectionHandler): UploadingIco
                     image.src = result;
                 });
             } catch (error) {
-                console.log("Image failed to load (%o)", error);
-                console.error(tr("Failed to load file %s: Image failed to load"), file.name);
+                logInfo(LogCategory.GENERAL, "Image failed to load (%o)", error);
+                logError(LogCategory.GENERAL, tr("Failed to load file %s: Image failed to load"), file.name);
                 createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.{:br:}Failed to load image", file.name)).open();
                 icon.state = "error";
             }
 
             const width_error = message => {
-                console.error(tr("Failed to load file %s: Invalid bounds: %s"), file.name, message);
+                logError(LogCategory.GENERAL, tr("Failed to load file %s: Invalid bounds: %s"), file.name, message);
                 createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.{:br:}Image is too large ({})", file.name, message)).open();
                 icon.state = "error";
             };
@@ -311,7 +309,7 @@ function handle_icon_upload(file: File, client: ConnectionHandler): UploadingIco
                     return;
                 }
             }
-            console.log("Image loaded (%dx%d) %s (%s)", image.naturalWidth, image.naturalHeight, image.name, icon.icon_id);
+            logInfo(LogCategory.GENERAL, "Image loaded (%dx%d) %s (%s)", image.naturalWidth, image.naturalHeight, image.name, icon.icon_id);
             icon.image_element = () => {
                 const image = document.createElement("img");
                 image.src = result;
@@ -426,7 +424,7 @@ function handle_icon_upload(file: File, client: ConnectionHandler): UploadingIco
                             break;
 
                         case FileTransferState.ERRORED:
-                            log.warn(LogCategory.FILE_TRANSFER, tr("Failed to upload icon %s: %o"), icon.file.name, transfer.currentError());
+                            logWarn(LogCategory.FILE_TRANSFER, tr("Failed to upload icon %s: %o"), icon.file.name, transfer.currentError());
                             bar.set_value(100);
                             bar.set_error(tr("upload failed: ") + transfer.currentErrorMessage());
                             icon.upload_state = "error";

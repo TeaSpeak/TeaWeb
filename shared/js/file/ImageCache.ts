@@ -1,5 +1,5 @@
 import {tr} from "../i18n/localize";
-import {LogCategory, logDebug} from "tc-shared/log";
+import {LogCategory, logDebug, logWarn} from "tc-shared/log";
 
 export enum ImageType {
     UNKNOWN,
@@ -169,7 +169,7 @@ export class ImageCache {
             ignoreSearch: true
         });
         if(!flag) {
-            console.warn(tr("Failed to delete key %s from cache!"), key);
+            logWarn(LogCategory.FILE_TRANSFER, tr("Failed to delete key %s from cache!"), key);
         }
     }
 }

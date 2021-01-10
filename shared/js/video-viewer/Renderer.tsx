@@ -1,5 +1,4 @@
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import {LogCategory, logDebug, logTrace} from "tc-shared/log";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import * as React from "react";
 import {useEffect, useRef, useState} from "react";
@@ -199,7 +198,6 @@ const FollowerList = React.memo((props: { events: Registry<VideoViewerEvents>, w
         if(followers.indexOf(event.followerId) !== -1)
             return;
 
-        console.error("Added follower");
         followers.push(event.followerId);
         setFollowerRevision(followerRevision + 1);
     });
@@ -212,7 +210,6 @@ const FollowerList = React.memo((props: { events: Registry<VideoViewerEvents>, w
         if(index === -1)
             return;
 
-        console.error("Removed follower");
         followers.splice(index, 1);
         setFollowerRevision(followerRevision + 1);
     });
@@ -321,7 +318,7 @@ const PlayerController = React.memo((props: { events: Registry<VideoViewerEvents
             const distance = Math.abs(player.current.getCurrentTime() - event.status.timestampPlay);
             const doSeek = distance > 7;
 
-            log.trace(LogCategory.GENERAL, tr("Follower sync. Remote timestamp %d, Local timestamp: %d. Difference: %d, Do seek: %o"),
+            logTrace(LogCategory.GENERAL, tr("Follower sync. Remote timestamp %d, Local timestamp: %d. Difference: %d, Do seek: %o"),
                 player.current.getCurrentTime(),
                 event.status.timestampPlay,
                 distance,
@@ -353,9 +350,9 @@ const PlayerController = React.memo((props: { events: Registry<VideoViewerEvents
             height={"100%"}
             width={"100%"}
 
-            onError={(error, data, hlsInstance, hlsGlobal) => console.log("onError(%o, %o, %o, %o)", error, data, hlsInstance, hlsGlobal)}
+            onError={(error, data, hlsInstance, hlsGlobal) => logTrace(LogCategory.GENERAL, "onError(%o, %o, %o, %o)", error, data, hlsInstance, hlsGlobal)}
             onBuffer={() => {
-                kLogPlayerEvents && log.trace(LogCategory.GENERAL, tr("ReactPlayer::onBuffer()"));
+                kLogPlayerEvents && logTrace(LogCategory.GENERAL, tr("ReactPlayer::onBuffer()"));
                 playerState.current = "buffering";
                 props.events.fire("notify_local_status", { status: { status: "buffering" } });
             }}
@@ -363,18 +360,18 @@ const PlayerController = React.memo((props: { events: Registry<VideoViewerEvents
             onBufferEnd={() => {
                 if(playerState.current === "buffering")
                     playerState.current = "playing";
-                kLogPlayerEvents && log.trace(LogCategory.GENERAL, tr("ReactPlayer::onBufferEnd()"));
+                kLogPlayerEvents && logTrace(LogCategory.GENERAL, tr("ReactPlayer::onBufferEnd()"));
             }}
 
             onDisablePIP={() => { /* console.log("onDisabledPIP()") */ }}
             onEnablePIP={() => { /* console.log("onEnablePIP()") */ }}
 
             onDuration={duration => {
-                kLogPlayerEvents && log.trace(LogCategory.GENERAL, tr("ReactPlayer::onDuration(%d)"), duration);
+                kLogPlayerEvents && logTrace(LogCategory.GENERAL, tr("ReactPlayer::onDuration(%d)"), duration);
             }}
 
             onEnded={() => {
-                kLogPlayerEvents && log.trace(LogCategory.GENERAL, tr("ReactPlayer::onEnded()"));
+                kLogPlayerEvents && logTrace(LogCategory.GENERAL, tr("ReactPlayer::onEnded()"));
                 playerState.current = "stopped";
                 props.events.fire("notify_local_status", { status: { status: "stopped" } });
 
@@ -383,7 +380,7 @@ const PlayerController = React.memo((props: { events: Registry<VideoViewerEvents
             }}
 
             onPause={() => {
-                kLogPlayerEvents && log.trace(LogCategory.GENERAL, tr("ReactPlayer::onPause()"));
+                kLogPlayerEvents && logTrace(LogCategory.GENERAL, tr("ReactPlayer::onPause()"));
 
                 if(videoEnded.current) {
                     videoEnded.current = false;
@@ -395,7 +392,7 @@ const PlayerController = React.memo((props: { events: Registry<VideoViewerEvents
             }}
 
             onPlay={() => {
-                kLogPlayerEvents && log.trace(LogCategory.GENERAL, tr("ReactPlayer::onPlay()"));
+                kLogPlayerEvents && logTrace(LogCategory.GENERAL, tr("ReactPlayer::onPlay()"));
 
                 if(videoEnded.current) {
                     /* it's just the seek to the beginning */
@@ -412,7 +409,7 @@ const PlayerController = React.memo((props: { events: Registry<VideoViewerEvents
                     const expectedSeconds = (Date.now() - watcherTimestamp.current) / 1000;
                     const doSync = Math.abs(currentSeconds - expectedSeconds) > 5;
 
-                    log.debug(LogCategory.GENERAL, tr("Player started, at second %d. Watcher is at %s. So sync: %o"), currentSeconds, expectedSeconds, doSync);
+                    logDebug(LogCategory.GENERAL, tr("Player started, at second %d. Watcher is at %s. So sync: %o"), currentSeconds, expectedSeconds, doSync);
                     doSync && player.current.seekTo(expectedSeconds, "seconds");
                 }
 
@@ -421,7 +418,7 @@ const PlayerController = React.memo((props: { events: Registry<VideoViewerEvents
             }}
 
             onProgress={state => {
-                kLogPlayerEvents && log.trace(LogCategory.GENERAL, tr("ReactPlayer::onProgress %d seconds played, %d seconds buffered. Player state: %s"), state.playedSeconds, state.loadedSeconds, playerState.current);
+                kLogPlayerEvents && logTrace(LogCategory.GENERAL, tr("ReactPlayer::onProgress %d seconds played, %d seconds buffered. Player state: %s"), state.playedSeconds, state.loadedSeconds, playerState.current);
 
                 currentTime.current = { buffer: state.loadedSeconds, play: state.playedSeconds };
                 if(playerState.current !== "playing")
@@ -437,15 +434,15 @@ const PlayerController = React.memo((props: { events: Registry<VideoViewerEvents
             }}
 
             onReady={() => {
-                kLogPlayerEvents && log.trace(LogCategory.GENERAL, tr("ReactPlayer::onReady()"));
+                kLogPlayerEvents && logTrace(LogCategory.GENERAL, tr("ReactPlayer::onReady()"));
             }}
 
             onSeek={seconds => {
-                kLogPlayerEvents && log.trace(LogCategory.GENERAL, tr("ReactPlayer::onSeek(%d)"), seconds);
+                kLogPlayerEvents && logTrace(LogCategory.GENERAL, tr("ReactPlayer::onSeek(%d)"), seconds);
             }}
 
             onStart={() => {
-                kLogPlayerEvents && log.trace(LogCategory.GENERAL, tr("ReactPlayer::onStart()"));
+                kLogPlayerEvents && logTrace(LogCategory.GENERAL, tr("ReactPlayer::onStart()"));
             }}
 
             controls={true}

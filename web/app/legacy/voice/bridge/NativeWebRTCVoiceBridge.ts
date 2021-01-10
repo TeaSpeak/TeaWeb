@@ -1,7 +1,7 @@
 import {AbstractInput, InputConsumerType, NodeInputConsumer} from "tc-shared/voice/RecorderBase";
 import * as aplayer from "tc-backend/web/audio/player";
 import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import {LogCategory, logDebug, logWarn} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
 import {WebRTCVoiceBridge} from "./WebRTCVoiceBridge";
 import {VoiceWhisperPacket} from "./VoiceBridge";
@@ -122,9 +122,9 @@ export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
                         node.disconnect(this.whispering ? this.localWhisperDestinationNode : this.localVoiceDestinationNode);
                     }
                 } as NodeInputConsumer);
-                log.debug(LogCategory.VOICE, tr("Successfully set/updated to the new input for the recorder"));
+                logDebug(LogCategory.VOICE, tr("Successfully set/updated to the new input for the recorder"));
             } catch (e) {
-                log.warn(LogCategory.VOICE, tr("Failed to set consumer to the new recorder input: %o"), e);
+                logWarn(LogCategory.VOICE, tr("Failed to set consumer to the new recorder input: %o"), e);
             }
         }
     }

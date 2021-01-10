@@ -108,7 +108,6 @@ export function preprocessChatMessageForSend(message: string) : string {
                     break;
             }
         }
-        console.error("Message: %s; No Parse: %s", message, noParseRanges);
 
         message = bbcodeLinkUrls(message, noParseRanges);
     }

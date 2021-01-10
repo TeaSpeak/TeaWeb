@@ -1,6 +1,6 @@
 import * as React from "react";
-import {ClientAvatar, kDefaultAvatarImage, kLoadingAvatarImage} from "tc-shared/file/Avatars";
 import {useEffect, useState} from "react";
+import {ClientAvatar, kDefaultAvatarImage, kLoadingAvatarImage} from "tc-shared/file/Avatars";
 import * as image_preview from "tc-shared/ui/frames/image_preview";
 
 const ImageStyle = { height: "100%", width: "100%", cursor: "pointer" };

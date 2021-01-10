@@ -1,5 +1,5 @@
 import * as log from "../log";
-import {LogCategory, logTrace} from "../log";
+import {LogCategory, logDebug, logTrace, logWarn} from "../log";
 import {
     CodeToken,
     Env,
@@ -135,10 +135,10 @@ export class MD2BBCodeRenderer {
     }
 
     private renderToken(token: Token) {
-        log.debug(LogCategory.GENERAL, tr("Render Markdown token: %o"), token);
+        logDebug(LogCategory.GENERAL, tr("Render Markdown token: %o"), token);
         const renderer = MD2BBCodeRenderer.renderers[token.type];
         if(typeof(renderer) === "undefined") {
-            log.warn(LogCategory.CHAT, tr("Missing markdown to bbcode renderer for token %s: %o"), token.type, token);
+            logWarn(LogCategory.CHAT, tr("Missing markdown to bbcode renderer for token %s: %o"), token.type, token);
             return 'content' in token ? this.options().textProcessor(token.content) : "";
         }
 

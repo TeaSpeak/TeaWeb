@@ -1,5 +1,5 @@
 import {Dispatch, SetStateAction, useEffect, useMemo, useState} from "react";
-import {RegistryValueType, settings, RegistryKey, ValuedRegistryKey} from "tc-shared/settings";
+import {RegistryKey, RegistryValueType, settings, ValuedRegistryKey} from "tc-shared/settings";
 
 export function useDependentState<S>(
     factory: (prevState?: S) => S,

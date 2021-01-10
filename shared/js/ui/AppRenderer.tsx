@@ -1,4 +1,5 @@
 import * as React from "react";
+import {useEffect, useState} from "react";
 import {ControlBar2} from "tc-shared/ui/frames/control-bar/Renderer";
 import {Registry} from "tc-shared/events";
 import {ControlBarEvents} from "tc-shared/ui/frames/control-bar/Definitions";
@@ -15,7 +16,6 @@ import {FooterRenderer} from "tc-shared/ui/frames/footer/Renderer";
 import {HostBanner} from "tc-shared/ui/frames/HostBannerRenderer";
 import {HostBannerUiEvents} from "tc-shared/ui/frames/HostBannerDefinitions";
 import {AppUiEvents} from "tc-shared/ui/AppDefinitions";
-import {useEffect, useState} from "react";
 import {ChannelTreeRenderer} from "tc-shared/ui/tree/Renderer";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 

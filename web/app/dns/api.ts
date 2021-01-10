@@ -1,6 +1,6 @@
 import {tr} from "tc-shared/i18n/localize";
 import * as log from "tc-shared/log";
-import {LogCategory, logTrace} from "tc-shared/log";
+import {LogCategory, logError, logTrace} from "tc-shared/log";
 
 export enum RRType {
     A = 1, // a host address,[RFC1035],
@@ -162,7 +162,7 @@ export async function executeDnsRequest(address: string, type: RRType) : Promise
         response_string = await response.text();
         responseData = JSON.parse(response_string);
     } catch(ex) {
-        log.error(LogCategory.DNS, tr("Failed to parse response data: %o. Data: %s"), ex, response_string);
+        logError(LogCategory.DNS, tr("Failed to parse response data: %o. Data: %s"), ex, response_string);
         throw "failed to parse response";
     }
 

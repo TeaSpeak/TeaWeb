@@ -1,6 +1,6 @@
 import {Device} from "tc-shared/audio/player";
 import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import {LogCategory, logError, logInfo} from "tc-shared/log";
 import { tr } from "tc-shared/i18n/localize";
 
 /* lets try without any gestures, maybe the user already clicked the page */
@@ -24,7 +24,7 @@ export function initialized() : boolean {
 }
 
 function fire_initialized() {
-    log.info(LogCategory.AUDIO, tr("Fire audio player initialized for %d listeners"), audioContextInitializeCallbacks.length);
+    logInfo(LogCategory.AUDIO, tr("Fire audio player initialized for %d listeners"), audioContextInitializeCallbacks.length);
     while(audioContextInitializeCallbacks.length > 0)
         audioContextInitializeCallbacks.pop_front()();
 }
@@ -112,7 +112,7 @@ export function initializeFromGesture() {
     if(audioContextInstance) {
         if(audioContextInstance.state !== "running") {
             audioContextInstance.resume().catch(error => {
-                log.error(LogCategory.AUDIO, tr("Failed to initialize audio context instance from gesture: %o"), error);
+                logError(LogCategory.AUDIO, tr("Failed to initialize audio context instance from gesture: %o"), error);
             });
         }
     } else {

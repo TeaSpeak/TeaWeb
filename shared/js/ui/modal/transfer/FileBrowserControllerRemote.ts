@@ -3,8 +3,7 @@ import {Registry} from "../../../events";
 import {FileType} from "../../../file/FileManager";
 import {CommandResult} from "../../../connection/ServerConnectionDeclaration";
 import PermissionType from "../../../permission/PermissionType";
-import * as log from "../../../log";
-import {LogCategory, logTrace} from "../../../log";
+import {LogCategory, logError, logTrace} from "../../../log";
 import {Entry, MenuEntry, MenuEntryType, spawn_context_menu} from "../../../ui/elements/ContextMenu";
 import * as ppt from "tc-backend/ppt";
 import {SpecialKey} from "../../../PPTListener";
@@ -21,8 +20,10 @@ import {createErrorModal} from "../../../ui/elements/Modal";
 import {ErrorCode} from "../../../connection/ErrorCode";
 import {
     avatarsPathPrefix,
-    channelPathPrefix, FileBrowserEvents,
-    iconPathPrefix, ListedFileInfo,
+    channelPathPrefix,
+    FileBrowserEvents,
+    iconPathPrefix,
+    ListedFileInfo,
     PathInfo
 } from "tc-shared/ui/modal/transfer/FileDefinitions";
 
@@ -253,7 +254,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             } else if (typeof error === "string") {
                 message = error;
             } else {
-                log.error(LogCategory.FILE_TRANSFER, tr("Failed to query channel directory files: %o"), error);
+                logError(LogCategory.FILE_TRANSFER, tr("Failed to query channel directory files: %o"), error);
                 message = tr("lookup the console");
             }
 
@@ -358,7 +359,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             } else if (typeof error === "string") {
                 message = error;
             } else {
-                log.error(LogCategory.FILE_TRANSFER, tr("Failed to rename/move files: %o"), error);
+                logError(LogCategory.FILE_TRANSFER, tr("Failed to rename/move files: %o"), error);
                 message = tr("lookup the console");
             }
             events.fire_react("action_rename_file_result", {
@@ -598,7 +599,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 } else if (typeof result === "string") {
                     message = result;
                 } else {
-                    log.error(LogCategory.FILE_TRANSFER, tr("Failed to create directory: %o"), result);
+                    logError(LogCategory.FILE_TRANSFER, tr("Failed to create directory: %o"), result);
                     message = tr("lookup the console");
                 }
 
@@ -676,7 +677,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             } else if (typeof error === "string") {
                 message = error;
             } else {
-                log.error(LogCategory.FILE_TRANSFER, tr("Failed to create directory: %o"), error);
+                logError(LogCategory.FILE_TRANSFER, tr("Failed to create directory: %o"), error);
                 message = tr("lookup the console");
             }
             events.fire_react("action_create_directory_result", {
@@ -717,7 +718,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                     }
                 });
             } catch (error) {
-                log.error(LogCategory.FILE_TRANSFER, tr("Failed to parse path for file download: %s"), error);
+                logError(LogCategory.FILE_TRANSFER, tr("Failed to parse path for file download: %s"), error);
             }
         });
     });

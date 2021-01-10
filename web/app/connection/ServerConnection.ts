@@ -10,7 +10,7 @@ import {ConnectionCommandHandler, ServerConnectionCommandBoss} from "tc-shared/c
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {settings, Settings} from "tc-shared/settings";
 import * as log from "tc-shared/log";
-import {LogCategory, logDebug, logError, logTrace} from "tc-shared/log";
+import {LogCategory, logDebug, logError, logInfo, logTrace, logWarn} from "tc-shared/log";
 import {Regex} from "tc-shared/ui/modal/ModalConnect";
 import {AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
 import {WrappedWebSocket} from "tc-backend/web/connection/WrappedWebSocket";
@@ -89,7 +89,7 @@ export class ServerConnection extends AbstractServerConnection {
 
     destroy() {
         this.disconnect("handle destroyed").catch(error => {
-            log.warn(LogCategory.NETWORKING, tr("Failed to disconnect on server connection destroy: %o"), error);
+            logWarn(LogCategory.NETWORKING, tr("Failed to disconnect on server connection destroy: %o"), error);
         }).then(() => {
             clearInterval(this.pingStatistics.thread_id);
             if(this.connectCancelCallback) {
@@ -100,7 +100,7 @@ export class ServerConnection extends AbstractServerConnection {
                 try {
                     listener.reject("handler destroyed");
                 } catch(error) {
-                    log.warn(LogCategory.NETWORKING, tr("Failed to reject command promise: %o"), error);
+                    logWarn(LogCategory.NETWORKING, tr("Failed to reject command promise: %o"), error);
                 }
                 clearTimeout(listener.timeout);
             }
@@ -134,7 +134,7 @@ export class ServerConnection extends AbstractServerConnection {
         try {
             await this.disconnect();
         } catch(error) {
-            log.error(LogCategory.NETWORKING, tr("Failed to close old connection properly. Error: %o"), error);
+            logError(LogCategory.NETWORKING, tr("Failed to close old connection properly. Error: %o"), error);
             throw "failed to cleanup old connection";
         }
 
@@ -190,13 +190,13 @@ export class ServerConnection extends AbstractServerConnection {
             await Promise.race([...availableSockets.map(e => e.awaitConnectResult()), timeoutPromise, cancelPromise]);
 
             if(cancelRaised) {
-                log.debug(LogCategory.NETWORKING, tr("Aborting connect attempt due to a cancel request."));
+                logDebug(LogCategory.NETWORKING, tr("Aborting connect attempt due to a cancel request."));
                 availableSockets.forEach(e => e.closeConnection());
                 return
             }
 
             if(timeoutRaised) {
-                log.info(LogCategory.NETWORKING, tr("Connect timeout triggered. Aborting connect attempt!"));
+                logInfo(LogCategory.NETWORKING, tr("Connect timeout triggered. Aborting connect attempt!"));
                 availableSockets.forEach(e => e.closeConnection());
                 this.updateConnectionState(ConnectionState.UNCONNECTED); /* firstly update the state, that fire event */
                 this.client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
@@ -209,12 +209,12 @@ export class ServerConnection extends AbstractServerConnection {
 
             switch (finished.state) {
                 case "unconnected":
-                    log.debug(LogCategory.NETWORKING, tr("Connection attempt to %s:%d via %s got aborted."), this.remoteServerAddress.host, this.remoteServerAddress.port, finished.socketUrl());
+                    logDebug(LogCategory.NETWORKING, tr("Connection attempt to %s:%d via %s got aborted."), this.remoteServerAddress.host, this.remoteServerAddress.port, finished.socketUrl());
                     continue;
 
                 case "errored":
                     const error = finished.popError();
-                    log.info(LogCategory.NETWORKING, tr("Connection attempt to %s:%d via %s failed:\n%o"), this.remoteServerAddress.host, this.remoteServerAddress.port, finished.socketUrl(), error);
+                    logInfo(LogCategory.NETWORKING, tr("Connection attempt to %s:%d via %s failed:\n%o"), this.remoteServerAddress.host, this.remoteServerAddress.port, finished.socketUrl(), error);
                     continue;
 
                 case "connected":
@@ -229,7 +229,7 @@ export class ServerConnection extends AbstractServerConnection {
         }
 
         if(!this.socket) {
-            log.info(LogCategory.NETWORKING, tr("Failed to connect to %s:%d. No connection attempt succeeded."), this.remoteServerAddress.host, this.remoteServerAddress.port);
+            logInfo(LogCategory.NETWORKING, tr("Failed to connect to %s:%d. No connection attempt succeeded."), this.remoteServerAddress.host, this.remoteServerAddress.port);
             this.updateConnectionState(ConnectionState.UNCONNECTED); /* firstly update the state, that fire event */
             this.client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
             return;
@@ -240,7 +240,7 @@ export class ServerConnection extends AbstractServerConnection {
             try {
                 this.disconnect();
             } catch (error) {
-                log.warn(LogCategory.NETWORKING, tr("Failed to disconnect with an already closed socket: %o"), error);
+                logWarn(LogCategory.NETWORKING, tr("Failed to disconnect with an already closed socket: %o"), error);
             }
 
             this.client.handleDisconnect(DisconnectReason.CONNECTION_CLOSED, {
@@ -250,25 +250,25 @@ export class ServerConnection extends AbstractServerConnection {
         };
         this.socket.callbackErrored = () => {
             if(this.socket.hasError()) {
-                log.error(LogCategory.NETWORKING, tr("Server connection %s:%d has been terminated due to an unexpected error (%o)."),
+                logError(LogCategory.NETWORKING, tr("Server connection %s:%d has been terminated due to an unexpected error (%o)."),
                     this.remoteServerAddress.host,
                     this.remoteServerAddress.port,
                     this.socket.popError()
                 );
             } else {
-                log.error(LogCategory.NETWORKING, tr("Server connection %s:%d has been terminated due to an unexpected error."), this.remoteServerAddress.host, this.remoteServerAddress.port);
+                logError(LogCategory.NETWORKING, tr("Server connection %s:%d has been terminated due to an unexpected error."), this.remoteServerAddress.host, this.remoteServerAddress.port);
             }
             try {
                 this.disconnect();
             } catch (error) {
-                log.warn(LogCategory.NETWORKING, tr("Failed to disconnect with an already closed socket: %o"), error);
+                logWarn(LogCategory.NETWORKING, tr("Failed to disconnect with an already closed socket: %o"), error);
             }
 
             this.client.handleDisconnect(DisconnectReason.CONNECTION_CLOSED);
         };
 
         const connectEndTimestamp = Date.now();
-        log.info(LogCategory.NETWORKING, tr("Successfully initialized a connection to %s:%d via %s within %d milliseconds."),
+        logInfo(LogCategory.NETWORKING, tr("Successfully initialized a connection to %s:%d via %s within %d milliseconds."),
             this.remoteServerAddress.host,
             this.remoteServerAddress.port,
             this.socket.socketUrl(),
@@ -327,11 +327,11 @@ export class ServerConnection extends AbstractServerConnection {
             try {
                 json = JSON.parse(data);
             } catch(e) {
-                log.warn(LogCategory.NETWORKING, tr("Could not parse message json!"));
+                logWarn(LogCategory.NETWORKING, tr("Could not parse message json!"));
                 return;
             }
             if(json["type"] === undefined) {
-                log.warn(LogCategory.NETWORKING, tr("Missing data type in message!"));
+                logWarn(LogCategory.NETWORKING, tr("Missing data type in message!"));
                 return;
             }
             if(json["type"] === "command") {
@@ -371,27 +371,27 @@ export class ServerConnection extends AbstractServerConnection {
             } else if(json["type"] === "pong") {
                 const id = parseInt(json["payload"]);
                 if(id != this.pingStatistics.currentRequestId) {
-                    log.warn(LogCategory.NETWORKING, tr("Received pong which is older than the last request. Delay may over %oms? (Index: %o, Current index: %o)"), this.pingStatistics.timeout, id, this.pingStatistics.currentRequestId);
+                    logWarn(LogCategory.NETWORKING, tr("Received pong which is older than the last request. Delay may over %oms? (Index: %o, Current index: %o)"), this.pingStatistics.timeout, id, this.pingStatistics.currentRequestId);
                 } else {
                     this.pingStatistics.lastResponseTimestamp = 'now' in performance ? performance.now() : Date.now();
                     this.pingStatistics.currentJsValue = this.pingStatistics.lastResponseTimestamp - this.pingStatistics.lastRequestTimestamp;
                     this.pingStatistics.currentNativeValue = parseInt(json["ping_native"]) / 1000; /* we're getting it in microseconds and not milliseconds */
                     this.events.fire("notify_ping_updated", { newPing: this.ping() });
-                    //log.debug(LogCategory.NETWORKING, tr("Received new pong. Updating ping to: JS: %o Native: %o"), this._ping.value.toFixed(3), this._ping.value_native.toFixed(3));
+                    //logDebug(LogCategory.NETWORKING, tr("Received new pong. Updating ping to: JS: %o Native: %o"), this._ping.value.toFixed(3), this._ping.value_native.toFixed(3));
                 }
             } else if(json["type"] === "WebRTC") {
                 this.oldVoiceConnection?.handleControlPacket(json);
             } else {
-                log.warn(LogCategory.NETWORKING, tr("Unknown command type %o"), json["type"]);
+                logWarn(LogCategory.NETWORKING, tr("Unknown command type %o"), json["type"]);
             }
         } else {
-            log.warn(LogCategory.NETWORKING, tr("Received unknown message of type %s. Dropping message"), typeof(data));
+            logWarn(LogCategory.NETWORKING, tr("Received unknown message of type %s. Dropping message"), typeof(data));
         }
     }
 
     sendData(data: any) {
         if(!this.socket || this.socket.state !== "connected") {
-            log.warn(LogCategory.NETWORKING, tr("Tried to send data via a non connected server socket."));
+            logWarn(LogCategory.NETWORKING, tr("Tried to send data via a non connected server socket."));
             return;
         }
 
@@ -443,7 +443,7 @@ export class ServerConnection extends AbstractServerConnection {
 
     send_command(command: string, data?: any | any[], _options?: CommandOptions) : Promise<CommandResult> {
         if(!this.socket || !this.connected()) {
-            log.warn(LogCategory.NETWORKING, tr("Tried to send a command without a valid connection."));
+            logWarn(LogCategory.NETWORKING, tr("Tried to send a command without a valid connection."));
             return Promise.reject(tr("not connected"));
         }
 

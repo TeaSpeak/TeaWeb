@@ -5,8 +5,6 @@ import {ChannelEntry, ChannelProperties} from "tc-shared/tree/Channel";
 import {LocalClientEntry, MusicClientEntry} from "tc-shared/tree/Client";
 import {openMusicManage} from "tc-shared/ui/modal/ModalMusicManage";
 import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
-import {server_connections} from "tc-shared/ConnectionManager";
-import {appViewController} from "tc-shared/ui/AppController";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {LogCategory, logError} from "tc-shared/log";
 

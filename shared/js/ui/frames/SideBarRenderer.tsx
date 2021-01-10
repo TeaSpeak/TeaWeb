@@ -7,10 +7,10 @@ import {ClientInfoRenderer} from "tc-shared/ui/frames/side/ClientInfoRenderer";
 import {PrivateConversationsPanel} from "tc-shared/ui/frames/side/PrivateConversationRenderer";
 import {ChannelBarRenderer} from "tc-shared/ui/frames/side/ChannelBarRenderer";
 import {LogCategory, logWarn} from "tc-shared/log";
-import React = require("react");
 import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
 import {MusicBotRenderer} from "tc-shared/ui/frames/side/MusicBotRenderer";
 import {ConversationPanel} from "tc-shared/ui/frames/side/AbstractConversationRenderer";
+import React = require("react");
 
 const cssStyle = require("./SideBarRenderer.scss");
 

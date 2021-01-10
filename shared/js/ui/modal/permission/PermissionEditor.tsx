@@ -5,8 +5,7 @@ import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import {Switch} from "tc-shared/ui/react-elements/Switch";
 import PermissionType from "tc-shared/permission/PermissionType";
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import {LogCategory, logDebug, logWarn} from "tc-shared/log";
 
 import ResizeObserver from "resize-observer-polyfill";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
@@ -879,14 +878,14 @@ class PermissionList extends React.Component<{ events: Registry<PermissionEditor
         this.resizeObserver = new ResizeObserver(entries => {
             if (entries.length !== 1) {
                 if (entries.length === 0)
-                    log.warn(LogCategory.PERMISSIONS, tr("Permission editor resize observer fired resize event with no entries!"));
+                    logWarn(LogCategory.PERMISSIONS, tr("Permission editor resize observer fired resize event with no entries!"));
                 else
-                    log.warn(LogCategory.PERMISSIONS, tr("Permission editor resize observer fired resize event with more than one entry which should not be possible (%d)!"), entries.length);
+                    logWarn(LogCategory.PERMISSIONS, tr("Permission editor resize observer fired resize event with more than one entry which should not be possible (%d)!"), entries.length);
                 return;
             }
             const bounds = entries[0].contentRect;
             if (this.state.viewHeight !== bounds.height) {
-                log.debug(LogCategory.PERMISSIONS, tr("Handling height update and change permission view height to %d from %d"), bounds.height, this.state.viewHeight);
+                logDebug(LogCategory.PERMISSIONS, tr("Handling height update and change permission view height to %d from %d"), bounds.height, this.state.viewHeight);
                 this.setState({
                     viewHeight: bounds.height
                 });
@@ -1090,7 +1089,7 @@ class PermissionList extends React.Component<{ events: Registry<PermissionEditor
         } else {
             const group = this.permissionByGroupId[event.groupId];
             if (!group) {
-                console.warn(tr("Received group toogle for unknwon group: %s"), event.groupId);
+                logWarn(LogCategory.PERMISSIONS, tr("Received group toogle for unknwon group: %s"), event.groupId);
                 return;
             }
 

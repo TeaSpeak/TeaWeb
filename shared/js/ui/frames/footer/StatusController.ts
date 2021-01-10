@@ -4,7 +4,7 @@ import {Registry} from "tc-shared/events";
 import {VoiceConnectionStatus} from "tc-shared/connection/VoiceConnection";
 import {VideoConnectionStatus} from "tc-shared/connection/VideoConnection";
 import {LogCategory, logError} from "tc-shared/log";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 enum StatusNotifyState {
     /* no notify has been scheduled */

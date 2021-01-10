@@ -1,5 +1,5 @@
 import {kUnknownHistoryServerUniqueId} from "tc-shared/connectionlog/History";
-import { RemoteIconInfo} from "tc-shared/file/Icons";
+import {RemoteIconInfo} from "tc-shared/file/Icons";
 
 export type ConnectProfileEntry = {
     id: string,

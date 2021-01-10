@@ -1,7 +1,6 @@
 import {Settings, settings} from "../../settings";
-import {LogCategory} from "../../log";
-import * as log from "../../log";
-import { tr } from "tc-shared/i18n/localize";
+import {LogCategory, logDebug, logError} from "../../log";
+import {tr} from "tc-shared/i18n/localize";
 
 declare global {
     interface JQuery<TElement = HTMLElement> {
@@ -132,12 +131,12 @@ if(!$.fn.dividerfy) {
                 try {
                     const config = JSON.parse(settings.getValue(Settings.FN_SEPARATOR_STATE(seperator_id), undefined));
                     if(config) {
-                        log.debug(LogCategory.GENERAL, tr("Applying previous changed sperator settings for %s: %o"), seperator_id, config);
+                        logDebug(LogCategory.GENERAL, tr("Applying previous changed sperator settings for %s: %o"), seperator_id, config);
                         apply_view(config.property, config.previous, config.next);
                     }
                 } catch(e) {
                     if(!(e instanceof SyntaxError))
-                        log.error(LogCategory.GENERAL, tr("Failed to parse seperator settings for sperator %s: %o"), seperator_id, e);
+                        logError(LogCategory.GENERAL, tr("Failed to parse seperator settings for sperator %s: %o"), seperator_id, e);
                 }
             }
         });

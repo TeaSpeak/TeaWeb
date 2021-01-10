@@ -2,11 +2,11 @@ import {AbstractModal} from "tc-shared/ui/react-elements/ModalDefinitions";
 import {Registry, RegistryMap} from "tc-shared/events";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 import * as React from "react";
+import {useState} from "react";
 import {ChannelTreeRenderer} from "tc-shared/ui/tree/Renderer";
 import {ControlBarEvents} from "tc-shared/ui/frames/control-bar/Definitions";
 import {ControlBar2} from "tc-shared/ui/frames/control-bar/Renderer";
 import {ChannelTreePopoutEvents} from "tc-shared/ui/tree/popout/Definitions";
-import {useState} from "react";
 
 const TitleRenderer = (props: { events: Registry<ChannelTreePopoutEvents> }) => {
     const [ title, setTitle ] = useState<string>(() => {

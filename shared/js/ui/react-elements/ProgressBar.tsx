@@ -1,5 +1,6 @@
 import * as React from "react";
 import {ReactElement} from "react";
+
 const cssStyle = require("./ProgressBar.scss");
 
 export interface ProgressBarState {

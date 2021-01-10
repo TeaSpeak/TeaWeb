@@ -4,8 +4,11 @@ import {EventHandler, Registry} from "tc-shared/events";
 import {
     ChannelEntryInfo,
     ChannelIcons,
-    ChannelTreeUIEvents, ClientIcons, ClientNameInfo,
-    ClientTalkIconState, FullChannelTreeEntry,
+    ChannelTreeUIEvents,
+    ClientIcons,
+    ClientNameInfo,
+    ClientTalkIconState,
+    FullChannelTreeEntry,
     ServerState
 } from "tc-shared/ui/tree/Definitions";
 import * as React from "react";

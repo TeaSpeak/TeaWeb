@@ -6,7 +6,7 @@ import {
     PermissionState
 } from "tc-shared/audio/recorder";
 import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import {LogCategory, logDebug, logError} from "tc-shared/log";
 import {Registry} from "tc-shared/events";
 import {WebIDevice} from "tc-backend/web/audio/Recorder";
 import * as loader from "tc-loader";
@@ -21,7 +21,7 @@ async function requestMicrophonePermissions() : Promise<PermissionState> {
     } catch (error) {
         const end = Date.now();
         const isSystem = (end - begin) < 250;
-        log.debug(LogCategory.AUDIO, tr("Microphone device request took %d milliseconds. System answered: %s"), end - begin, isSystem);
+        logDebug(LogCategory.AUDIO, tr("Microphone device request took %d milliseconds. System answered: %s"), end - begin, isSystem);
         return "denied";
     }
 }
@@ -88,7 +88,7 @@ class WebInputDeviceList extends AbstractDeviceList {
         }
 
         this.deviceListQueryPromise = this.doQueryDevices(askPermissions).catch(error => {
-            log.error(LogCategory.AUDIO, tr("Failed to query microphone devices (%o)"), error);
+            logError(LogCategory.AUDIO, tr("Failed to query microphone devices (%o)"), error);
 
             if(this.listState !== "healthy") {
                 this.setState("error");

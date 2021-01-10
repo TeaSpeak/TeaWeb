@@ -1,10 +1,10 @@
 import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {Registry} from "tc-shared/events";
+import * as React from "react";
 import {useRef, useState} from "react";
 import {Select} from "tc-shared/ui/react-elements/InputField";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
-import * as React from "react";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {GroupType} from "tc-shared/permission/GroupManager";
 import PermissionType from "tc-shared/permission/PermissionType";
@@ -13,6 +13,7 @@ import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {LogCategory, logWarn} from "tc-shared/log";
 
 const cssStyle = require("./ModalGroupPermissionCopy.scss");
 
@@ -222,7 +223,7 @@ function initializeGroupPermissionCopyController(connection: ConnectionHandler, 
                 return;
             }
 
-            console.warn(tr("Failed to copy group permissions: %o"), error);
+            logWarn(LogCategory.PERMISSIONS, tr("Failed to copy group permissions: %o"), error);
             createErrorModal(tr("Failed to copy group permissions"),
                 tra("Failed to copy group permissions.\n{}", stringifyError(error))).open();
         });

@@ -1,5 +1,5 @@
 import * as log from "tc-shared/log";
-import {LogCategory, logTrace} from "tc-shared/log";
+import {LogCategory, logTrace, logWarn} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
 import {ServerAddress} from "tc-shared/tree/Server";
 import {AddressTarget, default_options, ResolveOptions} from "tc-shared/dns";
@@ -80,7 +80,7 @@ class SRVResolveMethod implements DNSResolveMethod {
         for(const record of answer) {
             const parts = record.data.split(" ");
             if(parts.length !== 4) {
-                log.warn(LogCategory.DNS, tr("Failed to parse SRV record %s. Invalid split length."), record);
+                logWarn(LogCategory.DNS, tr("Failed to parse SRV record %s. Invalid split length."), record);
                 continue;
             }
 
@@ -89,7 +89,7 @@ class SRVResolveMethod implements DNSResolveMethod {
             const port = parseInt(parts[2]);
 
             if((priority < 0 || priority > 65535) || (weight < 0 || weight > 65535) || (port < 0 || port > 65535)) {
-                log.warn(LogCategory.DNS, tr("Failed to parse SRV record %s. Malformed data."), record);
+                logWarn(LogCategory.DNS, tr("Failed to parse SRV record %s. Malformed data."), record);
                 continue;
             }
 
@@ -276,7 +276,7 @@ class TeaSpeakDNSResolve {
                     if(this.finished_resolvers.findIndex(e => e === after) === -1) continue _main_loop;
 
                 invoke_count++;
-                log.trace(LogCategory.DNS, tr(" Executing resolver %s"), resolver_name);
+                logTrace(LogCategory.DNS, tr(" Executing resolver %s"), resolver_name);
 
                 this.resolving_resolvers.push(resolver_name);
                 resolver.resolver.resolve(this.address).then(result => {
@@ -284,12 +284,12 @@ class TeaSpeakDNSResolve {
                     this.finished_resolvers.push(resolver_name);
 
                     if(!result) {
-                        log.trace(LogCategory.DNS, tr(" Resolver %s returned an empty response."), resolver_name);
+                        logTrace(LogCategory.DNS, tr(" Resolver %s returned an empty response."), resolver_name);
                         this.invoke_resolvers();
                         return;
                     }
 
-                    log.trace(LogCategory.DNS, tr(" Successfully resolved address %s:%d to %s:%d via resolver %s"),
+                    logTrace(LogCategory.DNS, tr(" Successfully resolved address %s:%d to %s:%d via resolver %s"),
                         this.address.host, this.address.port,
                         result.host, result.port,
                         resolver_name);
@@ -298,7 +298,7 @@ class TeaSpeakDNSResolve {
                     if(!this.resolving || !this.callback_success) return; /* resolve has been finished already */
                     this.finished_resolvers.push(resolver_name);
 
-                    log.trace(LogCategory.DNS, tr(" Resolver %s ran into an error: %o"), resolver_name, error);
+                    logTrace(LogCategory.DNS, tr(" Resolver %s ran into an error: %o"), resolver_name, error);
                     this.invoke_resolvers();
                 }).then(() => {
                     this.resolving_resolvers.remove(resolver_name);

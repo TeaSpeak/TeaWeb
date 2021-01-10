@@ -12,10 +12,11 @@ import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMe
 
 import '!style-loader!css-loader!highlight.js/styles/darcula.css';
 import {Settings, settings} from "tc-shared/settings";
+import {LogCategory, logWarn} from "tc-shared/log";
 
 const registerLanguage = (name, language: Promise<any>) => {
     language.then(lan => hljs.registerLanguage(name, lan)).catch(error => {
-        console.warn("Failed to load language %s (%o)", name, error);
+        logWarn(LogCategory.CHAT, tr("Failed to load language %s (%o)"), name, error);
     });
 };
 

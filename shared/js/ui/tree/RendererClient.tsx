@@ -8,6 +8,7 @@ import {UnreadMarkerRenderer} from "tc-shared/ui/tree/RendererTreeEntry";
 import {RDPClient} from "tc-shared/ui/tree/RendererDataProvider";
 import * as DOMPurify from "dompurify";
 import {ChannelTreeView} from "tc-shared/ui/tree/RendererView";
+import {LogCategory, logWarn} from "tc-shared/log";
 
 const clientStyle = require("./Client.scss");
 const viewStyle = require("./View.scss");
@@ -133,7 +134,7 @@ function selectText(node: HTMLElement) {
         selection.removeAllRanges();
         selection.addRange(range);
     } else {
-        console.warn("Could not select text in node: Unsupported browser.");
+        logWarn(LogCategory.GENERAL, tr("Could not select text in node: Unsupported browser."));
     }
 }
 

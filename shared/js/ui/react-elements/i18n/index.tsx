@@ -1,6 +1,6 @@
 import * as React from "react";
-import {parseMessageWithArguments} from "tc-shared/ui/frames/chat";
 import {cloneElement} from "react";
+import {parseMessageWithArguments} from "tc-shared/ui/frames/chat";
 
 let instances = [];
 export class Translatable extends React.Component<{

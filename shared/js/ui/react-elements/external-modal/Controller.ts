@@ -1,5 +1,4 @@
-import * as log from "../../../log";
-import {LogCategory} from "../../../log";
+import {LogCategory, logDebug, logTrace, logWarn} from "../../../log";
 import * as ipc from "../../../ipc/BrowserIPC";
 import {ChannelMessage} from "../../../ipc/BrowserIPC";
 import {Registry, RegistryMap} from "../../../events";
@@ -127,7 +126,7 @@ export abstract class AbstractExternalModalController extends EventControllerBas
             return;
 
         if(this.ipcRemoteId === undefined) {
-            log.debug(LogCategory.IPC, tr("Remote window connected with id %s"), remoteId);
+            logDebug(LogCategory.IPC, tr("Remote window connected with id %s"), remoteId);
             this.ipcRemoteId = remoteId;
         } else if(this.ipcRemoteId !== remoteId) {
             this.ipcRemoteId = remoteId;
@@ -142,7 +141,7 @@ export abstract class AbstractExternalModalController extends EventControllerBas
         switch (type) {
             case "hello-popout": {
                 const tpayload = payload as PopoutIPCMessage["hello-popout"];
-                log.trace(LogCategory.IPC, "Received Hello World from popup with version %s (expected %s).", tpayload.version, __build.version);
+                logTrace(LogCategory.IPC, "Received Hello World from popup with version %s (expected %s).", tpayload.version, __build.version);
                 if(tpayload.version !== __build.version) {
                     this.sendIPCMessage("hello-controller", { accepted: false, message: tr("version miss match") });
                     if(this.callbackWindowInitialized) {
@@ -171,7 +170,7 @@ export abstract class AbstractExternalModalController extends EventControllerBas
                 break;
 
             default:
-                log.warn(LogCategory.IPC, "Received unknown message type from popup window: %s", type);
+                logWarn(LogCategory.IPC, "Received unknown message type from popup window: %s", type);
                 return;
         }
     }

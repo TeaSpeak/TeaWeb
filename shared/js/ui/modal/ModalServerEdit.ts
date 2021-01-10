@@ -7,7 +7,7 @@ import * as tooltip from "../../ui/elements/Tooltip";
 import {spawnIconSelect} from "../../ui/modal/ModalIconSelect";
 import {network} from "../../ui/frames/chat";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 export function createServerModal(server: ServerEntry, callback: (properties?: ServerProperties) => Promise<void>) {
     const properties = Object.assign({}, server.properties);
@@ -124,7 +124,7 @@ function apply_general_listener(tag: JQuery, server: ServerEntry, properties: Se
                 icon_node.children().remove();
                 icon_node.append(generateIconJQueryTag(getIconManager().resolveIcon(id, server.properties.virtualserver_unique_identifier, server.channelTree.client.handlerId)));
 
-                console.log("Selected icon ID: %d", id);
+                logTrace(LogCategory.GENERAL, "Selected icon ID: %d", id);
                 properties.virtualserver_icon_id = id;
                 callback_valid(undefined); //Toggle save button update
             }, properties.virtualserver_icon_id);
@@ -135,7 +135,7 @@ function apply_general_listener(tag: JQuery, server: ServerEntry, properties: Se
             icon_node.children().remove();
             icon_node.append(generateIconJQueryTag(getIconManager().resolveIcon(0, server.properties.virtualserver_unique_identifier)));
 
-            console.log("Remove server icon");
+            logTrace(LogCategory.GENERAL, "Remove server icon");
             properties.virtualserver_icon_id = 0;
             callback_valid(undefined); //Toggle save button update
         });
@@ -218,7 +218,7 @@ function apply_general_listener(tag: JQuery, server: ServerEntry, properties: Se
         };
 
         input.on('change', event => {
-            console.log(tr("Welcome message edited: %o"), input.val());
+            logTrace(LogCategory.GENERAL, tr("Welcome message edited: %o"), input.val());
             properties.virtualserver_welcomemessage = input.val() as string;
             callback_valid(undefined); //Toggle save button update
         }).prop("disabled", !permission).firstParent(".input-boxed").toggleClass("disabled", !permission);

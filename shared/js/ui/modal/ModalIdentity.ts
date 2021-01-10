@@ -2,7 +2,8 @@ import {createErrorModal, createInfoModal, createModal, Modal} from "../../ui/el
 import {TeaSpeakIdentity} from "../../profiles/identities/TeamSpeakIdentity";
 import * as tooltip from "../../ui/elements/Tooltip";
 import {formatMessage} from "../../ui/frames/chat";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
+import {LogCategory, logError} from "tc-shared/log";
 
 export function spawnTeamSpeakIdentityImprove(identity: TeaSpeakIdentity, name: string): Modal {
     let modal: Modal;
@@ -58,7 +59,6 @@ export function spawnTeamSpeakIdentityImprove(identity: TeaSpeakIdentity, name: 
                     }, hash_rate => {
                         input_hash_rate.val(hash_rate);
                     }).catch(error => {
-                        console.error(error);
                         createErrorModal(tr("Failed to improve identity"), tr("Failed to improve identity.<br>Error:") + error).open();
                         if (active)
                             button_start_stop.trigger('click');
@@ -80,7 +80,6 @@ export function spawnTeamSpeakIdentityImprove(identity: TeaSpeakIdentity, name: 
                         if (active)
                             button_start_stop.trigger('click');
                     }).catch(error => {
-                        console.error(error);
                         createErrorModal(tr("Failed to improve identity"), tr("Failed to improve identity.<br>Error:") + error).open();
                         if (active)
                             button_start_stop.trigger('click');
@@ -185,7 +184,7 @@ export function spawnTeamSpeakIdentityImport(callback: (identity: TeaSpeakIdenti
                 };
 
                 file_reader.onerror = ev => {
-                    console.error(tr("Failed to read give identity file: %o"), ev);
+                    logError(LogCategory.IDENTITIES, tr("Failed to read give identity file: %o"), ev);
                     set_status(tr("Failed to read the identity file."), "error");
                     return;
                 };

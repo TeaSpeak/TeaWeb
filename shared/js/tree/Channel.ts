@@ -1,7 +1,7 @@
 import {ChannelTree} from "./ChannelTree";
 import {ClientEntry, ClientEvents} from "./Client";
 import * as log from "../log";
-import {LogCategory, LogType} from "../log";
+import {LogCategory, logInfo, LogType, logWarn} from "../log";
 import {PermissionType} from "../permission/PermissionType";
 import {settings, Settings} from "../settings";
 import * as contextmenu from "../ui/elements/ContextMenu";
@@ -223,7 +223,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         });
 
         this.collapsed = this.channelTree.client.settings.getValue(Settings.FN_SERVER_CHANNEL_COLLAPSED(this.channelId));
-        this.subscriptionMode = this.channelTree.client.settings.getValue(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId));
+        this.subscriptionMode = this.channelTree.client.settings.getValue(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId), ChannelSubscribeMode.INHERITED);
 
         this.channelDescriptionCached = false;
         this.channelDescriptionCallback = [];
@@ -310,7 +310,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     unregisterClient(client: ClientEntry, noEvent?: boolean) {
         client.events.off("notify_properties_updated", this.clientPropertyChangedListener);
         if(!this.client_list.remove(client)) {
-            log.warn(LogCategory.CHANNEL, tr("Unregistered unknown client from channel %s"), this.channelName());
+            logWarn(LogCategory.CHANNEL, tr("Unregistered unknown client from channel %s"), this.channelName());
         }
     }
 
@@ -508,7 +508,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                             this.channelTree.client.serverConnection.send_command("channeledit", properties).then(() => {
                                 this.channelTree.client.sound.play(Sound.CHANNEL_EDITED_SELF);
                             });
-                            log.info(LogCategory.CHANNEL, tr("Changed channel properties of channel %s: %o"), this.channelName(), properties);
+                            logInfo(LogCategory.CHANNEL, tr("Changed channel properties of channel %s: %o"), this.channelName(), properties);
                         }
 
                         if(permissions.length > 0) {
@@ -720,7 +720,6 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     cached_password() { return this.cachedPasswordHash; }
 
     async updateSubscribeMode() {
-        console.error("Update subscribe mode");
         let shouldBeSubscribed = false;
         switch (this.subscriptionMode) {
             case ChannelSubscribeMode.INHERITED:

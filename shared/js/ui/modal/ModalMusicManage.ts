@@ -3,9 +3,8 @@ import {ConnectionHandler} from "../../ConnectionHandler";
 import {MusicClientEntry} from "../../tree/Client";
 import {modal, Registry} from "../../events";
 import {CommandResult} from "../../connection/ServerConnectionDeclaration";
-import * as log from "../../log";
-import {LogCategory} from "../../log";
-import {tra, tr} from "../../i18n/localize";
+import {LogCategory, logError, logWarn} from "../../log";
+import {tr, tra} from "../../i18n/localize";
 import * as tooltip from "../../ui/elements/Tooltip";
 import * as i18nc from "../../i18n/country";
 import {find} from "../../permission/PermissionManager";
@@ -70,7 +69,7 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
                     status: "error",
                     error_msg: error_msg(error)
                 });
-                log.error(LogCategory.CLIENT, tr("Failed to query playlist info for playlist %d: %o"), playlist_id, error);
+                logError(LogCategory.CLIENT, tr("Failed to query playlist info for playlist %d: %o"), playlist_id, error);
             });
         });
 
@@ -111,7 +110,7 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
                     key: event.key,
                     error_msg: error_msg(error)
                 });
-                log.error(LogCategory.CLIENT, tr("Failed to change playlist status %s for playlist %d: %o"), event.key, playlist_id, error);
+                logError(LogCategory.CLIENT, tr("Failed to change playlist status %s for playlist %d: %o"), event.key, playlist_id, error);
             });
         });
 
@@ -176,7 +175,7 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
                     key: event.key,
                     error_msg: error_msg(error)
                 });
-                log.error(LogCategory.CLIENT, tr("Failed to change bot setting %s: %o"), event.key, error);
+                logError(LogCategory.CLIENT, tr("Failed to change bot setting %s: %o"), event.key, error);
             });
         });
     }
@@ -199,7 +198,7 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
                     status: "error",
                     error_msg: error_msg(error)
                 });
-                log.error(LogCategory.CLIENT, tr("Failed to query playlist general permissions for playlist %d: %o"), playlist_id, error);
+                logError(LogCategory.CLIENT, tr("Failed to query playlist general permissions for playlist %d: %o"), playlist_id, error);
             });
         });
 
@@ -224,7 +223,7 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
                     key: event.key,
                     error_msg: error_msg(error)
                 });
-                log.error(LogCategory.CLIENT, tr("Failed to set playlist general permissions for playlist %d and permission %d: %o"), playlist_id, event.key, error);
+                logError(LogCategory.CLIENT, tr("Failed to set playlist general permissions for playlist %d and permission %d: %o"), playlist_id, event.key, error);
             });
         });
 
@@ -247,7 +246,7 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
                     client_database_id: event.client_database_id,
                     error_msg: error_msg(error)
                 });
-                log.error(LogCategory.CLIENT, tr("Failed to query playlist client permissions for playlist %d and client %d: %o"), playlist_id, client_id, error);
+                logError(LogCategory.CLIENT, tr("Failed to query playlist client permissions for playlist %d and client %d: %o"), playlist_id, client_id, error);
             });
         });
 
@@ -277,7 +276,7 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
                     client_database_id: client_id,
                     error_msg: error_msg(error)
                 });
-                log.error(LogCategory.CLIENT, tr("Failed to set playlist client permissions for playlist %d, permission %d and client id %d: %o"), playlist_id, event.key, client_id, error);
+                logError(LogCategory.CLIENT, tr("Failed to set playlist client permissions for playlist %d, permission %d and client id %d: %o"), playlist_id, event.key, client_id, error);
             });
         });
 
@@ -301,7 +300,7 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
                     status: "error",
                     error_msg: error_msg(error)
                 });
-                log.error(LogCategory.CLIENT, tr("Failed to query special client list for playlist %d: %o"), playlist_id, error);
+                logError(LogCategory.CLIENT, tr("Failed to query special client list for playlist %d: %o"), playlist_id, error);
             })
         });
 
@@ -344,7 +343,7 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
                     status: "error",
                     error_msg: error_msg(error)
                 });
-                log.error(LogCategory.CLIENT, tr("Failed to lookup search text \"%s\": %o"), text, error);
+                logError(LogCategory.CLIENT, tr("Failed to lookup search text \"%s\": %o"), text, error);
             });
         });
 
@@ -375,7 +374,7 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
                     error_msg: error_msg(error),
                     permission_name: event.permission_name
                 });
-                log.error(LogCategory.CLIENT, tr("Failed to execute permfind for permission %s: %o"), event.permission_name, error);
+                logError(LogCategory.CLIENT, tr("Failed to execute permfind for permission %s: %o"), event.permission_name, error);
             });
         });
     }
@@ -911,7 +910,6 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             input.on("keyup", event => event.key === "Enter" && input.trigger("focusout"));
             input.on("change", event => {
                 const value = parseInt(input.val() as string);
-                console.log(value);
                 if (isNaN(value)) return;
 
                 update_value(tr("applying..."));
@@ -1741,7 +1739,7 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
             let hide_indicator = false;
 
             if (typeof permission_needed_name !== "string") {
-                log.warn(LogCategory.GENERAL, tr("Missing permission needed mapping for %s"), permission_name);
+                logWarn(LogCategory.GENERAL, tr("Missing permission needed mapping for %s"), permission_name);
                 return;
             }
 

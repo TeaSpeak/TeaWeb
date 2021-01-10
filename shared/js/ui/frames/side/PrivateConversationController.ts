@@ -4,13 +4,10 @@ import {
     PrivateConversationInfo,
     PrivateConversationUIEvents
 } from "../../../ui/frames/side/PrivateConversationDefinitions";
-import {
-    AbstractConversationUiEvents
-} from "./AbstractConversationDefinitions";
-import * as log from "../../../log";
-import {LogCategory} from "../../../log";
+import {AbstractConversationUiEvents} from "./AbstractConversationDefinitions";
+import {LogCategory, logError, logWarn} from "../../../log";
 import {AbstractConversationController} from "./AbstractConversationController";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 import {
     PrivateConversation,
     PrivateConversationEvents,
@@ -147,7 +144,7 @@ export class PrivateConversationController extends AbstractConversationControlle
     private handleConversationClose(event: PrivateConversationUIEvents["action_close_chat"]) {
         const conversation = this.conversationManager?.findConversation(event.chatId);
         if(!conversation) {
-            log.error(LogCategory.CLIENT, tr("Tried to close a not existing private conversation with id %s"), event.chatId);
+            logError(LogCategory.CLIENT, tr("Tried to close a not existing private conversation with id %s"), event.chatId);
             return;
         }
 
@@ -167,7 +164,7 @@ export class PrivateConversationController extends AbstractConversationControlle
         }
 
         this.connection.serverConnection.send_command("clientchatcomposing", { clid: clientId }).catch(error => {
-            log.warn(LogCategory.CHAT, tr("Failed to send chat composing to server for chat %d: %o"), clientId, error);
+            logWarn(LogCategory.CHAT, tr("Failed to send chat composing to server for chat %d: %o"), clientId, error);
         });
     }
 }

@@ -1,8 +1,7 @@
-import {LogCategory} from "../../log";
+import {LogCategory, logWarn} from "../../log";
 import {settings, Settings} from "../../settings";
-import * as log from "../../log";
 import * as loader from "tc-loader";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 export enum ChatType {
     GENERAL,
@@ -83,7 +82,7 @@ export function formatMessage(pattern: string, ...objects: any[]) : JQuery[] {
             }
 
             if(objects.length < number)
-                log.warn(LogCategory.GENERAL, tr("Message to format contains invalid index (%o)"), number);
+                logWarn(LogCategory.GENERAL, tr("Message to format contains invalid index (%o)"), number);
 
             result.push(...formatElement(objects[number]));
         }
@@ -136,7 +135,7 @@ export function parseMessageWithArguments(pattern: string, argumentCount: number
         }
 
         if(argumentCount < number) {
-            log.warn(LogCategory.GENERAL, tr("Message to format contains invalid index (%o)"), number);
+            logWarn(LogCategory.GENERAL, tr("Message to format contains invalid index (%o)"), number);
             result.push("{" + offset.toString() + "}");
         } else {
             result.push(number);

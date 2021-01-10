@@ -1,5 +1,5 @@
 import {Registry} from "tc-shared/events";
-import {LogCategory, logWarn} from "tc-shared/log";
+import {LogCategory, logTrace, logWarn} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
 import {globalAudioContext, on_ready} from "tc-backend/audio/player";
 
@@ -104,10 +104,10 @@ export class RemoteRTPVideoTrack extends RemoteRTPTrack {
         this.mediaStream.addTrack(transceiver.receiver.track);
 
         const track = transceiver.receiver.track;
-        track.onended = () => console.error("TRACK %d ended", ssrc);
-        track.onmute = () => console.error("TRACK %d muted", ssrc);
-        track.onunmute = () => console.error("TRACK %d unmuted", ssrc);
-        track.onisolationchange = () => console.error("TRACK %d onisolationchange", ssrc);
+        track.onended = () => logTrace(LogCategory.VIDEO, "Track %d ended", ssrc);
+        track.onmute = () => logTrace(LogCategory.VIDEO, "Track %d muted", ssrc);
+        track.onunmute = () => logTrace(LogCategory.VIDEO, "Track %d unmuted", ssrc);
+        track.onisolationchange = () => logTrace(LogCategory.VIDEO, "Track %d isolation changed", ssrc);
     }
 
     getMediaStream() : MediaStream {

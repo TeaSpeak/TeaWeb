@@ -4,7 +4,7 @@ import * as React from "react";
 import {useEffect, useRef, useState} from "react";
 import {useGlobalSetting, useTr} from "tc-shared/ui/react-elements/Helper";
 import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
-import {Settings, settings} from "tc-shared/settings";
+import {Settings} from "tc-shared/settings";
 
 const cssStyle = require("./HostBannerRenderer.scss");
 

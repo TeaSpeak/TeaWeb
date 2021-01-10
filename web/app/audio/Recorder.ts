@@ -12,7 +12,7 @@ import {
     NodeInputConsumer
 } from "tc-shared/voice/RecorderBase";
 import * as log from "tc-shared/log";
-import {LogCategory, logDebug} from "tc-shared/log";
+import {LogCategory, logDebug, logWarn} from "tc-shared/log";
 import * as aplayer from "./player";
 import {JAbstractFilter, JStateFilter, JThresholdFilter} from "./RecorderFilter";
 import {Filter, FilterType, FilterTypeClass} from "tc-shared/voice/Filter";
@@ -157,7 +157,7 @@ class JavascriptInput implements AbstractInput {
         }
 
         if(this.consumer.callbackBuffer) {
-            log.warn(LogCategory.AUDIO, tr("AudioInput has callback buffer, but this isn't supported yet!"));
+            logWarn(LogCategory.AUDIO, tr("AudioInput has callback buffer, but this isn't supported yet!"));
         }
     }
 
@@ -198,7 +198,6 @@ class JavascriptInput implements AbstractInput {
                 deviceId = this.deviceId;
             }
 
-            console.error("Starting input recorder on %o - %o", this.deviceId, deviceId);
             const requestResult = await requestMediaStream(deviceId, undefined, "audio");
             if(!(requestResult instanceof MediaStream)) {
                 this.setState(InputState.PAUSED);
@@ -289,7 +288,7 @@ class JavascriptInput implements AbstractInput {
         try {
             await this.stop();
         } catch(error) {
-            log.warn(LogCategory.AUDIO, tr("Failed to stop previous record session (%o)"), error);
+            logWarn(LogCategory.AUDIO, tr("Failed to stop previous record session (%o)"), error);
         }
 
         const oldDeviceId = deviceId;

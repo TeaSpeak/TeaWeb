@@ -1,5 +1,4 @@
-import * as log from "./log";
-import {LogCategory} from "./log";
+import {LogCategory, logError} from "./log";
 import {guid} from "./crypto/uid";
 import {createErrorModal, createInfoModal, createInputModal} from "./ui/elements/Modal";
 import {defaultConnectProfile, findConnectProfile} from "./profiles/ConnectionProfile";
@@ -99,7 +98,7 @@ function bookmark_config() : BookmarkConfig {
     try {
         bookmarks = JSON.parse(bookmark_json) || {} as BookmarkConfig;
     } catch(error) {
-        log.error(LogCategory.BOOKMARKS, tr("Failed to load bookmarks: %o"), error);
+        logError(LogCategory.BOOKMARKS, tr("Failed to load bookmarks: %o"), error);
         bookmarks = {} as any;
     }
 

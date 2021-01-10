@@ -1,8 +1,7 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import {ReactElement} from "react";
+import * as ReactDOM from "react-dom";
 import {guid} from "tc-shared/crypto/uid";
-import {Translatable} from "tc-shared/ui/react-elements/i18n";
 
 const cssStyle = require("./Tooltip.scss");
 

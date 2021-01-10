@@ -1,7 +1,6 @@
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {MenuEntryType} from "tc-shared/ui/elements/ContextMenu";
-import * as log from "tc-shared/log";
-import {LogCategory, logError, logWarn} from "tc-shared/log";
+import {LogCategory, logDebug, logError, logWarn} from "tc-shared/log";
 import {PermissionType} from "tc-shared/permission/PermissionType";
 import {Sound} from "tc-shared/sound/Sounds";
 import {Group} from "tc-shared/permission/GroupManager";
@@ -236,12 +235,12 @@ export class ChannelTree {
         batch_updates(BatchUpdateType.CHANNEL_TREE);
         try {
             if(!this.channels.remove(channel)) {
-                log.warn(LogCategory.CHANNEL, tr("Deleting an unknown channel!"));
+                logWarn(LogCategory.CHANNEL, tr("Deleting an unknown channel!"));
             }
 
             channel.children(false).forEach(e => this.deleteChannel(e));
             if(channel.clients(false).length !== 0) {
-                log.warn(LogCategory.CHANNEL, tr("Deleting a non empty channel! This could cause some errors."));
+                logWarn(LogCategory.CHANNEL, tr("Deleting a non empty channel! This could cause some errors."));
                 for(const client of channel.clients(false)) {
                     this.deleteClient(client, { reason: ViewReasonId.VREASON_SYSTEM, serverLeave: false });
                 }
@@ -308,7 +307,7 @@ export class ChannelTree {
 
     moveChannel(channel: ChannelEntry, channelPrevious: ChannelEntry, parent: ChannelEntry, isInsertMove: boolean) {
         if(channelPrevious != null && channelPrevious.parent != parent) {
-            console.error(tr("Invalid channel move (different parents! (%o|%o)"), channelPrevious.parent, parent);
+            logError(LogCategory.CHANNEL, tr("Invalid channel move (different parents! (%o|%o)"), channelPrevious.parent, parent);
             return;
         }
 
@@ -890,11 +889,11 @@ export class ChannelTree {
     spawnCreateChannel(parent?: ChannelEntry) {
         spawnChannelEditNew(this.client, undefined, parent, (properties, permissions) => {
             properties["cpid"] = parent ? parent.channelId : 0;
-            log.debug(LogCategory.CHANNEL, tr("Creating a new channel.\nProperties: %o\nPermissions: %o"), properties);
+            logDebug(LogCategory.CHANNEL, tr("Creating a new channel.\nProperties: %o\nPermissions: %o"), properties);
             this.client.serverConnection.send_command("channelcreate", properties).then(() => {
                 let channel = this.find_channel_by_name(properties.channel_name, parent, true);
                 if(!channel) {
-                    log.error(LogCategory.CHANNEL, tr("Failed to resolve channel after creation. Could not apply permissions!"));
+                    logError(LogCategory.CHANNEL, tr("Failed to resolve channel after creation. Could not apply permissions!"));
                     return;
                 }
 
@@ -947,11 +946,11 @@ export class ChannelTree {
 
             if(channels.length > 0) {
                 this.client.serverConnection.send_command('channelsubscribe', channels.map(e => { return {cid: e}; })).catch(error => {
-                    console.warn(tr("Failed to subscribe to specific channels (%o): %o"), channels, error);
+                    logWarn(LogCategory.NETWORKING, tr("Failed to subscribe to specific channels (%o): %o"), channels, error);
                 });
             }
         }).catch(error => {
-            console.warn(tr("Failed to unsubscribe to all channels! (%o)"), error);
+            logWarn(LogCategory.NETWORKING, tr("Failed to unsubscribe to all channels! (%o)"), error);
         });
     }
 
@@ -969,11 +968,11 @@ export class ChannelTree {
 
             if(channels.length > 0) {
                 this.client.serverConnection.send_command('channelunsubscribe', channels.map(e => { return {cid: e}; })).catch(error => {
-                    console.warn(tr("Failed to unsubscribe to specific channels (%o): %o"), channels, error);
+                    logWarn(LogCategory.CHANNEL, tr("Failed to unsubscribe to specific channels (%o): %o"), channels, error);
                 });
             }
         }).catch(error => {
-            console.warn(tr("Failed to subscribe to all channels! (%o)"), error);
+            logWarn(LogCategory.CHANNEL, tr("Failed to subscribe to all channels! (%o)"), error);
         });
     }
 

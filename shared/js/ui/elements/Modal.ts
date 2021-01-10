@@ -2,6 +2,7 @@ import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {KeyCode} from "../../PPTListener";
 import * as $ from "jquery";
+import {LogCategory, logError} from "tc-shared/log";
 
 export enum ElementType {
     HEADER,
@@ -40,7 +41,7 @@ export const ModalFunctions = {
             case "undefined":
                 return undefined;
             default:
-                console.error(("Invalid type %o"), typeof val);
+                logError(LogCategory.GENERAL, "Invalid type %o", typeof val);
                 return $();
         }
     },
@@ -210,7 +211,6 @@ export class Modal {
         const body = ModalFunctions.jqueriefy(this.properties.body, ElementType.BODY);
         const footer = ModalFunctions.jqueriefy(this.properties.footer, ElementType.FOOTER);
 
-        //FIXME: cache template
         const template = $(this.properties.template || "#tmpl_modal");
 
         const properties = {

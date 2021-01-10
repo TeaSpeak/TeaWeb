@@ -6,14 +6,13 @@ import {
 import {ServerEntry} from "../../tree/Server";
 import {CommandResult} from "../../connection/ServerConnectionDeclaration";
 import {createErrorModal, createModal, Modal} from "../../ui/elements/Modal";
-import * as log from "../../log";
-import {LogCategory} from "../../log";
+import {LogCategory, logWarn} from "../../log";
 import * as tooltip from "../../ui/elements/Tooltip";
 import * as i18nc from "../../i18n/country";
 import {format_time, formatMessage} from "../../ui/frames/chat";
 import * as moment from "moment";
 import {ErrorCode} from "../../connection/ErrorCode";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 export function openServerInfo(server: ServerEntry) {
     let modal: Modal;
@@ -40,7 +39,7 @@ export function openServerInfo(server: ServerEntry) {
                     update_callbacks = [];
                     update_values();
                 }).catch(error => {
-                    log.warn(LogCategory.CLIENT, tr("Failed to refresh server properties: %o"), error);
+                    logWarn(LogCategory.CLIENT, tr("Failed to refresh server properties: %o"), error);
                     if (error instanceof CommandResult)
                         error = error.extra_message || error.message;
                     createErrorModal(tr("Refresh failed"), formatMessage(tr("Failed to refresh server properties.{:br:}Error: {}"), error)).open();

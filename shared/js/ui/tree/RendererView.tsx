@@ -84,9 +84,9 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         this.resizeObserver = new ResizeObserver(entries => {
             if (entries.length !== 1) {
                 if (entries.length === 0) {
-                    console.warn(tr("Channel resize observer fired resize event with no entries!"));
+                    logWarn(LogCategory.GENERAL, tr("Channel resize observer fired resize event with no entries!"));
                 } else {
-                    console.warn(tr("Channel resize observer fired resize event with more than one entry which should not be possible (%d)!"), entries.length);
+                    logWarn(LogCategory.GENERAL, tr("Channel resize observer fired resize event with more than one entry which should not be possible (%d)!"), entries.length);
                 }
                 return;
             }

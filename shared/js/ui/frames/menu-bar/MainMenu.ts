@@ -15,7 +15,7 @@ import {
     DirectoryBookmark
 } from "tc-shared/bookmarks";
 import {getBackend} from "tc-shared/backend";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 function renderConnectionItems() {
     const items: MenuBarEntry[] = [];

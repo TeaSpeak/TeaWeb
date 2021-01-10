@@ -2,7 +2,7 @@ import {settings, Settings} from "../../settings";
 import {createModal, Modal} from "../../ui/elements/Modal";
 import {ConnectionHandler} from "../../ConnectionHandler";
 import {ServerAddress} from "../../tree/Server";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 type URLGeneratorSettings = {
     flag_direct: boolean,

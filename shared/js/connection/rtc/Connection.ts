@@ -1,7 +1,6 @@
 import {AbstractServerConnection, ServerCommand, ServerConnectionEvents} from "tc-shared/connection/ConnectionBase";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
-import * as log from "tc-shared/log";
-import {group, LogCategory, logDebug, logError, logGroupNative, logTrace, LogType, logWarn} from "tc-shared/log";
+import {LogCategory, logDebug, logError, logGroupNative, logTrace, LogType, logWarn} from "tc-shared/log";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {tr, tra} from "tc-shared/i18n/localize";
@@ -307,8 +306,6 @@ class CommandHandler extends AbstractCommandHandler {
             } else {
                 logWarn(LogCategory.WEBRTC, tr("Received unknown/invalid rtc track state: %d"), state);
             }
-        } else if(command.command === "notifybroadcastvideo") {
-            /* FIXME: TODO! */
         }
         return false;
     }
@@ -920,9 +917,6 @@ export class RTCConnection {
         this.peer.ondatachannel = event => this.handleDataChannel(event.channel);
         this.peer.ontrack = event => this.handleTrack(event);
 
-        /* FIXME: Remove this debug! */
-        (window as any).rtp = this;
-
         this.updateConnectionState(RTPConnectionState.CONNECTING);
         this.doInitialSetup0().catch(error => {
             this.handleFatalError(tr("initial setup failed"), true);
@@ -959,7 +953,7 @@ export class RTCConnection {
             /* Firefox has some crazy issues */
             if(window.detectedBrowser.name !== "firefox") {
                 if(target) {
-                    console.error("Setting sendrecv from %o", this.currentTransceiver[type].direction, this.currentTransceiver[type].currentDirection);
+                    logTrace(LogCategory.NETWORKING, "Setting sendrecv from %o", this.currentTransceiver[type].direction, this.currentTransceiver[type].currentDirection);
                     this.currentTransceiver[type].direction = "sendrecv";
                 } else if(type === "video" || type === "video-screen") {
                     /*
@@ -1046,7 +1040,6 @@ export class RTCConnection {
 
     private handleLocalIceCandidate(candidate: RTCIceCandidate | undefined) {
         if(candidate) {
-            console.error(candidate.candidate);
             if(candidate.address?.endsWith(".local")) {
                 logTrace(LogCategory.WEBRTC, tr("Skipping local fqdn ICE candidate %s"), candidate.toJSON().candidate);
                 return;
@@ -1109,18 +1102,18 @@ export class RTCConnection {
 
     private handleIceCandidateError(event: RTCPeerConnectionIceErrorEvent) {
         if(this.peer.iceGatheringState === "gathering") {
-            log.warn(LogCategory.WEBRTC, tr("Received error while gathering the ice candidates: %d/%s for %s (url: %s)"),
+            logWarn(LogCategory.WEBRTC, tr("Received error while gathering the ice candidates: %d/%s for %s (url: %s)"),
                 event.errorCode, event.errorText, event.hostCandidate, event.url);
         } else {
-            log.trace(LogCategory.WEBRTC, tr("Ice candidate %s (%s) errored: %d/%s"),
+            logTrace(LogCategory.WEBRTC, tr("Ice candidate %s (%s) errored: %d/%s"),
                 event.url, event.hostCandidate, event.errorCode, event.errorText);
         }
     }
     private handleIceConnectionStateChanged() {
-        log.trace(LogCategory.WEBRTC, tr("ICE connection state changed to %s"), this.peer.iceConnectionState);
+        logTrace(LogCategory.WEBRTC, tr("ICE connection state changed to %s"), this.peer.iceConnectionState);
     }
     private handleIceGatheringStateChanged() {
-        log.trace(LogCategory.WEBRTC, tr("ICE gathering state changed to %s"), this.peer.iceGatheringState);
+        logTrace(LogCategory.WEBRTC, tr("ICE gathering state changed to %s"), this.peer.iceGatheringState);
     }
 
     private handleSignallingStateChanged() {

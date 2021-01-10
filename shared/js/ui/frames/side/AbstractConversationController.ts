@@ -1,16 +1,12 @@
-import {
-    ChatHistoryState,
-    AbstractConversationUiEvents
-} from "./AbstractConversationDefinitions";
+import {AbstractConversationUiEvents, ChatHistoryState} from "./AbstractConversationDefinitions";
 import {EventHandler, Registry} from "../../../events";
-import * as log from "../../../log";
-import {LogCategory} from "../../../log";
-import {tra, tr} from "../../../i18n/localize";
+import {LogCategory, logError} from "../../../log";
+import {tr, tra} from "../../../i18n/localize";
 import {
     AbstractChat,
-    AbstractConversationEvents,
     AbstractChatManager,
-    AbstractChatManagerEvents
+    AbstractChatManagerEvents,
+    AbstractConversationEvents
 } from "tc-shared/conversations/AbstractConversion";
 
 export const kMaxChatFrameMessageSize = 50; /* max 100 messages, since the server does not support more than 100 messages queried at once */
@@ -288,7 +284,7 @@ export abstract class AbstractConversationController<
                 chatId: event.chatId
             });
 
-            log.error(LogCategory.CLIENT, tr("Tried to query history for an unknown conversation with id %s"), event.chatId);
+            logError(LogCategory.CLIENT, tr("Tried to query history for an unknown conversation with id %s"), event.chatId);
             return;
         }
 
@@ -305,7 +301,7 @@ export abstract class AbstractConversationController<
     protected handleSendMessage(event: AbstractConversationUiEvents["action_send_message"]) {
         const conversation = this.conversationManager?.findConversationById(event.chatId);
         if(!conversation) {
-            log.error(LogCategory.CLIENT, tr("Tried to send a chat message to an unknown conversation with id %s"), event.chatId);
+            logError(LogCategory.CLIENT, tr("Tried to send a chat message to an unknown conversation with id %s"), event.chatId);
             return;
         }
 
@@ -316,7 +312,7 @@ export abstract class AbstractConversationController<
     protected handleJumpToPresent(event: AbstractConversationUiEvents["action_jump_to_present"]) {
         const conversation = this.conversationManager?.findConversationById(event.chatId);
         if(!conversation) {
-            log.error(LogCategory.CLIENT, tr("Tried to jump to present for an unknown conversation with id %s"), event.chatId);
+            logError(LogCategory.CLIENT, tr("Tried to jump to present for an unknown conversation with id %s"), event.chatId);
             return;
         }
 

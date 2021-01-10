@@ -1,14 +1,16 @@
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import * as React from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {Registry} from "tc-shared/events";
 import {
-    ChannelEditablePermissions, ChannelEditablePermissionValue,
+    ChannelEditablePermissions,
+    ChannelEditablePermissionValue,
     ChannelEditableProperty,
-    ChannelEditEvents, ChannelEditPermissionsState,
+    ChannelEditEvents,
+    ChannelEditPermissionsState,
     ChannelPropertyPermission
 } from "tc-shared/ui/modal/channel-edit/Definitions";
-import {useContext, useEffect, useRef, useState} from "react";
 import {BoxedInputField, Select} from "tc-shared/ui/react-elements/InputField";
 import {Switch} from "tc-shared/ui/react-elements/Switch";
 import {Button} from "tc-shared/ui/react-elements/Button";

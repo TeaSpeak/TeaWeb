@@ -88,7 +88,7 @@ function initializeFaviconController(events: Registry<FaviconEvents>) {
         events.fire_later("notify_icon", { icon: icon })
     };
 
-    setCurrentHandler(server_connections.active_connection());
+    setCurrentHandler(server_connections.getActiveConnectionHandler());
     events.on("query_icon", () => sendFavicon());
 }
 

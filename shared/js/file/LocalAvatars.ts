@@ -1,5 +1,4 @@
-import * as log from "../log";
-import {LogCategory} from "../log";
+import {LogCategory, logDebug, logError, logInfo, logWarn} from "../log";
 import * as ipc from "../ipc/BrowserIPC";
 import {ChannelMessage} from "../ipc/BrowserIPC";
 import * as loader from "tc-loader";
@@ -58,7 +57,7 @@ export class AvatarManager extends AbstractAvatarManager {
     }
 
     create_avatar_download(client_avatar_id: string) : FileDownloadTransfer {
-        log.debug(LogCategory.GENERAL, "Requesting download for avatar %s", client_avatar_id);
+        logDebug(LogCategory.GENERAL, "Requesting download for avatar %s", client_avatar_id);
 
         return this.handle.initializeFileDownload({
             path: "",
@@ -86,11 +85,11 @@ export class AvatarManager extends AbstractAvatarManager {
             let cachedAvatarHash = response.headers.has("X-avatar-version") ? response.headers.get("X-avatar-version") : undefined;
             if(avatar.getAvatarHash() !== "unknown") {
                 if(cachedAvatarHash === undefined) {
-                    log.debug(LogCategory.FILE_TRANSFER, tr("Invalidating cached avatar for %s (Version miss match. Cached: unset, Current: %s)"), avatar.clientAvatarId, avatar.getAvatarHash());
+                    logDebug(LogCategory.FILE_TRANSFER, tr("Invalidating cached avatar for %s (Version miss match. Cached: unset, Current: %s)"), avatar.clientAvatarId, avatar.getAvatarHash());
                     await localAvatarCache.delete('avatar_' + avatar.clientAvatarId);
                     break cache_lookup;
                 } else if(cachedAvatarHash !== avatar.getAvatarHash()) {
-                    log.debug(LogCategory.FILE_TRANSFER, tr("Invalidating cached avatar for %s (Version miss match. Cached: %s, Current: %s)"), avatar.clientAvatarId, cachedAvatarHash, avatar.getAvatarHash());
+                    logDebug(LogCategory.FILE_TRANSFER, tr("Invalidating cached avatar for %s (Version miss match. Cached: %s, Current: %s)"), avatar.clientAvatarId, cachedAvatarHash, avatar.getAvatarHash());
                     await localAvatarCache.delete('avatar_' + avatar.clientAvatarId);
                     break cache_lookup;
                 }
@@ -122,7 +121,7 @@ export class AvatarManager extends AbstractAvatarManager {
                     if(commandResult instanceof CommandResult) {
                         if(commandResult.id === ErrorCode.FILE_NOT_FOUND) {
                             if(avatar.getAvatarHash() !== initialAvatarHash) {
-                                log.debug(LogCategory.GENERAL, tr("Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"), initialAvatarHash, avatar.getAvatarHash());
+                                logDebug(LogCategory.GENERAL, tr("Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"), initialAvatarHash, avatar.getAvatarHash());
                                 return;
                             }
 
@@ -136,7 +135,7 @@ export class AvatarManager extends AbstractAvatarManager {
                     }
                 }
 
-                log.error(LogCategory.CLIENT, tr("Could not request download for avatar %s: %o"), avatar.clientAvatarId, error);
+                logError(LogCategory.CLIENT, tr("Could not request download for avatar %s: %o"), avatar.clientAvatarId, error);
                 if(error === transfer.currentError())
                     throw transfer.currentErrorMessage();
 
@@ -161,7 +160,7 @@ export class AvatarManager extends AbstractAvatarManager {
             const media = imageType2MediaType(type);
 
             if(avatar.getAvatarHash() !== initialAvatarHash) {
-                log.debug(LogCategory.GENERAL, tr("Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"), initialAvatarHash, avatar.getAvatarHash());
+                logDebug(LogCategory.GENERAL, tr("Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"), initialAvatarHash, avatar.getAvatarHash());
                 return;
             }
 
@@ -188,7 +187,7 @@ export class AvatarManager extends AbstractAvatarManager {
 
             /* ensure we're still up to date */
             if(avatar.getAvatarHash() !== initialAvatarHash) {
-                log.debug(LogCategory.GENERAL, tr("Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"), initialAvatarHash, avatar.getAvatarHash());
+                logDebug(LogCategory.GENERAL, tr("Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"), initialAvatarHash, avatar.getAvatarHash());
                 return;
             }
 
@@ -207,7 +206,7 @@ export class AvatarManager extends AbstractAvatarManager {
         avatar.loadingTimestamp = Date.now();
         this.executeAvatarLoad0(avatar).catch(error => {
             if(avatar.getAvatarHash() !== avatarHash) {
-                log.debug(LogCategory.GENERAL, tr("Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"), avatarHash, avatar.getAvatarHash());
+                logDebug(LogCategory.GENERAL, tr("Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"), avatarHash, avatar.getAvatarHash());
                 return;
             }
 
@@ -216,7 +215,7 @@ export class AvatarManager extends AbstractAvatarManager {
             } else if(error instanceof Error) {
                 avatar.setErrored({ message: error.message });
             } else {
-                log.error(LogCategory.FILE_TRANSFER, tr("Failed to load avatar %s (hash: %s): %o"), avatar.clientAvatarId, avatarHash, error);
+                logError(LogCategory.FILE_TRANSFER, tr("Failed to load avatar %s (hash: %s): %o"), avatar.clientAvatarId, avatarHash, error);
                 avatar.setErrored({ message: tr("lookup the console") });
             }
         });
@@ -228,7 +227,7 @@ export class AvatarManager extends AbstractAvatarManager {
             if(cached.getAvatarHash() === clientAvatarHash)
                 return;
 
-            log.info(LogCategory.GENERAL, tr("Deleting cached avatar for client %s. Cached version: %s; New version: %s"), cached.getAvatarHash(), clientAvatarHash);
+            logInfo(LogCategory.GENERAL, tr("Deleting cached avatar for client %s. Cached version: %s; New version: %s"), cached.getAvatarHash(), clientAvatarHash);
         }
 
         const response = await localAvatarCache.resolveCached('avatar_' + clientAvatarId);
@@ -236,7 +235,7 @@ export class AvatarManager extends AbstractAvatarManager {
             let cachedAvatarHash = response.headers.has("X-avatar-version") ? response.headers.get("X-avatar-version") : undefined;
             if(cachedAvatarHash !== clientAvatarHash) {
                 await localAvatarCache.delete("avatar_" + clientAvatarId).catch(error => {
-                    log.warn(LogCategory.FILE_TRANSFER, tr("Failed to delete avatar %s: %o"), clientAvatarId, error);
+                    logWarn(LogCategory.FILE_TRANSFER, tr("Failed to delete avatar %s: %o"), clientAvatarId, error);
                 });
             }
         }

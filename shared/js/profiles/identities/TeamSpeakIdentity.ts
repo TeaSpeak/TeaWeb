@@ -1,5 +1,4 @@
-import * as log from "../../log";
-import {LogCategory, logTrace, logWarn} from "../../log";
+import {LogCategory, logError, logInfo, logTrace, logWarn} from "../../log";
 import * as asn1 from "../../crypto/asn1";
 import * as sha from "../../crypto/sha";
 
@@ -244,7 +243,7 @@ export class TeaSpeakHandshakeHandler extends AbstractHandshakeIdentityHandler {
             authentication_method: this.identity.type(),
             publicKey: this.identity.publicKey
         }).catch(error => {
-            log.error(LogCategory.IDENTITIES, tr("Failed to initialize TeamSpeak based handshake. Error: %o"), error);
+            logError(LogCategory.IDENTITIES, tr("Failed to initialize TeamSpeak based handshake. Error: %o"), error);
 
             if(error instanceof CommandResult)
                 error = error.extra_message || error.message;
@@ -260,7 +259,7 @@ export class TeaSpeakHandshakeHandler extends AbstractHandshakeIdentityHandler {
 
         this.identity.sign_message(json[0]["message"], json[0]["digest"]).then(proof => {
             this.connection.send_command("handshakeindentityproof", {proof: proof}).catch(error => {
-                log.error(LogCategory.IDENTITIES, tr("Failed to proof the identity. Error: %o"), error);
+                logError(LogCategory.IDENTITIES, tr("Failed to proof the identity. Error: %o"), error);
 
                 if(error instanceof CommandResult)
                     error = error.extra_message || error.message;
@@ -318,7 +317,7 @@ class IdentityPOWWorker {
                 resolve();
             };
             this._worker.onerror = event => {
-                log.error(LogCategory.IDENTITIES, tr("POW Worker error %o"), event);
+                logError(LogCategory.IDENTITIES, tr("POW Worker error %o"), event);
                 clearTimeout(timeout_id);
                 reject("Failed to load worker (" + event.message + ")");
             };
@@ -433,7 +432,7 @@ class IdentityPOWWorker {
                     };
                 });
             } catch(error) {
-                log.error(LogCategory.IDENTITIES, tr("Failed to finalize POW worker! (%o)"), error);
+                logError(LogCategory.IDENTITIES, tr("Failed to finalize POW worker! (%o)"), error);
             }
         }
 
@@ -442,7 +441,7 @@ class IdentityPOWWorker {
     }
 
     private handle_message(message: any) {
-        log.info(LogCategory.IDENTITIES, tr("Received message: %o"), message);
+        logInfo(LogCategory.IDENTITIES, tr("Received message: %o"), message);
     }
 }
 
@@ -452,7 +451,7 @@ export class TeaSpeakIdentity implements Identity {
         try {
             key = await crypto.subtle.generateKey({name:'ECDH', namedCurve: 'P-256'}, true, ["deriveKey"]);
         } catch(e) {
-            log.error(LogCategory.IDENTITIES, tr("Could not generate a new key: %o"), e);
+            logError(LogCategory.IDENTITIES, tr("Could not generate a new key: %o"), e);
             throw "Failed to generate keypair";
         }
         const private_key = await CryptoHelper.export_ecc_key(key.privateKey, false);
@@ -509,7 +508,7 @@ export class TeaSpeakIdentity implements Identity {
         try {
             buffer = new Uint8Array(arrayBufferBase64(data));
         } catch(error) {
-            log.error(LogCategory.IDENTITIES, tr("Failed to decode given base64 data (%s)"), data);
+            logError(LogCategory.IDENTITIES, tr("Failed to decode given base64 data (%s)"), data);
             throw "failed to base data (base64 decode failed)";
         }
         const key64 = await CryptoHelper.decryptTeaSpeakIdentity(buffer);
@@ -538,7 +537,7 @@ export class TeaSpeakIdentity implements Identity {
 
         if(this.private_key && (typeof(initialize) === "undefined" || initialize)) {
             this.initialize().catch(error => {
-                log.error(LogCategory.IDENTITIES, "Failed to initialize TeaSpeakIdentity (%s)", error);
+                logError(LogCategory.IDENTITIES, "Failed to initialize TeaSpeakIdentity (%s)", error);
                 this._initialized = false;
             });
         }
@@ -698,7 +697,7 @@ export class TeaSpeakIdentity implements Identity {
                 try {
                     await Promise.all(initialize_promise);
                 } catch (error) {
-                    log.error(LogCategory.IDENTITIES, error);
+                    logError(LogCategory.IDENTITIES, error);
                     throw "failed to initialize";
                 }
             }
@@ -753,7 +752,7 @@ export class TeaSpeakIdentity implements Identity {
                                     if (worker.current_level() > best_level) {
                                         this.hash_number = worker.current_hash();
 
-                                        log.info(LogCategory.IDENTITIES, "Found new best at %s (%d). Old was %d", this.hash_number, worker.current_level(), best_level);
+                                        logInfo(LogCategory.IDENTITIES, "Found new best at %s (%d). Old was %d", this.hash_number, worker.current_level(), best_level);
                                         best_level = worker.current_level();
                                         if (callback_level)
                                             callback_level(best_level);
@@ -777,7 +776,7 @@ export class TeaSpeakIdentity implements Identity {
                             }).catch(error => {
                                 worker_promise.remove(p);
 
-                                log.warn(LogCategory.IDENTITIES, "POW worker error %o", error);
+                                logWarn(LogCategory.IDENTITIES, "POW worker error %o", error);
                                 reject(error);
 
                                 return Promise.resolve();
@@ -803,7 +802,7 @@ export class TeaSpeakIdentity implements Identity {
             try {
                 await Promise.all(finalize_promise);
             } catch(error) {
-                log.error(LogCategory.IDENTITIES, "Failed to shutdown worker: %o", error);
+                logError(LogCategory.IDENTITIES, "Failed to shutdown worker: %o", error);
             }
         }
         throw "this should never be reached";
@@ -882,14 +881,14 @@ export class TeaSpeakIdentity implements Identity {
         try {
             this._crypto_key_sign = await crypto.subtle.importKey("jwk", jwk, {name:'ECDSA', namedCurve: 'P-256'}, false, ["sign"]);
         } catch(error) {
-            log.error(LogCategory.IDENTITIES, error);
+            logError(LogCategory.IDENTITIES, error);
             throw "failed to create crypto sign key";
         }
 
         try {
             this._crypto_key = await crypto.subtle.importKey("jwk", jwk, {name:'ECDH', namedCurve: 'P-256'}, true, ["deriveKey"]);
         } catch(error) {
-            log.error(LogCategory.IDENTITIES, error);
+            logError(LogCategory.IDENTITIES, error);
             throw "failed to create crypto key";
         }
 
@@ -897,7 +896,7 @@ export class TeaSpeakIdentity implements Identity {
             this.publicKey = await CryptoHelper.export_ecc_key(this._crypto_key, true);
             this._unique_id = base64_encode_ab(await sha.sha1(this.publicKey));
         } catch(error) {
-            log.error(LogCategory.IDENTITIES, error);
+            logError(LogCategory.IDENTITIES, error);
             throw "failed to calculate unique id";
         }
 

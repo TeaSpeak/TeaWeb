@@ -117,7 +117,7 @@ function listener_hook(event: KeyEvent) {
             new_hooks.push(hook);
             if(!old_hooks.remove(hook) && hook.callback_press) {
                 hook.callback_press();
-                log.trace(LogCategory.GENERAL, tr("Trigger key press for %o!"), hook);
+                logTrace(LogCategory.GENERAL, tr("Trigger key press for %o!"), hook);
             }
         }
     }
@@ -128,7 +128,7 @@ function listener_hook(event: KeyEvent) {
         if(hook.key_code === event.key_code) {
             if(hook.callback_release) {
                 hook.callback_release();
-                log.trace(LogCategory.GENERAL, tr("Trigger key release for %o!"), hook);
+                logTrace(LogCategory.GENERAL, tr("Trigger key release for %o!"), hook);
             }
         } else {
             new_hooks.push(hook);

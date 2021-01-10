@@ -2,8 +2,7 @@ import * as aplayer from "tc-backend/audio/player";
 import * as React from "react";
 import {Registry} from "tc-shared/events";
 import {LevelMeter} from "tc-shared/voice/RecorderBase";
-import * as log from "tc-shared/log";
-import {LogCategory, logWarn} from "tc-shared/log";
+import {LogCategory, logTrace, logWarn} from "tc-shared/log";
 import {defaultRecorder} from "tc-shared/voice/RecorderProfile";
 import {DeviceListState, getRecorderBackend, IDevice} from "tc-shared/audio/recorder";
 import {Settings, settings} from "tc-shared/settings";
@@ -133,7 +132,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
                         error: error
                     };
 
-                    log.warn(LogCategory.AUDIO, tr("Failed to initialize a level meter for device %s (%s): %o"), device.deviceId, device.driver + ":" + device.name, error);
+                    logWarn(LogCategory.AUDIO, tr("Failed to initialize a level meter for device %s (%s): %o"), device.deviceId, device.driver + ":" + device.name, error);
                     return Promise.reject(error);
                 });
                 levelMeterInitializePromises[device.deviceId] = promise;
@@ -214,10 +213,10 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
             }
 
             defaultRecorder.setDevice(device).then(() => {
-                console.debug(tr("Changed default microphone device to %s"), event.deviceId);
+                logTrace(LogCategory.GENERAL, tr("Changed default microphone device to %s"), event.deviceId);
                 events.fire_react("action_set_selected_device_result", {status: "success", deviceId: event.deviceId});
             }).catch((error) => {
-                log.warn(LogCategory.AUDIO, tr("Failed to change microphone to device %s: %o"), device ? device.deviceId : IDevice.NoDeviceId, error);
+                logWarn(LogCategory.AUDIO, tr("Failed to change microphone to device %s: %o"), device ? device.deviceId : IDevice.NoDeviceId, error);
                 events.fire_react("action_set_selected_device_result", {status: "success", deviceId: event.deviceId});
             });
         });
@@ -323,8 +322,6 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
     }
 
     events.on("action_request_permissions", () => recorderBackend.getDeviceList().requestPermissions().then(result => {
-        console.error("Permission request result: %o", result);
-
         if (result === "granted") {
             /* we've nothing to do, the device change event will already update out list */
         } else {

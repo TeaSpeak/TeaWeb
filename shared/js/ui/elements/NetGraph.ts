@@ -1,3 +1,5 @@
+import {LogCategory, logDebug} from "tc-shared/log";
+
 export type Entry = {
     timestamp: number;
 
@@ -120,10 +122,11 @@ export class Graph {
         if(Graph._loops.length == 1) {
             const static_loop = () => {
                 Graph._loops.forEach(l => l());
-                if(Graph._loops.length > 0)
+                if(Graph._loops.length > 0) {
                     requestAnimationFrame(static_loop);
-                else
-                    console.log("STATIC terminate!");
+                } else {
+                    logDebug(LogCategory.GENERAL, tr("NetGraph static terminate"));
+                }
             };
             static_loop();
         }

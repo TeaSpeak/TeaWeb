@@ -6,6 +6,7 @@ import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import {ClientEntry, MusicClientEntry} from "tc-shared/tree/Client";
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
+
 const cssStyle = require("./ModalChangeVolume.scss");
 
 export interface VolumeChangeEvents {

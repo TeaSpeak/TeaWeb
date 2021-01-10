@@ -218,7 +218,6 @@ function generateSdp(session: RTCNegotiationMessage) {
         generateMedia(session.ssrc[index], flags);
     }
 
-    console.error(JSON.stringify(session));
     return sdpTransform.write(sdp);
 }
 
@@ -243,7 +242,7 @@ export class RTCNegotiator {
 
     }
 }
-/* FIXME: mozilla...THIS_IS_SDPARTA-82.0.3 (Needs to be parsed from the offer) */
+/* TODO: mozilla...THIS_IS_SDPARTA-82.0.3 (Needs to be parsed from the offer) */
 /*
 console.error("XYX\n%s",
     generateSdp({

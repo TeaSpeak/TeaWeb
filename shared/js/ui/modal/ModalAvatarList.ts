@@ -1,12 +1,11 @@
 import {createErrorModal, createModal} from "../../ui/elements/Modal";
-import * as log from "../../log";
-import {LogCategory} from "../../log";
+import {LogCategory, logError} from "../../log";
 import {ConnectionHandler} from "../../ConnectionHandler";
 import {base64_encode_ab} from "../../utils/buffers";
 import {spawnYesNo} from "../../ui/modal/ModalYesNo";
 import {ClientEntry} from "../../tree/Client";
 import * as moment from "moment";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 const avatar_to_uid = (id: string) => {
     const buffer = new Uint8Array(id.length / 2);
@@ -151,12 +150,12 @@ export function spawnAvatarList(client: ConnectionHandler) {
                     (username_resolve[uid] || []).forEach(e => e(undefined));
                 }
             }).catch(error => {
-                log.error(LogCategory.GENERAL, tr("Failed to fetch usernames from avatar names. Error: %o"), error);
+                logError(LogCategory.GENERAL, tr("Failed to fetch usernames from avatar names. Error: %o"), error);
                 createErrorModal(tr("Failed to fetch usernames"), tr("Failed to fetch usernames related to their avatar names"), undefined).open();
             })
         }).catch(error => {
             //TODO: Display no perms error
-            log.error(LogCategory.GENERAL, tr("Failed to receive avatar list. Error: %o"), error);
+            logError(LogCategory.GENERAL, tr("Failed to receive avatar list. Error: %o"), error);
             createErrorModal(tr("Failed to list avatars"), tr("Failed to receive avatar list."), undefined).open();
         });
     };

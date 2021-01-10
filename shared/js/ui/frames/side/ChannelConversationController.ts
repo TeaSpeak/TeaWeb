@@ -1,7 +1,6 @@
-import {ConnectionHandler, ConnectionState} from "../../../ConnectionHandler";
+import {ConnectionHandler} from "../../../ConnectionHandler";
 import {EventHandler} from "../../../events";
-import * as log from "../../../log";
-import {LogCategory} from "../../../log";
+import {LogCategory, logError} from "../../../log";
 import {tr} from "../../../i18n/localize";
 import {AbstractConversationUiEvents} from "./AbstractConversationDefinitions";
 import {AbstractConversationController} from "./AbstractConversationController";
@@ -80,7 +79,7 @@ export class ChannelConversationController extends AbstractConversationControlle
     private handleMessageDelete(event: AbstractConversationUiEvents["action_delete_message"]) {
         const conversation = this.conversationManager?.findConversationById(event.chatId);
         if(!conversation) {
-            log.error(LogCategory.CLIENT, tr("Tried to delete a chat message from an unknown conversation with id %s"), event.chatId);
+            logError(LogCategory.CLIENT, tr("Tried to delete a chat message from an unknown conversation with id %s"), event.chatId);
             return;
         }
 

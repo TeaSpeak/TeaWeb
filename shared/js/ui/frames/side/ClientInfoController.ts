@@ -1,8 +1,5 @@
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {
-    ClientGroupInfo,
-    ClientInfoEvents,
-} from "tc-shared/ui/frames/side/ClientInfoDefinitions";
+import {ClientGroupInfo, ClientInfoEvents,} from "tc-shared/ui/frames/side/ClientInfoDefinitions";
 
 import {Registry} from "tc-shared/events";
 import {openClientInfo} from "tc-shared/ui/modal/ModalClientInfo";

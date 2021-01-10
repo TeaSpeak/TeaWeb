@@ -8,7 +8,7 @@ import {
 } from "tc-shared/ui/modal/channel-edit/Definitions";
 import {Registry} from "tc-shared/events";
 import {ChannelPropertyProviders} from "tc-shared/ui/modal/channel-edit/ControllerProperties";
-import {LogCategory, logDebug, logError, logInfo} from "tc-shared/log";
+import {LogCategory, logDebug, logError} from "tc-shared/log";
 import {ChannelPropertyPermissionsProviders} from "tc-shared/ui/modal/channel-edit/ControllerPermissions";
 import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import {ChannelEditModal} from "tc-shared/ui/modal/channel-edit/Renderer";
@@ -301,7 +301,6 @@ class ChannelEditController {
                 }).catch(error => {
                     if(error instanceof CommandResult) {
                         if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
-                            console.error(error);
                             this.cachedChannelPermissions = {
                                 state: "no-permissions",
                                 failedPermission: this.connection.permissions.getFailedPermission(error)

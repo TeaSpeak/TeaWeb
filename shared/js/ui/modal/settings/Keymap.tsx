@@ -13,6 +13,7 @@ import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
 import * as keycontrol from "./../../../KeyControl";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
+import {LogCategory, logWarn} from "tc-shared/log";
 
 const cssStyle = require("./Keymap.scss");
 
@@ -368,7 +369,7 @@ function initialize_controller(event_registry: Registry<KeyMapEvents>) {
             keycontrol.setKey(event.action, event.key);
             event_registry.fire_react("set_keymap_result", {status: "success", action: event.action, key: event.key});
         } catch (error) {
-            console.warn("Failed to change key for action %s: %o", event.action, error);
+            logWarn(LogCategory.GENERAL, tr("Failed to change key for action %s: %o"), event.action, error);
             event_registry.fire_react("set_keymap_result", {
                 status: "error",
                 action: event.action,

@@ -1,6 +1,6 @@
 import * as React from "react";
-import {RemoteIcon} from "tc-shared/file/Icons";
 import {useState} from "react";
+import {RemoteIcon} from "tc-shared/file/Icons";
 
 const cssStyle = require("./Icon.scss");
 

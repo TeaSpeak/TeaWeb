@@ -1,13 +1,15 @@
 import * as React from "react";
+import {useContext, useState} from "react";
 import {Registry} from "tc-shared/events";
 import {
-    SideHeaderEvents,
-    SideHeaderState,
+    PrivateConversationInfo,
     SideHeaderChannelState,
-    SideHeaderPingInfo, PrivateConversationInfo, SideHeaderServerInfo
+    SideHeaderEvents,
+    SideHeaderPingInfo,
+    SideHeaderServerInfo,
+    SideHeaderState
 } from "tc-shared/ui/frames/side/HeaderDefinitions";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
-import {useContext, useState} from "react";
 import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {getIconManager} from "tc-shared/file/Icons";
 

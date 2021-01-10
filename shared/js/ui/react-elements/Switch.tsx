@@ -1,4 +1,5 @@
 import * as React from "react";
+
 const cssStyle = require("./Switch.scss");
 
 export interface SwitchProperties {

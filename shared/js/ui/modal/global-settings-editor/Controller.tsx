@@ -2,7 +2,7 @@ import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import {ModalGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-editor/Renderer";
 import {Registry} from "tc-shared/events";
 import {ModalGlobalSettingsEditorEvents, Setting} from "tc-shared/ui/modal/global-settings-editor/Definitions";
-import {RegistryValueType, settings, Settings, RegistryKey} from "tc-shared/settings";
+import {RegistryKey, RegistryValueType, Settings, settings} from "tc-shared/settings";
 
 export function spawnGlobalSettingsEditor() {
     const events = new Registry<ModalGlobalSettingsEditorEvents>();

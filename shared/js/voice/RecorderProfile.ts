@@ -1,5 +1,5 @@
 import * as log from "../log";
-import {LogCategory, logError, logWarn} from "../log";
+import {LogCategory, logDebug, logError, logWarn} from "../log";
 import {AbstractInput, FilterMode} from "../voice/RecorderBase";
 import {KeyDescriptor, KeyHook} from "../PPTListener";
 import {Settings, settings} from "../settings";
@@ -141,13 +141,13 @@ export class RecorderProfile {
         this.input = getRecorderBackend().createInput();
 
         this.input.events.on("notify_voice_start", () => {
-            log.debug(LogCategory.VOICE, "Voice start");
+            logDebug(LogCategory.VOICE, "Voice start");
             if(this.callback_start)
                 this.callback_start();
         });
 
         this.input.events.on("notify_voice_end", () => {
-            log.debug(LogCategory.VOICE, "Voice end");
+            logDebug(LogCategory.VOICE, "Voice end");
             if(this.callback_stop)
                 this.callback_stop();
         });
@@ -249,7 +249,7 @@ export class RecorderProfile {
             try {
                 await this.input.setConsumer(undefined);
             } catch(error) {
-                log.warn(LogCategory.VOICE, tr("Failed to unmount input consumer for profile (%o)"), error);
+                logWarn(LogCategory.VOICE, tr("Failed to unmount input consumer for profile (%o)"), error);
             }
 
             /* this.input.setFilterMode(FilterMode.Block); */

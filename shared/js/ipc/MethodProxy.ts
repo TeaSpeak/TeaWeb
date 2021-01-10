@@ -1,8 +1,7 @@
-import * as log from "../log";
-import {LogCategory} from "../log";
-import {BasicIPCHandler, IPCChannel, ChannelMessage} from "../ipc/BrowserIPC";
+import {LogCategory, logDebug, logInfo, logWarn} from "../log";
+import {BasicIPCHandler, ChannelMessage, IPCChannel} from "../ipc/BrowserIPC";
 import {guid} from "../crypto/uid";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 export interface MethodProxyInvokeData {
     method_name: string;
@@ -81,10 +80,10 @@ export abstract class MethodProxy {
     protected register_method<R>(method: (...args: any[]) => Promise<R> | string) {
         let method_name: string;
         if(typeof method === "function") {
-            log.debug(LogCategory.IPC, tr("Registering method proxy for %s"), method.name);
+            logDebug(LogCategory.IPC, tr("Registering method proxy for %s"), method.name);
             method_name = method.name;
         } else {
-            log.debug(LogCategory.IPC, tr("Registering method proxy for %s"), method);
+            logDebug(LogCategory.IPC, tr("Registering method proxy for %s"), method);
             method_name = method;
         }
 
@@ -169,11 +168,11 @@ export abstract class MethodProxy {
         }
 
         try {
-            log.info(LogCategory.IPC, tr("Invoking method %s with arguments: %o"), data.method_name, data.arguments);
+            logInfo(LogCategory.IPC, tr("Invoking method %s with arguments: %o"), data.method_name, data.arguments);
 
             const promise = this[data.method_name](...data.arguments);
             promise.then(result => {
-                log.info(LogCategory.IPC, tr("Result: %o"), result);
+                logInfo(LogCategory.IPC, tr("Result: %o"), result);
                 this._send_result(data.promise_id, true, result);
             }).catch(error => {
                 this._send_result(data.promise_id, false, error);
@@ -186,7 +185,7 @@ export abstract class MethodProxy {
 
     private _handle_result(data: MethodProxyResultData) {
         if(!this._proxied_callbacks[data.promise_id]) {
-            console.warn(tr("Received proxy method result for unknown promise"));
+            logWarn(LogCategory.IPC, tr("Received proxy method result for unknown promise"));
             return;
         }
         const callback = this._proxied_callbacks[data.promise_id];

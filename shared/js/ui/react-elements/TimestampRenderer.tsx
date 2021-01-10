@@ -1,5 +1,5 @@
-import {useEffect, useState} from "react";
 import * as React from "react";
+import {useEffect, useState} from "react";
 import {format_chat_time} from "tc-shared/utils/DateUtils";
 
 export const TimestampRenderer = (props: { timestamp: number }) => {

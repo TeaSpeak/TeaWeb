@@ -4,7 +4,7 @@ import {CssEditorEvents, CssVariable} from "../../../ui/modal/css-editor/Definit
 import {spawnExternalModal} from "../../../ui/react-elements/external-modal";
 import {Registry} from "../../../events";
 import {LogCategory, logWarn} from "../../../log";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 interface CustomVariable {
     name: string;
@@ -204,7 +204,7 @@ function cssVariableEditorController(events: Registry<CssEditorEvents>) {
             events.fire_react("action_select_entry", {variable: undefined});
             events.fire_react("query_css_variables");
         } catch (error) {
-            console.warn("Failed to import CSS variable values: %o", error);
+            logWarn(LogCategory.GENERAL, "Failed to import CSS variable values: %o", error);
             events.fire_react("notify_import_result", {success: false});
         }
     });

@@ -5,7 +5,6 @@ import {formatDate} from "tc-shared/MessageFormatter";
 import {BBCodeRenderer} from "tc-shared/text/bbcode";
 import {format_time} from "tc-shared/ui/frames/chat";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {XBBCodeRenderer} from "vendor/xbbcode/react";
 import {ChannelTag, ClientTag} from "tc-shared/ui/tree/EntryTags";
 import {EventChannelData, EventClient, EventType, TypeInfo} from "tc-shared/connectionlog/Definitions";
 

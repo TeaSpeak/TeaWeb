@@ -1,4 +1,4 @@
-import {LogCategory} from "./log";
+import {LogCategory, logDebug, logInfo, logTrace, logWarn} from "./log";
 import * as log from "./log";
 import { tr } from "./i18n/localize";
 
@@ -74,7 +74,7 @@ function initialize_config_object(target_object: any, source_object: any) : any 
 export function initialize(config: Config) {
     current_config = initialize_config_object(config || {}, DEFAULT_CONFIG);
     if(current_config.verbose)
-        log.info(LogCategory.STATISTICS, tr("Initializing statistics with this config: %o"), current_config);
+        logInfo(LogCategory.STATISTICS, tr("Initializing statistics with this config: %o"), current_config);
 
     connection.start_connection();
 }
@@ -108,7 +108,7 @@ namespace connection {
                 if(connection_copy !== connection) return;
 
                 if(current_config.verbose)
-                    log.warn(LogCategory.STATISTICS, tr("Lost connection to statistics server (Connection closed). Reason: %o. Event object: %o"), CloseCodes[event.code] || event.code, event);
+                    logWarn(LogCategory.STATISTICS, tr("Lost connection to statistics server (Connection closed). Reason: %o. Event object: %o"), CloseCodes[event.code] || event.code, event);
 
                 if(event.code != CloseCodes.BANNED)
                     invoke_reconnect();
@@ -118,7 +118,7 @@ namespace connection {
                 if(connection_copy !== connection) return;
 
                 if(current_config.verbose)
-                    log.debug(LogCategory.STATISTICS, tr("Successfully connected to server. Initializing session."));
+                    logDebug(LogCategory.STATISTICS, tr("Successfully connected to server. Initializing session."));
 
                 connection_state = ConnectionState.INITIALIZING;
                 initialize_session();
@@ -128,7 +128,7 @@ namespace connection {
                 if(connection_copy !== connection) return;
 
                 if(current_config.verbose)
-                    log.warn(LogCategory.STATISTICS, tr("Received an error. Closing connection. Object: %o"), event);
+                    logWarn(LogCategory.STATISTICS, tr("Received an error. Closing connection. Object: %o"), event);
 
                 connection.close(CloseCodes.INTERNAL_ERROR);
                 invoke_reconnect();
@@ -139,7 +139,7 @@ namespace connection {
 
                 if(typeof(event.data) !== 'string') {
                     if(current_config.verbose)
-                        log.warn(LogCategory.STATISTICS, tr("Received an message which isn't a string. Event object: %o"), event);
+                        logWarn(LogCategory.STATISTICS, tr("Received an message which isn't a string. Event object: %o"), event);
                     return;
                 }
 
@@ -168,11 +168,11 @@ namespace connection {
         }
 
         if(current_config.verbose)
-            log.info(LogCategory.STATISTICS, tr("Scheduled reconnect in %dms"), current_config.reconnect_interval);
+            logInfo(LogCategory.STATISTICS, tr("Scheduled reconnect in %dms"), current_config.reconnect_interval);
 
         reconnect_timer = setTimeout(() => {
             if(current_config.verbose)
-                log.info(LogCategory.STATISTICS, tr("Reconnecting"));
+                logInfo(LogCategory.STATISTICS, tr("Reconnecting"));
             start_connection();
         }, current_config.reconnect_interval);
     }
@@ -210,10 +210,10 @@ namespace connection {
 
         if(typeof(handler[type]) === 'function') {
             if(current_config.verbose)
-                log.trace(LogCategory.STATISTICS, tr("Handling message of type %s"), type);
+                logTrace(LogCategory.STATISTICS, tr("Handling message of type %s"), type);
             handler[type](data);
         } else if(current_config.verbose) {
-            log.warn(LogCategory.STATISTICS, tr("Received message with an unknown type (%s). Dropping message. Full message: %o"), type, data_object);
+            logWarn(LogCategory.STATISTICS, tr("Received message with an unknown type (%s). Dropping message. Full message: %o"), type, data_object);
         }
     }
 
@@ -229,7 +229,7 @@ namespace connection {
         interface NotifyInitialized {}
         function handle_notify_initialized(json: NotifyInitialized) {
             if(current_config.verbose)
-                log.info(LogCategory.STATISTICS, tr("Session successfully initialized."));
+                logInfo(LogCategory.STATISTICS, tr("Session successfully initialized."));
 
             connection_state = ConnectionState.CONNECTED;
         }

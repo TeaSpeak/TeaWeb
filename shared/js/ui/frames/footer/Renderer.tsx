@@ -1,7 +1,6 @@
 import * as React from "react";
+import {useMemo} from "react";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
-import {useEffect, useMemo, useState} from "react";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {StatusController} from "tc-shared/ui/frames/footer/StatusController";
 import {ConnectionStatusEvents} from "tc-shared/ui/frames/footer/StatusDefinitions";
@@ -23,8 +22,8 @@ const VersionsRenderer = () => (
     </React.Fragment>
 );
 
-/* FIXME: Outsource this! */
 const RtcStatus = () => {
+    /* FIXME: Outsource this! */
     const statusController = useMemo(() => new StatusController(new Registry<ConnectionStatusEvents>()), []);
     statusController.setConnectionHandler(server_connections.getActiveConnectionHandler());
 

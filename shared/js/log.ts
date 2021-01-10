@@ -131,7 +131,7 @@ function logDirect(type: LogType, message: string, ...optionalParams: any[]) {
     }
 }
 
-export function log(type: LogType, category: LogCategory, message: string, ...optionalParams: any[]) {
+function doLog(type: LogType, category: LogCategory, message: string, ...optionalParams: any[]) {
     if(!enabled_mapping.get(category)) return;
 
     optionalParams.unshift(categoryMapping.get(category));
@@ -139,45 +139,25 @@ export function log(type: LogType, category: LogCategory, message: string, ...op
     logDirect(type, message, ...optionalParams);
 }
 
-export function trace(category: LogCategory, message: string, ...optionalParams: any[]) {
-    log(LogType.TRACE, category, message, ...optionalParams);
-}
-
-export function debug(category: LogCategory, message: string, ...optionalParams: any[]) {
-    log(LogType.DEBUG, category, message, ...optionalParams);
-}
-
-export function info(category: LogCategory, message: string, ...optionalParams: any[]) {
-    log(LogType.INFO, category, message, ...optionalParams);
-}
-
-export function warn(category: LogCategory, message: string, ...optionalParams: any[]) {
-    log(LogType.WARNING, category, message, ...optionalParams);
-}
-
-export function error(category: LogCategory, message: string, ...optionalParams: any[]) {
-    log(LogType.ERROR, category, message, ...optionalParams);
-}
-
 /* methods for direct import */
 export function logTrace(category: LogCategory, message: string, ...optionalParams: any[]) {
-    log(LogType.TRACE, category, message, ...optionalParams);
+    doLog(LogType.TRACE, category, message, ...optionalParams);
 }
 
 export function logDebug(category: LogCategory, message: string, ...optionalParams: any[]) {
-    log(LogType.DEBUG, category, message, ...optionalParams);
+    doLog(LogType.DEBUG, category, message, ...optionalParams);
 }
 
 export function logInfo(category: LogCategory, message: string, ...optionalParams: any[]) {
-    log(LogType.INFO, category, message, ...optionalParams);
+    doLog(LogType.INFO, category, message, ...optionalParams);
 }
 
 export function logWarn(category: LogCategory, message: string, ...optionalParams: any[]) {
-    log(LogType.WARNING, category, message, ...optionalParams);
+    doLog(LogType.WARNING, category, message, ...optionalParams);
 }
 
 export function logError(category: LogCategory, message: string, ...optionalParams: any[]) {
-    log(LogType.ERROR, category, message, ...optionalParams);
+    doLog(LogType.ERROR, category, message, ...optionalParams);
 }
 
 export function group(level: LogType, category: LogCategory, name: string, ...optionalParams: any[]) : Group {

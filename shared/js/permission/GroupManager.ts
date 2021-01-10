@@ -1,6 +1,5 @@
 import {LaterPromise} from "../utils/LaterPromise";
-import * as log from "../log";
-import {LogCategory} from "../log";
+import {LogCategory, logDebug, logError, logWarn} from "../log";
 import {PermissionManager, PermissionValue} from "../permission/PermissionManager";
 import {ServerCommand} from "../connection/ConnectionBase";
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
@@ -188,7 +187,7 @@ export class GroupManager extends AbstractCommandHandler {
             return;
         }
 
-        log.debug(LogCategory.PERMISSIONS, tr("Resetting server/channel groups"));
+        logDebug(LogCategory.PERMISSIONS, tr("Resetting server/channel groups"));
         this.serverGroups = [];
         this.channelGroups = [];
         this.allGroupsReceived = false;
@@ -219,11 +218,11 @@ export class GroupManager extends AbstractCommandHandler {
 
     requestGroups(){
         this.connectionHandler.serverConnection.send_command("servergrouplist", {}, { process_result: false }).catch(error => {
-            log.warn(LogCategory.PERMISSIONS, tr("Failed to request the server group list: %o"), error);
+            logWarn(LogCategory.PERMISSIONS, tr("Failed to request the server group list: %o"), error);
         });
 
         this.connectionHandler.serverConnection.send_command("channelgrouplist", {}, { process_result: false }).catch(error => {
-            log.warn(LogCategory.PERMISSIONS, tr("Failed to request the channel group list: %o"), error);
+            logWarn(LogCategory.PERMISSIONS, tr("Failed to request the channel group list: %o"), error);
         });
     }
 
@@ -257,7 +256,7 @@ export class GroupManager extends AbstractCommandHandler {
                 case 1: type = GroupType.NORMAL; break;
                 case 2: type = GroupType.QUERY; break;
                 default:
-                    log.error(LogCategory.CLIENT, tr("Invalid group type: %o for group %s"), groupData["type"], groupData["name"]);
+                    logError(LogCategory.CLIENT, tr("Invalid group type: %o for group %s"), groupData["type"], groupData["name"]);
                     continue;
             }
 
@@ -332,7 +331,7 @@ export class GroupManager extends AbstractCommandHandler {
     private handleGroupPermissionList(json: any[]) {
         let group = json[0]["sgid"] ? this.findServerGroup(parseInt(json[0]["sgid"])) : this.findChannelGroup(parseInt(json[0]["cgid"]));
         if(!group) {
-            log.error(LogCategory.PERMISSIONS, tr("Got group permissions for group %o/%o, but its not a registered group!"), json[0]["sgid"], json[0]["cgid"]);
+            logError(LogCategory.PERMISSIONS, tr("Got group permissions for group %o/%o, but its not a registered group!"), json[0]["sgid"], json[0]["cgid"]);
             return;
         }
         let requests: GroupPermissionRequest[] = [];
@@ -341,7 +340,7 @@ export class GroupManager extends AbstractCommandHandler {
                 requests.push(req);
 
         if(requests.length == 0) {
-            log.warn(LogCategory.PERMISSIONS, tr("Got group permissions for group %o/%o, but it was never requested!"), json[0]["sgid"], json[0]["cgid"]);
+            logWarn(LogCategory.PERMISSIONS, tr("Got group permissions for group %o/%o, but it was never requested!"), json[0]["sgid"], json[0]["cgid"]);
             return;
         }
 

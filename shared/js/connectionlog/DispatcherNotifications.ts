@@ -2,14 +2,14 @@ import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {getIconManager} from "tc-shared/file/Icons";
-import { tra, tr } from "tc-shared/i18n/localize";
+import {tr, tra} from "tc-shared/i18n/localize";
 import {EventClient, EventServerAddress, EventType, TypeInfo} from "tc-shared/connectionlog/Definitions";
 import {Settings, settings} from "tc-shared/settings";
 import {format_time} from "tc-shared/ui/frames/chat";
 import {ViewReasonId} from "tc-shared/ConnectionHandler";
 import {formatDate} from "tc-shared/MessageFormatter";
 import {renderBBCodeAsText} from "tc-shared/text/bbcode";
-import {LogCategory, logInfo} from "tc-shared/log";
+import {LogCategory, logInfo, logTrace} from "tc-shared/log";
 
 export type DispatcherLog<T extends keyof TypeInfo> = (data: TypeInfo[T], handlerId: string, eventType: T) => void;
 
@@ -77,7 +77,7 @@ function spawnNotification(title: string, options: NotificationOptions) {
         try {
             new Notification(title, options);
         } catch (error) {
-            console.error(error);
+            logTrace(LogCategory.GENERAL, tr("Failed to spawn notification: %o"), error);
         }
     }
 }

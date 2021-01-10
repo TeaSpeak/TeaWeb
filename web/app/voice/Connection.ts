@@ -14,8 +14,7 @@ import {
 import {RTCConnection, RTCConnectionEvents, RTPConnectionState} from "tc-shared/connection/rtc/Connection";
 import {AbstractServerConnection, ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
 import {VoicePlayerState} from "tc-shared/voice/VoicePlayer";
-import * as log from "tc-shared/log";
-import {LogCategory, logDebug, logError, logTrace, logWarn} from "tc-shared/log";
+import {LogCategory, logDebug, logError, logInfo, logTrace, logWarn} from "tc-shared/log";
 import * as aplayer from "../audio/player";
 import {tr} from "tc-shared/i18n/localize";
 import {RtpVoiceClient} from "tc-backend/web/voice/VoiceClient";
@@ -112,7 +111,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
         this.rtcConnection.getEvents().off("notify_state_changed", this.listenerRtcStateChanged);
 
         this.acquireVoiceRecorder(undefined, true).catch(error => {
-            log.warn(LogCategory.VOICE, tr("Failed to release voice recorder: %o"), error);
+            logWarn(LogCategory.VOICE, tr("Failed to release voice recorder: %o"), error);
         }).then(() => {
             for(const client of Object.values(this.voiceClients))  {
                 client.abortReplay();
@@ -215,7 +214,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
             return false;
         }
 
-        log.info(LogCategory.VOICE, tr("Local voice ended"));
+        logInfo(LogCategory.VOICE, tr("Local voice ended"));
 
         this.rtcConnection.setTrackSource("audio", null).catch(error => {
             logError(LogCategory.AUDIO, tr("Failed to set current audio track: %o"), error);
@@ -229,11 +228,11 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
     private handleRecorderStart() {
         const chandler = this.connection.client;
         if(chandler.isMicrophoneMuted()) {
-            log.warn(LogCategory.VOICE, tr("Received local voice started event, even thou we're muted!"));
+            logWarn(LogCategory.VOICE, tr("Received local voice started event, even thou we're muted!"));
             return;
         }
 
-        log.info(LogCategory.VOICE, tr("Local voice started"));
+        logInfo(LogCategory.VOICE, tr("Local voice started"));
 
         const ch = chandler.getClient();
         if(ch) { ch.speaking = true; }
@@ -245,7 +244,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
     }
 
     private handleRecorderUnmount() {
-        log.info(LogCategory.VOICE, "Lost recorder!");
+        logInfo(LogCategory.VOICE, "Lost recorder!");
         this.currentAudioSource = undefined;
         this.acquireVoiceRecorder(undefined, true); /* we can ignore the promise because we should finish this directly */
     }
@@ -291,7 +290,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
             throw "Invalid client type";
         }
 
-        console.error("Destroy voice client %d", client.getClientId());
+        logTrace(LogCategory.VOICE, tr("Destroy voice client %d"), client.getClientId());
         client.events.off("notify_state_changed", this.voiceClientStateChangedEventListener);
         delete this.voiceClients[client.getClientId()];
         client.destroy();
