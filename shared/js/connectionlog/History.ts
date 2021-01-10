@@ -12,9 +12,12 @@ export type ConnectionHistoryEntry = {
     id: number,
     timestamp: number,
 
-    /* Target address how it has been given by the user */
-    targetAddress: string;
     serverUniqueId: string | typeof kUnknownHistoryServerUniqueId
+
+    /* Target address how it has been given by the user */
+    targetAddress: string,
+    nickname: string,
+    hashedPassword: string,
 };
 
 export type ConnectionHistoryServerEntry = {
@@ -55,7 +58,10 @@ export class ConnectionHistory {
                             {
                                 timestamp: number,
                                 targetAddress: string,
-                                serverUniqueId: string | typeof kUnknownHistoryServerUniqueId
+                                nickname: string,
+                                hashedPassword: string,
+                                serverUniqueId: string | typeof kUnknownHistoryServerUniqueId,
+
                             }
                          */
                         const store = database.createObjectStore("attempt-history", { keyPath: "id", autoIncrement: true });
@@ -111,10 +117,14 @@ export class ConnectionHistory {
 
     /**
      * Register a new connection attempt.
-     * @param targetAddress
+     * @param attempt
      * @return Returns a unique connect attempt identifier id which could be later used to set the unique server id.
      */
-    async logConnectionAttempt(targetAddress: string) : Promise<number> {
+    async logConnectionAttempt(attempt: {
+        targetAddress: string,
+        nickname: string,
+        hashedPassword: string,
+    }) : Promise<number> {
         if(!this.database) {
             return;
         }
@@ -125,8 +135,11 @@ export class ConnectionHistory {
         const id = await new Promise<IDBValidKey>((resolve, reject) => {
             const insert = store.put({
                 timestamp: Date.now(),
-                targetAddress: targetAddress,
-                serverUniqueId: kUnknownHistoryServerUniqueId
+                serverUniqueId: kUnknownHistoryServerUniqueId,
+
+                targetAddress: attempt.targetAddress,
+                nickname: attempt.nickname,
+                hashedPassword: attempt.hashedPassword,
             });
 
             insert.onsuccess = () => resolve(insert.result);
@@ -248,6 +261,39 @@ export class ConnectionHistory {
     }
 
     /**
+     * Update the connection attempt server password
+     * @param connectionAttemptId
+     * @param passwordHash
+     */
+    async updateConnectionServerPassword(connectionAttemptId: number, passwordHash: string) {
+        if(!this.database) {
+            return;
+        }
+
+        const transaction = this.database.transaction(["attempt-history"], "readwrite");
+        const store = transaction.objectStore("attempt-history");
+
+        const entry = await new Promise<IDBCursorWithValue | null>((resolve, reject) => {
+            const cursor = store.openCursor(connectionAttemptId);
+            cursor.onsuccess = () => resolve(cursor.result);
+            cursor.onerror = () => reject(cursor.error);
+        });
+
+        if(!entry) {
+            throw tr("missing connection attempt");
+        }
+
+        const newValue = Object.assign({}, entry.value);
+        newValue.hashedPassword = passwordHash;
+
+        await new Promise((resolve, reject) => {
+            const update = entry.update(newValue);
+            update.onsuccess = resolve;
+            update.onerror = () => reject(update.error);
+        });
+    }
+
+    /**
      * Update the server info of the given server.
      * @param serverUniqueId
      * @param info
@@ -329,9 +375,11 @@ export class ConnectionHistory {
             const parsedEntry = {
                 id: entry.value.id,
                 timestamp: entry.value.timestamp,
-
-                targetAddress: entry.value.targetAddress,
                 serverUniqueId: entry.value.serverUniqueId,
+
+                nickname: entry.value.nickname,
+                hashedPassword: entry.value.hashedPassword,
+                targetAddress: entry.value.targetAddress,
             } as ConnectionHistoryEntry;
             entry.continue();
 

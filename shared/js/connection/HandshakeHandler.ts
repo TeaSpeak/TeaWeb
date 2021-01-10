@@ -1,29 +1,30 @@
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {IdentitifyType} from "../profiles/Identity";
-import {TeaSpeakIdentity} from "../profiles/identities/TeamSpeakIdentity";
 import {AbstractServerConnection} from "../connection/ConnectionBase";
-import {ConnectionProfile} from "../profiles/ConnectionProfile";
-import {ConnectParameters, DisconnectReason} from "../ConnectionHandler";
+import {DisconnectReason} from "../ConnectionHandler";
 import {tr} from "../i18n/localize";
+import {ConnectParameters} from "tc-shared/ui/modal/connect/Controller";
+import {LogCategory, logWarn} from "tc-shared/log";
 
 export interface HandshakeIdentityHandler {
     connection: AbstractServerConnection;
 
-    start_handshake();
-    register_callback(callback: (success: boolean, message?: string) => any);
+    executeHandshake();
+    registerCallback(callback: (success: boolean, message?: string) => any);
+
+    fillClientInitData(data: any);
 }
 
 export class HandshakeHandler {
     private connection: AbstractServerConnection;
-    private handshake_handler: HandshakeIdentityHandler;
-    private failed = false;
+    private handshakeImpl: HandshakeIdentityHandler;
+    private handshakeFailed: boolean;
 
-    readonly profile: ConnectionProfile;
     readonly parameters: ConnectParameters;
 
-    constructor(profile: ConnectionProfile, parameters: ConnectParameters) {
-        this.profile = profile;
+    constructor(parameters: ConnectParameters) {
         this.parameters = parameters;
+        this.handshakeFailed = false;
     }
 
     setConnection(con: AbstractServerConnection) {
@@ -31,15 +32,15 @@ export class HandshakeHandler {
     }
 
     initialize() {
-        this.handshake_handler = this.profile.spawnIdentityHandshakeHandler(this.connection);
-        if(!this.handshake_handler) {
+        this.handshakeImpl = this.parameters.profile.spawnIdentityHandshakeHandler(this.connection);
+        if(!this.handshakeImpl) {
             this.handshake_failed("failed to create identity handler");
             return;
         }
 
-        this.handshake_handler.register_callback((flag, message) => {
+        this.handshakeImpl.registerCallback((flag, message) => {
             if(flag) {
-                this.handshake_finished();
+                this.handleHandshakeFinished().then(undefined);
             } else {
                 this.handshake_failed(message);
             }
@@ -47,58 +48,45 @@ export class HandshakeHandler {
     }
 
     get_identity_handler() : HandshakeIdentityHandler {
-        return this.handshake_handler;
+        return this.handshakeImpl;
     }
 
     startHandshake() {
-        this.handshake_handler.start_handshake();
+        this.handshakeImpl.executeHandshake();
     }
 
     on_teamspeak() {
-        const type = this.profile.selectedType();
-        if(type == IdentitifyType.TEAMSPEAK)
-            this.handshake_finished();
-        else {
+        const type = this.parameters.profile.selectedType();
+        if(type == IdentitifyType.TEAMSPEAK) {
+            this.handleHandshakeFinished();
+        } else {
 
-            if(this.failed) return;
+            if(this.handshakeFailed) return;
 
-            this.failed = true;
+            this.handshakeFailed = true;
             this.connection.client.handleDisconnect(DisconnectReason.HANDSHAKE_TEAMSPEAK_REQUIRED);
         }
     }
 
     private handshake_failed(message: string) {
-        if(this.failed) return;
+        if(this.handshakeFailed) return;
 
-        this.failed = true;
+        this.handshakeFailed = true;
         this.connection.client.handleDisconnect(DisconnectReason.HANDSHAKE_FAILED, message);
     }
 
-    private handshake_finished(version?: string) {
-        const _native = window["native"];
-        if(__build.target === "client" && _native.client_version && !version) {
-            _native.client_version()
-                .then( this.handshake_finished.bind(this))
-                .catch(error => {
-                    console.error(tr("Failed to get version: %o"), error);
-                    this.handshake_finished("?.?.?");
-                });
-            return;
-        }
-
-        const browser_name = (navigator.browserSpecs || {})["name"] || " ";
-        let data = {
+    private async handleHandshakeFinished() {
+        const data = {
             client_nickname: this.parameters.nickname || "Another TeaSpeak user",
-            client_platform: (browser_name ? browser_name + " " : "") + navigator.platform,
+            client_platform: navigator.browserSpecs?.name + " " + navigator.platform,
             client_version: "TeaWeb " + __build.version + " (" + navigator.userAgent + ")",
             client_version_sign: undefined,
 
-            client_default_channel: (this.parameters.channel || {} as any).target,
-            client_default_channel_password: (this.parameters.channel || {} as any).password,
+            client_default_channel: this.parameters.defaultChannel || "",
+            client_default_channel_password: this.parameters.defaultChannelPassword || "",
             client_default_token: this.parameters.token,
 
-            client_server_password: this.parameters.password ? this.parameters.password.password : undefined,
-            client_browser_engine: navigator.product,
+            client_server_password: this.parameters.targetPassword,
 
             client_input_hardware: this.connection.client.isMicrophoneDisabled(),
             client_output_hardware: this.connection.client.hasOutputHardware(),
@@ -106,7 +94,16 @@ export class HandshakeHandler {
             client_output_muted: this.connection.client.isSpeakerMuted(),
         };
 
-        if(version) {
+        if(__build.target === "client") {
+            const _native = window["native"];
+            let version;
+            try {
+                version = await _native.client_version();
+            } catch (error) {
+                logWarn(LogCategory.GENERAL, tr("Failed to fetch native client version: %o"), error);
+                version = "?.?.?";
+            }
+
             data.client_version = "TeaClient " + version;
 
             const os = __non_webpack_require__("os");
@@ -124,9 +121,7 @@ export class HandshakeHandler {
             data.client_platform = (os_mapping[os.platform()] || os.platform());
         }
 
-        if(this.profile.selectedType() === IdentitifyType.TEAMSPEAK)
-            data["client_key_offset"] = (this.profile.selectedIdentity() as TeaSpeakIdentity).hash_number;
-
+        this.handshakeImpl.fillClientInitData(data);
         this.connection.send_command("clientinit", data).catch(error => {
             if(error instanceof CommandResult) {
                 if(error.id == 1028) {

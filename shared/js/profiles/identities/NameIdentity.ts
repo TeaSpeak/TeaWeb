@@ -23,7 +23,7 @@ class NameHandshakeHandler extends AbstractHandshakeIdentityHandler {
         this.handler["handshakeidentityproof"] = () => this.trigger_fail("server requested unexpected proof");
     }
 
-    start_handshake() {
+    executeHandshake() {
         this.connection.command_handler_boss().register_handler(this.handler);
         this.connection.send_command("handshakebegin", {
             intention: 0,

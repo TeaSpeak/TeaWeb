@@ -45,6 +45,7 @@ export abstract class AbstractModal {
     /* only valid for the "inline" modals */
     type() : ModalType { return "none"; }
     color() : "none" | "blue" { return "none"; }
+    verticalAlignment() : "top" | "center" | "bottom" { return "center"; }
 
     protected onInitialize() {}
     protected onDestroy() {}

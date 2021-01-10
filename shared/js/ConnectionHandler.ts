@@ -10,17 +10,17 @@ import {createErrorModal, createInfoModal, createInputModal, Modal} from "./ui/e
 import {hashPassword} from "./utils/helpers";
 import {HandshakeHandler} from "./connection/HandshakeHandler";
 import * as htmltags from "./ui/htmltags";
-import {FilterMode, InputState, InputStartError} from "./voice/RecorderBase";
+import {FilterMode, InputStartError, InputState} from "./voice/RecorderBase";
 import {CommandResult} from "./connection/ServerConnectionDeclaration";
 import {defaultRecorder, RecorderProfile} from "./voice/RecorderProfile";
-import {connection_log, Regex} from "./ui/modal/ModalConnect";
+import {Regex} from "./ui/modal/ModalConnect";
 import {formatMessage} from "./ui/frames/chat";
 import {spawnAvatarUpload} from "./ui/modal/ModalAvatar";
 import * as dns from "tc-backend/dns";
 import {EventHandler, Registry} from "./events";
 import {FileManager} from "./file/FileManager";
 import {FileTransferState, TransferProvider} from "./file/Transfer";
-import {traj, tr} from "./i18n/localize";
+import {tr, traj} from "./i18n/localize";
 import {md5} from "./crypto/md5";
 import {guid} from "./crypto/uid";
 import {PluginCmdRegistry} from "./connection/PluginCmdHandler";
@@ -31,7 +31,7 @@ import {WhisperSession} from "./voice/VoiceWhisper";
 import {ServerFeature, ServerFeatures} from "./connection/ServerFeatures";
 import {ChannelTree} from "./tree/ChannelTree";
 import {LocalClientEntry} from "./tree/Client";
-import {ServerAddress} from "./tree/Server";
+import {parseServerAddress} from "./tree/Server";
 import {ChannelVideoFrame} from "tc-shared/ui/frames/video/Controller";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {ChannelConversationManager} from "./conversations/ChannelConversationManager";
@@ -41,6 +41,7 @@ import {SideBarManager} from "tc-shared/SideBarManager";
 import {ServerEventLog} from "tc-shared/connectionlog/ServerEventLog";
 import {PlaylistManager} from "tc-shared/music/PlaylistManager";
 import {connectionHistory} from "tc-shared/connectionlog/History";
+import {ConnectParameters} from "tc-shared/ui/modal/connect/Controller";
 
 export enum InputHardwareState {
     MISSING,
@@ -120,7 +121,7 @@ export interface LocalClientStatus {
     queries_visible: boolean;
 }
 
-export interface ConnectParameters {
+export interface ConnectParametersOld {
     nickname?: string;
     channel?: {
         target: string | number;
@@ -260,68 +261,62 @@ export class ConnectionHandler {
         return this.events_;
     }
 
-    async startConnection(addr: string, profile: ConnectionProfile, user_action: boolean, parameters: ConnectParameters) {
-        this.cancel_reconnect(false);
-        this.autoReconnectAttempt = parameters.auto_reconnect_attempt || false;
+    async startConnectionNew(parameters: ConnectParameters, autoReconnectAttempt: boolean) {
+        this.cancelAutoReconnect(true);
+        this.autoReconnectAttempt = autoReconnectAttempt;
         this.handleDisconnect(DisconnectReason.REQUESTED);
 
-        let resolvedAddress: ServerAddress = {
-            host: "",
-            port: -1
-        };
-        {
-            let _v6_end = addr.indexOf(']');
-            let idx = addr.lastIndexOf(':');
-            if(idx != -1 && idx > _v6_end) {
-                resolvedAddress.port = parseInt(addr.substr(idx + 1));
-                resolvedAddress.host = addr.substr(0, idx);
-            } else {
-                resolvedAddress.host = addr;
-                resolvedAddress.port = 9987;
-            }
-        }
-        logInfo(LogCategory.CLIENT, tr("Start connection to %s:%d"), resolvedAddress.host, resolvedAddress.port);
+        const localConnectionAttemptId = ++this.connectAttemptId;
+
+        const parsedAddress = parseServerAddress(parameters.targetAddress);
+        const resolvedAddress = Object.assign({}, parsedAddress);
+
         this.log.log("connection.begin", {
             address: {
-                server_hostname: resolvedAddress.host,
-                server_port: resolvedAddress.port
+                server_hostname: parsedAddress.host,
+                server_port: parsedAddress.port
             },
             client_nickname: parameters.nickname
         });
-        this.channelTree.initialiseHead(addr, resolvedAddress);
 
-        if(parameters.password && !parameters.password.hashed){
+        this.channelTree.initialiseHead(parameters.targetAddress, resolvedAddress);
+
+        /* hash the password if not already hashed */
+        if(parameters.targetPassword && !parameters.targetPasswordHashed) {
             try {
-                const password = await hashPassword(parameters.password.password);
-                parameters.password = {
-                    hashed: true,
-                    password: password
-                }
+                parameters.targetPassword = await hashPassword(parameters.targetPassword);
+                parameters.targetPasswordHashed = true;
             } catch(error) {
-                log.error(LogCategory.CLIENT, tr("Failed to hash connect password: %o"), error);
+                logError(LogCategory.CLIENT, tr("Failed to hash connect password: %o"), error);
                 createErrorModal(tr("Error while hashing password"), tr("Failed to hash server password!<br>") + error).open();
+
+                /* FIXME: Abort connection attempt */
+            }
+
+            if(this.connectAttemptId !== localConnectionAttemptId) {
+                /* Our attempt has been aborted */
+                return;
             }
         }
-        if(parameters.password) {
-            connection_log.update_address_password({
-                hostname: resolvedAddress.host,
-                port: resolvedAddress.port
-            }, parameters.password.password);
-        }
 
-        const originalAddress = {host: resolvedAddress.host, port: resolvedAddress.port};
-        if(resolvedAddress.host === "localhost") {
-            resolvedAddress.host = "127.0.0.1";
-        } else if(dns.supported() && !resolvedAddress.host.match(Regex.IP_V4) && !resolvedAddress.host.match(Regex.IP_V6)) {
-            const id = ++this.connectAttemptId;
+        if(resolvedAddress.host.match(Regex.IP_V4) || resolvedAddress.host.match(Regex.IP_V6)) {
+            /* We don't have to resolve the target host */
+        } else if(dns.supported()) {
             this.log.log("connection.hostname.resolve", {});
             try {
-                const resolved = await dns.resolve_address(resolvedAddress, { timeout: 5000 }) || {} as any;
-                if(id != this.connectAttemptId)
-                    return; /* we're old */
+                const resolved = await dns.resolve_address(parsedAddress, { timeout: 5000 });
+                if(this.connectAttemptId !== localConnectionAttemptId) {
+                    /* Our attempt has been aborted */
+                    return;
+                }
 
-                resolvedAddress.host = typeof(resolved.target_ip) === "string" ? resolved.target_ip : resolvedAddress.host;
-                resolvedAddress.port = typeof(resolved.target_port) === "number" ? resolved.target_port : resolvedAddress.port;
+                if(resolved?.target_ip) {
+                    resolvedAddress.host = resolved.target_ip;
+                    resolvedAddress.port = typeof resolved.target_port === "number" ? resolved.target_port : resolvedAddress.port;
+                } else {
+                    throw tr("address resolve result id empty");
+                }
+
                 this.log.log("connection.hostname.resolved", {
                     address: {
                         server_port: resolvedAddress.port,
@@ -329,35 +324,51 @@ export class ConnectionHandler {
                     }
                 });
             } catch(error) {
-                if(id != this.connectAttemptId)
-                    return; /* we're old */
+                if(this.connectAttemptId !== localConnectionAttemptId) {
+                    /* Our attempt has been aborted */
+                    return;
+                }
 
                 this.handleDisconnect(DisconnectReason.DNS_FAILED, error);
             }
-        }
-
-        if(user_action) {
-            this.currentConnectId = await connectionHistory.logConnectionAttempt(originalAddress.host + (originalAddress.port === 9987 ? "" : (":" + originalAddress.port)));
         } else {
-            this.currentConnectId = -1;
+            this.handleDisconnect(DisconnectReason.DNS_FAILED, tr("Unable to resolve hostname"));
         }
 
-        await this.serverConnection.connect(resolvedAddress, new HandshakeHandler(profile, parameters));
-        setTimeout(() => {
-            const connected = this.serverConnection.connected();
-            if(user_action && connected) {
-                connection_log.log_connect({
-                    hostname: originalAddress.host,
-                    port: originalAddress.port
-                });
+        if(this.autoReconnectAttempt) {
+            /* this.currentConnectId = 0; */
+            /* Reconnect attempts are connecting to the last server. No need to update the general attempt id */
+        } else {
+            this.currentConnectId = await connectionHistory.logConnectionAttempt({
+                nickname: parameters.nicknameSpecified ? parameters.nickname : undefined,
+                hashedPassword: parameters.targetPassword, /* Password will be hashed by now! */
+                targetAddress: parameters.targetAddress,
+            });
+        }
 
-                /* TODO: Log successful connect/update the server unique id: attemptId */
-            }
-        }, 50);
+        await this.serverConnection.connect(resolvedAddress, new HandshakeHandler(parameters));
+    }
+
+    async startConnection(addr: string, profile: ConnectionProfile, user_action: boolean, parameters: ConnectParametersOld) {
+        await this.startConnectionNew({
+            profile: profile,
+            targetAddress: addr,
+
+            nickname: parameters.nickname,
+            nicknameSpecified: true,
+
+            targetPassword: parameters.password?.password,
+            targetPasswordHashed: parameters.password?.hashed,
+
+            defaultChannel: parameters?.channel?.target,
+            defaultChannelPassword: parameters?.channel?.password,
+
+            token: parameters.token
+        }, !user_action);
     }
 
     async disconnectFromServer(reason?: string) {
-        this.cancel_reconnect(true);
+        this.cancelAutoReconnect(true);
         if(!this.connected) return;
 
         this.handleDisconnect(DisconnectReason.REQUESTED);
@@ -469,7 +480,7 @@ export class ConnectionHandler {
     private generate_ssl_certificate_accept() : JQuery {
         const properties = {
             connect_default: true,
-            connect_profile: this.serverConnection.handshake_handler().profile.id,
+            connect_profile: this.serverConnection.handshake_handler().parameters.profile.id,
             connect_address: this.serverConnection.remote_address().host + (this.serverConnection.remote_address().port !== 9987 ? ":" + this.serverConnection.remote_address().port : "")
         };
 
@@ -501,9 +512,8 @@ export class ConnectionHandler {
     private _certificate_modal: Modal;
     handleDisconnect(type: DisconnectReason, data: any = {}) {
         this.connectAttemptId++;
-        this.currentConnectId = -1;
 
-        let auto_reconnect = false;
+        let autoReconnect = false;
         switch (type) {
             case DisconnectReason.REQUESTED:
             case DisconnectReason.SERVER_HOSTMESSAGE: /* already handled */
@@ -523,7 +533,7 @@ export class ConnectionHandler {
                 break;
             case DisconnectReason.CONNECT_FAILURE:
                 if(this.autoReconnectAttempt) {
-                    auto_reconnect = true;
+                    autoReconnect = true;
                     break;
                 }
 
@@ -585,7 +595,7 @@ export class ConnectionHandler {
                     formatMessage(tr("The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br:}Please select another profile or change the identify type."))
                 ).open();
                 this.sound.play(Sound.CONNECTION_DISCONNECTED);
-                auto_reconnect = false;
+                autoReconnect = false;
                 break;
             case DisconnectReason.IDENTITY_TOO_LOW:
                 createErrorModal(
@@ -594,7 +604,7 @@ export class ConnectionHandler {
                 ).open();
                 this.sound.play(Sound.CONNECTION_DISCONNECTED);
 
-                auto_reconnect = false;
+                autoReconnect = false;
                 break;
             case DisconnectReason.CONNECTION_CLOSED:
                 log.error(LogCategory.CLIENT, tr("Lost connection to remote server!"));
@@ -606,7 +616,7 @@ export class ConnectionHandler {
                 }
                 this.sound.play(Sound.CONNECTION_DISCONNECTED);
 
-                auto_reconnect = true;
+                autoReconnect = true;
                 break;
             case DisconnectReason.CONNECTION_PING_TIMEOUT:
                 log.error(LogCategory.CLIENT, tr("Connection ping timeout"));
@@ -627,24 +637,29 @@ export class ConnectionHandler {
                 ).open();
                 this.sound.play(Sound.CONNECTION_DISCONNECTED);
 
-                auto_reconnect = true;
+                autoReconnect = true;
                 break;
             case DisconnectReason.SERVER_REQUIRES_PASSWORD:
                 this.log.log("server.requires.password", {});
 
-                createInputModal(tr("Server password"), tr("Enter server password:"), password => password.length != 0, password => {
-                    if(!(typeof password === "string")) return;
+                createInputModal(tr("Server password"), tr("Enter server password:"), password => password.length != 0, async password => {
+                    if(typeof password !== "string") {
+                        return;
+                    }
 
-                    const profile = this.serverConnection.handshake_handler().profile;
+                    const profile = this.serverConnection.handshake_handler().parameters.profile;
                     const cprops = this.reconnect_properties(profile);
-                    cprops.password = {password: password as string, hashed: false};
+                    cprops.password = {
+                        password: await hashPassword(password),
+                        hashed: true
+                    };
 
-                    connection_log.update_address_info({
-                        port: this.channelTree.server.remote_address.port,
-                        hostname: this.channelTree.server.remote_address.host
-                    }, {
-                        flag_password: true
-                    } as any);
+                    if(this.currentConnectId >= 0) {
+                        connectionHistory.updateConnectionServerPassword(this.currentConnectId, cprops.password.password)
+                            .catch(error => {
+                                logWarn(LogCategory.GENERAL, tr("Failed to update the connection server password: %o"), error);
+                            });
+                    }
                     this.startConnection(this.channelTree.server.remote_address.host + ":" + this.channelTree.server.remote_address.port, profile, false, cprops);
                 }).open();
                 break;
@@ -664,7 +679,7 @@ export class ConnectionHandler {
                 modal.htmlTag.find(".modal-body").addClass("modal-disconnect-kick");
                 modal.open();
                 this.sound.play(Sound.SERVER_KICKED);
-                auto_reconnect = false;
+                autoReconnect = false;
                 break;
             case DisconnectReason.HANDSHAKE_BANNED:
                 //Reason message already printed because of the command error handling
@@ -691,12 +706,13 @@ export class ConnectionHandler {
 
         this.channelTree.unregisterClient(this.localClient); /* if we dont unregister our client here the client will be destroyed */
         this.channelTree.reset();
-        if(this.serverConnection)
+        if(this.serverConnection) {
             this.serverConnection.disconnect();
+        }
 
         this.client_status.lastChannelCodecWarned = 0;
 
-        if(auto_reconnect) {
+        if(autoReconnect) {
             if(!this.serverConnection) {
                 logInfo(LogCategory.NETWORKING, tr("Allowed to auto reconnect but cant reconnect because we dont have any information left..."));
                 return;
@@ -705,7 +721,7 @@ export class ConnectionHandler {
 
             logInfo(LogCategory.NETWORKING, tr("Allowed to auto reconnect. Reconnecting in 5000ms"));
             const server_address = this.serverConnection.remote_address();
-            const profile = this.serverConnection.handshake_handler().profile;
+            const profile = this.serverConnection.handshake_handler().parameters.profile;
 
             this.autoReconnectTimer = setTimeout(() => {
                 this.autoReconnectTimer = undefined;
@@ -719,9 +735,12 @@ export class ConnectionHandler {
         this.serverConnection.updateConnectionState(ConnectionState.UNCONNECTED); /* Fix for the native client... */
     }
 
-    cancel_reconnect(log_event: boolean) {
+    cancelAutoReconnect(log_event: boolean) {
         if(this.autoReconnectTimer) {
-            if(log_event) this.log.log("reconnect.canceled", {});
+            if(log_event) {
+                this.log.log("reconnect.canceled", {});
+            }
+
             clearTimeout(this.autoReconnectTimer);
             this.autoReconnectTimer = undefined;
         }
@@ -936,19 +955,23 @@ export class ConnectionHandler {
 
     getVoiceRecorder() : RecorderProfile | undefined { return this.serverConnection.getVoiceConnection().voiceRecorder(); }
 
-    reconnect_properties(profile?: ConnectionProfile) : ConnectParameters {
+
+    reconnect_properties(profile?: ConnectionProfile) : ConnectParametersOld {
         const name = (this.getClient() ? this.getClient().clientNickName() : "") ||
                         (this.serverConnection?.handshake_handler() ? this.serverConnection.handshake_handler().parameters.nickname : "") ||
                         StaticSettings.instance.static(Settings.KEY_CONNECT_USERNAME, profile ? profile.defaultUsername : undefined) ||
                         "Another TeaSpeak user";
-        const channel = (this.getClient() && this.getClient().currentChannel() ? this.getClient().currentChannel().channelId : 0) ||
-                        (this.serverConnection?.handshake_handler() ? (this.serverConnection.handshake_handler().parameters.channel || {} as any).target : "");
-        const channel_password = (this.getClient() && this.getClient().currentChannel() ? this.getClient().currentChannel().cached_password() : "") ||
-                                 (this.serverConnection && this.serverConnection.handshake_handler() ? (this.serverConnection.handshake_handler().parameters.channel || {} as any).password : "");
+
+        const targetChannel = this.getClient().currentChannel();
+        const connectParameters = this.serverConnection.handshake_handler().parameters;
+
         return {
-            channel: channel ? {target: "/" + channel, password: channel_password} : undefined,
+            channel: targetChannel ? {target: "/" + targetChannel.channelId, password: targetChannel.cached_password()} : undefined,
             nickname: name,
-            password: this.serverConnection && this.serverConnection.handshake_handler() ? this.serverConnection.handshake_handler().parameters.password : undefined
+            password: connectParameters.targetPassword ? {
+                password: connectParameters.targetPassword,
+                hashed: connectParameters.targetPasswordHashed
+            } : undefined
         }
     }
 
@@ -1052,7 +1075,7 @@ export class ConnectionHandler {
 
     destroy() {
         this.events_.unregister_handler(this);
-        this.cancel_reconnect(true);
+        this.cancelAutoReconnect(true);
 
         this.pluginCmdRegistry?.destroy();
         this.pluginCmdRegistry = undefined;

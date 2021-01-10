@@ -6,7 +6,7 @@ import {tr} from "tc-shared/i18n/localize";
 import {WebRTCVoiceBridge} from "./WebRTCVoiceBridge";
 import {VoiceWhisperPacket} from "./VoiceBridge";
 import {CryptoHelper} from "tc-shared/profiles/identities/TeamSpeakIdentity";
-import arraybuffer_to_string = CryptoHelper.arraybuffer_to_string;
+import arraybuffer_to_string = CryptoHelper.arraybufferToString;
 
 export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
     static isSupported(): boolean {
