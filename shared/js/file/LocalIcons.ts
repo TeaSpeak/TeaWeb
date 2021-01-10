@@ -226,7 +226,7 @@ class IconManager extends AbstractIconManager {
                 logWarn(LogCategory.FILE_TRANSFER, tr("Received handler id hint for icon download, but handler %s does not exists. Trying others."), handlerIdHint);
             }
 
-            const connections = server_connections.all_connections()
+            const connections = server_connections.getAllConnectionHandlers()
                 .filter(handler => handler.connected)
                 .filter(handler => handler.channelTree.server.properties.virtualserver_unique_identifier === icon.serverUniqueId);
 

@@ -140,7 +140,7 @@ export namespace callbacks {
 
         let client: ClientEntry;
 
-        const current_connection = server_connections.active_connection();
+        const current_connection = server_connections.getActiveConnectionHandler();
         if(current_connection && current_connection.channelTree) {
             if(!client && client_id) {
                 client = current_connection.channelTree.findClient(client_id);
@@ -176,7 +176,7 @@ export namespace callbacks {
     export function callback_context_channel(element: JQuery) {
         const channel_id = parseInt(element.attr("channel-id") || "0");
 
-        const current_connection = server_connections.active_connection();
+        const current_connection = server_connections.getActiveConnectionHandler();
         let channel: ChannelEntry;
         if(current_connection && current_connection.channelTree) {
             channel = current_connection.channelTree.findChannel(channel_id);

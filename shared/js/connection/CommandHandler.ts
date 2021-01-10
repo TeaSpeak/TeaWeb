@@ -238,7 +238,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         if(properties.virtualserver_ask_for_privilegekey) {
             createInputModal(tr("Use a privilege key"), tr("This is a newly created server for which administrator privileges have not yet been claimed.<br>Please enter the \"privilege key\" that was automatically generated when this server was created to gain administrator permissions."), message => message.length > 0, result => {
                 if(!result) return;
-                const scon = server_connections.active_connection();
+                const scon = server_connections.getActiveConnectionHandler();
 
                 if(scon.serverConnection.connected)
                     scon.serverConnection.send_command("tokenuse", {

@@ -82,7 +82,7 @@ export class AppController {
         initializeConnectionListController(this.connectionListEvents);
 
         this.listener.push(server_connections.events().on("notify_active_handler_changed", event => this.setConnectionHandler(event.newHandler)));
-        this.setConnectionHandler(server_connections.active_connection());
+        this.setConnectionHandler(server_connections.getActiveConnectionHandler());
 
         this.sideBarController = new SideBarController();
         this.serverLogController = new ServerEventLogController();

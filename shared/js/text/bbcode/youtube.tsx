@@ -46,7 +46,7 @@ export const YoutubeRenderer = (props: { children?: React.ReactElement | React.R
                     callback: () => {
                         global_client_actions.fire("action_w2g", {
                             videoUrl: props.url,
-                            handlerId: server_connections.active_connection().handlerId
+                            handlerId: server_connections.getActiveConnectionHandler().handlerId
                         });
                     },
                     name: tr("Watch video"),
@@ -72,7 +72,7 @@ export const YoutubeRenderer = (props: { children?: React.ReactElement | React.R
             <button className={cssStyle.playButton} onClick={() => {
                 global_client_actions.fire("action_w2g", {
                     videoUrl: props.url,
-                    handlerId: server_connections.active_connection().handlerId
+                    handlerId: server_connections.getActiveConnectionHandler().handlerId
                 });
             }}>
                 <HTMLRenderer purify={false}>{playIcon}</HTMLRenderer>

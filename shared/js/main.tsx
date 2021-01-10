@@ -1,58 +1,52 @@
 import * as loader from "tc-loader";
-import {Stage} from "tc-loader";
-import {AppParameters, settings, Settings} from "tc-shared/settings";
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
 import * as bipc from "./ipc/BrowserIPC";
 import * as sound from "./sound/Sounds";
 import * as i18n from "./i18n/localize";
+import * as stats from "./stats";
+import * as fidentity from "./profiles/identities/TeaForumIdentity";
+import * as aplayer from "tc-backend/audio/player";
+import * as ppt from "tc-backend/ppt";
+import * as global_ev_handler from "./events/ClientGlobalControlHandler";
+import {Stage} from "tc-loader";
+import {AppParameters, settings, Settings} from "tc-shared/settings";
+import {LogCategory, logError, logInfo} from "tc-shared/log";
 import {tra} from "./i18n/localize";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {createInfoModal} from "tc-shared/ui/elements/Modal";
-import * as stats from "./stats";
-import * as fidentity from "./profiles/identities/TeaForumIdentity";
 import {defaultRecorder, RecorderProfile, setDefaultRecorder} from "tc-shared/voice/RecorderProfile";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {openModalNewcomer} from "tc-shared/ui/modal/ModalNewcomer";
-import * as aplayer from "tc-backend/audio/player";
-import * as ppt from "tc-backend/ppt";
-import * as keycontrol from "./KeyControl";
-import * as React from "react";
-import * as global_ev_handler from "./events/ClientGlobalControlHandler";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
-import {FileTransferState, TransferProvider,} from "tc-shared/file/Transfer";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 import {copyToClipboard} from "tc-shared/utils/helpers";
 import {checkForUpdatedApp} from "tc-shared/update";
 import {setupJSRender} from "tc-shared/ui/jsrender";
 import {ConnectRequestData} from "tc-shared/ipc/ConnectHandler";
-import "svg-sprites/client-icons";
+import {defaultConnectProfile, findConnectProfile} from "tc-shared/profiles/ConnectionProfile";
+import {server_connections} from "tc-shared/ConnectionManager";
+import {spawnConnectModalNew} from "tc-shared/ui/modal/connect/Controller";
 
 /* required import for init */
+import "svg-sprites/client-icons";
 import "../css/load-css"
 import "./proto";
-import "./ui/elements/ContextDivider";
-import "./ui/elements/Tab";
-import "./connection/CommandHandler";
-import "./connection/ConnectionBase";
 import "./video-viewer/Controller";
 import "./profiles/ConnectionProfile";
 import "./update/UpdaterWeb";
 import "./file/LocalIcons";
-import "./ui/frames/menu-bar/MainMenu";
+import "./connection/CommandHandler";
+import "./connection/ConnectionBase";
 import "./connection/rtc/Connection";
 import "./connection/rtc/video/Connection";
 import "./video/VideoSource";
 import "./media/Video";
 import "./ui/AppController";
-
-import {defaultConnectProfile, findConnectProfile} from "tc-shared/profiles/ConnectionProfile";
-import {server_connections} from "tc-shared/ConnectionManager";
-import ContextMenuEvent = JQuery.ContextMenuEvent;
-
+import "./ui/frames/menu-bar/MainMenu";
 import "./ui/modal/connect/Controller";
-import {spawnConnectModalNew} from "tc-shared/ui/modal/connect/Controller";
+import "./ui/elements/ContextDivider";
+import "./ui/elements/Tab";
+import {initializeKeyControl} from "./KeyControl";
 
 let preventWelcomeUI = false;
 async function initialize() {
@@ -67,15 +61,8 @@ async function initialize() {
     bipc.setup();
 }
 
-async function initialize_app() {
+async function initializeApp() {
     global_ev_handler.initialize(global_client_actions);
-    /*
-    loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
-        name: "settings init",
-        priority: 10,
-        function: async () => global_ev_handler.load_default_states(client_control_events)
-    });
-    */
 
     if(!aplayer.initialize()) {
         console.warn(tr("Failed to initialize audio controller!"));
@@ -85,26 +72,25 @@ async function initialize_app() {
 
     setDefaultRecorder(new RecorderProfile("default"));
     defaultRecorder.initialize().catch(error => {
-        log.error(LogCategory.AUDIO, tr("Failed to initialize default recorder: %o"), error);
+        logError(LogCategory.AUDIO, tr("Failed to initialize default recorder: %o"), error);
     });
 
     sound.initialize().then(() => {
-        log.info(LogCategory.AUDIO, tr("Sounds initialized"));
+        logInfo(LogCategory.AUDIO, tr("Sounds initialized"));
     });
     sound.set_master_volume(settings.getValue(Settings.KEY_SOUND_MASTER_SOUNDS) / 100);
 
     try {
         await ppt.initialize();
     } catch(error) {
-        log.error(LogCategory.GENERAL, tr("Failed to initialize ppt!\nError: %o"), error);
+        logError(LogCategory.GENERAL, tr("Failed to initialize ppt!\nError: %o"), error);
         loader.critical_error(tr("Failed to initialize ppt!"));
         return;
     }
 }
 
 export function handle_connect_request(properties: ConnectRequestData, connection: ConnectionHandler) {
-    const profile_uuid = properties.profile || (defaultConnectProfile() || { id: 'default' }).id;
-    const profile = findConnectProfile(profile_uuid) || defaultConnectProfile();
+    const profile = findConnectProfile(properties.profile) || defaultConnectProfile();
     const username = properties.username || profile.connectUsername();
 
     const password = properties.password ? properties.password.value : "";
@@ -114,6 +100,7 @@ export function handle_connect_request(properties: ConnectRequestData, connectio
         settings.setValue(Settings.KEY_USER_IS_NEW, false);
 
         if(!aplayer.initialized()) {
+            /* Trick the client into clicking somewhere on the site */
             spawnYesNo(tra("Connect to {}", properties.address), tra("Would you like to connect to {}?", properties.address), result => {
                 if(result) {
                     aplayer.on_ready(() => handle_connect_request(properties, connection));
@@ -123,6 +110,7 @@ export function handle_connect_request(properties: ConnectRequestData, connectio
             }).open();
             return;
         }
+
         connection.startConnection(properties.address, profile, true, {
             nickname: username,
             password: password.length > 0 ? {
@@ -130,7 +118,7 @@ export function handle_connect_request(properties: ConnectRequestData, connectio
                 hashed: password_hashed
             } : undefined
         });
-        server_connections.set_active_connection(connection);
+        server_connections.setActiveConnectionHandler(connection);
     } else {
         spawnConnectModalNew({
             selectedAddress: properties.address,
@@ -143,24 +131,26 @@ function main() {
     /* initialize font */
     {
         const font = settings.getValue(Settings.KEY_FONT_SIZE);
-        $(document.body).css("font-size", font + "px");
+
+        document.body.style.fontSize = font + "px";
         settings.globalChangeListener(Settings.KEY_FONT_SIZE, value => {
-            $(document.body).css("font-size", value + "px");
-        })
+            document.body.style.fontSize = value + "px";
+        });
     }
 
     /* context menu prevent */
-    $(document).on('contextmenu', (event: ContextMenuEvent) => {
-        if(event.isDefaultPrevented()) {
+    document.addEventListener("contextmenu", event => {
+        if(event.defaultPrevented) {
             return;
         }
 
         if(event.target instanceof HTMLInputElement) {
+            const target = event.target;
             if((!!event.target.value || __build.target === "client") && !event.target.disabled && !event.target.readOnly && event.target.type !== "number") {
                 spawn_context_menu(event.pageX, event.pageY, {
                     type: MenuEntryType.ENTRY,
                     name: tr("Copy"),
-                    callback: () => copyToClipboard(event.target.value),
+                    callback: () => copyToClipboard(target.value),
                     icon_class: "client-copy",
                     visible: !!event.target.value
                 }, {
@@ -168,7 +158,7 @@ function main() {
                     name: tr("Paste"),
                     callback: () => {
                         const { clipboard } = __non_webpack_require__('electron');
-                        event.target.value = clipboard.readText();
+                        target.value = clipboard.readText();
                     },
                     icon_class: "client-copy",
                     visible: __build.target === "client",
@@ -185,13 +175,13 @@ function main() {
     });
     window.removeLoaderContextMenuHook();
 
-    const initialHandler = server_connections.spawn_server_connection();
-    server_connections.set_active_connection(initialHandler);
+    const initialHandler = server_connections.spawnConnectionHandler();
+    server_connections.setActiveConnectionHandler(initialHandler);
     initialHandler.acquireInputHardware().then(() => {});
 
     /** Setup the XF forum identity **/
     fidentity.update_forum();
-    keycontrol.initialize();
+    initializeKeyControl();
 
     stats.initialize({
         verbose: true,
@@ -199,8 +189,8 @@ function main() {
         volatile_collection_only: false
     });
 
-    stats.register_user_count_listener(status => {
-        log.info(LogCategory.STATISTICS, tr("Received user count update: %o"), status);
+    stats.registerUserCountListener(status => {
+        logInfo(LogCategory.STATISTICS, tr("Received user count update: %o"), status);
     });
 
     checkForUpdatedApp();
@@ -215,10 +205,10 @@ const task_teaweb_starter: loader.Task = {
     name: "voice app starter",
     function: async () => {
         try {
-            await initialize_app();
+            await initializeApp();
             main();
             if(!aplayer.initialized()) {
-                log.info(LogCategory.VOICE, tr("Initialize audio controller later!"));
+                logInfo(LogCategory.VOICE, tr("Initialize audio controller later!"));
                 if(!aplayer.initializeFromGesture) {
                     console.error(tr("Missing aplayer.initializeFromGesture"));
                 } else {
@@ -270,7 +260,7 @@ const task_connect_handler: loader.Task = {
                         closeable: false
                     }).open();
                 }));
-                log.info(LogCategory.CLIENT, tr("Executed connect successfully in another browser window. Closing this window"));
+                logInfo(LogCategory.CLIENT, tr("Executed connect successfully in another browser window. Closing this window"));
 
                 const message =
                     "You're connecting to {0} within the other TeaWeb instance.{:br:}" +
@@ -285,7 +275,7 @@ const task_connect_handler: loader.Task = {
                 ).open();
                 return;
             } catch(error) {
-                log.info(LogCategory.CLIENT, tr("Failed to execute connect within other TeaWeb instance. Using this one. Error: %o"), error);
+                logInfo(LogCategory.CLIENT, tr("Failed to execute connect within other TeaWeb instance. Using this one. Error: %o"), error);
             }
 
             if(chandler) {
@@ -296,7 +286,7 @@ const task_connect_handler: loader.Task = {
 
                 chandler.callback_execute = data => {
                     preventWelcomeUI = true;
-                    handle_connect_request(data, server_connections.spawn_server_connection());
+                    handle_connect_request(data, server_connections.spawnConnectionHandler());
                     return true;
                 }
             }
@@ -305,7 +295,7 @@ const task_connect_handler: loader.Task = {
         preventWelcomeUI = true;
         loader.register_task(loader.Stage.LOADED, {
             priority: 0,
-            function: async () => handle_connect_request(connectData, server_connections.active_connection() || server_connections.spawn_server_connection()),
+            function: async () => handle_connect_request(connectData, server_connections.getActiveConnectionHandler() || server_connections.spawnConnectionHandler()),
             name: tr("default url connect")
         });
         loader.register_task(loader.Stage.LOADED, task_teaweb_starter);
@@ -365,18 +355,14 @@ loader.register_task(loader.Stage.LOADED, {
     priority: 2000
 });
 
+/* TODO: Remove this after the image preview has been rewritten into react */
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING,{
     name: "app init",
     function: async () => {
-        try { //Initialize main template
-            const main = $("#tmpl_main").renderTag({
-                multi_session:  !settings.getValue(Settings.KEY_DISABLE_MULTI_SESSION),
-                app_version: __build.version
-            }).dividerfy();
-
-            $("body").append(main);
+        try {
+            $("body").append($("#tmpl_main").renderTag());
         } catch(error) {
-            log.error(LogCategory.GENERAL, error);
+            logError(LogCategory.GENERAL, error);
             loader.critical_error(tr("Failed to setup main page!"));
             return;
         }

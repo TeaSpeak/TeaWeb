@@ -79,15 +79,11 @@ export function initialize(config: Config) {
     connection.start_connection();
 }
 
-export function register_user_count_listener(listener: UserCountListener) {
+export function registerUserCountListener(listener: UserCountListener) {
     user_count_listener.push(listener);
 }
 
-export function all_user_count_listener() : UserCountListener[] {
-    return user_count_listener;
-}
-
-export function deregister_user_count_listener(listener: UserCountListener) {
+export function unregisterUserCountListener(listener: UserCountListener) {
     user_count_listener.remove(listener);
 }
 

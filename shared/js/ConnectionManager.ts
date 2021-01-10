@@ -1,25 +1,7 @@
 import {ConnectionHandler, DisconnectReason} from "./ConnectionHandler";
 import {Registry} from "./events";
-import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
-
-export let server_connections: ConnectionManager;
-
-class ReplaceableContainer {
-    placeholder: HTMLDivElement;
-    container: HTMLDivElement;
-
-    constructor(container: HTMLDivElement, placeholder?: HTMLDivElement) {
-        this.container = container;
-        this.placeholder = placeholder || document.createElement("div");
-    }
-
-    replaceWith(target: HTMLDivElement | undefined) {
-        target = target || this.placeholder;
-        this.container.replaceWith(target);
-        this.container = target;
-    }
-}
+import * as loader from "tc-loader";
 
 export interface ConnectionManagerEvents {
     notify_handler_created: {
@@ -51,22 +33,18 @@ export class ConnectionManager {
     private connectionHandlers: ConnectionHandler[] = [];
     private activeConnectionHandler: ConnectionHandler | undefined;
 
-    private containerChannelVideo: ReplaceableContainer;
-
     constructor() {
         this.events_ = new Registry<ConnectionManagerEvents>();
         this.events_.enableDebug("connection-manager");
 
-        /* FIXME! */
-        this.containerChannelVideo = new ReplaceableContainer(document.getElementById("channel-video") as HTMLDivElement);
-        this.set_active_connection(undefined);
+        this.setActiveConnectionHandler(undefined);
     }
 
     events() : Registry<ConnectionManagerEvents> {
         return this.events_;
     }
 
-    spawn_server_connection() : ConnectionHandler {
+    spawnConnectionHandler() : ConnectionHandler {
         const handler = new ConnectionHandler();
         handler.initialize_client_state(this.activeConnectionHandler);
         this.connectionHandlers.push(handler);
@@ -75,7 +53,7 @@ export class ConnectionManager {
         return handler;
     }
 
-    destroy_server_connection(handler: ConnectionHandler) {
+    destroyConnectionHandler(handler: ConnectionHandler) {
         if(this.connectionHandlers.length <= 1) {
             throw "cannot deleted the last connection handler";
         }
@@ -91,7 +69,7 @@ export class ConnectionManager {
         }
 
         if(handler === this.activeConnectionHandler) {
-            this.set_active_connection_(this.connectionHandlers[0]);
+            this.doSetActiveConnectionHandler(this.connectionHandlers[0]);
         }
         this.events_.fire("notify_handler_deleted", { handler: handler, handlerId: handler.handlerId });
 
@@ -99,7 +77,7 @@ export class ConnectionManager {
         handler.destroy();
     }
 
-    set_active_connection(handler: ConnectionHandler) {
+    setActiveConnectionHandler(handler: ConnectionHandler) {
         if(handler && this.connectionHandlers.indexOf(handler) == -1) {
             throw "Handler hasn't been registered or is already obsolete!";
         }
@@ -108,7 +86,21 @@ export class ConnectionManager {
             return;
         }
 
-        this.set_active_connection_(handler);
+        this.doSetActiveConnectionHandler(handler);
+    }
+
+    private doSetActiveConnectionHandler(handler: ConnectionHandler) {
+        const oldHandler = this.activeConnectionHandler;
+        this.activeConnectionHandler = handler;
+        this.events_.fire("notify_active_handler_changed", {
+            oldHandler: oldHandler,
+            newHandler: handler,
+
+            oldHandlerId: oldHandler?.handlerId,
+            newHandlerId: handler?.handlerId
+        });
+        oldHandler?.events().fire("notify_visibility_changed", { visible: false });
+        handler?.events().fire("notify_visibility_changed", { visible: true });
     }
 
     swapHandlerOrder(handlerA: ConnectionHandler, handlerB: ConnectionHandler) {
@@ -125,37 +117,20 @@ export class ConnectionManager {
         this.events().fire("notify_handler_order_changed");
     }
 
-    private set_active_connection_(handler: ConnectionHandler) {
-/*
-        this.containerChannelVideo.replaceWith(handler?.video_frame.getContainer());
-*/
-
-        const oldHandler = this.activeConnectionHandler;
-        this.activeConnectionHandler = handler;
-        this.events_.fire("notify_active_handler_changed", {
-            oldHandler: oldHandler,
-            newHandler: handler,
-
-            oldHandlerId: oldHandler?.handlerId,
-            newHandlerId: handler?.handlerId
-        });
-        oldHandler?.events().fire("notify_visibility_changed", { visible: false });
-        handler?.events().fire("notify_visibility_changed", { visible: true });
-    }
-
     findConnection(handlerId: string) : ConnectionHandler | undefined {
         return this.connectionHandlers.find(e => e.handlerId === handlerId);
     }
 
-    active_connection() : ConnectionHandler | undefined {
+    getActiveConnectionHandler() : ConnectionHandler | undefined {
         return this.activeConnectionHandler;
     }
 
-    all_connections() : ConnectionHandler[] {
+    getAllConnectionHandlers() : ConnectionHandler[] {
         return this.connectionHandlers;
     }
 }
 
+export let server_connections: ConnectionManager;
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     name: "server manager init",
     function: async () => {
