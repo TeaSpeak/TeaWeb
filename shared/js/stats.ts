@@ -1,5 +1,4 @@
 import {LogCategory, logDebug, logInfo, logTrace, logWarn} from "./log";
-import * as log from "./log";
 import { tr } from "./i18n/localize";
 
 enum CloseCodes {

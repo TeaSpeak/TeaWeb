@@ -26,7 +26,7 @@ function initializeController(events: Registry<ModalGlobalSettingsEditorEvents>)
                 key: setting.key,
                 description: setting.description,
                 type: setting.valueType,
-                defaultValue: setting.defaultValue
+                defaultValue: "defaultValue" in setting ? setting.defaultValue : undefined
             });
         }
 
@@ -54,7 +54,7 @@ function initializeController(events: Registry<ModalGlobalSettingsEditorEvents>)
                 key: setting.key,
                 description: setting.description,
                 type: setting.valueType,
-                defaultValue: setting.defaultValue
+                defaultValue: "defaultValue" in setting ? setting.defaultValue : undefined
             },
             value: settings.getValue(setting, undefined)
         });

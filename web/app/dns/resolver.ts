@@ -349,7 +349,7 @@ export async function resolveTeaSpeakServerAddress(address: ServerAddress, _opti
     };
 }
 
-export async function resolve_address_ipv4(address: string) : Promise<string> {
+export async function resolveAddressIpV4(address: string) : Promise<string> {
     const result = await executeDnsRequest(address, RRType.A);
     if(!result.length) return undefined;
 
