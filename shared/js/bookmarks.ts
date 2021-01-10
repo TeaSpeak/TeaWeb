@@ -18,8 +18,8 @@ export const bookmarkEvents = new Registry<BookmarkEvents>();
 export const boorkmak_connect = (mark: Bookmark, new_tab?: boolean) => {
     const profile = findConnectProfile(mark.connect_profile) || defaultConnectProfile();
     if(profile.valid()) {
-        const connection = (typeof(new_tab) !== "boolean" || !new_tab) ? server_connections.active_connection() : server_connections.spawn_server_connection();
-        server_connections.set_active_connection(connection);
+        const connection = (typeof(new_tab) !== "boolean" || !new_tab) ? server_connections.getActiveConnectionHandler() : server_connections.spawnConnectionHandler();
+        server_connections.setActiveConnectionHandler(connection);
         connection.startConnection(
             mark.server_properties.server_address + ":" + mark.server_properties.server_port,
             profile,

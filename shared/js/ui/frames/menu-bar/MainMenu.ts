@@ -20,7 +20,7 @@ import { tr } from "tc-shared/i18n/localize";
 function renderConnectionItems() {
     const items: MenuBarEntry[] = [];
 
-    const currentConnectionConnected = !!server_connections.active_connection()?.connected;
+    const currentConnectionConnected = !!server_connections.getActiveConnectionHandler()?.connected;
     items.push({
         type: "normal",
         label: tr("Connect to a server"),
@@ -33,15 +33,15 @@ function renderConnectionItems() {
         label: tr("Disconnect from current server"),
         icon: ClientIcon.Disconnect,
         disabled: !currentConnectionConnected,
-        click: () => server_connections.active_connection()?.disconnectFromServer()
+        click: () => server_connections.getActiveConnectionHandler()?.disconnectFromServer()
     });
 
     items.push({
         type: "normal",
         label: tr("Disconnect from all servers"),
         icon: ClientIcon.Disconnect,
-        disabled: server_connections.all_connections().findIndex(e => e.connected) === -1,
-        click: () => server_connections.all_connections().forEach(connection => connection.disconnectFromServer())
+        disabled: server_connections.getAllConnectionHandlers().findIndex(e => e.connected) === -1,
+        click: () => server_connections.getAllConnectionHandlers().forEach(connection => connection.disconnectFromServer())
     });
 
     if(__build.target === "client") {
@@ -89,8 +89,8 @@ function renderBookmarkItems() {
         type: "normal",
         icon: ClientIcon.BookmarkAdd,
         label: tr("Add current server to bookmarks"),
-        disabled: !server_connections.active_connection()?.connected,
-        click: () => add_server_to_bookmarks(server_connections.active_connection())
+        disabled: !server_connections.getActiveConnectionHandler()?.connected,
+        click: () => add_server_to_bookmarks(server_connections.getActiveConnectionHandler())
     });
 
     const rootMarks = bookmarks().content;
@@ -105,7 +105,7 @@ function renderBookmarkItems() {
 function renderPermissionItems() : MenuBarEntry[] {
     const items: MenuBarEntry[] = [];
 
-    const currentConnectionConnected = !!server_connections.active_connection()?.connected;
+    const currentConnectionConnected = !!server_connections.getActiveConnectionHandler()?.connected;
     items.push({
         type: "normal",
         label: tr("Server Groups"),
@@ -170,7 +170,7 @@ function renderPermissionItems() : MenuBarEntry[] {
 function renderToolItems() : MenuBarEntry[] {
     const items: MenuBarEntry[] = [];
 
-    const currentConnectionConnected = !!server_connections.active_connection()?.connected;
+    const currentConnectionConnected = !!server_connections.getActiveConnectionHandler()?.connected;
     if(__build.target === "web") {
         items.push({
             type: "normal",
@@ -341,7 +341,7 @@ class MenuBarUpdateListener {
         this.generalHandlerEvents.push(bookmarkEvents.on("notify_bookmarks_updated", () => {
             updateMenuBar();
         }))
-        server_connections.all_connections().forEach(handler => this.registerHandlerEvents(handler));
+        server_connections.getAllConnectionHandlers().forEach(handler => this.registerHandlerEvents(handler));
     }
 
     destroy() {

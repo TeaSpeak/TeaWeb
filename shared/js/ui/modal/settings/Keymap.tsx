@@ -365,7 +365,7 @@ function initialize_controller(event_registry: Registry<KeyMapEvents>) {
 
     event_registry.on("set_keymap", event => {
         try {
-            keycontrol.set_key(event.action, event.key);
+            keycontrol.setKey(event.action, event.key);
             event_registry.fire_react("set_keymap_result", {status: "success", action: event.action, key: event.key});
         } catch (error) {
             console.warn("Failed to change key for action %s: %o", event.action, error);

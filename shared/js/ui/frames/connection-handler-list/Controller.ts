@@ -14,7 +14,7 @@ export function initializeConnectionListController(events: Registry<ConnectionLi
     });
 
     events.on("query_handler_list", () => {
-        events.fire_react("notify_handler_list", { handlerIds: server_connections.all_connections().map(e => e.handlerId), activeHandlerId: server_connections.active_connection()?.handlerId });
+        events.fire_react("notify_handler_list", { handlerIds: server_connections.getAllConnectionHandlers().map(e => e.handlerId), activeHandlerId: server_connections.getActiveConnectionHandler()?.handlerId });
     });
     events.on("notify_destroy", server_connections.events().on("notify_handler_created", event => {
         let listeners = [];
@@ -66,7 +66,7 @@ export function initializeConnectionListController(events: Registry<ConnectionLi
             return;
         }
 
-        server_connections.set_active_connection(handler);
+        server_connections.setActiveConnectionHandler(handler);
     });
     events.on("notify_destroy", server_connections.events().on("notify_active_handler_changed", event => {
         events.fire_react("notify_active_handler", { handlerId: event.newHandlerId });
@@ -79,7 +79,7 @@ export function initializeConnectionListController(events: Registry<ConnectionLi
             return;
         }
 
-        server_connections.destroy_server_connection(handler);
+        server_connections.destroyConnectionHandler(handler);
     });
 
 

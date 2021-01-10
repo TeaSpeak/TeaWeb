@@ -27,8 +27,8 @@ class FileTransferModal extends InternalModal {
         this.remoteBrowseEvents.enableDebug("remote-file-browser");
         this.transferInfoEvents.enableDebug("transfer-info");
 
-        initializeRemoteFileBrowserController(server_connections.active_connection(), this.remoteBrowseEvents);
-        initializeTransferInfoController(server_connections.active_connection(), this.transferInfoEvents);
+        initializeRemoteFileBrowserController(server_connections.getActiveConnectionHandler(), this.remoteBrowseEvents);
+        initializeTransferInfoController(server_connections.getActiveConnectionHandler(), this.transferInfoEvents);
     }
 
     protected onInitialize() {

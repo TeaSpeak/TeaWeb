@@ -26,7 +26,7 @@ const VersionsRenderer = () => (
 /* FIXME: Outsource this! */
 const RtcStatus = () => {
     const statusController = useMemo(() => new StatusController(new Registry<ConnectionStatusEvents>()), []);
-    statusController.setConnectionHandler(server_connections.active_connection());
+    statusController.setConnectionHandler(server_connections.getActiveConnectionHandler());
 
     server_connections.events().reactUse("notify_active_handler_changed", event => {
         statusController.setConnectionHandler(event.newHandler);

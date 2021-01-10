@@ -45,7 +45,7 @@ class InfoController {
     public getMode() : ControlBarMode { return this.mode; }
 
     public initialize() {
-        server_connections.all_connections().forEach(handler => this.registerGlobalHandlerEvents(handler));
+        server_connections.getAllConnectionHandlers().forEach(handler => this.registerGlobalHandlerEvents(handler));
 
         const events = this.globalEvents;
         events.push(server_connections.events().on("notify_handler_created", event => {
@@ -68,11 +68,11 @@ class InfoController {
             events.push(server_connections.events().on("notify_active_handler_changed", event => this.setConnectionHandler(event.newHandler)));
         }
 
-        this.setConnectionHandler(server_connections.active_connection());
+        this.setConnectionHandler(server_connections.getActiveConnectionHandler());
     }
 
     public destroy() {
-        server_connections.all_connections().forEach(handler => this.unregisterGlobalHandlerEvents(handler));
+        server_connections.getAllConnectionHandlers().forEach(handler => this.unregisterGlobalHandlerEvents(handler));
         this.unregisterCurrentHandlerEvents();
 
         this.globalEvents.forEach(callback => callback());
@@ -165,7 +165,7 @@ class InfoController {
     }
 
     public sendConnectionState() {
-        const globallyConnected = server_connections.all_connections().findIndex(e => e.connected) !== -1;
+        const globallyConnected = server_connections.getAllConnectionHandlers().findIndex(e => e.connected) !== -1;
         const locallyConnected = this.currentHandler?.connected;
         const multisession = !settings.getValue(Settings.KEY_DISABLE_MULTI_SESSION);
 
@@ -201,12 +201,12 @@ class InfoController {
     }
 
     public sendAwayState() {
-        const globalAwayCount = server_connections.all_connections().filter(handler => handler.isAway()).length;
+        const globalAwayCount = server_connections.getAllConnectionHandlers().filter(handler => handler.isAway()).length;
         const awayLocally = !!this.currentHandler?.isAway();
 
         this.events.fire_react("notify_away_state", {
             state: {
-                globallyAway: globalAwayCount === server_connections.all_connections().length ? "full" : globalAwayCount > 0 ? "partial" : "none",
+                globallyAway: globalAwayCount === server_connections.getAllConnectionHandlers().length ? "full" : globalAwayCount > 0 ? "partial" : "none",
                 locallyAway: awayLocally
             }
         });
@@ -325,7 +325,7 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
 
     events.on("action_connection_connect", event => global_client_actions.fire("action_open_window_connect", { newTab: event.newTab }));
     events.on("action_connection_disconnect", event => {
-        (event.generally ? server_connections.all_connections() : [infoHandler.getCurrentHandler()]).filter(e => !!e).forEach(connection => {
+        (event.generally ? server_connections.getAllConnectionHandlers() : [infoHandler.getCurrentHandler()]).filter(e => !!e).forEach(connection => {
             connection.disconnectFromServer().then(() => {});
         });
     });
@@ -346,7 +346,7 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
         if(event.away) {
             const setAway = message => {
                 const value = typeof message === "string" ? message : true;
-                (event.globally ? server_connections.all_connections() : [server_connections.active_connection()]).filter(e => !!e).forEach(connection => {
+                (event.globally ? server_connections.getAllConnectionHandlers() : [server_connections.getActiveConnectionHandler()]).filter(e => !!e).forEach(connection => {
                     connection.setAway(value);
                 });
                 settings.setValue(Settings.KEY_CLIENT_STATE_AWAY, true);
@@ -362,7 +362,7 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
                 setAway(undefined);
             }
         } else {
-            for(const connection of event.globally ? server_connections.all_connections() : [server_connections.active_connection()]) {
+            for(const connection of event.globally ? server_connections.getAllConnectionHandlers() : [server_connections.getActiveConnectionHandler()]) {
                 if(!connection) continue;
 
                 connection.setAway(false);

@@ -338,7 +338,7 @@ export class AvatarManager extends AbstractAvatarManager {
     }
 }
 (window as any).flush_avatar_cache = async () => {
-    server_connections.all_connections().forEach(e => {
+    server_connections.getAllConnectionHandlers().forEach(e => {
         e.fileManager.avatars.flush_cache();
     });
 };
@@ -385,7 +385,7 @@ class LocalAvatarManagerFactory extends AbstractAvatarManagerFactory {
 
         if(message.type === "query-handlers") {
             this.ipcChannel.sendMessage("notify-handlers", {
-                handlers: server_connections.all_connections().map(e => e.handlerId)
+                handlers: server_connections.getAllConnectionHandlers().map(e => e.handlerId)
             }, remoteId);
             return;
         } else if(message.type === "load-avatar") {

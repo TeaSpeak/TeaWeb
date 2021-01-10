@@ -159,7 +159,7 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                 break;
 
             case "server-echo-test":
-                const connection = event.connection || server_connections.active_connection();
+                const connection = event.connection || server_connections.getActiveConnectionHandler();
                 if(connection) {
                     spawnEchoTestModal(connection);
                 }
@@ -181,7 +181,7 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
     });
 
     event_registry.on("action_open_window_permissions", event => {
-        spawnPermissionEditorModal(event.connection ? event.connection : server_connections.active_connection(), event.defaultTab);
+        spawnPermissionEditorModal(event.connection ? event.connection : server_connections.getActiveConnectionHandler(), event.defaultTab);
     });
 
     event_registry.on("action_toggle_video_broadcasting", event => {

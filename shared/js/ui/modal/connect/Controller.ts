@@ -410,10 +410,10 @@ export function spawnConnectModalNew(options: ConnectModalOptions) {
 
         let connection: ConnectionHandler;
         if(event.newTab) {
-            connection = server_connections.spawn_server_connection();
-            server_connections.set_active_connection(connection);
+            connection = server_connections.spawnConnectionHandler();
+            server_connections.setActiveConnectionHandler(connection);
         } else {
-            connection = server_connections.active_connection();
+            connection = server_connections.getActiveConnectionHandler();
         }
 
         if(!connection) {
