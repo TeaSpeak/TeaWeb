@@ -1,4 +1,5 @@
 import {kUnknownHistoryServerUniqueId} from "tc-shared/connectionlog/History";
+import { RemoteIconInfo} from "tc-shared/file/Icons";
 
 export type ConnectProfileEntry = {
     id: string,
@@ -13,36 +14,36 @@ export type ConnectHistoryEntry = {
 }
 
 export type ConnectHistoryServerInfo = {
-    iconId: number,
+    icon: RemoteIconInfo,
     name: string,
     password: boolean,
+    country: string,
 
+    clients: number | -1,
+    maxClients: number | -1
 }
-
-export type ConnectServerAddress = {
-    currentAddress: string,
-    defaultAddress: string,
-}
-
-export type ConnectServerNickname = {
-    currentNickname: string,
-    defaultNickname: string,
-}
-
-export type ConnectProfiles = {
-    profiles: ConnectProfileEntry[],
-    selected: string
-};
 
 export interface ConnectProperties {
-    address: ConnectServerAddress,
-    nickname: ConnectServerNickname,
-    password: string,
-    profiles: ConnectProfiles,
+    address: {
+        currentAddress: string,
+        defaultAddress: string,
+    },
+    nickname: {
+        currentNickname: string | undefined,
+        defaultNickname: string | undefined,
+    },
+    password: {
+        password: string,
+        hashed: boolean
+    } | undefined,
+    profiles: {
+        profiles: ConnectProfileEntry[],
+        selected: string
+    },
+    historyShown: boolean,
     history: {
         history: ConnectHistoryEntry[],
         selected: number | -1,
-        state: "shown" | "hidden"
     },
 }
 
@@ -50,11 +51,12 @@ export interface PropertyValidState {
     address: boolean,
     nickname: boolean,
     password: boolean,
+    profile: boolean
 }
 
-type ConnectProperty<T extends keyof ConnectProperties> = {
+type IAccess<I, T extends keyof I> = {
     property: T,
-    value: ConnectProperties[T]
+    value: I[T]
 };
 
 export interface ConnectUiEvents {
@@ -66,13 +68,20 @@ export interface ConnectUiEvents {
     action_delete_history: {
         target: string,
         targetType: "address" | "server-unique-id"
-    }
+    },
+    action_set_nickname: { nickname: string, validate: boolean },
+    action_set_address: { address: string, validate: boolean },
+    action_set_password: { password: string, hashed: boolean },
 
     query_property: {
         property: keyof ConnectProperties
     },
+    query_property_valid: {
+        property: keyof PropertyValidState
+    },
 
-    notify_property: ConnectProperty<keyof ConnectProperties>
+    notify_property: IAccess<ConnectProperties, keyof ConnectProperties>,
+    notify_property_valid: IAccess<PropertyValidState, keyof PropertyValidState>,
 
     query_history_entry: {
         serverUniqueId: string
