@@ -53,7 +53,7 @@ let categoryMapping = new Map<number, string>([
     [LogCategory.FILE_TRANSFER,             "File transfer "],
     [LogCategory.EVENT_REGISTRY,            "Event registry"],
     [LogCategory.WEBRTC,                    "WebRTC        "],
-    [LogCategory.VIDEO,                     "Video        "],
+    [LogCategory.VIDEO,                     "Video         "],
 ]);
 
 export let enabled_mapping = new Map<number, boolean>([

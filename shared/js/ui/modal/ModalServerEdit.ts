@@ -8,6 +8,7 @@ import {spawnIconSelect} from "../../ui/modal/ModalIconSelect";
 import {network} from "../../ui/frames/chat";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 import {tr} from "tc-shared/i18n/localize";
+import {LogCategory, logTrace} from "tc-shared/log";
 
 export function createServerModal(server: ServerEntry, callback: (properties?: ServerProperties) => Promise<void>) {
     const properties = Object.assign({}, server.properties);
