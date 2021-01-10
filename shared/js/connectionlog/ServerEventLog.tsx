@@ -31,7 +31,7 @@ export class ServerEventLog {
             uniqueId: "log-" + Date.now() + "-" + (++uniqueLogEventId)
         };
 
-        if(settings.global(Settings.FN_EVENTS_LOG_ENABLED(type), true)) {
+        if(settings.getValue(Settings.FN_EVENTS_LOG_ENABLED(type), true)) {
             this.eventLog.push(event);
             while(this.eventLog.length > this.maxHistoryLength) {
                 this.eventLog.pop_front();

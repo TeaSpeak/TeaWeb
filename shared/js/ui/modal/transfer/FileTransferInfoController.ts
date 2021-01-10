@@ -62,7 +62,7 @@ export const initializeTransferInfoController = (connection: ConnectionHandler, 
     };
 
     events.on("action_toggle_finished_transfers", event => {
-        settings.changeGlobal(Settings.KEY_TRANSFERS_SHOW_FINISHED, event.visible);
+        settings.setValue(Settings.KEY_TRANSFERS_SHOW_FINISHED, event.visible);
     });
 
     events.on("action_remove_finished", () => {
@@ -93,7 +93,7 @@ export const initializeTransferInfoController = (connection: ConnectionHandler, 
         events.fire_react("query_transfer_result", {
             status: "success",
             transfers: transfers,
-            showFinished: settings.global(Settings.KEY_TRANSFERS_SHOW_FINISHED)
+            showFinished: settings.getValue(Settings.KEY_TRANSFERS_SHOW_FINISHED)
         });
     });
 

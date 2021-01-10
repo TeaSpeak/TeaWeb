@@ -42,7 +42,7 @@ export class ChannelConversation extends AbstractChat<ChannelConversationEvents>
         this.conversationId = id;
 
         this.preventUnreadUpdate = true;
-        const unreadTimestamp = handle.connection.settings.server(Settings.FN_CHANNEL_CHAT_READ(id), Date.now());
+        const unreadTimestamp = handle.connection.settings.getValue(Settings.FN_CHANNEL_CHAT_READ(id), Date.now());
         this.setUnreadTimestamp(unreadTimestamp);
         this.preventUnreadUpdate = false;
 
@@ -292,7 +292,7 @@ export class ChannelConversation extends AbstractChat<ChannelConversationEvents>
             return;
         }
 
-        this.handle.connection.settings.changeServer(Settings.FN_CHANNEL_CHAT_READ(this.conversationId), timestamp);
+        this.handle.connection.settings.setValue(Settings.FN_CHANNEL_CHAT_READ(this.conversationId), timestamp);
     }
 
     public setConversationMode(mode: ChannelConversationMode, logChange: boolean) {

@@ -81,7 +81,7 @@ export namespace gcaptcha {
 }
 
 function api_url() {
-    return settings.static_global(Settings.KEY_TEAFORO_URL);
+    return settings.getValue(Settings.KEY_TEAFORO_URL);
 }
 
 export class Data {

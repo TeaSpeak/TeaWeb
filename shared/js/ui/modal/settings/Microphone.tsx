@@ -253,7 +253,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
                     break;
 
                 case "rnnoise":
-                    value = settings.static_global(Settings.KEY_RNNOISE_FILTER);
+                    value = settings.getValue(Settings.KEY_RNNOISE_FILTER);
                     break;
 
                 default:
@@ -312,7 +312,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
 
                 case "rnnoise":
                     if (!ensure_type("boolean")) return;
-                    settings.changeGlobal(Settings.KEY_RNNOISE_FILTER, event.value);
+                    settings.setValue(Settings.KEY_RNNOISE_FILTER, event.value);
                     break;
 
                 default:

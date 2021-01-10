@@ -89,7 +89,7 @@ if(!$.fn.dividerfy) {
                 apply_view(property, previous_p, next_p);
 
                 if(seperator_id)
-                    settings.changeGlobal(Settings.FN_SEPARATOR_STATE(seperator_id), JSON.stringify({
+                    settings.setValue(Settings.FN_SEPARATOR_STATE(seperator_id), JSON.stringify({
                         previous: previous_p,
                         next: next_p,
                         property: property
@@ -130,7 +130,7 @@ if(!$.fn.dividerfy) {
 
             if(seperator_id) {
                 try {
-                    const config = JSON.parse(settings.global(Settings.FN_SEPARATOR_STATE(seperator_id), undefined));
+                    const config = JSON.parse(settings.getValue(Settings.FN_SEPARATOR_STATE(seperator_id), undefined));
                     if(config) {
                         log.debug(LogCategory.GENERAL, tr("Applying previous changed sperator settings for %s: %o"), seperator_id, config);
                         apply_view(config.property, config.previous, config.next);

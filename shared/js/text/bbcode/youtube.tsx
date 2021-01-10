@@ -7,7 +7,7 @@ import {BBCodeRenderer} from "tc-shared/text/bbcode";
 import {HTMLRenderer} from "tc-shared/ui/react-elements/HTMLRenderer";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
-import {copy_to_clipboard} from "tc-shared/utils/helpers";
+import {copyToClipboard} from "tc-shared/utils/helpers";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {server_connections} from "tc-shared/ConnectionManager";
 
@@ -61,7 +61,7 @@ export const YoutubeRenderer = (props: { children?: React.ReactElement | React.R
                     type: contextmenu.MenuEntryType.ENTRY,
                     icon_class: "client-browse-addon-online"
                 }, contextmenu.Entry.HR(), {
-                    callback: () => copy_to_clipboard(props.url),
+                    callback: () => copyToClipboard(props.url),
                     name: tr("Copy video URL to clipboard"),
                     type: contextmenu.MenuEntryType.ENTRY,
                     icon_class: "client-copy"

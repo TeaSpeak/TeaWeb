@@ -1089,7 +1089,7 @@ const ContainerSimpleSettings = React.memo(() => {
 });
 
 const SettingsContainer = React.memo(() => {
-    const [ advancedEnabled, setAdvancedEnabled ] = useState(settings.static_global(Settings.KEY_CHANNEL_EDIT_ADVANCED));
+    const [ advancedEnabled, setAdvancedEnabled ] = useState(settings.getValue(Settings.KEY_CHANNEL_EDIT_ADVANCED));
     useEffect(() => settings.globalChangeListener(Settings.KEY_CHANNEL_EDIT_ADVANCED, newValue => setAdvancedEnabled(newValue)));
 
     return (
@@ -1105,7 +1105,7 @@ const SettingsContainer = React.memo(() => {
 });
 
 const ButtonToggleAdvanced = React.memo(() => {
-    const [ advancedEnabled, setAdvancedEnabled ] = useState(settings.static_global(Settings.KEY_CHANNEL_EDIT_ADVANCED));
+    const [ advancedEnabled, setAdvancedEnabled ] = useState(settings.getValue(Settings.KEY_CHANNEL_EDIT_ADVANCED));
 
     settings.globalChangeListener(Settings.KEY_CHANNEL_EDIT_ADVANCED, newValue => setAdvancedEnabled(newValue));
 
@@ -1114,7 +1114,7 @@ const ButtonToggleAdvanced = React.memo(() => {
             className={cssStyle.advancedSwitch}
             value={advancedEnabled}
             label={<Translatable>Advanced mode</Translatable>}
-            onChange={newState => settings.changeGlobal(Settings.KEY_CHANNEL_EDIT_ADVANCED, newState)}
+            onChange={newState => settings.setValue(Settings.KEY_CHANNEL_EDIT_ADVANCED, newState)}
         />
     )
 });

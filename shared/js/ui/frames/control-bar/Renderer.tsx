@@ -279,7 +279,7 @@ const VideoButton = (props: { type: VideoBroadcastType }) => {
             let dropdownText = props.type === "camera" ? tr("Start video broadcasting") : tr("Start screen sharing");
             return (
                 <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={icon}
-                        onToggle={() => events.fire("action_toggle_video", {enable: true, broadcastType: props.type, quickStart: settings.static_global(Settings.KEY_VIDEO_QUICK_SETUP)})}
+                        onToggle={() => events.fire("action_toggle_video", {enable: true, broadcastType: props.type, quickStart: settings.getValue(Settings.KEY_VIDEO_QUICK_SETUP)})}
                         tooltip={tooltip} key={"enable"}>
                     <DropdownEntry icon={icon} text={dropdownText} onClick={() => events.fire("action_toggle_video", {enable: true, broadcastType: props.type})} />
                     {props.type === "camera" ? <VideoDeviceList key={"list"} /> : null}

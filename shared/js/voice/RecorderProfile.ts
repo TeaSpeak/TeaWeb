@@ -101,7 +101,7 @@ export class RecorderProfile {
         {
             let config = {};
             try {
-                config = settings.static_global(Settings.FN_PROFILE_RECORD(this.name), {}) as RecorderProfileConfig;
+                config = settings.getValue(Settings.FN_PROFILE_RECORD(this.name), {}) as RecorderProfileConfig;
             } catch (error) {
                 logWarn(LogCategory.AUDIO, tr("Failed to load old recorder profile config for %s"), this.name);
             }
@@ -175,7 +175,7 @@ export class RecorderProfile {
 
     private save() {
         if(!this.volatile) {
-            settings.changeGlobal(Settings.FN_PROFILE_RECORD(this.name), this.config);
+            settings.setValue(Settings.FN_PROFILE_RECORD(this.name), this.config);
         }
     }
 

@@ -221,7 +221,7 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
                     this.channelTree.client.getChannelConversations().setSelectedConversation(this.channelTree.client.getChannelConversations().findOrCreateConversation(0));
                     this.channelTree.client.getSideBar().showServer();
                 },
-                visible: !settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)
+                visible: !settings.getValue(Settings.KEY_SWITCH_INSTANT_CHAT)
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-virtualserver_edit",

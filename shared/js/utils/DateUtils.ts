@@ -25,7 +25,7 @@ export function same_day(a: number | Date, b: number | Date) {
 }
 
 export function date_format(date: Date, now: Date, ignore_settings?: boolean) : ColloquialFormat {
-    if(!ignore_settings && !settings.static_global(Settings.KEY_CHAT_COLLOQUIAL_TIMESTAMPS))
+    if(!ignore_settings && !settings.getValue(Settings.KEY_CHAT_COLLOQUIAL_TIMESTAMPS))
         return ColloquialFormat.GENERAL;
 
     if(dateEqual(date, now))
@@ -87,7 +87,7 @@ export function format_chat_time(date: Date) : {
         next_update: 0
     };
 
-    if(settings.static_global(Settings.KEY_CHAT_FIXED_TIMESTAMPS)) {
+    if(settings.getValue(Settings.KEY_CHAT_FIXED_TIMESTAMPS)) {
         const format = format_date_colloquial(date, current_timestamp);
         result.result = format.result;
         result.next_update = 0; /* TODO: Update on day change? */

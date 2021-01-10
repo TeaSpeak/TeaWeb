@@ -175,7 +175,7 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     function: async () => {
         const backend = getRecorderBackend();
         if(backend.isRnNoiseSupported()) {
-            getRecorderBackend().toggleRnNoise(settings.static_global(Settings.KEY_RNNOISE_FILTER));
+            getRecorderBackend().toggleRnNoise(settings.getValue(Settings.KEY_RNNOISE_FILTER));
             settings.globalChangeListener(Settings.KEY_RNNOISE_FILTER, value => getRecorderBackend().toggleRnNoise(value));
         }
     }

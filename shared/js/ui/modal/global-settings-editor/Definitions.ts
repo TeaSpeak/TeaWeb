@@ -1,9 +1,9 @@
-import {ConfigValueTypeNames} from "tc-shared/settings";
+import {RegistryValueTypeNames} from "tc-shared/settings";
 
 export interface Setting {
     key: string;
 
-    type: ConfigValueTypeNames;
+    type: RegistryValueTypeNames;
 
     description: string | undefined;
     defaultValue: any | undefined;

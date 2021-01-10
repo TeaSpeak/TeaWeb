@@ -248,13 +248,13 @@ export class ConnectionHandler {
     }
 
     initialize_client_state(source?: ConnectionHandler) {
-        this.client_status.input_muted = source ? source.client_status.input_muted : settings.global(Settings.KEY_CLIENT_STATE_MICROPHONE_MUTED);
-        this.client_status.output_muted = source ? source.client_status.output_muted : settings.global(Settings.KEY_CLIENT_STATE_SPEAKER_MUTED);
+        this.client_status.input_muted = source ? source.client_status.input_muted : settings.getValue(Settings.KEY_CLIENT_STATE_MICROPHONE_MUTED);
+        this.client_status.output_muted = source ? source.client_status.output_muted : settings.getValue(Settings.KEY_CLIENT_STATE_SPEAKER_MUTED);
         this.update_voice_status();
 
-        this.setSubscribeToAllChannels(source ? source.client_status.channel_subscribe_all : settings.global(Settings.KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS));
-        this.doSetAway(source ? source.client_status.away : (settings.global(Settings.KEY_CLIENT_STATE_AWAY) ? settings.global(Settings.KEY_CLIENT_AWAY_MESSAGE) : false), false);
-        this.setQueriesShown(source ? source.client_status.queries_visible : settings.global(Settings.KEY_CLIENT_STATE_QUERY_SHOWN));
+        this.setSubscribeToAllChannels(source ? source.client_status.channel_subscribe_all : settings.getValue(Settings.KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS));
+        this.doSetAway(source ? source.client_status.away : (settings.getValue(Settings.KEY_CLIENT_STATE_AWAY) ? settings.getValue(Settings.KEY_CLIENT_AWAY_MESSAGE) : false), false);
+        this.setQueriesShown(source ? source.client_status.queries_visible : settings.getValue(Settings.KEY_CLIENT_STATE_QUERY_SHOWN));
     }
 
     events() : Registry<ConnectionEvents> {
@@ -457,7 +457,7 @@ export class ConnectionHandler {
                 control_bar.apply_server_voice_state();
             */
 
-            if(__build.target === "web" && settings.static_global(Settings.KEY_VOICE_ECHO_TEST_ENABLED)) {
+            if(__build.target === "web" && settings.getValue(Settings.KEY_VOICE_ECHO_TEST_ENABLED)) {
                 this.serverFeatures.awaitFeatures().then(result => {
                     if(!result) {
                         return;

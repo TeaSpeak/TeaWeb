@@ -247,7 +247,7 @@ const WatcherList = (props: { events: Registry<VideoViewerEvents>, handlerId: st
 };
 
 const ToggleSidebarButton = (props: { events: Registry<VideoViewerEvents> }) => {
-    const [ visible, setVisible ] = useState(settings.global(Settings.KEY_W2G_SIDEBAR_COLLAPSED));
+    const [ visible, setVisible ] = useState(settings.getValue(Settings.KEY_W2G_SIDEBAR_COLLAPSED));
 
     props.events.reactUse("action_toggle_side_bar", event => setVisible(!event.shown));
 
@@ -272,7 +272,7 @@ const ButtonUnfollow = (props: { events: Registry<VideoViewerEvents> }) => {
 };
 
 const Sidebar = (props: { events: Registry<VideoViewerEvents>, handlerId: string }) => {
-    const [ visible, setVisible ] = useState(!settings.global(Settings.KEY_W2G_SIDEBAR_COLLAPSED));
+    const [ visible, setVisible ] = useState(!settings.getValue(Settings.KEY_W2G_SIDEBAR_COLLAPSED));
 
     props.events.reactUse("action_toggle_side_bar", event => setVisible(event.shown));
 

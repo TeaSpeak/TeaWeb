@@ -86,11 +86,11 @@ class ConnectController {
         this.history = undefined;
 
         this.defaultAddress = "ts.teaspeak.de";
-        this.historyShown = settings.static_global(Settings.KEY_CONNECT_SHOW_HISTORY);
+        this.historyShown = settings.getValue(Settings.KEY_CONNECT_SHOW_HISTORY);
 
-        this.currentAddress = settings.static_global(Settings.KEY_CONNECT_ADDRESS);
-        this.currentProfile = findConnectProfile(settings.static_global(Settings.KEY_CONNECT_PROFILE)) || defaultConnectProfile();
-        this.currentNickname = settings.static_global(Settings.KEY_CONNECT_USERNAME);
+        this.currentAddress = settings.getValue(Settings.KEY_CONNECT_ADDRESS);
+        this.currentProfile = findConnectProfile(settings.getValue(Settings.KEY_CONNECT_PROFILE)) || defaultConnectProfile();
+        this.currentNickname = settings.getValue(Settings.KEY_CONNECT_USERNAME);
 
         this.addressChanged = false;
         this.nicknameChanged = false;
@@ -178,7 +178,7 @@ class ConnectController {
 
             this.historyShown = event.enabled;
             this.sendProperty("historyShown").then(undefined);
-            settings.changeGlobal(Settings.KEY_CONNECT_SHOW_HISTORY, event.enabled);
+            settings.setValue(Settings.KEY_CONNECT_SHOW_HISTORY, event.enabled);
         });
 
 
@@ -214,7 +214,7 @@ class ConnectController {
         this.uiEvents.on("action_set_nickname", event => {
             if(this.currentNickname !== event.nickname) {
                 this.currentNickname = event.nickname;
-                settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, event.nickname);
+                settings.setValue(Settings.KEY_CONNECT_USERNAME, event.nickname);
 
                 if(event.updateUi) {
                     this.sendProperty("nickname").then(undefined);
@@ -297,7 +297,7 @@ class ConnectController {
     setSelectedAddress(address: string | undefined, validate: boolean, updateUi: boolean) {
         if(this.currentAddress !== address) {
             this.currentAddress = address;
-            settings.changeGlobal(Settings.KEY_CONNECT_ADDRESS, address);
+            settings.setValue(Settings.KEY_CONNECT_ADDRESS, address);
             this.setSelectedHistoryId(-1);
 
             if(updateUi) {
@@ -316,7 +316,7 @@ class ConnectController {
 
         this.currentProfile = profile;
         this.sendProperty("profiles").then(undefined);
-        settings.changeGlobal(Settings.KEY_CONNECT_PROFILE, profile.id);
+        settings.setValue(Settings.KEY_CONNECT_PROFILE, profile.id);
 
         /* Clear out the nickname on profile switch and use the default nickname */
         this.uiEvents.fire("action_set_nickname", { nickname: undefined, validate: true, updateUi: true });

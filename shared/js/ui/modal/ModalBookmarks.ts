@@ -291,7 +291,7 @@ export function spawnBookmarkModal() {
                 button_connect_tab.on('click', () => {
                     boorkmak_connect(selected_bookmark as Bookmark, true);
                     modal.close();
-                }).toggle(!settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION));
+                }).toggle(!settings.getValue(Settings.KEY_DISABLE_MULTI_SESSION));
 
                 button_connect.on('click', () => {
                     boorkmak_connect(selected_bookmark as Bookmark, false);

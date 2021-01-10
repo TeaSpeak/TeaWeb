@@ -10,7 +10,7 @@ import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
-import {copy_to_clipboard} from "tc-shared/utils/helpers";
+import {copyToClipboard} from "tc-shared/utils/helpers";
 import {FlatInputField} from "tc-shared/ui/react-elements/InputField";
 import {arrayBufferBase64} from "tc-shared/utils/buffers";
 import {tra} from "tc-shared/i18n/localize";
@@ -513,7 +513,7 @@ class ServerClientList extends React.Component<{ connection: ConnectionHandler, 
                                 type: contextmenu.MenuEntryType.ENTRY,
                                 name: tr("Copy unique id"),
                                 icon_class: 'client-copy',
-                                callback: () => copy_to_clipboard(client.uniqueId)
+                                callback: () => copyToClipboard(client.uniqueId)
                             }, contextmenu.Entry.HR(), {
                                 type: contextmenu.MenuEntryType.ENTRY,
                                 name: tr("Refresh"),

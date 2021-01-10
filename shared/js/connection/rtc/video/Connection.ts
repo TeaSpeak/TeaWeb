@@ -365,7 +365,7 @@ export class RtpVideoConnection implements VideoConnection {
                         client.setBroadcastId("camera", undefined);
                     });
 
-                    if(settings.static_global(Settings.KEY_STOP_VIDEO_ON_SWITCH)) {
+                    if(settings.getValue(Settings.KEY_STOP_VIDEO_ON_SWITCH)) {
                         Object.values(this.broadcasts).forEach(broadcast => broadcast.stopBroadcasting());
                     } else {
                         /* The server stops broadcasting by default, we've to reenable it */

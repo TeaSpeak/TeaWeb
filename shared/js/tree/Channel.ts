@@ -222,8 +222,8 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
             });
         });
 
-        this.collapsed = this.channelTree.client.settings.server(Settings.FN_SERVER_CHANNEL_COLLAPSED(this.channelId));
-        this.subscriptionMode = this.channelTree.client.settings.server(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId));
+        this.collapsed = this.channelTree.client.settings.getValue(Settings.FN_SERVER_CHANNEL_COLLAPSED(this.channelId));
+        this.subscriptionMode = this.channelTree.client.settings.getValue(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId));
 
         this.channelDescriptionCached = false;
         this.channelDescriptionCallback = [];
@@ -452,7 +452,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                     this.channelTree.client.getChannelConversations().setSelectedConversation(conversation);
                     this.channelTree.client.getSideBar().showChannel();
                 },
-                visible: !settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)
+                visible: !settings.getValue(Settings.KEY_SWITCH_INSTANT_CHAT)
             }, {
                 type: contextmenu.MenuEntryType.HR,
                 name: ''
@@ -776,7 +776,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
         this.collapsed = flag;
         this.events.fire("notify_collapsed_state_changed", { collapsed: flag });
-        this.channelTree.client.settings.changeServer(Settings.FN_SERVER_CHANNEL_COLLAPSED(this.channelId), flag);
+        this.channelTree.client.settings.setValue(Settings.FN_SERVER_CHANNEL_COLLAPSED(this.channelId), flag);
     }
 
     isSubscribed() : boolean {
@@ -803,7 +803,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         }
 
         this.subscriptionMode = mode;
-        this.channelTree.client.settings.changeServer(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId), mode);
+        this.channelTree.client.settings.setValue(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId), mode);
         if(!dontSyncSubscribeMode) {
             this.updateSubscribeMode().then(undefined);
         }

@@ -5,19 +5,18 @@ import {Stage} from "tc-loader";
 import {Registry} from "./events";
 import { tr } from "./i18n/localize";
 
-export type ConfigValueTypes = boolean | number | string | object;
-export type ConfigValueTypeNames = "boolean" | "number" | "string" | "object";
+export type RegistryValueType = boolean | number | string | object;
+export type RegistryValueTypeNames = "boolean" | "number" | "string" | "object";
 
-export type ValueTypeMapping<T> = T extends boolean ? "boolean" :
-                                   T extends number ? "number" :
-                                   T extends string ? "string" :
-                                   T extends object ? "object" : never;
+export type RegistryValueTypeMapping<T> = T extends boolean ? "boolean" :
+                                  T extends number ? "number" :
+                                  T extends string ? "string" :
+                                  T extends object ? "object" :
+                                  never;
 
-export interface SettingsKey<ValueType extends ConfigValueTypes> {
+export interface RegistryKey<ValueType extends RegistryValueType> {
     key: string;
-    valueType: ValueTypeMapping<ValueType>;
-
-    defaultValue?: ValueType;
+    valueType: RegistryValueTypeMapping<ValueType>;
 
     fallbackKeys?: string | string[];
     fallbackImports?: {[key: string]:(value: string) => ValueType};
@@ -27,111 +26,96 @@ export interface SettingsKey<ValueType extends ConfigValueTypes> {
     requireRestart?: boolean;
 }
 
-export interface ValuedSettingsKey<ValueType extends ConfigValueTypes> extends SettingsKey<ValueType> {
+export interface ValuedRegistryKey<ValueType extends RegistryValueType> extends RegistryKey<ValueType> {
     defaultValue: ValueType;
 }
 
-const kNoValuePresent = "--- no value present ---";
+const UPDATE_DIRECT: boolean = true;
 
-export class SettingsBase {
-    protected static readonly UPDATE_DIRECT: boolean = true;
+function decodeValueFromString<T extends RegistryValueType>(input: string, type: RegistryValueTypeMapping<T>) : T {
+    switch (type) {
+        case "string":
+            return input as any;
 
-    protected static decodeValueFromString<T extends ConfigValueTypes, DT>(input: string | undefined, type: ConfigValueTypeNames, defaultValue: DT) : T | DT {
-        if(input === undefined || input === null)
-            return defaultValue;
+        case "boolean":
+            return (input === "1" || input === "true") as any;
 
-        switch (type) {
-            case "string":
-                return input as any;
+        case "number":
+            return parseFloat(input) as any;
 
-            case "boolean":
-                return (input === "1" || input === "true") as any;
-
-            case "number":
-                return parseFloat(input) as any;
-
-            case "object":
-                try {
-                    return JSON.parse(input);
-                } catch (error) {
-                    return {} as any;
-                }
-
-            default:
-                return defaultValue;
-        }
-    }
-    protected static encodeValueToString<T extends ConfigValueTypes>(input: T | undefined) : string | undefined {
-        if(input === undefined || input === null)
-            return undefined;
-
-        switch (typeof input) {
-            case "string":
-                return input;
-
-            case "boolean":
-                return input ? "1" : "0";
-
-            case "number":
-                return input.toString();
-
-            case "object":
-                return JSON.stringify(input);
-
-            default:
-                return undefined;
-        }
-    }
-
-    protected static resolveKey<ValueType extends ConfigValueTypes,
-                                DefaultType>(key: SettingsKey<ValueType>,
-                                                                    resolver: (key: string) => string | undefined,
-                                                                    defaultValueType: ConfigValueTypeNames,
-                                                                    defaultValue: DefaultType) : ValueType | DefaultType {
-        let value = resolver(key.key);
-        if(value === undefined && key.fallbackKeys) {
-            /* trying fallback values */
-            for(const fallback of key.fallbackKeys) {
-                value = resolver(fallback);
-                if(value === undefined)
-                    continue;
-
-                if(!key.fallbackImports)
-                    break;
-
-                /* fallback key succeeded */
-                const fallbackValueImporter = key.fallbackImports[fallback];
-                if(fallbackValueImporter)
-                    return fallbackValueImporter(value);
-                break;
+        case "object":
+            try {
+                return JSON.parse(input);
+            } catch (error) {
+                return {} as any;
             }
-        }
 
-        return this.decodeValueFromString(value, defaultValueType, defaultValue) as any;
+        default:
+            throw "value not decodable";
     }
 }
 
-export class StaticSettings extends SettingsBase {
-    private static _instance: StaticSettings;
-    static get instance() : StaticSettings {
-        if(!this._instance)
-            this._instance = new StaticSettings(true);
-        return this._instance;
+function encodeValueToString<T extends RegistryValueType>(input: T) : string {
+    switch (typeof input) {
+        case "string":
+            return input;
+
+        case "boolean":
+            return input ? "1" : "0";
+
+        case "number":
+            return input.toString();
+
+        case "object":
+            return JSON.stringify(input);
+
+        default:
+            throw "value has invalid type";
+    }
+}
+
+function resolveKey<ValueType extends RegistryValueType, DefaultType>(
+    key: RegistryKey<ValueType>,
+    resolver: (key: string) => string | undefined,
+    defaultValue: DefaultType
+) : ValueType | DefaultType {
+
+    let value = resolver(key.key);
+    if(typeof value === "string") {
+        return this.decodeValueFromString(value, key.valueType);
     }
 
-    protected _handle: StaticSettings;
-    protected staticValues = {};
-
-    protected constructor(_reserved = undefined) {
-        super();
-        if(_reserved && !StaticSettings._instance) {
-            this.initializeStatic();
-        } else {
-            this._handle = StaticSettings.instance;
+    /* trying fallback values */
+    for(const fallback of key.fallbackKeys) {
+        value = resolver(fallback);
+        if(typeof value !== "string") {
+            continue;
         }
+
+        if(!key.fallbackImports) {
+            break;
+        }
+
+        /* fallback key succeeded */
+        const fallbackValueImporter = key.fallbackImports[fallback];
+        if(fallbackValueImporter) {
+            return fallbackValueImporter(value);
+        }
+
+        break;
     }
 
-    private initializeStatic() {
+    return defaultValue;
+}
+
+/**
+ * Switched appended to the application via the URL.
+ * TODO: Passing native client switches
+ */
+export namespace AppParameters {
+    const parameters = {};
+
+    function parseParameters() {
         let search;
         if(window.opener && window.opener !== window) {
             search = new URL(window.location.href).search;
@@ -145,15 +129,130 @@ export class StaticSettings extends SettingsBase {
         });
     }
 
-    static<V extends ConfigValueTypes, DV>(key: SettingsKey<V>, defaultValue: DV) : V | DV;
-    static<V extends ConfigValueTypes>(key: ValuedSettingsKey<V>, defaultValue?: V) : V;
+    export function getValue<V extends RegistryValueType, DV>(key: RegistryKey<V>, defaultValue: DV) : V | DV;
+    export function getValue<V extends RegistryValueType>(key: ValuedRegistryKey<V>, defaultValue?: V) : V;
+    export function getValue<V extends RegistryValueType, DV>(key: RegistryKey<V> | ValuedRegistryKey<V>, defaultValue: DV) : V | DV {
+        if(arguments.length > 1) {
+            return resolveKey(key, key => parameters[key], defaultValue);
+        } else if("defaultValue" in key) {
+            return resolveKey(key, key => parameters[key], key.defaultValue);
+        } else {
+            throw tr("missing value");
+        }
+    }
 
-    static<V extends ConfigValueTypes, DV>(key: SettingsKey<V>, defaultValue: DV) : V | DV {
-        if(this._handle) {
-            return this._handle.static<V, DV>(key, defaultValue);
+    parseParameters();
+}
+
+export namespace AppParameters {
+    export const KEY_CONNECT_ADDRESS: RegistryKey<string> = {
+        key: "ca",
+        fallbackKeys: ["connect_address"],
+        valueType: "string",
+        description: "A target address to automatically connect to."
+    };
+
+
+    export const KEY_CONNECT_NO_SINGLE_INSTANCE: ValuedRegistryKey<boolean> = {
+        key: "cnsi",
+        fallbackKeys: ["connect_no_single_instance"],
+        defaultValue: false,
+        valueType: "boolean",
+    };
+
+    export const KEY_CONNECT_TYPE: ValuedRegistryKey<number> = {
+        key: "ct",
+        fallbackKeys: ["connect_type"],
+        valueType: "number",
+        defaultValue: 0,
+        description: "Connection establish type for automatic connect attempts.\n0 = Connect directly\n1 = Open connect modal"
+    };
+
+    export const KEY_CONNECT_NICKNAME: RegistryKey<string> = {
+        key: "cn",
+        fallbackKeys: ["connect_username"],
+        valueType: "string"
+    };
+
+    export const KEY_CONNECT_TOKEN: RegistryKey<string> = {
+        key: "ctk",
+        fallbackKeys: ["connect_token"],
+        valueType: "string",
+        description: "Token which will be used by default if the connection attempt succeeded."
+    };
+
+    export const KEY_CONNECT_PROFILE: RegistryKey<string> = {
+        key: "cp",
+        fallbackKeys: ["connect_profile"],
+        valueType: "string",
+        description: "The profile which should be used upon connect attempt."
+    };
+
+    export const KEY_CONNECT_SERVER_PASSWORD: RegistryKey<string> = {
+        key: "csp",
+        fallbackKeys: ["connect_server_password"],
+        valueType: "string",
+        description: "The password (hashed) for the auto connect attempt."
+    };
+
+    export const KEY_CONNECT_CHANNEL: RegistryKey<string> = {
+        key: "cc",
+        fallbackKeys: ["connect_channel"],
+        valueType: "string",
+        description: "The target channel for the connect attempt."
+    };
+
+    export const KEY_CONNECT_CHANNEL_PASSWORD: RegistryKey<string> = {
+        key: "ccp",
+        fallbackKeys: ["connect_channel_password"],
+        valueType: "string",
+        description: "The target channel password (hashed) for the connect attempt."
+    };
+
+
+    export const KEY_IPC_REMOTE_ADDRESS: RegistryKey<string> = {
+        key: "ipc-address",
+        valueType: "string",
+        description: "Address of the owner for IPC communication."
+    };
+
+    export const KEY_MODAL_TARGET: RegistryKey<string> = {
+        key: "modal-target",
+        valueType: "string",
+        description: "Target modal unique id which should be loaded"
+    };
+
+    export const KEY_LOAD_DUMMY_ERROR: ValuedRegistryKey<boolean> = {
+        key: "dummy_load_error",
+        description: "Triggers a loading error at the end of the loading process.",
+        valueType: "boolean",
+        defaultValue: false
+    };
+}
+
+export class StaticSettings {
+    private static _instance: StaticSettings;
+    static get instance() : StaticSettings {
+        if(!this._instance) {
+            this._instance = new StaticSettings(true);
         }
 
-        return StaticSettings.resolveKey(key, key => this.staticValues[key], key.valueType, arguments.length > 1 ? defaultValue : key.defaultValue);
+        return this._instance;
+    }
+
+    protected staticValues = {};
+
+    protected constructor(_reserved = undefined) { }
+
+    static<V extends RegistryValueType, DV>(key: RegistryKey<V>, defaultValue: DV) : V | DV;
+    static<V extends RegistryValueType>(key: ValuedRegistryKey<V>, defaultValue?: V) : V;
+
+    static<V extends RegistryValueType, DV>(key: RegistryKey<V> | ValuedRegistryKey<V>, defaultValue: DV) : V | DV {
+        if(arguments.length > 1) {
+            return AppParameters.getValue(key, defaultValue);
+        } else {
+            return AppParameters.getValue(key as ValuedRegistryKey<V>);
+        }
     }
 }
 
@@ -169,421 +268,411 @@ export interface SettingsEvents {
     }
 }
 
-export class Settings extends StaticSettings {
-    static readonly KEY_USER_IS_NEW: ValuedSettingsKey<boolean> = {
-        key: 'user_is_new_user',
+export class Settings {
+    static readonly KEY_USER_IS_NEW: ValuedRegistryKey<boolean> = {
+        key: "user_is_new_user",
         valueType: "boolean",
         defaultValue: true
     };
 
-    static readonly KEY_LOG_LEVEL: SettingsKey<number> = {
-        key: 'log.level',
+    static readonly KEY_LOG_LEVEL: RegistryKey<number> = {
+        key: "log.level",
         valueType: "number"
     };
 
-    static readonly KEY_DISABLE_COSMETIC_SLOWDOWN: ValuedSettingsKey<boolean> = {
-        key: 'disable_cosmetic_slowdown',
-        description: 'Disable the cosmetic slowdows in some processes, like icon upload.',
+    static readonly KEY_DISABLE_COSMETIC_SLOWDOWN: ValuedRegistryKey<boolean> = {
+        key: "disable_cosmetic_slowdown",
+        description: "Disable the cosmetic slowdows in some processes, like icon upload.",
         valueType: "boolean",
         defaultValue: false
     };
 
-    static readonly KEY_DISABLE_CONTEXT_MENU: ValuedSettingsKey<boolean> = {
-        key: 'disableContextMenu',
-        description: 'Disable the context menu for the channel tree which allows to debug the DOM easier',
+    static readonly KEY_DISABLE_CONTEXT_MENU: ValuedRegistryKey<boolean> = {
+        key: "disableContextMenu",
+        description: "Disable the context menu for the channel tree which allows to debug the DOM easier",
         defaultValue: false,
         valueType: "boolean",
     };
 
-    static readonly KEY_DISABLE_GLOBAL_CONTEXT_MENU: ValuedSettingsKey<boolean> = {
-        key: 'disableGlobalContextMenu',
-        description: 'Disable the general context menu',
+    static readonly KEY_DISABLE_GLOBAL_CONTEXT_MENU: ValuedRegistryKey<boolean> = {
+        key: "disableGlobalContextMenu",
+        description: "Disable the general context menu",
         defaultValue: true,
         valueType: "boolean",
     };
 
-    static readonly KEY_DISABLE_UNLOAD_DIALOG: ValuedSettingsKey<boolean> = {
-        key: 'disableUnloadDialog',
-        description: 'Disables the unload popup on side closing',
+    static readonly KEY_DISABLE_UNLOAD_DIALOG: ValuedRegistryKey<boolean> = {
+        key: "disableUnloadDialog",
+        description: "Disables the unload popup on side closing",
         valueType: "boolean",
         defaultValue: false
     };
-    static readonly KEY_DISABLE_VOICE: ValuedSettingsKey<boolean> = {
-        key: 'disableVoice',
-        description: 'Disables the voice bridge. If disabled, the audio and codec workers aren\'t required anymore',
+
+    static readonly KEY_DISABLE_VOICE: ValuedRegistryKey<boolean> = {
+        key: "disableVoice",
+        description: "Disables the voice bridge. If disabled, the audio and codec workers aren\'t required anymore",
         valueType: "boolean",
         defaultValue: false
     };
-    static readonly KEY_DISABLE_MULTI_SESSION: ValuedSettingsKey<boolean> = {
-        key: 'disableMultiSession',
+
+    static readonly KEY_DISABLE_MULTI_SESSION: ValuedRegistryKey<boolean> = {
+        key: "disableMultiSession",
         defaultValue: false,
         requireRestart: true,
         valueType: "boolean",
     };
 
-    static readonly KEY_LOAD_DUMMY_ERROR: ValuedSettingsKey<boolean> = {
-        key: 'dummy_load_error',
-        description: 'Triggers a loading error at the end of the loading process.',
-        valueType: "boolean",
-        defaultValue: false
-    };
-
-    static readonly KEY_I18N_DEFAULT_REPOSITORY: ValuedSettingsKey<string> = {
-        key: 'i18n.default_repository',
+    static readonly KEY_I18N_DEFAULT_REPOSITORY: ValuedRegistryKey<string> = {
+        key: "i18n.default_repository",
         valueType: "string",
         defaultValue: "https://web.teaspeak.de/i18n/"
     };
 
     /* Default client states */
-    static readonly KEY_CLIENT_STATE_MICROPHONE_MUTED: ValuedSettingsKey<boolean> = {
-        key: 'client_state_microphone_muted',
+    static readonly KEY_CLIENT_STATE_MICROPHONE_MUTED: ValuedRegistryKey<boolean> = {
+        key: "client_state_microphone_muted",
         defaultValue: false,
         fallbackKeys: ["mute_input"],
         valueType: "boolean",
     };
 
-    static readonly KEY_CLIENT_STATE_SPEAKER_MUTED: ValuedSettingsKey<boolean> = {
-        key: 'client_state_speaker_muted',
+    static readonly KEY_CLIENT_STATE_SPEAKER_MUTED: ValuedRegistryKey<boolean> = {
+        key: "client_state_speaker_muted",
         defaultValue: false,
         fallbackKeys: ["mute_output"],
         valueType: "boolean",
     };
-    static readonly KEY_CLIENT_STATE_QUERY_SHOWN: ValuedSettingsKey<boolean> = {
-        key: 'client_state_query_shown',
+    static readonly KEY_CLIENT_STATE_QUERY_SHOWN: ValuedRegistryKey<boolean> = {
+        key: "client_state_query_shown",
         defaultValue: false,
         fallbackKeys: ["show_server_queries"],
         valueType: "boolean",
     };
-    static readonly KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS: ValuedSettingsKey<boolean> = {
-        key: 'client_state_subscribe_all_channels',
+    static readonly KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS: ValuedRegistryKey<boolean> = {
+        key: "client_state_subscribe_all_channels",
         defaultValue: true,
         fallbackKeys: ["channel_subscribe_all"],
         valueType: "boolean",
     };
-    static readonly KEY_CLIENT_STATE_AWAY: ValuedSettingsKey<boolean> = {
-        key: 'client_state_away',
+    static readonly KEY_CLIENT_STATE_AWAY: ValuedRegistryKey<boolean> = {
+        key: "client_state_away",
         defaultValue: false,
         valueType: "boolean",
     };
-    static readonly KEY_CLIENT_AWAY_MESSAGE: ValuedSettingsKey<string> = {
-        key: 'client_away_message',
+    static readonly KEY_CLIENT_AWAY_MESSAGE: ValuedRegistryKey<string> = {
+        key: "client_away_message",
         defaultValue: "",
         valueType: "string"
     };
 
     /* Connect parameters */
-    static readonly KEY_FLAG_CONNECT_DEFAULT: ValuedSettingsKey<boolean> = {
-        key: 'connect_default',
+    static readonly KEY_FLAG_CONNECT_DEFAULT: ValuedRegistryKey<boolean> = {
+        key: "connect_default",
         valueType: "boolean",
         defaultValue: false
     };
-    static readonly KEY_CONNECT_ADDRESS: ValuedSettingsKey<string> = {
-        key: 'connect_address',
+    static readonly KEY_CONNECT_ADDRESS: ValuedRegistryKey<string> = {
+        key: "connect_address",
         valueType: "string",
         defaultValue: undefined
     };
-    static readonly KEY_CONNECT_PROFILE: ValuedSettingsKey<string> = {
-        key: 'connect_profile',
-        defaultValue: 'default',
+    static readonly KEY_CONNECT_PROFILE: ValuedRegistryKey<string> = {
+        key: "connect_profile",
+        defaultValue: "default",
         valueType: "string",
     };
-    static readonly KEY_CONNECT_USERNAME: ValuedSettingsKey<string> = {
-        key: 'connect_username',
-        valueType: "string",
-        defaultValue: undefined
-    };
-    static readonly KEY_CONNECT_PASSWORD: ValuedSettingsKey<string> = {
-        key: 'connect_password',
+    static readonly KEY_CONNECT_USERNAME: ValuedRegistryKey<string> = {
+        key: "connect_username",
         valueType: "string",
         defaultValue: undefined
     };
-    static readonly KEY_FLAG_CONNECT_PASSWORD: ValuedSettingsKey<boolean> = {
-        key: 'connect_password_hashed',
+    static readonly KEY_CONNECT_PASSWORD: ValuedRegistryKey<string> = {
+        key: "connect_password",
+        valueType: "string",
+        defaultValue: undefined
+    };
+    static readonly KEY_FLAG_CONNECT_PASSWORD: ValuedRegistryKey<boolean> = {
+        key: "connect_password_hashed",
         valueType: "boolean",
         defaultValue: false
     };
-    static readonly KEY_CONNECT_HISTORY: ValuedSettingsKey<string> = {
-        key: 'connect_history',
+    static readonly KEY_CONNECT_HISTORY: ValuedRegistryKey<string> = {
+        key: "connect_history",
         valueType: "string",
         defaultValue: ""
     };
-    static readonly KEY_CONNECT_SHOW_HISTORY: ValuedSettingsKey<boolean> = {
-        key: 'connect_show_last_servers',
+    static readonly KEY_CONNECT_SHOW_HISTORY: ValuedRegistryKey<boolean> = {
+        key: "connect_show_last_servers",
         valueType: "boolean",
         defaultValue: false
     };
-    static readonly KEY_CONNECT_NO_SINGLE_INSTANCE: ValuedSettingsKey<boolean> = {
-        key: 'connect_no_single_instance',
+
+    static readonly KEY_CONNECT_NO_DNSPROXY: ValuedRegistryKey<boolean> = {
+        key: "connect_no_dnsproxy",
         defaultValue: false,
         valueType: "boolean",
     };
 
-    static readonly KEY_CONNECT_NO_DNSPROXY: ValuedSettingsKey<boolean> = {
-        key: 'connect_no_dnsproxy',
-        defaultValue: false,
-        valueType: "boolean",
-    };
-
-    static readonly KEY_CERTIFICATE_CALLBACK: ValuedSettingsKey<string> = {
-        key: 'certificate_callback',
+    static readonly KEY_CERTIFICATE_CALLBACK: ValuedRegistryKey<string> = {
+        key: "certificate_callback",
         valueType: "string",
         defaultValue: undefined
     };
 
     /* sounds */
-    static readonly KEY_SOUND_MASTER: ValuedSettingsKey<number> = {
-        key: 'audio_master_volume',
+    static readonly KEY_SOUND_MASTER: ValuedRegistryKey<number> = {
+        key: "audio_master_volume",
         defaultValue: 100,
         valueType: "number",
     };
 
-    static readonly KEY_SOUND_MASTER_SOUNDS: ValuedSettingsKey<number> = {
-        key: 'audio_master_volume_sounds',
+    static readonly KEY_SOUND_MASTER_SOUNDS: ValuedRegistryKey<number> = {
+        key: "audio_master_volume_sounds",
         defaultValue: 100,
         valueType: "number",
     };
 
-    static readonly KEY_SOUND_VOLUMES: SettingsKey<string> = {
-        key: 'sound_volume',
+    static readonly KEY_SOUND_VOLUMES: RegistryKey<string> = {
+        key: "sound_volume",
         valueType: "string",
     };
 
-    static readonly KEY_CHAT_FIXED_TIMESTAMPS: ValuedSettingsKey<boolean> = {
-        key: 'chat_fixed_timestamps',
+    static readonly KEY_CHAT_FIXED_TIMESTAMPS: ValuedRegistryKey<boolean> = {
+        key: "chat_fixed_timestamps",
         defaultValue: false,
-        description: 'Enables fixed timestamps for chat messages and disabled the updating once (2 seconds ago... etc)',
+        description: "Enables fixed timestamps for chat messages and disabled the updating once (2 seconds ago... etc)",
         valueType: "boolean",
     };
 
-    static readonly KEY_CHAT_COLLOQUIAL_TIMESTAMPS: ValuedSettingsKey<boolean> = {
-        key: 'chat_colloquial_timestamps',
+    static readonly KEY_CHAT_COLLOQUIAL_TIMESTAMPS: ValuedRegistryKey<boolean> = {
+        key: "chat_colloquial_timestamps",
         defaultValue: true,
-        description: 'Enabled colloquial timestamp formatting like "Yesterday at ..." or "Today at ..."',
+        description: "Enabled colloquial timestamp formatting like \"Yesterday at ...\" or \"Today at ...\"",
         valueType: "boolean",
     };
 
-    static readonly KEY_CHAT_COLORED_EMOJIES: ValuedSettingsKey<boolean> = {
-        key: 'chat_colored_emojies',
+    static readonly KEY_CHAT_COLORED_EMOJIES: ValuedRegistryKey<boolean> = {
+        key: "chat_colored_emojies",
         defaultValue: true,
-        description: 'Enables colored emojies powered by Twemoji',
+        description: "Enables colored emojies powered by Twemoji",
         valueType: "boolean",
     };
 
-    static readonly KEY_CHAT_HIGHLIGHT_CODE: ValuedSettingsKey<boolean> = {
-        key: 'chat_highlight_code',
+    static readonly KEY_CHAT_HIGHLIGHT_CODE: ValuedRegistryKey<boolean> = {
+        key: "chat_highlight_code",
         defaultValue: true,
-        description: 'Enables code highlighting within the chat (Client restart required)',
+        description: "Enables code highlighting within the chat (Client restart required)",
         valueType: "boolean",
     };
 
-    static readonly KEY_CHAT_TAG_URLS: ValuedSettingsKey<boolean> = {
-        key: 'chat_tag_urls',
+    static readonly KEY_CHAT_TAG_URLS: ValuedRegistryKey<boolean> = {
+        key: "chat_tag_urls",
         defaultValue: true,
-        description: 'Automatically link urls with [url]',
+        description: "Automatically link urls with [url]",
         valueType: "boolean",
     };
 
-    static readonly KEY_CHAT_ENABLE_MARKDOWN: ValuedSettingsKey<boolean> = {
-        key: 'chat_enable_markdown',
+    static readonly KEY_CHAT_ENABLE_MARKDOWN: ValuedRegistryKey<boolean> = {
+        key: "chat_enable_markdown",
         defaultValue: true,
-        description: 'Enabled markdown chat support.',
+        description: "Enabled markdown chat support.",
         valueType: "boolean",
     };
 
-    static readonly KEY_CHAT_ENABLE_BBCODE: ValuedSettingsKey<boolean> = {
-        key: 'chat_enable_bbcode',
+    static readonly KEY_CHAT_ENABLE_BBCODE: ValuedRegistryKey<boolean> = {
+        key: "chat_enable_bbcode",
         defaultValue: false,
-        description: 'Enabled bbcode support in chat.',
+        description: "Enabled bbcode support in chat.",
         valueType: "boolean",
     };
 
-    static readonly KEY_CHAT_IMAGE_WHITELIST_REGEX: ValuedSettingsKey<string> = {
-        key: 'chat_image_whitelist_regex',
+    static readonly KEY_CHAT_IMAGE_WHITELIST_REGEX: ValuedRegistryKey<string> = {
+        key: "chat_image_whitelist_regex",
         defaultValue: JSON.stringify([]),
         valueType: "string",
     };
 
-    static readonly KEY_SWITCH_INSTANT_CHAT: ValuedSettingsKey<boolean> = {
-        key: 'switch_instant_chat',
+    static readonly KEY_SWITCH_INSTANT_CHAT: ValuedRegistryKey<boolean> = {
+        key: "switch_instant_chat",
         defaultValue: true,
-        description: 'Directly switch to channel chat on channel select',
+        description: "Directly switch to channel chat on channel select",
         valueType: "boolean",
     };
 
-    static readonly KEY_SWITCH_INSTANT_CLIENT: ValuedSettingsKey<boolean> = {
-        key: 'switch_instant_client',
+    static readonly KEY_SWITCH_INSTANT_CLIENT: ValuedRegistryKey<boolean> = {
+        key: "switch_instant_client",
         defaultValue: true,
-        description: 'Directly switch to client info on client select',
+        description: "Directly switch to client info on client select",
         valueType: "boolean",
     };
 
-    static readonly KEY_HOSTBANNER_BACKGROUND: ValuedSettingsKey<boolean> = {
-        key: 'hostbanner_background',
+    static readonly KEY_HOSTBANNER_BACKGROUND: ValuedRegistryKey<boolean> = {
+        key: "hostbanner_background",
         defaultValue: false,
-        description: 'Enables a default background begind the hostbanner',
+        description: "Enables a default background begind the hostbanner",
         valueType: "boolean",
     };
 
-    static readonly KEY_CHANNEL_EDIT_ADVANCED: ValuedSettingsKey<boolean> = {
-        key: 'channel_edit_advanced',
+    static readonly KEY_CHANNEL_EDIT_ADVANCED: ValuedRegistryKey<boolean> = {
+        key: "channel_edit_advanced",
         defaultValue: false,
-        description: 'Edit channels in advanced mode with a lot more settings',
+        description: "Edit channels in advanced mode with a lot more settings",
         valueType: "boolean",
     };
 
-    static readonly KEY_PERMISSIONS_SHOW_ALL: ValuedSettingsKey<boolean> = {
-        key: 'permissions_show_all',
+    static readonly KEY_PERMISSIONS_SHOW_ALL: ValuedRegistryKey<boolean> = {
+        key: "permissions_show_all",
         defaultValue: false,
-        description: 'Show all permissions even thou they dont make sense for the server/channel group',
+        description: "Show all permissions even thou they dont make sense for the server/channel group",
         valueType: "boolean",
     };
 
-    static readonly KEY_TEAFORO_URL: ValuedSettingsKey<string> = {
+    static readonly KEY_TEAFORO_URL: ValuedRegistryKey<string> = {
         key: "teaforo_url",
         defaultValue: "https://forum.teaspeak.de/",
         valueType: "string",
     };
 
-    static readonly KEY_FONT_SIZE: ValuedSettingsKey<number> = {
+    static readonly KEY_FONT_SIZE: ValuedRegistryKey<number> = {
         key: "font_size",
         valueType: "number",
         defaultValue: 14  //parseInt(getComputedStyle(document.body).fontSize)
     };
 
-    static readonly KEY_ICON_SIZE: ValuedSettingsKey<number> = {
+    static readonly KEY_ICON_SIZE: ValuedRegistryKey<number> = {
         key: "icon_size",
         defaultValue: 100,
         valueType: "number",
     };
 
-    static readonly KEY_KEYCONTROL_DATA: ValuedSettingsKey<string> = {
+    static readonly KEY_KEYCONTROL_DATA: ValuedRegistryKey<string> = {
         key: "keycontrol_data",
         defaultValue: "{}",
         valueType: "string",
     };
 
-    static readonly KEY_LAST_INVITE_LINK_TYPE: ValuedSettingsKey<string> = {
+    static readonly KEY_LAST_INVITE_LINK_TYPE: ValuedRegistryKey<string> = {
         key: "last_invite_link_type",
         defaultValue: "tea-web",
         valueType: "string",
     };
 
-    static readonly KEY_TRANSFERS_SHOW_FINISHED: ValuedSettingsKey<boolean> = {
-        key: 'transfers_show_finished',
+    static readonly KEY_TRANSFERS_SHOW_FINISHED: ValuedRegistryKey<boolean> = {
+        key: "transfers_show_finished",
         defaultValue: true,
         description: "Show finished file transfers in the file transfer list",
         valueType: "boolean",
     };
 
-    static readonly KEY_TRANSFER_DOWNLOAD_FOLDER: SettingsKey<string> = {
+    static readonly KEY_TRANSFER_DOWNLOAD_FOLDER: RegistryKey<string> = {
         key: "transfer_download_folder",
         description: "The download folder for the file transfer downloads",
         valueType: "string",
         /* defaultValue: <users download directory> */
     };
 
-    static readonly  KEY_IPC_REMOTE_ADDRESS: SettingsKey<string> = {
+    static readonly  KEY_IPC_REMOTE_ADDRESS: RegistryKey<string> = {
         key: "ipc-address",
         valueType: "string"
     };
 
-    static readonly KEY_W2G_SIDEBAR_COLLAPSED: ValuedSettingsKey<boolean> = {
-        key: 'w2g_sidebar_collapsed',
+    static readonly KEY_W2G_SIDEBAR_COLLAPSED: ValuedRegistryKey<boolean> = {
+        key: "w2g_sidebar_collapsed",
         defaultValue: false,
         valueType: "boolean",
     };
 
-    static readonly KEY_VOICE_ECHO_TEST_ENABLED: ValuedSettingsKey<boolean> = {
-        key: 'voice_echo_test_enabled',
+    static readonly KEY_VOICE_ECHO_TEST_ENABLED: ValuedRegistryKey<boolean> = {
+        key: "voice_echo_test_enabled",
         defaultValue: true,
         valueType: "boolean",
     };
 
-    static readonly KEY_RNNOISE_FILTER: ValuedSettingsKey<boolean> = {
-        key: 'rnnoise_filter',
+    static readonly KEY_RNNOISE_FILTER: ValuedRegistryKey<boolean> = {
+        key: "rnnoise_filter",
         defaultValue: true,
-        description: 'Enable the rnnoise filter for supressing background noise',
+        description: "Enable the rnnoise filter for supressing background noise",
         valueType: "boolean",
     };
 
-    static readonly KEY_LOADER_ANIMATION_ABORT: ValuedSettingsKey<boolean> = {
-        key: 'loader_animation_abort',
+    static readonly KEY_LOADER_ANIMATION_ABORT: ValuedRegistryKey<boolean> = {
+        key: "loader_animation_abort",
         defaultValue: false,
-        description: 'Abort the loader animation when the app has been finished loading',
+        description: "Abort the loader animation when the app has been finished loading",
         valueType: "boolean",
     };
 
-    static readonly KEY_STOP_VIDEO_ON_SWITCH: ValuedSettingsKey<boolean> = {
-        key: 'stop_video_on_channel_switch',
+    static readonly KEY_STOP_VIDEO_ON_SWITCH: ValuedRegistryKey<boolean> = {
+        key: "stop_video_on_channel_switch",
         defaultValue: true,
-        description: 'Stop video broadcasting on channel switch',
+        description: "Stop video broadcasting on channel switch",
         valueType: "boolean",
     };
 
-    static readonly KEY_VIDEO_SHOW_ALL_CLIENTS: ValuedSettingsKey<boolean> = {
-        key: 'video_show_all_clients',
+    static readonly KEY_VIDEO_SHOW_ALL_CLIENTS: ValuedRegistryKey<boolean> = {
+        key: "video_show_all_clients",
         defaultValue: false,
         description: "Show all clients within the video frame, even if they're not broadcasting video",
         valueType: "boolean",
     };
 
-    static readonly KEY_VIDEO_FORCE_SHOW_OWN_VIDEO: ValuedSettingsKey<boolean> = {
-        key: 'video_force_show_own_video',
+    static readonly KEY_VIDEO_FORCE_SHOW_OWN_VIDEO: ValuedRegistryKey<boolean> = {
+        key: "video_force_show_own_video",
         defaultValue: true,
         description: "Show own video preview even if you're not broadcasting any video",
         valueType: "boolean",
     };
 
-    static readonly KEY_VIDEO_AUTO_SUBSCRIBE_MODE: ValuedSettingsKey<number> = {
-        key: 'video_auto_subscribe_mode',
+    static readonly KEY_VIDEO_AUTO_SUBSCRIBE_MODE: ValuedRegistryKey<number> = {
+        key: "video_auto_subscribe_mode",
         defaultValue: 1,
         description: "Auto subscribe to incoming videos.\n0 := Do not auto subscribe.\n1 := Auto subscribe to the first video.\n2 := Subscribe to all incoming videos.",
         valueType: "number",
     };
 
-    static readonly KEY_VIDEO_DEFAULT_MAX_WIDTH: ValuedSettingsKey<number> = {
-        key: 'video_default_max_width',
+    static readonly KEY_VIDEO_DEFAULT_MAX_WIDTH: ValuedRegistryKey<number> = {
+        key: "video_default_max_width",
         defaultValue: 1280,
         description: "The default maximal width of the video being crated.",
         valueType: "number",
     };
 
-    static readonly KEY_VIDEO_DEFAULT_MAX_HEIGHT: ValuedSettingsKey<number> = {
-        key: 'video_default_max_height',
+    static readonly KEY_VIDEO_DEFAULT_MAX_HEIGHT: ValuedRegistryKey<number> = {
+        key: "video_default_max_height",
         defaultValue: 720,
         description: "The default maximal height of the video being crated.",
         valueType: "number",
     };
 
-    static readonly KEY_VIDEO_DYNAMIC_QUALITY: ValuedSettingsKey<boolean> = {
-        key: 'video_dynamic_quality',
+    static readonly KEY_VIDEO_DYNAMIC_QUALITY: ValuedRegistryKey<boolean> = {
+        key: "video_dynamic_quality",
         defaultValue: true,
         description: "Dynamically decrease video quality in order to archive a higher framerate.",
         valueType: "boolean",
     };
 
-    static readonly KEY_VIDEO_DYNAMIC_FRAME_RATE: ValuedSettingsKey<boolean> = {
-        key: 'video_dynamic_frame_rate',
+    static readonly KEY_VIDEO_DYNAMIC_FRAME_RATE: ValuedRegistryKey<boolean> = {
+        key: "video_dynamic_frame_rate",
         defaultValue: true,
         description: "Dynamically decrease video framerate to allow higher video resolutions.",
         valueType: "boolean",
     };
 
-    static readonly KEY_VIDEO_QUICK_SETUP: ValuedSettingsKey<boolean> = {
-        key: 'video_quick_setup',
+    static readonly KEY_VIDEO_QUICK_SETUP: ValuedRegistryKey<boolean> = {
+        key: "video_quick_setup",
         defaultValue: true,
         description: "Automatically select the default video device and start broadcasting without the video configure dialog.",
         valueType: "boolean",
     };
 
-    static readonly FN_LOG_ENABLED: (category: string) => SettingsKey<boolean> = category => {
+    static readonly FN_LOG_ENABLED: (category: string) => RegistryKey<boolean> = category => {
         return {
             key: "log." + category.toLowerCase() + ".enabled",
             valueType: "boolean",
         }
     };
 
-    static readonly FN_SEPARATOR_STATE: (separator: string) => SettingsKey<string> = separator => {
+    static readonly FN_SEPARATOR_STATE: (separator: string) => RegistryKey<string> = separator => {
         return {
             key: "separator-settings-" + separator,
             valueType: "string",
@@ -591,50 +680,50 @@ export class Settings extends StaticSettings {
         }
     };
 
-    static readonly FN_LOG_LEVEL_ENABLED: (category: string) => SettingsKey<boolean> = category => {
+    static readonly FN_LOG_LEVEL_ENABLED: (category: string) => RegistryKey<boolean> = category => {
         return {
             key: "log.level." + category.toLowerCase() + ".enabled",
             valueType: "boolean"
         }
     };
 
-    static readonly FN_INVITE_LINK_SETTING: (name: string) => SettingsKey<string> = name => {
+    static readonly FN_INVITE_LINK_SETTING: (name: string) => RegistryKey<string> = name => {
         return {
-            key: 'invite_link_setting_' + name,
+            key: "invite_link_setting_" + name,
             valueType: "string",
         }
     };
 
-    static readonly FN_SERVER_CHANNEL_SUBSCRIBE_MODE: (channel_id: number) => SettingsKey<number> = channel => {
+    static readonly FN_SERVER_CHANNEL_SUBSCRIBE_MODE: (channel_id: number) => RegistryKey<number> = channel => {
         return {
-            key: 'channel_subscribe_mode_' + channel,
+            key: "channel_subscribe_mode_" + channel,
             valueType: "number",
         }
     };
 
-    static readonly FN_SERVER_CHANNEL_COLLAPSED: (channel_id: number) => ValuedSettingsKey<boolean> = channel => {
+    static readonly FN_SERVER_CHANNEL_COLLAPSED: (channel_id: number) => ValuedRegistryKey<boolean> = channel => {
         return {
-            key: 'channel_collapsed_' + channel,
+            key: "channel_collapsed_" + channel,
             defaultValue: false,
             valueType: "boolean",
         }
     };
 
-    static readonly FN_PROFILE_RECORD: (name: string) => SettingsKey<object> = name => {
+    static readonly FN_PROFILE_RECORD: (name: string) => RegistryKey<object> = name => {
         return {
-            key: 'profile_record' + name,
+            key: "profile_record" + name,
             valueType: "object",
         }
     };
 
-    static readonly FN_CHANNEL_CHAT_READ: (id: number) => SettingsKey<number> = id => {
+    static readonly FN_CHANNEL_CHAT_READ: (id: number) => RegistryKey<number> = id => {
         return {
-            key: 'channel_chat_read_' + id,
+            key: "channel_chat_read_" + id,
             valueType: "number",
         }
     };
 
-    static readonly FN_CLIENT_MUTED: (clientUniqueId: string) => SettingsKey<boolean> = clientUniqueId => {
+    static readonly FN_CLIENT_MUTED: (clientUniqueId: string) => RegistryKey<boolean> = clientUniqueId => {
         return {
             key: "client_" + clientUniqueId + "_muted",
             valueType: "boolean",
@@ -642,7 +731,7 @@ export class Settings extends StaticSettings {
         }
     };
 
-    static readonly FN_CLIENT_VOLUME: (clientUniqueId: string) => SettingsKey<number> = clientUniqueId => {
+    static readonly FN_CLIENT_VOLUME: (clientUniqueId: string) => RegistryKey<number> = clientUniqueId => {
         return {
             key: "client_" + clientUniqueId + "_volume",
             valueType: "number",
@@ -650,21 +739,21 @@ export class Settings extends StaticSettings {
         }
     };
 
-    static readonly FN_EVENTS_NOTIFICATION_ENABLED: (event: string) => SettingsKey<boolean> = event => {
+    static readonly FN_EVENTS_NOTIFICATION_ENABLED: (event: string) => RegistryKey<boolean> = event => {
         return {
             key: "event_notification_" + event + "_enabled",
             valueType: "boolean"
         }
     };
 
-    static readonly FN_EVENTS_LOG_ENABLED: (event: string) => SettingsKey<boolean> = event => {
+    static readonly FN_EVENTS_LOG_ENABLED: (event: string) => RegistryKey<boolean> = event => {
         return {
             key: "event_log_" + event + "_enabled",
             valueType: "boolean"
         }
     };
 
-    static readonly FN_EVENTS_FOCUS_ENABLED: (event: string) => SettingsKey<boolean> = event => {
+    static readonly FN_EVENTS_FOCUS_ENABLED: (event: string) => RegistryKey<boolean> = event => {
         return {
             key: "event_focus_" + event + "_enabled",
             valueType: "boolean"
@@ -675,8 +764,9 @@ export class Settings extends StaticSettings {
         const result = [];
 
         for(const key of Object.keys(Settings)) {
-            if(!key.toUpperCase().startsWith("KEY_"))
+            if(!key.toUpperCase().startsWith("KEY_")) {
                 continue;
+            }
 
             result.push(key);
         }
@@ -690,14 +780,14 @@ export class Settings extends StaticSettings {
         (window as any).Settings = Settings;
     }
 
+
     readonly events: Registry<SettingsEvents>;
+
     private readonly cacheGlobal = {};
     private saveWorker: number;
     private updated: boolean = false;
 
     constructor() {
-        super();
-
         this.events = new Registry<SettingsEvents>();
         const json = localStorage.getItem("settings.global");
         try {
@@ -725,31 +815,35 @@ export class Settings extends StaticSettings {
         }, 5 * 1000);
     }
 
-    static_global<V extends ConfigValueTypes>(key: ValuedSettingsKey<V>, defaultValue?: V) : V;
-    static_global<V extends ConfigValueTypes, DV>(key: SettingsKey<V>, defaultValue: DV) : V | DV;
-    static_global<V extends ConfigValueTypes, DV>(key: SettingsKey<V> | ValuedSettingsKey<V>, defaultValue: DV) : V | DV {
-        const staticValue = this.static(key, kNoValuePresent);
-        if(staticValue !== kNoValuePresent)
-            return staticValue;
-
-        if(arguments.length > 1)
-            return this.global(key, defaultValue);
-        return this.global(key as ValuedSettingsKey<V>);
+    getValue<V extends RegistryValueType, DV>(key: RegistryKey<V>, defaultValue: DV) : V | DV;
+    getValue<V extends RegistryValueType>(key: ValuedRegistryKey<V>, defaultValue?: V) : V;
+    getValue<V extends RegistryValueType, DV>(key: RegistryKey<V> | ValuedRegistryKey<V>, defaultValue: DV) : V | DV {
+        if(arguments.length > 1) {
+            return resolveKey(key, key => this.cacheGlobal[key], defaultValue);
+        } else if("defaultValue" in key) {
+            return resolveKey(key, key => this.cacheGlobal[key], key.defaultValue);
+        } else {
+            throw tr("missing default value");
+        }
     }
 
-    global<V extends ConfigValueTypes, DV>(key: SettingsKey<V>, defaultValue: DV) : V | DV;
-    global<V extends ConfigValueTypes>(key: ValuedSettingsKey<V>, defaultValue?: V) : V;
-    global<V extends ConfigValueTypes, DV>(key: SettingsKey<V>, defaultValue: DV) : V | DV {
-        return StaticSettings.resolveKey(key, key => this.cacheGlobal[key], key.valueType, arguments.length > 1 ? defaultValue : key.defaultValue);
-    }
+    setValue<T extends RegistryValueType>(key: RegistryKey<T>, value?: T){
+        if(value === null) {
+            value = undefined;
+        }
 
-    changeGlobal<T extends ConfigValueTypes>(key: SettingsKey<T>, value?: T){
-        if(this.cacheGlobal[key.key] === value)
+        if(this.cacheGlobal[key.key] === value) {
             return;
+        }
+
+        const oldValue = this.cacheGlobal[key.key];
+        if(value === undefined) {
+            delete this.cacheGlobal[key.key];
+        } else {
+            this.cacheGlobal[key.key] = encodeValueToString(value);
+        }
 
         this.updated = true;
-        const oldValue = this.cacheGlobal[key.key];
-        this.cacheGlobal[key.key] = StaticSettings.encodeValueToString(value);
         this.events.fire("notify_setting_changed", {
             mode: "global",
             newValue: this.cacheGlobal[key.key],
@@ -759,11 +853,12 @@ export class Settings extends StaticSettings {
         });
         logTrace(LogCategory.GENERAL, tr("Changing global setting %s to %o"), key.key, value);
 
-        if(Settings.UPDATE_DIRECT)
+        if(UPDATE_DIRECT) {
             this.save();
+        }
     }
 
-    globalChangeListener<T extends ConfigValueTypes>(key: SettingsKey<T>, listener: (newValue: T) => void) : () => void {
+    globalChangeListener<T extends RegistryValueType>(key: RegistryKey<T>, listener: (newValue: T) => void) : () => void {
         return this.events.on("notify_setting_changed", event => {
             if(event.setting === key.key && event.mode === "global") {
                 listener(event.newCastedValue);
@@ -780,61 +875,76 @@ export class Settings extends StaticSettings {
     }
 }
 
-export class ServerSettings extends SettingsBase {
+export class ServerSettings {
     private cacheServer = {};
-    private _server_unique_id: string;
-    private _server_save_worker: number;
-    private _server_settings_updated: boolean = false;
+    private serverUniqueId: string;
+    private serverSaveWorker: number;
+    private serverSettingsUpdated: boolean = false;
     private _destroyed = false;
 
     constructor() {
-        super();
-        this._server_save_worker = setInterval(() => {
-            if(this._server_settings_updated)
+        this.serverSaveWorker = setInterval(() => {
+            if(this.serverSettingsUpdated) {
                 this.save();
+            }
         }, 5 * 1000);
     }
 
     destroy() {
         this._destroyed = true;
 
-        this._server_unique_id = undefined;
+        this.serverUniqueId = undefined;
         this.cacheServer = undefined;
 
-        clearInterval(this._server_save_worker);
-        this._server_save_worker = undefined;
+        clearInterval(this.serverSaveWorker);
+        this.serverSaveWorker = undefined;
     }
 
-    server<V extends ConfigValueTypes, DV extends V | undefined = undefined>(key: SettingsKey<V>, defaultValue?: DV) : V | DV {
-        if(this._destroyed)
+    getValue<V extends RegistryValueType, DV extends V | undefined = undefined>(key: RegistryKey<V> | ValuedRegistryKey<V>, defaultValue?: DV) : V | DV {
+        if(this._destroyed) {
             throw "destroyed";
+        }
 
-        return StaticSettings.resolveKey(key, key => this.cacheServer[key], key.valueType, arguments.length > 1 ? defaultValue : key.defaultValue);
+        if(arguments.length > 1) {
+            return resolveKey(key, key => this.cacheServer[key], defaultValue);
+        } else if("defaultValue" in key) {
+            return resolveKey(key, key => this.cacheServer[key], key.defaultValue);
+        } else {
+            throw tr("missing default value");
+        }
     }
 
-    changeServer<T extends ConfigValueTypes>(key: SettingsKey<T>, value?: T) {
-        if(this._destroyed) throw "destroyed";
+    setValue<T extends RegistryValueType>(key: RegistryKey<T>, value?: T) {
+        if(this._destroyed) {
+            throw "destroyed";
+        }
 
-        if(this.cacheServer[key.key] === value)
+        if(this.cacheServer[key.key] === value) {
             return;
+        }
 
-        this._server_settings_updated = true;
-        this.cacheServer[key.key] = StaticSettings.encodeValueToString(value);
+        this.serverSettingsUpdated = true;
+        if(value === undefined || value === null) {
+            delete this.cacheServer[key.key];
+        } else {
+            this.cacheServer[key.key] = encodeValueToString(value);
+        }
 
-        if(Settings.UPDATE_DIRECT)
+        if(UPDATE_DIRECT) {
             this.save();
+        }
     }
 
     setServer(server_unique_id: string) {
         if(this._destroyed) throw "destroyed";
-        if(this._server_unique_id) {
+        if(this.serverUniqueId) {
             this.save();
             this.cacheServer = {};
-            this._server_unique_id = undefined;
+            this.serverUniqueId = undefined;
         }
-        this._server_unique_id = server_unique_id;
+        this.serverUniqueId = server_unique_id;
 
-        if(this._server_unique_id) {
+        if(this.serverUniqueId) {
 
             const json = localStorage.getItem("settings.server_" + server_unique_id);
             try {
@@ -848,14 +958,18 @@ export class ServerSettings extends SettingsBase {
     }
 
     save() {
-        if(this._destroyed) throw "destroyed";
-        this._server_settings_updated = false;
+        if(this._destroyed) {
+            throw "destroyed";
+        }
+        this.serverSettingsUpdated = false;
 
-        if(this._server_unique_id) {
+        if(this.serverUniqueId) {
             let server = JSON.stringify(this.cacheServer);
-            localStorage.setItem("settings.server_" + this._server_unique_id, server);
-            if(localStorage.save)
+            localStorage.setItem("settings.server_" + this.serverUniqueId, server);
+
+            if(localStorage.save) {
                 localStorage.save();
+            }
         }
     }
 }

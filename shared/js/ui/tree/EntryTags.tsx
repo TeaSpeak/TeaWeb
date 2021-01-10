@@ -2,7 +2,7 @@ import * as React from "react";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {getIpcInstance, IPCChannel} from "tc-shared/ipc/BrowserIPC";
-import {Settings} from "tc-shared/settings";
+import {AppParameters} from "tc-shared/settings";
 import {generateDragElement, setupDragData} from "tc-shared/ui/tree/DragHelper";
 import {ClientIcon} from "svg-sprites/client-icons";
 
@@ -85,6 +85,6 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     priority: 10,
     function: async () => {
         const ipc = getIpcInstance();
-        ipcChannel = ipc.createChannel(Settings.instance.static(Settings.KEY_IPC_REMOTE_ADDRESS, ipc.getLocalAddress()), kIpcChannel);
+        ipcChannel = ipc.createChannel(AppParameters.getValue(AppParameters.KEY_IPC_REMOTE_ADDRESS, ipc.getLocalAddress()), kIpcChannel);
     }
 });

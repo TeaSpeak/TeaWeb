@@ -2,7 +2,7 @@ import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import {ModalGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-editor/Renderer";
 import {Registry} from "tc-shared/events";
 import {ModalGlobalSettingsEditorEvents, Setting} from "tc-shared/ui/modal/global-settings-editor/Definitions";
-import {ConfigValueTypes, settings, Settings, SettingsKey} from "tc-shared/settings";
+import {RegistryValueType, settings, Settings, RegistryKey} from "tc-shared/settings";
 
 export function spawnGlobalSettingsEditor() {
     const events = new Registry<ModalGlobalSettingsEditorEvents>();
@@ -21,7 +21,7 @@ function initializeController(events: Registry<ModalGlobalSettingsEditorEvents>)
         const settingsList: Setting[] = [];
 
         for(const key of Settings.KEYS) {
-            const setting = Settings[key] as SettingsKey<ConfigValueTypes>;
+            const setting = Settings[key] as RegistryKey<RegistryValueType>;
             settingsList.push({
                 key: setting.key,
                 description: setting.description,
@@ -38,7 +38,7 @@ function initializeController(events: Registry<ModalGlobalSettingsEditorEvents>)
     });
 
     events.on("query_setting", event => {
-        const setting = Settings.KEYS.map(setting => Settings[setting] as SettingsKey<ConfigValueTypes>).find(e => e.key === event.setting);
+        const setting = Settings.KEYS.map(setting => Settings[setting] as RegistryKey<RegistryValueType>).find(e => e.key === event.setting);
         if(typeof setting === "undefined") {
             events.fire("notify_setting", {
                 setting: event.setting,
@@ -56,18 +56,18 @@ function initializeController(events: Registry<ModalGlobalSettingsEditorEvents>)
                 type: setting.valueType,
                 defaultValue: setting.defaultValue
             },
-            value: settings.global(setting, undefined)
+            value: settings.getValue(setting, undefined)
         });
     });
 
     events.on("action_set_value", event => {
-        const setting = Settings.KEYS.map(setting => Settings[setting] as SettingsKey<ConfigValueTypes>).find(e => e.key === event.setting);
+        const setting = Settings.KEYS.map(setting => Settings[setting] as RegistryKey<RegistryValueType>).find(e => e.key === event.setting);
         if(typeof setting === "undefined") {
             return;
         }
 
         /* the change will may already trigger a notify_setting_value, but just to ensure we're fiering it later as well */
-        settings.changeGlobal(setting, event.value);
+        settings.setValue(setting, event.value);
 
         events.fire_react("notify_setting_value", { setting: event.setting, value: event.value });
     });

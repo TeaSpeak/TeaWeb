@@ -4,7 +4,7 @@ import * as i18n from "../../../i18n/localize";
 
 import {Stage} from "tc-loader";
 import {AbstractModal, ModalRenderer} from "../../../ui/react-elements/ModalDefinitions";
-import {Settings, SettingsKey} from "../../../settings";
+import {AppParameters} from "../../../settings";
 import {getPopoutController} from "./PopoutController";
 import {findPopoutHandler} from "../../../ui/react-elements/external-modal/PopoutRegistry";
 import {RegistryMap} from "../../../events";
@@ -22,11 +22,6 @@ if("__native_client_init_shared" in window) {
 let modalRenderer: ModalRenderer;
 let modalInstance: AbstractModal;
 let modalClass: new (events: RegistryMap, userData: any) => AbstractModal;
-
-const kSettingModalTarget: SettingsKey<string> = {
-    key: "modal-target",
-    valueType: "string"
-};
 
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     name: "setup",
@@ -73,7 +68,7 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     name: "modal class loader",
     priority: 10,
     function: async () => {
-        const modalTarget = Settings.instance.static(kSettingModalTarget, "unknown");
+        const modalTarget = AppParameters.getValue(AppParameters.KEY_MODAL_TARGET, "unknown");
         console.error("Loading modal class %s", modalTarget);
         try {
             const handler = findPopoutHandler(modalTarget);

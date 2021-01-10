@@ -42,7 +42,7 @@ export function getRegisteredNotificationDispatchers() : TypeInfo[] {
 }
 
 export function isNotificationEnabled(type: EventType) {
-    return settings.global(Settings.FN_EVENTS_NOTIFICATION_ENABLED(type), notificationDefaultStatus[type as any] || false);
+    return settings.getValue(Settings.FN_EVENTS_NOTIFICATION_ENABLED(type), notificationDefaultStatus[type as any] || false);
 }
 
 const kDefaultIcon = "img/teaspeak_cup_animated.png";

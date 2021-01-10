@@ -145,7 +145,7 @@ export class RendererChannel extends React.Component<{ channel: RDPChannel }, {}
                 }}
                 onDoubleClick={() => events.fire("action_channel_join", { treeEntryId: entryId })}
                 onContextMenu={event => {
-                    if (settings.static(Settings.KEY_DISABLE_CONTEXT_MENU)) {
+                    if (settings.getValue(Settings.KEY_DISABLE_CONTEXT_MENU)) {
                         return;
                     }
 

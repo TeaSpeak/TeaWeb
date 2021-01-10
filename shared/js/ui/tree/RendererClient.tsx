@@ -179,7 +179,7 @@ export class RendererClient extends React.Component<{ client: RDPClient }, {}> {
             <div className={clientStyle.clientEntry + " " + viewStyle.treeEntry + " " + (selected ? viewStyle.selected : "")}
                  style={{ top: (client.offsetTop * ChannelTreeView.EntryHeightEm) + "em" }}
                  onContextMenu={event => {
-                     if (settings.static(Settings.KEY_DISABLE_CONTEXT_MENU)) {
+                     if (settings.getValue(Settings.KEY_DISABLE_CONTEXT_MENU)) {
                          return;
                      }
 

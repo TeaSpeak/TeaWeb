@@ -49,7 +49,7 @@ export class ServerRenderer extends React.Component<{ server: RDPServer }, {}> {
                     this.props.server.select("auto");
                 }}
                 onContextMenu={event => {
-                    if (settings.static(Settings.KEY_DISABLE_CONTEXT_MENU)) {
+                    if (settings.getValue(Settings.KEY_DISABLE_CONTEXT_MENU)) {
                         return;
                     }
 

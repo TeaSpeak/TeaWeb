@@ -167,7 +167,7 @@ class InfoController {
     public sendConnectionState() {
         const globallyConnected = server_connections.all_connections().findIndex(e => e.connected) !== -1;
         const locallyConnected = this.currentHandler?.connected;
-        const multisession = !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION);
+        const multisession = !settings.getValue(Settings.KEY_DISABLE_MULTI_SESSION);
 
         this.events.fire_react("notify_connection_state", {
             state: {
@@ -349,8 +349,8 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
                 (event.globally ? server_connections.all_connections() : [server_connections.active_connection()]).filter(e => !!e).forEach(connection => {
                     connection.setAway(value);
                 });
-                settings.changeGlobal(Settings.KEY_CLIENT_STATE_AWAY, true);
-                settings.changeGlobal(Settings.KEY_CLIENT_AWAY_MESSAGE, typeof value === "boolean" ? "" : value);
+                settings.setValue(Settings.KEY_CLIENT_STATE_AWAY, true);
+                settings.setValue(Settings.KEY_CLIENT_AWAY_MESSAGE, typeof value === "boolean" ? "" : value);
             };
 
             if(event.promptMessage) {
@@ -368,13 +368,13 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
                 connection.setAway(false);
             }
 
-            settings.changeGlobal(Settings.KEY_CLIENT_STATE_AWAY, false);
+            settings.setValue(Settings.KEY_CLIENT_STATE_AWAY, false);
         }
     });
 
     events.on("action_toggle_microphone", event => {
         /* change the default global setting */
-        settings.changeGlobal(Settings.KEY_CLIENT_STATE_MICROPHONE_MUTED,  !event.enabled);
+        settings.setValue(Settings.KEY_CLIENT_STATE_MICROPHONE_MUTED,  !event.enabled);
 
         const current_connection_handler = infoHandler.getCurrentHandler();
         if(current_connection_handler) {
@@ -391,19 +391,19 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
 
     events.on("action_toggle_speaker", event => {
         /* change the default global setting */
-        settings.changeGlobal(Settings.KEY_CLIENT_STATE_SPEAKER_MUTED, !event.enabled);
+        settings.setValue(Settings.KEY_CLIENT_STATE_SPEAKER_MUTED, !event.enabled);
 
         infoHandler.getCurrentHandler()?.setSpeakerMuted(!event.enabled);
     });
 
     events.on("action_toggle_subscribe", event => {
-        settings.changeGlobal(Settings.KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS, event.subscribe);
+        settings.setValue(Settings.KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS, event.subscribe);
 
         infoHandler.getCurrentHandler()?.setSubscribeToAllChannels(event.subscribe);
     });
 
     events.on("action_toggle_query", event => {
-        settings.changeGlobal(Settings.KEY_CLIENT_STATE_QUERY_SHOWN, event.show);
+        settings.setValue(Settings.KEY_CLIENT_STATE_QUERY_SHOWN, event.show);
 
         infoHandler.getCurrentHandler()?.setQueriesShown(event.show);
     });
