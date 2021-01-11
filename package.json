@@ -93,7 +93,7 @@
   "dependencies": {
     "@types/react-transition-group": "^4.4.0",
     "broadcastchannel-polyfill": "^1.0.1",
-    "detect-browser": "^5.1.1",
+    "detect-browser": "^5.2.0",
     "dompurify": "^2.0.8",
     "emoji-mart": "git+https://github.com/WolverinDEV/emoji-mart.git",
     "emoji-regex": "^9.0.0",
