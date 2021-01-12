@@ -2,7 +2,6 @@ import * as loader from "tc-loader";
 import * as bipc from "./ipc/BrowserIPC";
 import * as sound from "./sound/Sounds";
 import * as i18n from "./i18n/localize";
-import * as stats from "./stats";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
 import * as aplayer from "tc-backend/audio/player";
 import * as ppt from "tc-backend/ppt";
@@ -46,6 +45,7 @@ import "./ui/frames/menu-bar/MainMenu";
 import "./ui/modal/connect/Controller";
 import "./ui/elements/ContextDivider";
 import "./ui/elements/Tab";
+import "./clientservice";
 import {initializeKeyControl} from "./KeyControl";
 
 let preventWelcomeUI = false;
@@ -89,6 +89,7 @@ async function initializeApp() {
     }
 }
 
+/* Used by the native client... We can't refactor this yet */
 export function handle_connect_request(properties: ConnectRequestData, connection: ConnectionHandler) {
     const profile = findConnectProfile(properties.profile) || defaultConnectProfile();
     const username = properties.username || profile.connectUsername();
@@ -182,16 +183,6 @@ function main() {
     /** Setup the XF forum identity **/
     fidentity.update_forum();
     initializeKeyControl();
-
-    stats.initialize({
-        verbose: true,
-        anonymize_ip_addresses: true,
-        volatile_collection_only: false
-    });
-
-    stats.registerUserCountListener(status => {
-        logInfo(LogCategory.STATISTICS, tr("Received user count update: %o"), status);
-    });
 
     checkForUpdatedApp();
 

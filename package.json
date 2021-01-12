@@ -109,6 +109,7 @@
     "remarkable": "^2.0.1",
     "resize-observer-polyfill": "^1.5.1",
     "sdp-transform": "^2.14.0",
+    "simple-jsonp-promise": "^1.1.0",
     "simplebar-react": "^2.2.0",
     "twemoji": "^13.0.0",
     "url-knife": "^3.1.3",
