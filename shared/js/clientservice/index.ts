@@ -9,7 +9,7 @@ import {
     MessageCommandResult,
     MessageNotify,
     NotifyClientsOnline
-} from "./messages";
+} from "./Messages";
 import {config, tr} from "tc-shared/i18n/localize";
 import {geoLocationProvider} from "tc-shared/clientservice/GeoLocation";
 import translation_config = config.translation_config;
