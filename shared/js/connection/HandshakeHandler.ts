@@ -5,6 +5,7 @@ import {DisconnectReason} from "../ConnectionHandler";
 import {tr} from "../i18n/localize";
 import {ConnectParameters} from "tc-shared/ui/modal/connect/Controller";
 import {LogCategory, logWarn} from "tc-shared/log";
+import {getBackend} from "tc-shared/backend";
 
 export interface HandshakeIdentityHandler {
     connection: AbstractServerConnection;
@@ -95,30 +96,21 @@ export class HandshakeHandler {
         };
 
         if(__build.target === "client") {
-            const _native = window["native"];
-            let version;
-            try {
-                version = await _native.client_version();
-            } catch (error) {
-                logWarn(LogCategory.GENERAL, tr("Failed to fetch native client version: %o"), error);
-                version = "?.?.?";
-            }
+            const versionsInfo = getBackend("native").getVersionInfo();
+            data.client_version = "TeaClient " + versionsInfo.version;
 
-            data.client_version = "TeaClient " + version;
-
-            const os = __non_webpack_require__("os");
             const arch_mapping = {
                 "x32": "32bit",
                 "x64": "64bit"
             };
 
-            data.client_version += " " + (arch_mapping[os.arch()] || os.arch());
+            data.client_version += " " + (arch_mapping[versionsInfo.os_architecture] || versionsInfo.os_architecture);
 
             const os_mapping = {
                 "win32": "Windows",
                 "linux": "Linux"
             };
-            data.client_platform = (os_mapping[os.platform()] || os.platform());
+            data.client_platform = (os_mapping[versionsInfo.os_platform] || versionsInfo.os_platform);
         }
 
         this.handshakeImpl.fillClientInitData(data);
