@@ -94,7 +94,10 @@ export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, mode
                 }
 
                 if(event.status.status === "preview") {
-                    /* we've successfully selected something */
+                    /* We've successfully selected something. Use that device instead. */
+                    result.source?.deref();
+                    result.source = controller.getCurrentSource()?.ref();
+                    result.config = controller.getBroadcastConstraints();
                     modal.destroy();
                 }
             });

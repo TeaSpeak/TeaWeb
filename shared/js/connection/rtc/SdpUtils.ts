@@ -57,7 +57,7 @@ export class SdpProcessor {
             fmtp: {
                 "level-asymmetry-allowed": 1,
                 "packetization-mode": 1,
-                "profile-level-id": "4d0028",
+                "profile-level-id": "42001f",
                 "max-fr": 30,
             }
         },

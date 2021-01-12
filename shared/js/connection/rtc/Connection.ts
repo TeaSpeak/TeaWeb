@@ -63,7 +63,6 @@ class RetryTimeCalculator {
     }
 
     calculateRetryTime() {
-        return 0;
         if(this.retryCount >= 5) {
             /* no more retries */
             return 0;

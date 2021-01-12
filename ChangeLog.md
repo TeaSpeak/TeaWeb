@@ -1,4 +1,8 @@
 # Changelog:
+* **12.01.21**
+    - Fixed bug where the quick video select popup did not start the video broadcasting
+    - Fixed a bug where an invalid H264 codec may caused video connection setup failure
+    
 * **09.01.21**
     - The connect modal now connects when pressing `Enter` on the address line
     
