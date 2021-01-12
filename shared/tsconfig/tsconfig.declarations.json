@@ -21,6 +21,7 @@
   ],
   "include": [
     "../js/proto.ts",
+    "../js/main.tsx",
     "../backend.d",
     "../js/**/*.ts",
     "../../webpack/build-definitions.d.ts"

@@ -1,4 +1,3 @@
-import * as log from "tc-shared/log";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
 import { tr } from "tc-shared/i18n/localize";
@@ -46,8 +45,9 @@ export class WrappedWebSocket {
         let result = "";
         result += this.address.secure ? "wss://" : "ws://";
         result += this.address.host + ":" + this.address.port;
-        if(this.address.path)
+        if(this.address.path) {
             result += (this.address.path.startsWith("/") ? "" : "/") + this.address.path;
+        }
         return result
     }
 
