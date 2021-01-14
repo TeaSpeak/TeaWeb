@@ -2656,7 +2656,7 @@
       }
     },
     {
-      "translated": "Не реализованы",
+      "translated": "Не реализовано",
       "flags": [
         "google-translate"
       ],
@@ -3664,7 +3664,7 @@
       }
     },
     {
-      "translated": "Подключено как {0}",
+      "translated": "Вы подключены как {0}",
       "flags": [
         "google-translate"
       ],
@@ -3912,7 +3912,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "You switched from channel {1} to {2}"
+        "message": "You switched from {1} to {2}"
       }
     },
     {
@@ -5631,7 +5631,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "Server Address"
+        "message": "Server address"
       }
     },
     {
@@ -5667,7 +5667,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "Connect Profile"
+        "message": "Connect profile"
       }
     },
     {
@@ -12429,8 +12429,214 @@
       "key": {
         "message": "Expend all channels"
       }
+    },
+    {
+      "translated": "Скрыть историю подключений",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Hide connect history"
+      }
+    },
+    {
+      "translated": "Адрес",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Address"
+      }
+    },
+    {
+      "translated": "Клиенты",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Clients"
+      }
+    },
+    {
+      "translated": "Подключений",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Connections"
+      }
+    },
+    {
+      "translated": "Открыть реестр",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Open Registry"
+      }
+    },
+    {
+      "translated": "Реестр глобальных настроек",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Global settings registry"
+      }
+    },
+    {
+      "translated": "Список настроек",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Setting list"
+      }
+    },
+    {
+      "translated": "Редактор настроек",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Setting editor"
+      }
+    },
+    {
+      "translated": "Имя настройки",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Setting key"
+      }
+    },
+    {
+      "translated": "Значение по умолчанию",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Default Value"
+      }
+    },
+    {
+      "translated": "Фильтр настроек",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Filter settings"
+      }
+    },
+    {
+      "translated": "Открыть список изменений",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Open client changelog"
+      }
+    },
+    {
+      "translated": "Соединение с сервером ",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Connecting to "
+      }
+    },
+    {
+      "translated": "Соединение с сервером {0}{1}",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Connecting to {0}{1}"
+      }
+    },
+    {
+      "translated": "Разрешение имени хоста",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Resolving hostname"
+      }
+    },
+    {
+      "translated": "Имя хоста успешно разрешено для сервера {0}:{1}",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Hostname resolved successfully to {0}:{1}"
+      }
+    },
+    {
+      "translated": "Вы отключились от сервера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Disconnected from server"
+      }
+    },
+    {
+      "translated": "{0} появился на вашем канале {1}",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "{0} appeared to your channel {1}"
+      }
+    },
+    {
+      "translated": "Внимание: изменение языка клиента требует перезапуска клиента!",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Attention: Changing the client language require a client restart!"
+      }
+    },
+    {
+      "translated": "Автоматический перезапуск клиента пока не реализован.<br>Пожалуйста, сделайте это вручную!",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Client restart isn't implemented.<br>Please do it manually!"
+      }
+    },
+    {
+      "translated": "Перейти к последнему сообщению",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Jump to present"
+      }
+    },
+    {
+      "translated": "Показать старые сообщения",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Load older messages"
+      }
+    },
+    {
+      "translated": "Пожалуйста подождите",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "please wait"
+      }
     }
-
 
   ]
 }
