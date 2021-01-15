@@ -248,9 +248,9 @@ export class WebVideoSource implements VideoSource {
     private readonly deviceId: string;
     private readonly displayName: string;
     private readonly stream: MediaStream;
+    private readonly initialSettings: VideoSourceInitialSettings;
     private referenceCount = 1;
 
-    private initialSettings: VideoSourceInitialSettings;
 
     constructor(deviceId: string, displayName: string, stream: MediaStream) {
         this.deviceId = deviceId;
@@ -291,13 +291,13 @@ export class WebVideoSource implements VideoSource {
 
         return {
             minWidth: capabilities?.width?.min || 1,
-            maxWidth: capabilities?.width?.max || this.initialSettings.width,
+            maxWidth: capabilities?.width?.max || this.initialSettings.width || undefined,
 
             minHeight: capabilities?.height?.min || 1,
-            maxHeight: capabilities?.height?.max || this.initialSettings.height,
+            maxHeight: capabilities?.height?.max || this.initialSettings.height || undefined,
 
             minFrameRate: capabilities?.frameRate?.min || 1,
-            maxFrameRate: capabilities?.frameRate?.max || this.initialSettings.frameRate
+            maxFrameRate: capabilities?.frameRate?.max || this.initialSettings.frameRate || undefined
         };
     }
 

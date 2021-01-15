@@ -128,13 +128,20 @@ async function generateAndApplyDefaultConfig(source: VideoSource) : Promise<Vide
     const trackSettings = videoTrack.getSettings();
     const capabilities = source.getCapabilities();
 
-    maxHeight = Math.min(maxHeight, capabilities.maxHeight);
-    maxWidth = Math.min(maxWidth, capabilities.maxWidth);
+    /* Safari */
+    if(trackSettings.height === 0) {
+        trackSettings.height = capabilities.maxHeight;
+    }
+    if(trackSettings.width === 0) {
+        trackSettings.width = capabilities.maxWidth;
+    }
 
-    /* FIXME: Get these values somewhere else! */
+    maxHeight = maxHeight ? Math.min(maxHeight, capabilities.maxHeight) : capabilities.maxHeight;
+    maxWidth = maxWidth ? Math.min(maxWidth, capabilities.maxWidth) : capabilities.maxWidth;
+
     const broadcastConstraints: VideoBroadcastConfig = {
-        maxBandwidth: 1_600_000,
-        keyframeInterval: 0
+        maxBandwidth: settings.getValue(Settings.KEY_VIDEO_DEFAULT_MAX_BANDWIDTH),
+        keyframeInterval: settings.getValue(Settings.KEY_VIDEO_DEFAULT_KEYFRAME_INTERVAL)
     } as VideoBroadcastConfig;
 
     {
@@ -163,7 +170,7 @@ async function generateAndApplyDefaultConfig(source: VideoSource) : Promise<Vide
     try {
         await applyBroadcastConfig(source, broadcastConstraints);
     } catch (error) {
-        logWarn(LogCategory.VIDEO, tr("Failed to apply initial default broadcast config: %o"), error);
+        logWarn(LogCategory.VIDEO, tr("Failed to apply initial default broadcast config (%o): %o"), broadcastConstraints, error);
     }
 
     updateBroadcastConfigFromSource(source, broadcastConstraints);

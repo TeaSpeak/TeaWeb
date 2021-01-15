@@ -541,6 +541,8 @@ export class RTCConnection {
         this.reset(true);
 
         this.connection.events.on("notify_connection_state_changed", event => this.handleConnectionStateChanged(event));
+
+        (window as any).rtp = this;
     }
 
     destroy() {

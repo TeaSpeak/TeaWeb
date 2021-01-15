@@ -13,8 +13,8 @@ export interface VideoSourceCapabilities {
 }
 
 export interface VideoSourceInitialSettings {
-    width: number,
-    height: number,
+    width: number | 0,
+    height: number | 0,
     frameRate: number
 }
 

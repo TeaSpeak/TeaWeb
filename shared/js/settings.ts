@@ -644,6 +644,20 @@ export class Settings {
         valueType: "number",
     };
 
+    static readonly KEY_VIDEO_DEFAULT_MAX_BANDWIDTH: ValuedRegistryKey<number> = {
+        key: "video_default_max_bandwidth",
+        defaultValue: 1_600_000,
+        description: "The default video bandwidth to use in bits/seconds.\nA too high value might not be allowed by all server permissions.",
+        valueType: "number",
+    };
+
+    static readonly KEY_VIDEO_DEFAULT_KEYFRAME_INTERVAL: ValuedRegistryKey<number> = {
+        key: "video_default_keyframe_interval",
+        defaultValue: 0,
+        description: "The default interval to forcibly request a keyframe from ourself in seconds. A value of zero means no such interval.",
+        valueType: "number",
+    };
+
     static readonly KEY_VIDEO_DYNAMIC_QUALITY: ValuedRegistryKey<boolean> = {
         key: "video_dynamic_quality",
         defaultValue: true,
