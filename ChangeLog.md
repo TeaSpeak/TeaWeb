@@ -1,4 +1,7 @@
 # Changelog:
+* **15.01.21**
+    - Fixed the history toggle (Thanks to Vafin)
+    
 * **12.01.21**
     - Fixed bug where the quick video select popup did not start the video broadcasting
     - Fixed a bug where an invalid H264 codec may caused video connection setup failure

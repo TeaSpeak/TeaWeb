@@ -185,7 +185,7 @@ const ConnectContainer = () => (
 );
 
 const ButtonToggleHistory = () => {
-    const state = useProperty("historyShown", false);
+    const [state] = useProperty("historyShown", false);
     const events = useContext(EventContext);
 
     let body;
@@ -411,7 +411,7 @@ const HistoryTable = () => {
 }
 
 const HistoryContainer = () => {
-    const historyShown = useProperty("historyShown", false);
+    const [historyShown] = useProperty("historyShown", false);
 
     return (
         <div className={joinClassList(cssStyle.historyContainer, historyShown && cssStyle.shown)}>
