@@ -12854,6 +12854,15 @@
       }
     },
     {
+      "translated": "Копировать разрешения",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Copy permissions"
+      }
+    },
+    {
       "translated": "Создание новой группы сервера",
       "flags": [
         "google-translate"
@@ -12950,6 +12959,78 @@
       ],
       "key": {
         "message": "Select a group"
+      }
+    },
+    {
+      "translated": "Вставить",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Paste"
+      }
+    },
+    {
+      "translated": "Копировать",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Copy"
+      }
+    },
+    {
+      "translated": "Добавить клиента",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Add client"
+      }
+    },
+    {
+      "translated": "Добавить клиента",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Remove client"
+      }
+    },
+    {
+      "translated": "Копировать уникальный id",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Copy unique id"
+      }
+    },
+    {
+      "translated": "ID клиента из базы данных или уникальный id",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Database or Unique ID"
+      }
+    },
+    {
+      "translated": "Уникальный идентификатор",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Unique identifier"
+      }
+    },
+    {
+      "translated": "ID клиента из базы данных",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Client database ID"
       }
     }
 
