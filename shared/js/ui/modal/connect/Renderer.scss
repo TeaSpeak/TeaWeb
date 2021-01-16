@@ -106,7 +106,8 @@
     .buttonShowHistory {
         .containerText {
             display: inline-block;
-            width: 10em;
+            min-width: 10em;
+            flex-shrink: 0;
         }
 
         .containerArrow {
@@ -239,6 +240,8 @@
             max-width: 100%;
             text-overflow: ellipsis;
             overflow: hidden;
+
+            @include text-dotdotdot();
         }
     }
 

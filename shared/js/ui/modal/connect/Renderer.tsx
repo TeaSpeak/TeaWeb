@@ -385,22 +385,22 @@ const HistoryTable = () => {
             <div className={cssStyle.head}>
                 <div className={cssStyle.column + " " + cssStyle.delete} />
                 <div className={cssStyle.column + " " + cssStyle.name}>
-                    <Translatable>Name</Translatable>
+                    <a title={useTr("Name")}><Translatable>Name</Translatable></a>
                 </div>
                 <div className={cssStyle.column + " " + cssStyle.address}>
-                    <Translatable>Address</Translatable>
+                    <a title={useTr("Address")}><Translatable>Address</Translatable></a>
                 </div>
                 <div className={cssStyle.column + " " + cssStyle.password}>
-                    <Translatable>Password</Translatable>
+                    <a title={useTr("Password")}><Translatable>Password</Translatable></a>
                 </div>
                 <div className={cssStyle.column + " " + cssStyle.country}>
-                    <Translatable>Country</Translatable>
+                    <a title={useTr("Country")}><Translatable>Country</Translatable></a>
                 </div>
                 <div className={cssStyle.column + " " + cssStyle.clients}>
-                    <Translatable>Clients</Translatable>
+                    <a title={useTr("Clients")}><Translatable>Clients</Translatable></a>
                 </div>
                 <div className={cssStyle.column + " " + cssStyle.connections}>
-                    <Translatable>Connections</Translatable>
+                    <a title={useTr("Connections")}><Translatable>Connections</Translatable></a>
                 </div>
             </div>
             <div className={cssStyle.body}>
