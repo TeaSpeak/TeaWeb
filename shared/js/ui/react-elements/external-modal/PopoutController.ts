@@ -23,7 +23,7 @@ class PopoutController extends EventControllerBase<"popout"> {
         super();
         this.ipcRemoteId = AppParameters.getValue(AppParameters.KEY_IPC_REMOTE_ADDRESS, "invalid");
 
-        this.ipcChannel = getIPCInstance().createChannel(this.ipcRemoteId, AppParameters.getValue(AppParameters.KEY_IPC_REMOTE_ADDRESS, "invalid"));
+        this.ipcChannel = getIPCInstance().createChannel(this.ipcRemoteId, AppParameters.getValue(AppParameters.KEY_IPC_REMOTE_POPOUT_CHANNEL, "invalid"));
         this.ipcChannel.messageHandler = this.handleIPCMessage.bind(this);
     }
 

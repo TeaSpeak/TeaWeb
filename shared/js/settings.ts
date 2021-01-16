@@ -143,6 +143,7 @@ export namespace AppParameters {
 
     parseParameters();
 }
+(window as any).AppParameters = AppParameters;
 
 export namespace AppParameters {
     export const KEY_CONNECT_ADDRESS: RegistryKey<string> = {
@@ -214,6 +215,12 @@ export namespace AppParameters {
         key: "ipc-address",
         valueType: "string",
         description: "Address of the owner for IPC communication."
+    };
+
+    export const KEY_IPC_REMOTE_POPOUT_CHANNEL: RegistryKey<string> = {
+        key: "ipc-channel",
+        valueType: "string",
+        description: "The channel name of the popout channel communication id"
     };
 
     export const KEY_MODAL_TARGET: RegistryKey<string> = {
