@@ -13032,7 +13032,141 @@
       "key": {
         "message": "Client database ID"
       }
+    },
+    {
+      "translated": "Открыть чат",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Open conversation"
+      }
+    },
+    {
+      "translated": "Один чат",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "One conversation"
+      }
+    },
+    {
+      "translated": "Вы отключились от сервера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "You've disconnected from the server"
+      }
+    },
+    {
+      "translated": "Вчера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Yesterday"
+      }
+    },
+    {
+      "translated": "Сегодня",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Today"
+      }
+    },
+    {
+      "translated": "Вчера в",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Yesterday at"
+      }
+    },
+    {
+      "translated": "Сегодня в",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Today at"
+      }
+    },
+    {
+      "translated": "одну минуту назад",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "one minute ago"
+      }
+    },
+    {
+      "translated": "мин. назад",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "minutes ago"
+      }
+    },
+    {
+      "translated": "сек. назад",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "seconds ago"
+      }
+    },
+    {
+      "translated": "О приложении",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "About"
+      }
+    },
+    {
+      "translated": "TeaSpeak-Client, сборка ",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "TeaSpeak-Client build "
+      }
+    },
+    {
+      "translated": "Особая благодарность",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Special thanks"
+      }
+    },
+    {
+      "translated": "Контакты",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Contact"
+      }
+    },
+    {
+      "translated": "Лицензия",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "License"
+      }
     }
-
   ]
 }
