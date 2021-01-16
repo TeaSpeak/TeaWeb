@@ -74,6 +74,7 @@ class ClientServiceConnection {
         let address;
         address = "client-services.teaspeak.de:27791";
         //address = "localhost:1244";
+        //address = "192.168.40.135:1244";
 
         this.connection = new WebSocket(`wss://${address}/ws-api/v${kApiVersion}`);
         this.connection.onclose = event => {
@@ -375,7 +376,7 @@ export class ClientServices {
         } else {
             const os = window.detectedBrowser.os;
             const osParts = os.split(" ");
-            if(osParts.last().match(/^[0-9]+$/)) {
+            if(osParts.last().match(/^[0-9\.]+$/)) {
                 payload.platform_version = osParts.last();
                 osParts.splice(osParts.length - 1, 1);
             }
