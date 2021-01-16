@@ -2728,7 +2728,7 @@
       }
     },
     {
-      "translated": "У вас нет разрешения на создание запроса входа на сервер",
+      "translated": "У вас нет разрешения на создание пользователя с правами ServerQuery",
       "flags": [
         "google-translate"
       ],
@@ -9186,7 +9186,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "Set away for all servers"
+        "message": "Set away on all servers"
       }
     },
     {
@@ -9370,7 +9370,7 @@
       }
     },
     {
-      "translated": "Настройки",
+      "translated": "Инструменты",
       "flags": [
         "google-translate"
       ],
@@ -10690,6 +10690,15 @@
       ],
       "key": {
         "message": "Voice"
+      }
+    },
+    {
+      "translated": "Качество звука",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Voice quality"
       }
     },
     {
@@ -12440,6 +12449,24 @@
       }
     },
     {
+      "translated": "Показать историю подключений",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Show connect history"
+      }
+    },
+    {
+      "translated": "Подключиться в той же вкладке",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Connect in the same tab"
+      }
+    },
+    {
       "translated": "Адрес",
       "flags": [
         "google-translate"
@@ -12635,6 +12662,294 @@
       ],
       "key": {
         "message": "please wait"
+      }
+    },
+    {
+      "translated": "Добро пожаловать в TeaSpeak-клиент",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Welcome to the TeaSpeak - Client"
+      }
+    },
+    {
+      "translated": "Добро пожаловать, уважаемый пользователь TeaSpeak.",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Welcome dear TeaSpeak user."
+      }
+    },
+    {
+      "translated": "Мы хотели бы установить несколько вещей, прежде чем продолжить.<br>",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "We would like to setup a few things before you're ready to go.<br>"
+      }
+    },
+    {
+      "translated": "Не волнуйся! Мы проведем вас через основной процесс настройки.",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Dont worry! We'll guide you thru the basic setup process."
+      }
+    },
+    {
+      "translated": "Вместе мы пройдем по этим шагам:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Together we'll go thru these steps:"
+      }
+    },
+    {
+      "translated": "Приветстве",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Welcome Greeting"
+      }
+    },
+    {
+      "translated": "Настройка микрофона",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Microphone configuration"
+      }
+    },
+    {
+      "translated": "Настройка идентификации",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Identity setup"
+      }
+    },
+    {
+      "translated": "Настройка динамиков",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Speaker configuration"
+      }
+    },
+    {
+      "translated": "Вы можете выйти из этого руководства в любой момент и сразу перейти к использованию клиента.",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "It is save to exit this guide at any point and directly jump ahead using the client."
+      }
+    },
+    {
+      "translated": "Пропустить",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Skip guide"
+      }
+    },
+    {
+      "translated": "Следующий шаг",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Next step"
+      }
+    },
+    {
+      "translated": "Шаг назад",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Last step"
+      }
+    },
+    {
+      "translated": "Завершить обучение",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Finish guide"
+      }
+    },
+    {
+      "translated": "Настройка микрофона",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Microphone setup"
+      }
+    },
+    {
+      "translated": "Во-первых, нам нужно установить микрофон.<br>Позвольте мне провести вас через основные элементы пользовательского интерфейса.<br><br>Чтобы продолжить, нажмите в любом месте экрана.",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Firstly we need to setup a microphone.<br>Let me guide you thru the basic UI elements.<br><br>To continue click anywhere on the screen."
+      }
+    },
+    {
+      "translated": "Поздравляю,<br>вы закончили настройку TeaSpeak",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Congratulations,<br>your done setting up TeaSpeak"
+      }
+    },
+    {
+      "translated": "Вы закончили настройку клиента. Но не волнуйся,<br>",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "You're done setting up your client. But dont worry,<br>"
+      }
+    },
+    {
+      "translated": "вы можете найти все эти настройки в меню настроек<br>",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "your could find all these settings within the settings menu<br>"
+      }
+    },
+    {
+      "translated": "Чтобы открыть настройки клиента, нажмите кнопку \"Интсрументы\", а затем \"Настройки\"<br>",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "To open the client settings click on \"tools\" and than \"settings\"<br>"
+      }
+    },
+    {
+      "translated": "Добавить группу",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Add group"
+      }
+    },
+    {
+      "translated": "Создание новой группы сервера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Create a new server group"
+      }
+    },
+    {
+      "translated": "Недопустимая длина имени группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Invalid group name length"
+      }
+    },
+    {
+      "translated": "Тип группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Target group type"
+      }
+    },
+    {
+      "translated": "Создайте группу с помощью шаблона",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Create group using this template"
+      }
+    },
+    {
+      "translated": "Шаблон не выбран",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "No template"
+      }
+    },
+    {
+      "translated": "Создать группу",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Create Group"
+      }
+    },
+    {
+      "translated": "Обычная группа",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Regular Groups"
+      }
+    },
+    {
+      "translated": "Копировать разрешения группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Copy group permissions"
+      }
+    },
+    {
+      "translated": "Исходная группа",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Source group"
+      }
+    },
+    {
+      "translated": "Целевая группа",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Target group"
+      }
+    },
+    {
+      "translated": "Выберите группу",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Select a group"
       }
     }
 
