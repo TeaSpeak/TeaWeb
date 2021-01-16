@@ -1,4 +1,7 @@
 # Changelog:
+* **16.01.21**
+    - Various bugfixes (Thanks to Vafin)
+    
 * **15.01.21**
     - Fixed the history toggle (Thanks to Vafin)
     
