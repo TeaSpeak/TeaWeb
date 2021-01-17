@@ -159,7 +159,7 @@ const ChannelIcon = () => {
                     <div className="arrow down" />
                 </div>
                 <div className={cssStyle.dropdown}>
-                    <div className={cssStyle.entry} onClick={() => enabled && events.fire("action_icon_select")}>Edit icon</div>
+                    <div className={cssStyle.entry} onClick={() => enabled && events.fire("action_icon_select")}><Translatable>Edit icon</Translatable></div>
                     <div className={cssStyle.entry} onClick={() => {
                         if(!enabled) {
                             return;
@@ -173,7 +173,7 @@ const ChannelIcon = () => {
                                 serverUniqueId: propertyValue.remoteIcon.serverUniqueId
                             }
                         });
-                    }}>Remove icon</div>
+                    }}><Translatable>Remove icon</Translatable></div>
                 </div>
             </div>
         </div>
@@ -351,31 +351,31 @@ const SidebarType = React.memo(() => {
     );
 });
 
-type SimpleCodecQualityTemplate = { id: string, codec: number, quality: number, name: string };
+type SimpleCodecQualityTemplate = { id: string, codec: number, quality: number, name: () => string };
 const kCodecTemplates: SimpleCodecQualityTemplate[] = [
     {
         id: "mobile",
         codec: 4,
         quality: 4,
-        name: useTr("Mobile")
+        name: () => useTr("Mobile")
     },
     {
         id: "voice",
         codec: 4,
         quality: 6,
-        name: useTr("Voice")
+        name: () => useTr("Voice")
     },
     {
         id: "music",
         codec: 5,
         quality: 6,
-        name: useTr("Music")
+        name: () => useTr("Music")
     },
     {
         id: "loading",
         codec: undefined,
         quality: undefined,
-        name: useTr("loading")
+        name: () => useTr("loading")
     }
 ];
 
@@ -404,7 +404,7 @@ const SimpleCodecQuality = React.memo(() => {
             >
                 {
                     kCodecTemplates.map(template => (
-                        <option style={{ display: template.id === "loading" ? "none" : undefined }} key={template.id} value={template.id} disabled={!hasPermission(template)}>{template.name}</option>
+                        <option style={{ display: template.id === "loading" ? "none" : undefined }} key={template.id} value={template.id} disabled={!hasPermission(template)}>{template.name()}</option>
                     ))
                 }
                 <option style={{ display: "none" }} key={"advanced"} value={"advanced"}>{useTr("Custom (Advanced settings)")}</option>
@@ -431,7 +431,7 @@ const AdvancedCodecPresets = React.memo(() => {
                         disabled={!hasPermission(template) || propertyState !== "normal"}
                         onChange={() => setPropertyValue({ quality: template.quality, type: template.codec})}
                     >
-                        <div>{template.name}</div>
+                        <div>{template.name()}</div>
                     </RadioButton>
                 ))
             }

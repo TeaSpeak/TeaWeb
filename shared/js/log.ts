@@ -68,7 +68,7 @@ export let enabled_mapping = new Map<number, boolean>([
     [LogCategory.VOICE,                 true],
     [LogCategory.AUDIO,                 true],
     [LogCategory.CHAT,                  true],
-    [LogCategory.I18N,                  false],
+    [LogCategory.I18N,                  true],
     [LogCategory.IDENTITIES,            true],
     [LogCategory.IPC,                   true],
     [LogCategory.STATISTICS,            true],
