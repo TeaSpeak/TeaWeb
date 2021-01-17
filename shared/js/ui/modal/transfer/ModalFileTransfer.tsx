@@ -41,7 +41,7 @@ class FileTransferModal extends InternalModal {
         this.transferInfoEvents.fire("notify_destroy");
     }
 
-    title() {
+    renderTitle() {
         return <Translatable>File Browser</Translatable>;
     }
 

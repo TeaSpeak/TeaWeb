@@ -855,7 +855,7 @@ export class ModalVideoSource extends InternalModal {
         );
     }
 
-    title(): string | React.ReactElement<Translatable> {
+    renderTitle(): string | React.ReactElement<Translatable> {
         return <Translatable>Start video Broadcasting</Translatable>;
     }
 }

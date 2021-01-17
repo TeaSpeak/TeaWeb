@@ -31,7 +31,7 @@ export function spawnEchoTestModal(connection: ConnectionHandler) {
             );
         }
 
-        title(): string | React.ReactElement<Translatable> {
+        renderTitle(): string | React.ReactElement<Translatable> {
             return <Translatable>Voice echo test</Translatable>;
         }
     });

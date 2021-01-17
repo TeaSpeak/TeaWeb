@@ -1,5 +1,5 @@
 import {ChannelMessage, IPCChannel} from "../../../ipc/BrowserIPC";
-import {EventReceiver, RegistryMap} from "../../../events";
+import {EventSender, RegistryMap} from "../../../events";
 
 export interface PopoutIPCMessage {
     "hello-popout": { version: string },
@@ -41,7 +41,7 @@ export abstract class EventControllerBase<Type extends "controller" | "popout"> 
     protected ipcRemoteId: string;
 
     protected localRegistries: RegistryMap;
-    private localEventReceiver: {[key: string]: EventReceiver};
+    private localEventReceiver: {[key: string]: EventSender};
 
     private omitEventType: string = undefined;
     private omitEventData: any;
@@ -61,7 +61,7 @@ export abstract class EventControllerBase<Type extends "controller" | "popout"> 
         }
     }
 
-    private createEventReceiver(key: string) : EventReceiver {
+    private createEventReceiver(key: string) : EventSender {
         let refThis = this;
 
         const fireEvent = (type: "react" | "later", eventType: any, data?: any[], callback?: () => void) => {
@@ -80,7 +80,7 @@ export abstract class EventControllerBase<Type extends "controller" | "popout"> 
             }
         };
 
-        return new class implements EventReceiver {
+        return new class implements EventSender {
             fire<T extends keyof {}>(eventType: T, data?: any[T], overrideTypeKey?: boolean) {
                 if(refThis.omitEventType === eventType && refThis.omitEventData === data) {
                     refThis.omitEventType = undefined;

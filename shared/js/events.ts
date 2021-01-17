@@ -22,7 +22,7 @@ export class SingletonEvent implements Event<SingletonEvents, "singletone-instan
     as<T extends keyof SingletonEvents>() : SingletonEvents[T] { return; }
 }
 
-export interface EventReceiver<Events extends { [key: string]: any } = { [key: string]: any }> {
+export interface EventSender<Events extends { [key: string]: any } = { [key: string]: any }> {
     fire<T extends keyof Events>(event_type: T, data?: Events[T], overrideTypeKey?: boolean);
 
     /**
@@ -44,11 +44,11 @@ export interface EventReceiver<Events extends { [key: string]: any } = { [key: s
 }
 
 const event_annotation_key = guid();
-export class Registry<Events extends { [key: string]: any } = { [key: string]: any }> implements EventReceiver<Events> {
+export class Registry<Events extends { [key: string]: any } = { [key: string]: any }> implements EventSender<Events> {
     private readonly registryUuid;
 
     private handler: {[key: string]: ((event) => void)[]} = {};
-    private connections: {[key: string]: EventReceiver<Events>[]} = {};
+    private connections: {[key: string]: EventSender<Events>[]} = {};
     private eventHandlerObjects: {
         object: any,
         handlers: {[key: string]: ((event) => void)[]}
@@ -66,12 +66,11 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
         this.registryUuid = "evreg_data_" + guid();
     }
 
-
     enableDebug(prefix: string) { this.debugPrefix = prefix || "---"; }
     disableDebug() { this.debugPrefix = undefined; }
 
-    enable_warn_unhandled_events() { this.warnUnhandledEvents = true; }
-    disable_warn_unhandled_events() { this.warnUnhandledEvents = false; }
+    enableWarnUnhandledEvents() { this.warnUnhandledEvents = true; }
+    disableWarnUnhandledEvents() { this.warnUnhandledEvents = false; }
 
     on<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void) : () => void;
     on(events: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void) : () => void;
@@ -158,21 +157,21 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
         }, reactEffectDependencies);
     }
 
-    connectAll<EOther, T extends keyof Events & keyof EOther>(target: EventReceiver<Events>) {
+    connectAll<EOther, T extends keyof Events & keyof EOther>(target: EventSender<Events>) {
         (this.connections[null as any] || (this.connections[null as any] = [])).push(target as any);
     }
 
-    connect<EOther, T extends (keyof Events & keyof EOther)>(events: T | T[], target: EventReceiver<EOther>) {
+    connect<EOther, T extends (keyof Events & keyof EOther)>(events: T | T[], target: EventSender<EOther>) {
         for(const event of Array.isArray(events) ? events : [events])
             (this.connections[event as string] || (this.connections[event as string] = [])).push(target as any);
     }
 
-    disconnect<EOther, T extends keyof Events & keyof EOther>(events: T | T[], target: EventReceiver<Events>) {
+    disconnect<EOther, T extends keyof Events & keyof EOther>(events: T | T[], target: EventSender<Events>) {
         for(const event of Array.isArray(events) ? events : [events])
             (this.connections[event as string] || []).remove(target as any);
     }
 
-    disconnectAll<EOther>(target: EventReceiver<EOther>) {
+    disconnectAll<EOther>(target: EventSender<EOther>) {
         this.connections[null as any]?.remove(target as any);
         for(const event of Object.keys(this.connections))
             this.connections[event].remove(target as any);
@@ -266,7 +265,7 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
         this.pendingReactCallbacksFrame = 0;
         this.pendingReactCallbacks = undefined;
 
-        /* run this after the requestAnimationFrame has been finished */
+        /* run this after the requestAnimationFrame has been finished since else it might be fired instantly */
         setTimeout(() => {
             /* batch all react updates */
             unstable_batchedUpdates(() => {
@@ -344,8 +343,9 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
         this.eventHandlerObjects.remove(data);
 
         for(const key of Object.keys(data.handlers)) {
-            for(const evhandler of data.handlers[key])
+            for(const evhandler of data.handlers[key]) {
                 this.off(evhandler);
+            }
         }
     }
 }
@@ -376,8 +376,9 @@ export function ReactEventHandler<ObjectClass = React.Component<any, any>, Event
             if(!registry) throw "Event registry returned for an event object is invalid";
             registry.register_handler(this);
 
-            if(typeof didMount === "function")
+            if(typeof didMount === "function") {
                 didMount.call(this, arguments);
+            }
         };
 
         const willUnmount = constructor.prototype.componentWillUnmount;
@@ -390,165 +391,14 @@ export function ReactEventHandler<ObjectClass = React.Component<any, any>, Event
                 console.warn("Failed to unregister event handler: %o", error);
             }
 
-            if(typeof willUnmount === "function")
+            if(typeof willUnmount === "function") {
                 willUnmount.call(this, arguments);
+            }
         };
     }
 }
 
 export namespace modal {
-    export type BotStatusType = "name" | "description" | "volume" | "country_code" | "channel_commander" | "priority_speaker";
-    export type PlaylistStatusType = "replay_mode" | "finished" | "delete_played" | "max_size" | "notify_song_change";
-    export interface music_manage {
-        show_container: { container: "settings" | "permissions"; };
-
-        /* setting relevant */
-        query_bot_status: {},
-        bot_status: {
-            status: "success" | "error";
-            error_msg?: string;
-            data?: {
-                name: string,
-                description: string,
-                volume: number,
-
-                country_code: string,
-                default_country_code: string,
-
-                channel_commander: boolean,
-                priority_speaker: boolean,
-
-                client_version: string,
-                client_platform: string,
-
-                uptime_mode: number,
-                bot_type: number
-            }
-        },
-        set_bot_status: {
-            key: BotStatusType,
-            value: any
-        },
-        set_bot_status_result: {
-            key: BotStatusType,
-            status: "success" | "error" | "timeout",
-            error_msg?: string,
-            value?: any
-        }
-
-        query_playlist_status: {},
-        playlist_status: {
-            status: "success" | "error",
-            error_msg?: string,
-            data?: {
-                replay_mode: number,
-                finished: boolean,
-                delete_played: boolean,
-                max_size: number,
-                notify_song_change: boolean
-            }
-        },
-        set_playlist_status: {
-            key: PlaylistStatusType,
-            value: any
-        },
-        set_playlist_status_result: {
-            key: PlaylistStatusType,
-            status: "success" | "error" | "timeout",
-            error_msg?: string,
-            value?: any
-        }
-
-        /* permission relevant */
-        show_client_list: {},
-        hide_client_list: {},
-
-        filter_client_list: { filter: string | undefined },
-
-        "refresh_permissions": {},
-
-        query_special_clients: {},
-        special_client_list: {
-            status: "success" | "error" | "error-permission",
-            error_msg?: string,
-            clients?: {
-                name: string,
-                unique_id: string,
-                database_id: number
-            }[]
-        },
-
-        search_client: { text: string },
-        search_client_result: {
-            status: "error" | "timeout" | "empty" | "success",
-            error_msg?: string,
-            client?: {
-                name: string,
-                unique_id: string,
-                database_id: number
-            }
-        },
-
-        /* sets a client to set the permission for */
-        special_client_set: {
-            client?: {
-                name: string,
-                unique_id: string,
-                database_id: number
-            }
-        },
-
-        "query_general_permissions": {},
-        "general_permissions": {
-            status: "error" | "timeout" | "success",
-            error_msg?: string,
-            permissions?: {[key: string]:number}
-        },
-        "set_general_permission_result": {
-            status: "error" | "success",
-            key: string,
-            value?: number,
-            error_msg?: string
-        },
-        "set_general_permission": { /* try to change a permission for the server */
-            key: string,
-            value: number
-        },
-
-
-        "query_client_permissions": { client_database_id: number },
-        "client_permissions": {
-            status: "error" | "timeout" | "success",
-            client_database_id: number,
-            error_msg?: string,
-            permissions?: {[key: string]:number}
-        },
-        "set_client_permission_result": {
-            status: "error" | "success",
-            client_database_id: number,
-            key: string,
-            value?: number,
-            error_msg?: string
-        },
-        "set_client_permission": { /* try to change a permission for the server */
-            client_database_id: number,
-            key: string,
-            value: number
-        },
-
-        "query_group_permissions": { permission_name: string },
-        "group_permissions": {
-            permission_name: string;
-            status: "error" | "timeout" | "success"
-            groups?: {
-                name: string,
-                value: number,
-                id: number
-            }[],
-            error_msg?: string
-        }
-    }
-
     export namespace settings {
         export type ProfileInfo = {
             id: string,
@@ -706,75 +556,6 @@ export namespace modal {
 
 
             "setup-forum-connection": {}
-        }
-
-        export type MicrophoneSettings = "volume" | "vad-type" | "ppt-key" | "ppt-release-delay" | "ppt-release-delay-active" | "threshold-threshold";
-        export interface microphone {
-            "query-devices": { refresh_list: boolean },
-            "query-device-result": {
-                status: "success" | "error" | "timeout",
-
-                error?: string,
-                devices?: {
-                    id: string,
-                    name: string,
-                    driver: string
-                }[]
-                active_device?: string;
-            },
-
-            "query-settings": {},
-            "query-settings-result": {
-                status: "success" | "error" | "timeout",
-
-                error?: string,
-                info?: {
-                    volume: number,
-                    vad_type: string,
-
-                    vad_ppt: {
-                        key: any, /* ppt.KeyDescriptor */
-                        release_delay: number,
-                        release_delay_active: boolean
-                    },
-                    vad_threshold: {
-                        threshold: number
-                    }
-                }
-            },
-
-            "set-device": { device_id: string },
-            "set-device-result": {
-                device_id: string,
-                status: "success" | "error" | "timeout",
-
-                error?: string
-            },
-
-            "set-setting": {
-                setting: MicrophoneSettings;
-                value: any;
-            },
-            "set-setting-result": {
-                setting: MicrophoneSettings,
-                status: "success" | "error" | "timeout",
-
-                error?: string,
-                value?: any
-            },
-
-            "update-device-level": {
-                devices: {
-                    device_id: string,
-                    status: "success" | "error",
-
-                    level?: number,
-                    error?: string
-                }[]
-            },
-
-            "audio-initialized": {},
-            "deinitialize": {}
         }
     }
 }

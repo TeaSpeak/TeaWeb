@@ -498,7 +498,7 @@ class ModalVideoPopout extends AbstractModal {
         this.events = registryMap["default"] as any;
     }
 
-    title(): string | React.ReactElement<Translatable> {
+    renderTitle(): string | React.ReactElement<Translatable> {
         return <TitleRenderer events={this.events} />;
     }
 

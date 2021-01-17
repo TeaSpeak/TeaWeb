@@ -1162,7 +1162,7 @@ export class ChannelEditModal extends InternalModal {
         );
     }
 
-    title(): string | React.ReactElement {
+    renderTitle(): string | React.ReactElement {
         if(this.isChannelCreate) {
             return <Translatable key={"create"}>Create channel</Translatable>;
         } else {

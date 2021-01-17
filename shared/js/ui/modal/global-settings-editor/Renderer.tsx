@@ -189,7 +189,7 @@ export class ModalGlobalSettingsEditor extends InternalModal {
         );
     }
 
-    title(): string | React.ReactElement<Translatable> {
+    renderTitle(): string | React.ReactElement<Translatable> {
         return <Translatable>Global settings registry</Translatable>;
     }
 }

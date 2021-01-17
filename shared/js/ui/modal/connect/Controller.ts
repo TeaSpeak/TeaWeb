@@ -1,5 +1,8 @@
 import {Registry} from "tc-shared/events";
-import {ConnectProperties, ConnectUiEvents, PropertyValidState} from "tc-shared/ui/modal/connect/Definitions";
+import {
+    ConnectUiEvents,
+    ConnectUiVariables,
+} from "tc-shared/ui/modal/connect/Definitions";
 import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import {ConnectModal} from "tc-shared/ui/modal/connect/Renderer";
 import {LogCategory, logError, logWarn} from "tc-shared/log";
@@ -17,7 +20,8 @@ import {server_connections} from "tc-shared/ConnectionManager";
 import {parseServerAddress} from "tc-shared/tree/Server";
 import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
 import * as ipRegex from "ip-regex";
-import _ = require("lodash");
+import {UiVariableProvider} from "tc-shared/ui/utils/Variable";
+import {createLocalUiVariables} from "tc-shared/ui/utils/LocalVariable";
 
 const kRegexDomain = /^(localhost|((([a-zA-Z0-9_-]{0,63}\.){0,253})?[a-zA-Z0-9_-]{0,63}\.[a-zA-Z]{2,64}))$/i;
 
@@ -37,19 +41,11 @@ export type ConnectParameters = {
     defaultChannelPassword?: string,
 }
 
-type ValidityStates =  {[T in keyof PropertyValidState]: boolean};
-const kDefaultValidityStates: ValidityStates = {
-    address: false,
-    nickname: false,
-    password: false,
-    profile: false
-}
-
 class ConnectController {
     readonly uiEvents: Registry<ConnectUiEvents>;
+    readonly uiVariables: UiVariableProvider<ConnectUiVariables>;
 
     private readonly defaultAddress: string;
-    private readonly propertyProvider: {[K in keyof ConnectProperties]?: () => Promise<ConnectProperties[K]>} = {};
 
     private historyShown: boolean;
 
@@ -59,31 +55,21 @@ class ConnectController {
     private currentPasswordHashed: boolean;
     private currentProfile: ConnectionProfile | undefined;
 
-    private addressChanged: boolean;
-    private nicknameChanged: boolean;
-
     private selectedHistoryId: number;
     private history: ConnectionHistoryEntry[];
 
-    private validStates: {[T in keyof PropertyValidState]: boolean} = {
-        address: false,
-        nickname: false,
-        password: false,
-        profile: false
-    };
+    private validateNickname: boolean;
+    private validateAddress: boolean;
 
-    private validateStates: {[T in keyof PropertyValidState]: boolean} = {
-        profile: false,
-        password: false,
-        nickname: false,
-        address: false
-    };
-
-    constructor() {
+    constructor(uiVariables: UiVariableProvider<ConnectUiVariables>) {
         this.uiEvents = new Registry<ConnectUiEvents>();
         this.uiEvents.enableDebug("modal-connect");
 
+        this.uiVariables = uiVariables;
         this.history = undefined;
+
+        this.validateNickname = false;
+        this.validateAddress = false;
 
         this.defaultAddress = "ts.teaspeak.de";
         this.historyShown = settings.getValue(Settings.KEY_CONNECT_SHOW_HISTORY);
@@ -92,35 +78,117 @@ class ConnectController {
         this.currentProfile = findConnectProfile(settings.getValue(Settings.KEY_CONNECT_PROFILE)) || defaultConnectProfile();
         this.currentNickname = settings.getValue(Settings.KEY_CONNECT_USERNAME);
 
-        this.addressChanged = false;
-        this.nicknameChanged = false;
+        this.uiEvents.on("action_delete_history", event => {
+            connectionHistory.deleteConnectionAttempts(event.target, event.targetType).then(() => {
+                this.history = undefined;
+                this.uiVariables.sendVariable("history");
+            }).catch(error => {
+                logWarn(LogCategory.GENERAL, tr("Failed to delete connection attempts: %o"), error);
+            })
+        });
 
-        this.propertyProvider["nickname"] = async () => ({
+        this.uiEvents.on("action_manage_profiles", () => {
+            /* TODO: This is more a hack. Proper solution is that the connection profiles fire events if they've been changed... */
+            const modal = spawnSettingsModal("identity-profiles");
+            modal.close_listener.push(() => {
+                this.uiVariables.sendVariable("profiles", undefined);
+            });
+        });
+
+        this.uiEvents.on("action_select_history", event => this.setSelectedHistoryId(event.id));
+
+        this.uiEvents.on("action_connect", () => {
+            this.validateNickname = true;
+            this.validateAddress = true;
+            this.updateValidityStates();
+        });
+
+        this.uiVariables.setVariableProvider("server_address", () => ({
+            currentAddress: this.currentAddress,
+            defaultAddress: this.defaultAddress
+        }));
+
+        this.uiVariables.setVariableProvider("server_address_valid", () => {
+            if(this.validateAddress) {
+                const address = this.currentAddress || this.defaultAddress || "";
+                const parsedAddress = parseServerAddress(address);
+
+                if(parsedAddress) {
+                    kRegexDomain.lastIndex = 0;
+                    return kRegexDomain.test(parsedAddress.host) || ipRegex({ exact: true }).test(parsedAddress.host);
+                } else {
+                    return false;
+                }
+            } else {
+                return true;
+            }
+        });
+
+        this.uiVariables.setVariableEditor("server_address", newValue => {
+            if(this.currentAddress === newValue.currentAddress) {
+                return false;
+            }
+
+            this.setSelectedAddress(newValue.currentAddress, true, false);
+            return true;
+        });
+
+        this.uiVariables.setVariableProvider("nickname", () => ({
             defaultNickname: this.currentProfile?.connectUsername(),
             currentNickname: this.currentNickname,
+        }));
+
+        this.uiVariables.setVariableProvider("nickname_valid", () => {
+            if(this.validateNickname) {
+                const nickname = this.currentNickname || this.currentProfile?.connectUsername() || "";
+                return nickname.length >= 3 && nickname.length <= 30;
+            } else {
+                return true;
+            }
         });
 
-        this.propertyProvider["address"] = async () => ({
-            currentAddress: this.currentAddress,
-            defaultAddress: this.defaultAddress,
+        this.uiVariables.setVariableEditor("nickname", newValue => {
+            if(this.currentNickname === newValue.currentNickname) {
+                return false;
+            }
+
+            this.currentNickname = newValue.currentNickname;
+            settings.setValue(Settings.KEY_CONNECT_USERNAME, this.currentNickname);
+
+            this.validateNickname = true;
+            this.uiVariables.sendVariable("nickname_valid");
+            return true;
         });
 
-        this.propertyProvider["password"] = async () => this.currentPassword ? ({
-            hashed: this.currentPasswordHashed,
-            password: this.currentPassword
-        }) : undefined;
+        this.uiVariables.setVariableProvider("password", () => ({
+            password: this.currentPassword,
+            hashed: this.currentPasswordHashed
+        }));
 
-        this.propertyProvider["profiles"] = async () => ({
-            selected: this.currentProfile?.id,
-            profiles: availableConnectProfiles().map(profile => ({
-                id: profile.id,
-                valid: profile.valid(),
-                name: profile.profileName
-            }))
+        this.uiVariables.setVariableEditor("password", newValue => {
+            if(this.currentPassword === newValue.password) {
+                return false;
+            }
+
+            this.currentPassword = newValue.password;
+            this.currentPasswordHashed = newValue.hashed;
+            return true;
         });
 
-        this.propertyProvider["historyShown"] = async () => this.historyShown;
-        this.propertyProvider["history"] = async () => {
+        this.uiVariables.setVariableProvider("profile_valid", () => !!this.currentProfile?.valid());
+
+        this.uiVariables.setVariableProvider("historyShown", () => this.historyShown);
+        this.uiVariables.setVariableEditor("historyShown", newValue => {
+            if(this.historyShown === newValue) {
+                return false;
+            }
+
+            this.historyShown = newValue;
+            settings.setValue(Settings.KEY_CONNECT_SHOW_HISTORY, newValue);
+            return true;
+        });
+
+        this.uiVariables.setVariableProvider("history",async () => {
             if(!this.history) {
                 this.history = await connectionHistory.lastConnectedServers(10);
             }
@@ -133,130 +201,67 @@ class ConnectController {
                     uniqueServerId: entry.serverUniqueId
                 }))
             };
-        };
+        });
 
-        this.uiEvents.on("query_property", event => this.sendProperty(event.property));
-        this.uiEvents.on("query_property_valid", event => this.uiEvents.fire_react("notify_property_valid", { property: event.property, value: this.validStates[event.property] }));
-        this.uiEvents.on("query_history_connections", event => {
-            connectionHistory.countConnectCount(event.target, event.targetType).catch(async error => {
-                logError(LogCategory.GENERAL, tr("Failed to query the connect count for %s (%s): %o"), event.target, event.targetType, error);
+        this.uiVariables.setVariableProvider("history_entry", async customData => {
+            const info = await connectionHistory.queryServerInfo(customData.serverUniqueId);
+            return {
+                icon: {
+                    iconId: info.iconId,
+                    serverUniqueId: customData.serverUniqueId,
+                    handlerId: undefined
+                },
+                name: info.name,
+                password: info.passwordProtected,
+                country: info.country,
+                clients: info.clientsOnline,
+                maxClients: info.clientsMax
+            };
+        });
+
+        this.uiVariables.setVariableProvider("history_connections", async customData => {
+            return await connectionHistory.countConnectCount(customData.target, customData.targetType).catch(async error => {
+                logError(LogCategory.GENERAL, tr("Failed to query the connect count for %s (%s): %o"), customData.target, customData.targetType, error);
                 return -1;
-            }).then(count => {
-                this.uiEvents.fire_react("notify_history_connections", {
-                    target: event.target,
-                    targetType: event.targetType,
-                    value: count
-                });
             });
-        });
-        this.uiEvents.on("query_history_entry", event => {
-            connectionHistory.queryServerInfo(event.serverUniqueId).then(info => {
-                this.uiEvents.fire_react("notify_history_entry", {
-                    serverUniqueId: event.serverUniqueId,
-                    info: {
-                        icon: {
-                            iconId: info.iconId,
-                            serverUniqueId: event.serverUniqueId,
-                            handlerId: undefined
-                        },
-                        name: info.name,
-                        password: info.passwordProtected,
-                        country: info.country,
-                        clients: info.clientsOnline,
-                        maxClients: info.clientsMax
-                    }
-                });
-            }).catch(async error => {
-                logError(LogCategory.GENERAL, tr("Failed to query the history server info for %s: %o"), event.serverUniqueId, error);
-            });
-        });
+        })
 
-        this.uiEvents.on("action_toggle_history", event => {
-            if(this.historyShown === event.enabled) {
-                return;
-            }
+        this.uiVariables.setVariableProvider("profiles", () => ({
+            selected: this.currentProfile?.id,
+            profiles: availableConnectProfiles().map(profile => ({
+                id: profile.id,
+                valid: profile.valid(),
+                name: profile.profileName
+            }))
+        }));
 
-            this.historyShown = event.enabled;
-            this.sendProperty("historyShown").then(undefined);
-            settings.setValue(Settings.KEY_CONNECT_SHOW_HISTORY, event.enabled);
-        });
-
-
-        this.uiEvents.on("action_delete_history", event => {
-            connectionHistory.deleteConnectionAttempts(event.target, event.targetType).then(() => {
-                this.history = undefined;
-                this.sendProperty("history").then(undefined);
-            }).catch(error => {
-                logWarn(LogCategory.GENERAL, tr("Failed to delete connection attempts: %o"), error);
-            })
-        });
-
-        this.uiEvents.on("action_manage_profiles", () => {
-            /* TODO: This is more a hack. Proper solution is that the connection profiles fire events if they've been changed... */
-            const modal = spawnSettingsModal("identity-profiles");
-            modal.close_listener.push(() => {
-                this.sendProperty("profiles").then(undefined);
-            });
-        });
-
-        this.uiEvents.on("action_select_profile", event => {
-            const profile = findConnectProfile(event.id);
+        this.uiVariables.setVariableEditor("profiles", newValue => {
+            const profile = findConnectProfile(newValue.selected);
             if(!profile) {
                 createErrorModal(tr("Invalid profile"), tr("Target connect profile is missing.")).open();
-                return;
+                return false;
             }
 
             this.setSelectedProfile(profile);
+            return; /* No need to update anything. The ui should received the values needed already */
         });
-
-        this.uiEvents.on("action_set_address", event => this.setSelectedAddress(event.address, event.validate, event.updateUi));
-
-        this.uiEvents.on("action_set_nickname", event => {
-            if(this.currentNickname !== event.nickname) {
-                this.currentNickname = event.nickname;
-                settings.setValue(Settings.KEY_CONNECT_USERNAME, event.nickname);
-
-                if(event.updateUi) {
-                    this.sendProperty("nickname").then(undefined);
-                }
-            }
-
-            this.validateStates["nickname"] = event.validate;
-            this.updateValidityStates();
-        });
-
-        this.uiEvents.on("action_set_password", event => {
-            if(this.currentPassword === event.password) {
-                return;
-            }
-
-            this.currentPassword = event.password;
-            this.currentPasswordHashed = event.hashed;
-            if(event.updateUi) {
-                this.sendProperty("password").then(undefined);
-            }
-
-            this.validateStates["password"] = true;
-            this.updateValidityStates();
-        });
-
-        this.uiEvents.on("action_select_history", event => this.setSelectedHistoryId(event.id));
-
-        this.uiEvents.on("action_connect", () => {
-            Object.keys(this.validateStates).forEach(key => this.validateStates[key] = true);
-            this.updateValidityStates();
-        });
-
-        this.updateValidityStates();
     }
 
     destroy() {
-        Object.keys(this.propertyProvider).forEach(key => delete this.propertyProvider[key]);
         this.uiEvents.destroy();
+        this.uiVariables.destroy();
     }
 
     generateConnectParameters() : ConnectParameters | undefined {
-        if(Object.keys(this.validStates).findIndex(key => this.validStates[key] === false) !== -1) {
+        if(!this.uiVariables.getVariableSync("nickname_valid", undefined, true)) {
+            return undefined;
+        }
+
+        if(!this.uiVariables.getVariableSync("server_address_valid", undefined, true)) {
+            return undefined;
+        }
+
+        if(!this.uiVariables.getVariableSync("profile_valid", undefined, true)) {
             return undefined;
         }
 
@@ -279,7 +284,7 @@ class ConnectController {
         }
 
         this.selectedHistoryId = id;
-        this.sendProperty("history").then(undefined);
+        this.uiVariables.sendVariable("history");
 
         const historyEntry = this.history?.find(entry => entry.id === id);
         if(!historyEntry) { return; }
@@ -289,9 +294,9 @@ class ConnectController {
         this.currentPassword = historyEntry.hashedPassword;
         this.currentPasswordHashed = true;
 
-        this.sendProperty("address").then(undefined);
-        this.sendProperty("password").then(undefined);
-        this.sendProperty("nickname").then(undefined);
+        this.uiVariables.sendVariable("server_address");
+        this.uiVariables.sendVariable("password");
+        this.uiVariables.sendVariable("nickname");
     }
 
     setSelectedAddress(address: string | undefined, validate: boolean, updateUi: boolean) {
@@ -301,12 +306,12 @@ class ConnectController {
             this.setSelectedHistoryId(-1);
 
             if(updateUi) {
-                this.sendProperty("address").then(undefined);
+                this.uiVariables.sendVariable("server_address");
             }
         }
 
-        this.validateStates["address"] = validate;
-        this.updateValidityStates();
+        this.validateAddress = true;
+        this.uiVariables.sendVariable("server_address_valid");
     }
 
     setSelectedProfile(profile: ConnectionProfile | undefined) {
@@ -315,62 +320,19 @@ class ConnectController {
         }
 
         this.currentProfile = profile;
-        this.sendProperty("profiles").then(undefined);
+        this.uiVariables.sendVariable("profile_valid");
+        this.uiVariables.sendVariable("profiles");
         settings.setValue(Settings.KEY_CONNECT_PROFILE, profile.id);
 
         /* Clear out the nickname on profile switch and use the default nickname */
-        this.uiEvents.fire("action_set_nickname", { nickname: undefined, validate: true, updateUi: true });
-
-        this.validateStates["profile"] = true;
-        this.updateValidityStates();
+        this.currentNickname = undefined;
+        this.uiVariables.sendVariable("nickname");
     }
 
     private updateValidityStates() {
-        const newStates = Object.assign({}, kDefaultValidityStates);
-        if(this.validateStates["nickname"]) {
-            const nickname = this.currentNickname || this.currentProfile?.connectUsername() || "";
-            newStates["nickname"] = nickname.length >= 3 && nickname.length <= 30;
-        } else {
-            newStates["nickname"] = true;
-        }
-
-        if(this.validateStates["address"]) {
-            const address = this.currentAddress || this.defaultAddress || "";
-            const parsedAddress = parseServerAddress(address);
-
-            if(parsedAddress) {
-                kRegexDomain.lastIndex = 0;
-                newStates["address"] = kRegexDomain.test(parsedAddress.host) || ipRegex({ exact: true }).test(parsedAddress.host);
-            } else {
-                newStates["address"] = false;
-            }
-        } else {
-            newStates["address"] = true;
-        }
-
-        newStates["profile"] = !!this.currentProfile?.valid();
-        newStates["password"] = true;
-
-        for(const key of Object.keys(newStates)) {
-            if(_.isEqual(this.validStates[key], newStates[key])) {
-                continue;
-            }
-
-            this.validStates[key] = newStates[key];
-            this.uiEvents.fire_react("notify_property_valid", { property: key as any, value: this.validStates[key] });
-        }
-    }
-
-    private async sendProperty(property: keyof ConnectProperties) {
-        if(!this.propertyProvider[property]) {
-            logWarn(LogCategory.GENERAL, tr("Tried to send a property where we don't have a provider for"));
-            return;
-        }
-
-        this.uiEvents.fire_react("notify_property", {
-            property: property,
-            value: await this.propertyProvider[property]()
-        });
+        this.uiVariables.sendVariable("server_address_valid");
+        this.uiVariables.sendVariable("nickname_valid");
+        this.uiVariables.sendVariable("profile_valid");
     }
 }
 
@@ -382,7 +344,8 @@ export type ConnectModalOptions = {
 }
 
 export function spawnConnectModalNew(options: ConnectModalOptions) {
-    const controller = new ConnectController();
+    const [ variableProvider, variableConsumer ] = createLocalUiVariables<ConnectUiVariables>();
+    const controller = new ConnectController(variableProvider);
 
     if(typeof options.selectedAddress === "string") {
         controller.setSelectedAddress(options.selectedAddress, false, true);
@@ -392,7 +355,7 @@ export function spawnConnectModalNew(options: ConnectModalOptions) {
         controller.setSelectedProfile(options.selectedProfile);
     }
 
-    const modal = spawnReactModal(ConnectModal, controller.uiEvents, options.connectInANewTab || false);
+    const modal = spawnReactModal(ConnectModal, controller.uiEvents, variableConsumer, options.connectInANewTab || false);
     modal.show();
 
     modal.events.one("destroy", () => {

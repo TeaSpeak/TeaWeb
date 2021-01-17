@@ -25,7 +25,7 @@ class TitleRenderer {
 
         this.modalInstance = instance;
         if(this.modalInstance) {
-            ReactDOM.render(<>{this.modalInstance.title()}</>, this.htmlContainer);
+            ReactDOM.render(<>{this.modalInstance.renderTitle()}</>, this.htmlContainer);
         }
     }
 }

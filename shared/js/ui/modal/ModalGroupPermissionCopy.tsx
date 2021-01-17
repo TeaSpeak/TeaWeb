@@ -161,7 +161,7 @@ class ModalGroupPermissionCopy extends InternalModal {
         </div>;
     }
 
-    title() {
+    renderTitle() {
         return <Translatable>Copy group permissions</Translatable>;
     }
 }

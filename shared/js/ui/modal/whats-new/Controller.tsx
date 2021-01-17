@@ -15,7 +15,7 @@ export function spawnUpdatedModal(changes: { changesUI?: ChangeLog, changesClien
             return <WhatsNew changesUI={changes.changesUI} changesClient={changes.changesClient}/>;
         }
 
-        title(): string | React.ReactElement<Translatable> {
+        renderTitle(): string | React.ReactElement<Translatable> {
             return <Translatable>We've updated the client for you</Translatable>;
         }
     });

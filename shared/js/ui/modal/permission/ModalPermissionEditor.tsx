@@ -343,7 +343,7 @@ class PermissionEditorModal extends InternalModal {
         );
     }
 
-    title(): React.ReactElement<Translatable> {
+    renderTitle(): React.ReactElement<Translatable> {
         return <Translatable>Server permissions</Translatable>;
     }
 

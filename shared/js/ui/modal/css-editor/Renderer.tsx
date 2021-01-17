@@ -420,7 +420,7 @@ class PopoutConversationUI extends AbstractModal {
         );
     }
 
-    title() {
+    renderTitle() {
         return "CSS Variable editor";
     }
 }

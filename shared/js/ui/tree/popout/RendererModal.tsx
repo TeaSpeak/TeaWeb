@@ -52,7 +52,7 @@ class ChannelTreeModal extends AbstractModal {
         )
     }
 
-    title(): React.ReactElement {
+    renderTitle(): React.ReactElement {
         return <TitleRenderer events={this.eventsUI} />;
     }
 }

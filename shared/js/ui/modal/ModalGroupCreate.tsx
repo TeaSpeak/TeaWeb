@@ -272,7 +272,7 @@ class ModalGroupCreate extends InternalModal {
         </div>;
     }
 
-    title() {
+    renderTitle() {
         return this.target === "server" ? <Translatable>Create a new server group</Translatable> : <Translatable>Create a new channel group</Translatable>;
     }
 
