@@ -2,10 +2,11 @@ import * as React from "react";
 import {AbstractModal} from "tc-shared/ui/react-elements/ModalDefinitions";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
+import {useMemo} from "react";
 
 const cssStyle = require("./Modal.scss");
 
-export const InternalModalContentRenderer = (props: {
+export const InternalModalContentRenderer = React.memo((props: {
     modal: AbstractModal,
 
     onClose?: () => void,
@@ -18,6 +19,9 @@ export const InternalModalContentRenderer = (props: {
 
     refContent?: React.Ref<HTMLDivElement>
 }) => {
+    const body = useMemo(() => props.modal.renderBody(), [props.modal]);
+    const title = useMemo(() => props.modal.renderTitle(), [props.modal]);
+
     return (
         <div className={cssStyle.content + " " + props.containerClass} ref={props.refContent}>
             <div className={cssStyle.header + " " + props.headerClass}>
@@ -26,7 +30,7 @@ export const InternalModalContentRenderer = (props: {
                 </div>
                 <div className={cssStyle.title + " " + props.headerTitleClass}>
                     <ErrorBoundary>
-                        {props.modal.title()}
+                        {title}
                     </ErrorBoundary>
                 </div>
                 {!props.onMinimize ? undefined : (
@@ -42,12 +46,12 @@ export const InternalModalContentRenderer = (props: {
             </div>
             <div className={cssStyle.body + " " + props.bodyClass}>
                 <ErrorBoundary>
-                    {props.modal.renderBody()}
+                    {body}
                 </ErrorBoundary>
             </div>
         </div>
     );
-};
+});
 
 export class InternalModalRenderer extends React.PureComponent<{ modal: AbstractModal, onClose: () => void }, { show: boolean }> {
     private readonly refModal = React.createRef<HTMLDivElement>();
