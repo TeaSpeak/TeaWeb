@@ -61,7 +61,7 @@ class ConnectController {
     private validateNickname: boolean;
     private validateAddress: boolean;
 
-    constructor(uiVariables: UiVariableProvider<ConnectUiVariables>) {
+    constructor(uiVariables: UiVariableProvider<ConnectUiVariables>) {7
         this.uiEvents = new Registry<ConnectUiEvents>();
         this.uiEvents.enableDebug("modal-connect");
 

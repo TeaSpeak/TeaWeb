@@ -28,13 +28,13 @@ export interface ConnectUiVariables {
         currentAddress: string,
         defaultAddress?: string,
     },
-    "server_address_valid": boolean,
+    readonly "server_address_valid": boolean,
 
     "nickname": {
         currentNickname: string | undefined,
         defaultNickname?: string,
     },
-    "nickname_valid": boolean,
+    readonly "nickname_valid": boolean,
 
     "password": {
         password: string,
@@ -45,17 +45,16 @@ export interface ConnectUiVariables {
         profiles?: ConnectProfileEntry[],
         selected: string
     },
-    "profile_valid": boolean,
+    readonly "profile_valid": boolean,
 
     "historyShown": boolean,
-    "history": {
-        __readonly?,
+    readonly "history": {
         history: ConnectHistoryEntry[],
         selected: number | -1,
     },
 
-    "history_entry": ConnectHistoryServerInfo,
-    "history_connections": number
+    readonly "history_entry": ConnectHistoryServerInfo,
+    readonly "history_connections": number
 }
 
 export interface ConnectUiEvents {

@@ -31,7 +31,7 @@ const InputServerAddress = React.memo(() => {
 
     const variables = useContext(VariablesContext);
     const address = variables.useVariable("server_address");
-    const addressValid = variables.useVariable("server_address_valid");
+    const addressValid = variables.useReadOnly("server_address_valid", true) || address.localValue !== address.remoteValue;
 
     return (
         <ControlledFlatInputField
@@ -43,13 +43,10 @@ const InputServerAddress = React.memo(() => {
             label={<Translatable>Server address</Translatable>}
             labelType={"static"}
 
-            invalid={!!addressValid.localValue ? undefined : <Translatable>Please enter a valid server address</Translatable>}
+            invalid={addressValid ? undefined : <Translatable>Please enter a valid server address</Translatable>}
             editable={address.status === "loaded"}
 
-            onInput={value => {
-                address.setValue({ currentAddress: value }, true);
-                addressValid.setValue(true, true);
-            }}
+            onInput={value => address.setValue({ currentAddress: value }, true)}
             onBlur={() => address.setValue({ currentAddress: address.localValue?.currentAddress })}
             onEnter={() => {
                 /* Setting the address just to ensure */
@@ -82,7 +79,7 @@ const InputNickname = () => {
     const variables = useContext(VariablesContext);
 
     const nickname = variables.useVariable("nickname");
-    const valid = variables.useVariable("nickname_valid");
+    const validState = variables.useReadOnly("nickname_valid", true) || nickname.localValue !== nickname.remoteValue;
 
     return (
         <ControlledFlatInputField
@@ -91,11 +88,8 @@ const InputNickname = () => {
             placeholder={nickname.remoteValue ? nickname.remoteValue.defaultNickname ? nickname.remoteValue.defaultNickname : tr("Please enter a nickname") : tr("loading...")}
             label={<Translatable>Nickname</Translatable>}
             labelType={"static"}
-            invalid={!!valid.localValue ? undefined : <Translatable>Nickname too short or too long</Translatable>}
-            onInput={value => {
-                nickname.setValue({ currentNickname: value }, true);
-                valid.setValue(true, true);
-            }}
+            invalid={validState ? undefined : <Translatable>Nickname too short or too long</Translatable>}
+            onInput={value => nickname.setValue({ currentNickname: value }, true)}
             onBlur={() => nickname.setValue({ currentNickname: nickname.localValue?.currentNickname })}
         />
     );
@@ -260,7 +254,7 @@ const HistoryTableEntryConnectCount = React.memo((props: { entry: ConnectHistory
     const targetType = props.entry.uniqueServerId === kUnknownHistoryServerUniqueId ? "address" : "server-unique-id";
     const target = targetType === "address" ? props.entry.targetAddress : props.entry.uniqueServerId;
 
-    const { value } = useContext(VariablesContext).useVariableReadOnly("history_connections", {
+    const value = useContext(VariablesContext).useReadOnly("history_connections", {
         target,
         targetType
     }, -1);
@@ -276,8 +270,8 @@ const HistoryTableEntry = React.memo((props: { entry: ConnectHistoryEntry, selec
     const events = useContext(EventContext);
     const connectNewTab = useContext(ConnectDefaultNewTabContext);
     const variables = useContext(VariablesContext);
-    const { value: info } = variables.useVariableReadOnly("history_entry", { serverUniqueId: props.entry.uniqueServerId }, undefined);
 
+    const info = variables.useReadOnly("history_entry", { serverUniqueId: props.entry.uniqueServerId }, undefined);
     const icon = getIconManager().resolveIcon(info ? info.icon.iconId : 0, info?.icon.serverUniqueId, info?.icon.handlerId);
 
     return (
@@ -332,7 +326,7 @@ const HistoryTableEntry = React.memo((props: { entry: ConnectHistoryEntry, selec
 });
 
 const HistoryTable = () => {
-    const { value: history } = useContext(VariablesContext).useVariableReadOnly("history", undefined, undefined);
+    const history = useContext(VariablesContext).useReadOnly("history", undefined, undefined);
 
     let body;
     if(history) {
@@ -380,7 +374,7 @@ const HistoryTable = () => {
 
 const HistoryContainer = () => {
     const variables = useContext(VariablesContext);
-    const { value: historyShown } = variables.useVariableReadOnly("historyShown", undefined, false);
+    const historyShown = variables.useReadOnly("historyShown", undefined, false);
 
     return (
         <div className={joinClassList(cssStyle.historyContainer, historyShown && cssStyle.shown)}>

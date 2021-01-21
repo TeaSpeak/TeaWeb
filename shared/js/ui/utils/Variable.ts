@@ -10,6 +10,21 @@ import * as _ from "lodash";
 export type UiVariable = Transferable | undefined | null | number | string | object;
 export type UiVariableMap = { [key: string]: any }; //UiVariable | Readonly<UiVariable>
 
+type IfEquals<X, Y, A=X, B=never> =
+    (<T>() => T extends X ? 1 : 2) extends
+        (<T>() => T extends Y ? 1 : 2) ? A : B;
+
+type WritableKeys<T> = {
+    [P in keyof T]-?: IfEquals<{ [Q in P]: T[P] }, { -readonly [Q in P]: T[P] }, P, never>
+}[keyof T];
+
+type ReadonlyKeys<T> = {
+    [P in keyof T]: IfEquals<{ [Q in P]: T[P] }, { -readonly [Q in P]: T[P] }, never, P>
+}[keyof T];
+
+export type ReadonlyVariables<Variables extends UiVariableMap> = Pick<Variables, ReadonlyKeys<Variables>>
+export type WriteableVariables<Variables extends UiVariableMap> = Pick<Variables, WritableKeys<Variables>>
+
 type UiVariableEditor<Variables extends UiVariableMap, T extends keyof Variables> = Variables[T] extends { __readonly } ?
     never :
     (newValue: Variables[T], customData: any) => Variables[T] | void | boolean;
@@ -47,7 +62,7 @@ export abstract class UiVariableProvider<Variables extends UiVariableMap> {
     sendVariable<T extends keyof Variables>(variable: T, customData?: any, forceSend?: boolean) : void | Promise<void> {
         const providers = this.variableProvider[variable as any];
         if(!providers) {
-            throw tr("missing provider");
+            throw tra("missing provider for {}", variable);
         }
 
         const result = providers(customData);
@@ -65,7 +80,7 @@ export abstract class UiVariableProvider<Variables extends UiVariableMap> {
     async getVariable<T extends keyof Variables>(variable: T, customData?: any, ignoreCache?: boolean) : Promise<Variables[T]> {
         const providers = this.variableProvider[variable as any];
         if(!providers) {
-            throw tr("missing provider");
+            throw tra("missing provider for {}", variable);
         }
 
         const result = providers(customData);
@@ -138,38 +153,45 @@ export abstract class UiVariableProvider<Variables extends UiVariableMap> {
     protected abstract doSendVariable(variable: string, customData: any, value: any);
 }
 
-export type UiVariableStatus<Variables extends UiVariableMap, T extends keyof Variables> = ({
+export type UiVariableStatus<Variables extends UiVariableMap, T extends keyof Variables> = {
     status: "loading",
 
-    localValue: undefined,
-    remoteValue: undefined
+    localValue: Variables[T] | undefined,
+    remoteValue: undefined,
+
+    /* Will do nothing */
+    setValue: (newValue: Variables[T], localOnly?: boolean) => void
 } | {
     status: "loaded" | "applying",
 
-    localValue: Omit<Variables[T], "__readonly">,
-    remoteValue: Omit<Variables[T], "__readonly">,
-}) & (Variables[T] extends { __readonly } ? {} : { setValue: (newValue: Variables[T], localOnly?: boolean) => void });
+    localValue: Variables[T],
+    remoteValue: Variables[T],
 
-export type UiReadOnlyVariableStatus<Variables extends UiVariableMap, T extends keyof Variables, DefaultValue = undefined> = {
-    status: "loading",
-    value: DefaultValue,
-} | {
-    status: "loaded" | "applying",
-    value: Omit<Variables[T], "__readonly">,
+    setValue: (newValue: Variables[T], localOnly?: boolean) => void
+};
+
+export type UiReadOnlyVariableStatus<Variables extends UiVariableMap, T extends keyof Variables> = {
+    status: "loading" | "loaded",
+    value: Variables[T],
 };
 
 type UiVariableCacheEntry = {
+    key: string,
     useCount: number,
     customData: any | undefined,
     currentValue: any | undefined,
     status: "loading" | "loaded" | "applying",
-    updateListener: ((forceSetLocalVariable: boolean) => void)[]
+    updateListener: ((clearLocalValue: boolean) => void)[]
+}
+
+type LocalVariableValue = {
+    status: "set" | "default",
+    value: any
+} | {
+    status: "unset"
 }
 
 let staticRevisionId = 0;
-/**
- * @returns An array containing variable information `[ value, setValue(newValue, localOnly), remoteValue ]`
- */
 export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
     private variableCache: {[key: string]: UiVariableCacheEntry[]} = {};
 
@@ -177,14 +199,15 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
         this.variableCache = {};
     }
 
-    useVariable<T extends keyof Variables>(
-        variable: T,
+    private getOrCreateVariable<T extends keyof Variables>(
+        variable: string,
         customData?: any
-    ) : UiVariableStatus<Variables, T> {
-        let cacheEntry = this.variableCache[variable as string]?.find(variable => _.isEqual(variable.customData, customData));
+    ) : UiVariableCacheEntry {
+        let cacheEntry = this.variableCache[variable]?.find(variable => _.isEqual(variable.customData, customData));
         if(!cacheEntry) {
-            this.variableCache[variable as string] = this.variableCache[variable as string] || [];
-            this.variableCache[variable as string].push(cacheEntry = {
+            this.variableCache[variable] = this.variableCache[variable] || [];
+            this.variableCache[variable].push(cacheEntry = {
+                key: variable,
                 customData,
                 currentValue: undefined,
                 status: "loading",
@@ -193,28 +216,67 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
             });
 
             /* Might already call notifyRemoteVariable */
-            this.doRequestVariable(variable as string, customData);
+            this.doRequestVariable(variable, customData);
         }
+        return cacheEntry;
+    }
 
-        const [ localValue, setLocalValue ] = useState(() => {
+    private derefVariable(variable: UiVariableCacheEntry) {
+        if(--variable.useCount === 0) {
+            const cache = this.variableCache[variable.key];
+            if(!cache) {
+                return;
+            }
+
+            cache.remove(variable);
+            if(cache.length === 0) {
+                delete this.variableCache[variable.key];
+            }
+        }
+    }
+
+    useVariable<T extends keyof WriteableVariables<Variables>>(
+        variable: T,
+        customData?: any,
+        defaultValue?: Variables[T]
+    ) : UiVariableStatus<Variables, T> {
+        const haveDefaultValue = arguments.length >= 3;
+        const cacheEntry = this.getOrCreateVariable(variable as string, customData);
+
+        const [ localValue, setLocalValue ] = useState<LocalVariableValue>(() => {
             /* Variable constructor */
             cacheEntry.useCount++;
-            return cacheEntry.currentValue;
+
+            if(cacheEntry.status === "loading") {
+                return {
+                    status: "set",
+                    value: cacheEntry.currentValue
+                };
+            } else if(haveDefaultValue) {
+                return {
+                    status: "default",
+                    value: defaultValue
+                };
+            } else {
+                return {
+                    status: "unset"
+                };
+            }
         });
 
         const [, setRemoteVersion ] = useState(0);
 
         useEffect(() => {
             /* Initial rendered */
-            if(cacheEntry.status === "loaded" && !_.isEqual(localValue, cacheEntry.currentValue)) {
-                /* Update value to the, now, up 2 date value*/
+            if(cacheEntry.status === "loaded" && localValue.status !== "set") {
+                /* Update the local value to the current state */
                 setLocalValue(cacheEntry.currentValue);
             }
 
             let listener;
-            cacheEntry.updateListener.push(listener = forceUpdateLocalVariable => {
-                if(forceUpdateLocalVariable) {
-                    setLocalValue(cacheEntry.currentValue);
+            cacheEntry.updateListener.push(listener = clearLocalValue => {
+                if(clearLocalValue) {
+                    setLocalValue({ status: "unset" });
                 }
 
                 /* We can't just increment the old one by one since this update listener may fires twice before rendering */
@@ -223,35 +285,24 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
 
             return () => {
                 cacheEntry.updateListener.remove(listener);
-
-                /* Variable destructor */
-                if(--cacheEntry.useCount === 0) {
-                    const cache = this.variableCache[variable as string];
-                    if(!cache) {
-                        return;
-                    }
-
-                    cache.remove(cacheEntry);
-                    if(cache.length === 0) {
-                        delete this.variableCache[variable as string];
-                    }
-                }
+                this.derefVariable(cacheEntry);
             };
         }, []);
-
 
         if(cacheEntry.status === "loading") {
             return {
                 status: "loading",
-                localValue: localValue,
+                localValue: localValue.status === "unset" ? undefined : localValue.value,
                 remoteValue: undefined,
                 setValue: () => {}
             };
         } else {
             return {
                 status: cacheEntry.status,
-                localValue: localValue,
+
+                localValue: localValue.status === "set" ? localValue.value : cacheEntry.currentValue,
                 remoteValue: cacheEntry.currentValue,
+
                 setValue: (newValue, localOnly) => {
                     if(!localOnly && !_.isEqual(cacheEntry.currentValue, newValue)) {
                         const editingFinished = (succeeded: boolean) => {
@@ -260,23 +311,20 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
                                 return;
                             }
 
-                            let value = newValue;
-                            if(!succeeded) {
-                                value = cacheEntry.currentValue;
-                            }
-
                             cacheEntry.status = "loaded";
-                            cacheEntry.currentValue = value;
+                            cacheEntry.currentValue = succeeded ? newValue : cacheEntry.currentValue;
                             cacheEntry.updateListener.forEach(callback => callback(true));
                         };
 
                         cacheEntry.status = "applying";
                         const result = this.doEditVariable(variable as string, customData, newValue);
                         if(result instanceof Promise) {
-                            result.then(() => editingFinished(true)).catch(async error => {
-                                console.error("Failed to change variable %s: %o", variable, error);
-                                editingFinished(false);
-                            });
+                            result
+                                .then(() => editingFinished(true))
+                                .catch(async error => {
+                                    console.error("Failed to change variable %s: %o", variable, error);
+                                    editingFinished(false);
+                                });
 
                             /* State has changed, enforce a rerender */
                             cacheEntry.updateListener.forEach(callback => callback(false));
@@ -286,31 +334,54 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
                         }
                     }
 
-                    if(!_.isEqual(newValue, localValue)) {
-                        setLocalValue(newValue);
+                    if(localValue.status !== "set" || !_.isEqual(newValue, localValue.value)) {
+                        setLocalValue({
+                            status: "set",
+                            value: newValue
+                        });
                     }
                 }
-            } as any;
+            };
         }
     }
 
-    useVariableReadOnly<T extends keyof Variables, DefaultValue>(
+    useReadOnly<T extends keyof Variables>(
         variable: T,
         customData?: any,
-        defaultValue?: DefaultValue
-    ) : UiReadOnlyVariableStatus<Variables, T, DefaultValue> {
-        /* TODO: Use a simplified logic here */
-        const v = this.useVariable(variable, customData);
-        if(v.status === "loading") {
-            return {
-                status: "loading",
-                value: defaultValue
+        defaultValue?: never
+    ) : UiReadOnlyVariableStatus<Variables, T>;
+
+    useReadOnly<T extends keyof Variables>(
+        variable: T,
+        customData: any | undefined,
+        defaultValue: Variables[T]
+    ) : Variables[T];
+
+    useReadOnly(variable, customData?, defaultValue?) {
+        const cacheEntry = this.getOrCreateVariable(variable as string, customData);
+        const [, setRemoteVersion ] = useState(0);
+
+        useEffect(() => {
+            /* Initial rendered */
+            let listener;
+            cacheEntry.updateListener.push(listener = () => {
+                /* We can't just increment the old one by one since this update listener may fires twice before rendering */
+                setRemoteVersion(++staticRevisionId);
+            });
+
+            return () => {
+                cacheEntry.updateListener.remove(listener);
+                this.derefVariable(cacheEntry);
             };
+        }, []);
+
+        if(arguments.length >= 3) {
+            return cacheEntry.status === "loaded" ? cacheEntry.currentValue : defaultValue;
         } else {
             return {
-                status: v.status,
-                value: v.remoteValue
-            }
+                status: cacheEntry.status,
+                value: cacheEntry.currentValue
+            };
         }
     }
 
