@@ -247,7 +247,7 @@ class ChannelTreeController {
         this.channelTree.client.groups.events.on("notify_groups_received", this.groupsReceivedListener);
         this.initializeServerEvents(this.channelTree.server);
 
-        this.channelTree.events.register_handler(this);
+        this.channelTree.events.registerHandler(this);
 
         if(this.channelTree.channelsInitialized) {
             this.handleChannelListReceived();
@@ -261,7 +261,7 @@ class ChannelTreeController {
         this.channelTree.client.groups.events.off("notify_groups_received", this.groupsReceivedListener);
         this.finalizeEvents(this.channelTree.server);
 
-        this.channelTree.events.unregister_handler(this);
+        this.channelTree.events.unregisterHandler(this);
         Object.values(this.eventListeners).forEach(callbacks => callbacks.forEach(callback => callback()));
         this.eventListeners = {};
     }

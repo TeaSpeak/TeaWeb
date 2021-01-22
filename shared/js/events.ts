@@ -1,25 +1,83 @@
-import {LogCategory, logTrace, logWarn} from "./log";
+import {LogCategory, logTrace} from "./log";
 import {guid} from "./crypto/uid";
 import * as React from "react";
 import {useEffect} from "react";
 import {unstable_batchedUpdates} from "react-dom";
 import { tr } from "./i18n/localize";
 
-export interface Event<Events, T = keyof Events> {
-    readonly type: T;
-    as<T extends keyof Events>() : Events[T];
-}
+export type EventPayloadObject = {
+    [key: string]: EventPayload
+} | {
+    [key: number]: EventPayload
+};
 
-export interface SingletonEvents {
-    "singletone-instance": never;
-}
+export type EventPayload = string | number | bigint | null | undefined | EventPayloadObject;
 
-export class SingletonEvent implements Event<SingletonEvents, "singletone-instance"> {
-    static readonly instance = new SingletonEvent();
+export type EventMap<P> = {
+    [K in keyof P]: EventPayloadObject & {
+        /* prohibit the type attribute on the highest layer (used to identify the event type) */
+        type?: never
+    }
+};
 
-    readonly type = "singletone-instance";
-    private constructor() { }
-    as<T extends keyof SingletonEvents>() : SingletonEvents[T] { return; }
+export type Event<P extends EventMap<P>, T extends keyof P> = {
+    readonly type: T,
+
+    as<S extends T>(target: S) : Event<P, S>;
+    asUnchecked<S extends T>(target: S) : Event<P, S>;
+    asAnyUnchecked<S extends keyof P>(target: S) : Event<P, S>;
+
+    /**
+     * Return an object containing only the event payload specific key value pairs.
+     */
+    extractPayload() : P[T];
+} & P[T];
+
+namespace EventHelper {
+    /**
+     * Turn the payload object into a bus event object
+     * @param payload
+     */
+    /* May inline this somehow? A function call seems to be 3% slower */
+    export function createEvent<P extends EventMap<P>, T extends keyof P>(type: T, payload?: P[T]) : Event<P, T> {
+        if(payload) {
+            let event = payload as any as Event<P, T>;
+            event.as = as;
+            event.asUnchecked = asUnchecked;
+            event.asAnyUnchecked = asUnchecked;
+            event.extractPayload = extractPayload;
+            return event;
+        } else {
+            return {
+                type,
+                as,
+                asUnchecked,
+                asAnyUnchecked: asUnchecked,
+                extractPayload
+            } as any;
+        }
+    }
+
+    function extractPayload() {
+        const result = Object.assign({}, this);
+        delete result["as"];
+        delete result["asUnchecked"];
+        delete result["asAnyUnchecked"];
+        delete result["extractPayload"];
+        return result;
+    }
+
+    function as(target) {
+        if(this.type !== target) {
+            throw "Mismatching event type. Expected: " + target + ", Got: " + this.type;
+        }
+
+        return this;
+    }
+
+    function asUnchecked() {
+        return this;
+    }
 }
 
 export interface EventSender<Events extends { [key: string]: any } = { [key: string]: any }> {
@@ -43,16 +101,25 @@ export interface EventSender<Events extends { [key: string]: any } = { [key: str
     fire_react<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void);
 }
 
-const event_annotation_key = guid();
-export class Registry<Events extends { [key: string]: any } = { [key: string]: any }> implements EventSender<Events> {
-    private readonly registryUuid;
+export type EventDispatchType = "sync" | "later" | "react";
 
-    private handler: {[key: string]: ((event) => void)[]} = {};
-    private connections: {[key: string]: EventSender<Events>[]} = {};
-    private eventHandlerObjects: {
-        object: any,
-        handlers: {[key: string]: ((event) => void)[]}
-    }[] = [];
+export interface EventConsumer {
+    handleEvent(mode: EventDispatchType, type: string, data: any);
+}
+
+interface EventHandlerRegisterData {
+    registeredHandler: {[key: string]: ((event) => void)[]}
+}
+
+const kEventAnnotationKey = guid();
+export class Registry<Events extends { [key: string]: any } = { [key: string]: any }> implements EventSender<Events> {
+    protected readonly registryUniqueId;
+
+    protected persistentEventHandler: { [key: string]: ((event) => void)[] } = {};
+    protected oneShotEventHandler: { [key: string]: ((event) => void)[] } = {};
+    protected genericEventHandler: ((event) => void)[] = [];
+    protected consumer: EventConsumer[] = [];
+
     private debugPrefix = undefined;
     private warnUnhandledEvents = false;
 
@@ -63,7 +130,14 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
     private pendingReactCallbacksFrame: number = 0;
 
     constructor() {
-        this.registryUuid = "evreg_data_" + guid();
+        this.registryUniqueId = "evreg_data_" + guid();
+    }
+
+    destroy() {
+        Object.values(this.persistentEventHandler).forEach(handlers => handlers.splice(0, handlers.length));
+        Object.values(this.oneShotEventHandler).forEach(handlers => handlers.splice(0, handlers.length));
+        this.genericEventHandler.splice(0, this.genericEventHandler.length);
+        this.consumer.splice(0, this.consumer.length);
     }
 
     enableDebug(prefix: string) { this.debugPrefix = prefix || "---"; }
@@ -72,70 +146,107 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
     enableWarnUnhandledEvents() { this.warnUnhandledEvents = true; }
     disableWarnUnhandledEvents() { this.warnUnhandledEvents = false; }
 
-    on<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void) : () => void;
-    on(events: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void) : () => void;
-    on(events, handler) : () => void {
-        if(!Array.isArray(events))
-            events = [events];
-
-        handler[this.registryUuid] = {
-            singleshot: false
-        };
-        for(const event of events) {
-            const handlers = this.handler[event] || (this.handler[event] = []);
-            handlers.push(handler);
+    fire<T extends keyof Events>(eventType: T, data?: Events[T], overrideTypeKey?: boolean) {
+        if(this.debugPrefix) {
+            logTrace(LogCategory.EVENT_REGISTRY, tr("[%s] Trigger event: %s"), this.debugPrefix, eventType);
         }
-        return () => this.off(events, handler);
-    }
 
-    onAll(handler: (event?: Event<Events>) => void) : () => void {
-        handler[this.registryUuid] = {
-            singleshot: false
-        };
-        (this.handler[null as any] || (this.handler[null as any] = [])).push(handler);
-        return () => this.offAll(handler);
-    }
-
-    /* one */
-    one<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void) : () => void;
-    one(events: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void) : () => void;
-    one(events, handler) : () => void {
-        if(!Array.isArray(events))
-            events = [events];
-
-        for(const event of events) {
-            const handlers = this.handler[event] || (this.handler[event] = []);
-
-            handler[this.registryUuid] = { singleshot: true };
-            handlers.push(handler);
-        }
-        return () => this.off(events, handler);
-    }
-
-    off<T extends keyof Events>(handler: (event?) => void);
-    off<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void);
-    off(event: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void);
-    off(handler_or_events, handler?) {
-        if(typeof handler_or_events === "function") {
-            for(const key of Object.keys(this.handler))
-                this.handler[key].remove(handler_or_events);
-        } else {
-            if(!Array.isArray(handler_or_events))
-                handler_or_events = [handler_or_events];
-
-            for(const event of handler_or_events) {
-                const handlers = this.handler[event];
-                if(handlers) handlers.remove(handler);
+        if(typeof data === "object" && 'type' in data && !overrideTypeKey) {
+            if((data as any).type !== eventType) {
+                debugger;
+                throw tr("The keyword 'type' is reserved for the event type and should not be passed as argument");
             }
         }
+
+        for(const consumer of this.consumer) {
+            consumer.handleEvent("sync", eventType as string, data);
+        }
+
+        this.doInvokeEvent(EventHelper.createEvent(eventType, data));
     }
 
-    offAll(handler: (event?: Event<Events>) => void) {
-        (this.handler[null as any] || []).remove(handler);
+    fire_later<T extends keyof Events>(eventType: T, data?: Events[T], callback?: () => void) {
+        if(!this.pendingAsyncCallbacksTimeout) {
+            this.pendingAsyncCallbacksTimeout = setTimeout(() => this.invokeAsyncCallbacks());
+            this.pendingAsyncCallbacks = [];
+        }
+        this.pendingAsyncCallbacks.push({ type: eventType, data: data, callback: callback });
+
+        for(const consumer of this.consumer) {
+            consumer.handleEvent("later", eventType as string, data);
+        }
     }
 
+    fire_react<T extends keyof Events>(eventType: T, data?: Events[T], callback?: () => void) {
+        if(!this.pendingReactCallbacks) {
+            this.pendingReactCallbacksFrame = requestAnimationFrame(() => this.invokeReactCallbacks());
+            this.pendingReactCallbacks = [];
+        }
 
-    /* special helper methods for react components */
+        this.pendingReactCallbacks.push({ type: eventType, data: data, callback: callback });
+
+        for(const consumer of this.consumer) {
+            consumer.handleEvent("react", eventType as string, data);
+        }
+    }
+
+    on<T extends keyof Events>(event: T | T[], handler: (event: Event<Events, T>) => void) : () => void;
+    on(events, handler) : () => void {
+        if(!Array.isArray(events)) {
+            events = [events];
+        }
+
+        for(const event of events as string[]) {
+            const persistentHandler = this.persistentEventHandler[event] || (this.persistentEventHandler[event] = []);
+            persistentHandler.push(handler);
+        }
+
+        return () => this.off(events, handler);
+    }
+
+    one<T extends keyof Events>(event: T | T[], handler: (event: Event<Events, T>) => void) : () => void;
+    one(events, handler) : () => void {
+        if(!Array.isArray(events)) {
+            events = [events];
+        }
+
+        for(const event of events as string[]) {
+            const persistentHandler = this.oneShotEventHandler[event] || (this.oneShotEventHandler[event] = []);
+            persistentHandler.push(handler);
+        }
+
+        return () => this.off(events, handler);
+    }
+
+    off(handler: (event: Event<Events, keyof Events>) => void);
+    off<T extends keyof Events>(events: T | T[], handler: (event: Event<Events, T>) => void);
+    off(handlerOrEvents, handler?) {
+        if(typeof handlerOrEvents === "function") {
+            this.offAll(handler);
+        } else if(typeof handlerOrEvents === "string") {
+            if(this.persistentEventHandler[handlerOrEvents]) {
+                this.persistentEventHandler[handlerOrEvents].remove(handler);
+            }
+
+            if(this.oneShotEventHandler[handlerOrEvents]) {
+                this.oneShotEventHandler[handlerOrEvents].remove(handler);
+            }
+        } else if(Array.isArray(handlerOrEvents)) {
+            handlerOrEvents.forEach(handler_or_event => this.off(handler_or_event, handler));
+        }
+    }
+
+    onAll(handler: (event: Event<Events, keyof Events>) => void): () => void {
+        this.genericEventHandler.push(handler);
+        return () => this.genericEventHandler.remove(handler);
+    }
+
+    offAll(handler: (event: Event<Events, keyof Events>) => void) {
+        Object.values(this.persistentEventHandler).forEach(persistentHandler => persistentHandler.remove(handler));
+        Object.values(this.oneShotEventHandler).forEach(oneShotHandler => oneShotHandler.remove(handler));
+        this.genericEventHandler.remove(handler);
+    }
+
     /**
      * @param event
      * @param handler
@@ -147,97 +258,42 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
             useEffect(() => {});
             return;
         }
-        const handlers = this.handler[event as any] || (this.handler[event as any] = []);
+
+        const handlers = this.persistentEventHandler[event as any] || (this.persistentEventHandler[event as any] = []);
 
         useEffect(() => {
             handlers.push(handler);
             return () => {
-                handlers.remove(handler);
+                const index = handlers.findIndex(handler);
+                if(index !== -1) {
+                    handlers.splice(index, 1);
+                }
             };
         }, reactEffectDependencies);
     }
 
-    connectAll<EOther, T extends keyof Events & keyof EOther>(target: EventSender<Events>) {
-        (this.connections[null as any] || (this.connections[null as any] = [])).push(target as any);
-    }
-
-    connect<EOther, T extends (keyof Events & keyof EOther)>(events: T | T[], target: EventSender<EOther>) {
-        for(const event of Array.isArray(events) ? events : [events])
-            (this.connections[event as string] || (this.connections[event as string] = [])).push(target as any);
-    }
-
-    disconnect<EOther, T extends keyof Events & keyof EOther>(events: T | T[], target: EventSender<Events>) {
-        for(const event of Array.isArray(events) ? events : [events])
-            (this.connections[event as string] || []).remove(target as any);
-    }
-
-    disconnectAll<EOther>(target: EventSender<EOther>) {
-        this.connections[null as any]?.remove(target as any);
-        for(const event of Object.keys(this.connections))
-            this.connections[event].remove(target as any);
-    }
-
-    fire<T extends keyof Events>(event_type: T, data?: Events[T], overrideTypeKey?: boolean) {
-        if(this.debugPrefix)
-            logTrace(LogCategory.EVENT_REGISTRY, tr("[%s] Trigger event: %s"), this.debugPrefix, event_type);
-
-        if(typeof data === "object" && 'type' in data && !overrideTypeKey) {
-            if((data as any).type !== event_type) {
-                debugger;
-                throw tr("The keyword 'type' is reserved for the event type and should not be passed as argument");
+    private doInvokeEvent(event: Event<Events, keyof Events>) {
+        const oneShotHandler = this.oneShotEventHandler[event.type];
+        if(oneShotHandler) {
+            delete this.oneShotEventHandler[event.type];
+            for(const handler of oneShotHandler) {
+                handler(event);
             }
         }
-        const event = Object.assign(typeof data === "undefined" ? SingletonEvent.instance : data, {
-            type: event_type,
-            as: function () { return this; }
-        });
 
-        this.fire_event(event_type, event);
-    }
+        for(const handler of this.persistentEventHandler[event.type] || []) {
+            handler(event);
+        }
 
-    private fire_event(type: keyof Events, data: any) {
+        for(const handler of this.genericEventHandler) {
+            handler(event);
+        }
+        /*
         let invokeCount = 0;
-
-        const typedHandler = this.handler[type as string] || [];
-        const generalHandler = this.handler[null as string] || [];
-        for(const handler of [...generalHandler, ...typedHandler]) {
-            handler(data);
-            invokeCount++;
-
-            const regData = handler[this.registryUuid];
-            if(typeof regData === "object" && regData.singleshot)
-                this.handler[type as string].remove(handler); /* FIXME: General single shot? */
-        }
-
-        const typedConnections = this.connections[type as string] || [];
-        const generalConnections = this.connections[null as string] || [];
-        for(const evhandler of [...generalConnections, ...typedConnections]) {
-            if('fire_event' in evhandler)
-                /* evhandler is an event registry as well. We don't have to check for any inappropriate keys */
-                (evhandler as any).fire_event(type, data);
-            else
-                evhandler.fire(type, data);
-            invokeCount++;
-        }
         if(this.warnUnhandledEvents && invokeCount === 0) {
-            logWarn(LogCategory.EVENT_REGISTRY, tr("Event handler (%s) triggered event %s which has no consumers."), this.debugPrefix, type);
+            logWarn(LogCategory.EVENT_REGISTRY, tr("Event handler (%s) triggered event %s which has no consumers."), this.debugPrefix, event.type);
         }
-    }
-
-    fire_later<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void) {
-        if(!this.pendingAsyncCallbacksTimeout) {
-            this.pendingAsyncCallbacksTimeout = setTimeout(() => this.invokeAsyncCallbacks());
-            this.pendingAsyncCallbacks = [];
-        }
-        this.pendingAsyncCallbacks.push({ type: event_type, data: data, callback: callback });
-    }
-
-    fire_react<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void) {
-        if(!this.pendingReactCallbacks) {
-            this.pendingReactCallbacksFrame = requestAnimationFrame(() => this.invokeReactCallbacks());
-            this.pendingReactCallbacks = [];
-        }
-        this.pendingReactCallbacks.push({ type: event_type, data: data, callback: callback });
+        */
     }
 
     private invokeAsyncCallbacks() {
@@ -286,67 +342,83 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
         });
     }
 
-    destroy() {
-        this.handler = {};
-        this.connections = {};
-        this.eventHandlerObjects = [];
-    }
-
-    register_handler(handler: any, parentClasses?: boolean) {
-        if(typeof handler !== "object")
+    registerHandler(handler: any, parentClasses?: boolean) {
+        if(typeof handler !== "object") {
             throw "event handler must be an object";
+        }
 
-        const proto = Object.getPrototypeOf(handler);
-        if(typeof proto !== "object")
+        if(typeof handler[this.registryUniqueId] !== "undefined") {
+            throw "event handler already registered";
+        }
+
+        const prototype = Object.getPrototypeOf(handler);
+        if(typeof prototype !== "object") {
             throw "event handler must have a prototype";
+        }
 
-        let currentPrototype = proto;
-        let registered_events = {};
+        const data = handler[this.registryUniqueId] = {
+            registeredHandler: {}
+        } as EventHandlerRegisterData;
+
+        let currentPrototype = prototype;
         do {
-            Object.getOwnPropertyNames(currentPrototype).forEach(function_name => {
-                if(function_name === "constructor")
+            Object.getOwnPropertyNames(currentPrototype).forEach(functionName => {
+                if(functionName === "constructor") {
                     return;
+                }
 
-                if(typeof proto[function_name] !== "function")
+                if(typeof prototype[functionName] !== "function") {
                     return;
+                }
 
-                if(typeof proto[function_name][event_annotation_key] !== "object")
+                if(typeof prototype[functionName][kEventAnnotationKey] !== "object") {
                     return;
+                }
 
-                const event_data = proto[function_name][event_annotation_key];
-                const ev_handler = event => proto[function_name].call(handler, event);
-                for(const event of event_data.events) {
-                    registered_events[event] = registered_events[event] || [];
-                    registered_events[event].push(ev_handler);
-                    this.on(event, ev_handler);
+                const eventData = prototype[functionName][kEventAnnotationKey];
+                const eventHandler = event => prototype[functionName].call(handler, event);
+                for(const event of eventData.events) {
+                    const registeredHandler = data.registeredHandler[event] || (data.registeredHandler[event] = []);
+                    registeredHandler.push(eventHandler);
+
+                    this.on(event, eventHandler);
                 }
             });
 
-            if(!parentClasses)
+            if(!parentClasses) {
                 break;
+            }
         } while ((currentPrototype = Object.getPrototypeOf(currentPrototype)));
-        if(Object.keys(registered_events).length === 0) {
-            logWarn(LogCategory.EVENT_REGISTRY, tr("No events found in event handler which has been registered."));
-            return;
-        }
-
-        this.eventHandlerObjects.push({
-            handlers: registered_events,
-            object: handler
-        });
     }
 
-    unregister_handler(handler: any) {
-        const data = this.eventHandlerObjects.find(e => e.object === handler);
-        if(!data) return;
+    unregisterHandler(handler: any) {
+        if(typeof handler !== "object") {
+            throw "event handler must be an object";
+        }
 
-        this.eventHandlerObjects.remove(data);
+        if(typeof handler[this.registryUniqueId] === "undefined") {
+            throw "event handler not registered";
+        }
 
-        for(const key of Object.keys(data.handlers)) {
-            for(const evhandler of data.handlers[key]) {
-                this.off(evhandler);
+        const data = handler[this.registryUniqueId] as EventHandlerRegisterData;
+        delete handler[this.registryUniqueId];
+
+        for(const event of Object.keys(data.registeredHandler)) {
+            for(const handler of data.registeredHandler[event]) {
+                this.off(event, handler);
             }
         }
+    }
+
+    registerConsumer(consumer: EventConsumer) : () => void {
+        const allConsumer = this.consumer;
+        allConsumer.push(consumer);
+
+        return () => allConsumer.remove(consumer);
+    }
+
+    unregisterConsumer(consumer: EventConsumer) {
+        this.consumer.remove(consumer);
     }
 }
 
@@ -355,11 +427,11 @@ export type RegistryMap = {[key: string]: any /* can't use Registry here since t
 export function EventHandler<EventTypes>(events: (keyof EventTypes) | (keyof EventTypes)[]) {
     return function (target: any,
                      propertyKey: string,
-                     descriptor: PropertyDescriptor) {
+                     _descriptor: PropertyDescriptor) {
         if(typeof target[propertyKey] !== "function")
             throw "Invalid event handler annotation. Expected to be on a function type.";
 
-        target[propertyKey][event_annotation_key] = {
+        target[propertyKey][kEventAnnotationKey] = {
             events: Array.isArray(events) ? events : [events]
         };
     }
@@ -374,7 +446,7 @@ export function ReactEventHandler<ObjectClass = React.Component<any, any>, Event
         constructor.prototype.componentDidMount = function() {
             const registry = registry_callback(this);
             if(!registry) throw "Event registry returned for an event object is invalid";
-            registry.register_handler(this);
+            registry.registerHandler(this);
 
             if(typeof didMount === "function") {
                 didMount.call(this, arguments);
@@ -386,7 +458,7 @@ export function ReactEventHandler<ObjectClass = React.Component<any, any>, Event
             const registry = registry_callback(this);
             if(!registry) throw "Event registry returned for an event object is invalid";
             try {
-                registry.unregister_handler(this);
+                registry.unregisterHandler(this);
             } catch (error) {
                 console.warn("Failed to unregister event handler: %o", error);
             }

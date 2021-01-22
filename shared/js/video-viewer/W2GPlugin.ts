@@ -423,11 +423,11 @@ export class W2GPluginCmdHandler extends PluginCmdHandler {
     private handleLocalWatcherEvent(event: Event<W2GWatcherEvents, "notify_watcher_url_changed" | "notify_watcher_status_changed" | "notify_destroyed">) {
         switch (event.type) {
             case "notify_watcher_url_changed":
-                this.events.fire("notify_following_url", { newUrl: event.as<"notify_watcher_url_changed">().newVideo });
+                this.events.fire("notify_following_url", { newUrl: event.asUnchecked("notify_watcher_url_changed").newVideo });
                 break;
 
             case "notify_watcher_status_changed":
-                this.events.fire("notify_following_watcher_status", { newStatus: event.as<"notify_watcher_status_changed">().newStatus });
+                this.events.fire("notify_following_watcher_status", { newStatus: event.asUnchecked("notify_watcher_status_changed").newStatus });
                 break;
 
             case "notify_destroyed":

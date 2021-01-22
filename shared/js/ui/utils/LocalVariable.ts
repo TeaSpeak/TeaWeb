@@ -56,5 +56,5 @@ export function createLocalUiVariables<Variables extends UiVariableMap>() : [UiV
     const provider = new LocalUiVariableProvider();
     const consumer = new LocalUiVariableConsumer(provider);
     provider.setConsumer(consumer);
-    return [provider, consumer];
+    return [provider as any, consumer as any];
 }

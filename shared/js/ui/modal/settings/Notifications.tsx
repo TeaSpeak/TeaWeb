@@ -409,8 +409,9 @@ function initializeController(events: Registry<NotificationSettingsEvents>) {
     let filter = undefined;
 
     events.on(["query_events", "action_set_filter"], event => {
-        if (event.type === "action_set_filter")
-            filter = event.as<"action_set_filter">().filter;
+        if (event.type === "action_set_filter") {
+            filter = event.asUnchecked("action_set_filter").filter;
+        }
 
         const groupMapper = (group: EventGroup) => {
             const result = {

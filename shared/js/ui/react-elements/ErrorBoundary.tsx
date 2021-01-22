@@ -28,6 +28,7 @@ export class ErrorBoundary extends React.Component<{}, ErrorBoundaryState> {
 
     componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
         /* TODO: Some kind of logging? */
+        console.error(error);
     }
 
     static getDerivedStateFromError() : Partial<ErrorBoundaryState> {

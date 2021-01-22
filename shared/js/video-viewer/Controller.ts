@@ -34,7 +34,7 @@ class VideoViewer {
         this.connection = connection;
 
         this.events = new Registry<VideoViewerEvents>();
-        this.events.register_handler(this);
+        this.events.registerHandler(this);
 
         this.plugin = connection.getPluginCmdRegistry().getPluginHandler<W2GPluginCmdHandler>(W2GPluginCmdHandler.kPluginChannel);
         if(!this.plugin) {
@@ -57,7 +57,7 @@ class VideoViewer {
         this.plugin.setLocalPlayerClosed();
 
         this.events.fire("notify_destroy");
-        this.events.unregister_handler(this);
+        this.events.unregisterHandler(this);
 
         this.modal.destroy();
         this.events.destroy();

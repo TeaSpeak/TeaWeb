@@ -55,10 +55,13 @@ export abstract class EventControllerBase<Type extends "controller" | "popout"> 
         this.localEventReceiver = {};
         this.localRegistries = registries;
 
+        /* FIXME: Modals no longer use RegistryMap instead they should use IPCRegistryDescription */
+        /*
         for(const key of Object.keys(this.localRegistries)) {
             this.localEventReceiver[key] = this.createEventReceiver(key);
             this.localRegistries[key].connectAll(this.localEventReceiver[key]);
         }
+        */
     }
 
     private createEventReceiver(key: string) : EventSender {
@@ -141,7 +144,8 @@ export abstract class EventControllerBase<Type extends "controller" | "popout"> 
     }
 
     protected destroyIPC() {
-        Object.keys(this.localRegistries).forEach(key => this.localRegistries[key].disconnectAll(this.localEventReceiver[key]));
+        /* FIXME: See above */
+        //Object.keys(this.localRegistries).forEach(key => this.localRegistries[key].disconnectAll(this.localEventReceiver[key]));
         this.ipcChannel = undefined;
         this.ipcRemoteId = undefined;
         this.eventFiredListeners = {};

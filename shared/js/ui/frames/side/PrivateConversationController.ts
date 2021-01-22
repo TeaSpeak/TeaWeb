@@ -52,14 +52,14 @@ export class PrivateConversationController extends AbstractConversationControlle
         this.connectionListener = [];
         this.listenerConversation = {};
 
-        this.uiEvents.register_handler(this, true);
+        this.uiEvents.registerHandler(this, true);
         this.uiEvents.enableDebug("private-conversations");
     }
 
     destroy() {
         /* listenerConversation will be cleaned up via the listenerManager callbacks */
 
-        this.uiEvents.unregister_handler(this);
+        this.uiEvents.unregisterHandler(this);
         super.destroy();
     }
 

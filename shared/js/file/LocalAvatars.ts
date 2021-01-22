@@ -29,6 +29,7 @@ import {IPCChannel} from "../ipc/BrowserIPC";
 import {ConnectionHandler} from "../ConnectionHandler";
 import {ErrorCode} from "../connection/ErrorCode";
 import {server_connections} from "tc-shared/ConnectionManager";
+import {EventDispatchType} from "tc-shared/events";
 
 /* FIXME: Retry avatar download after some time! */
 
@@ -424,8 +425,10 @@ class LocalAvatarManagerFactory extends AbstractAvatarManagerFactory {
             subscribedAvatars.push({
                 avatar: avatar,
                 remoteAvatarId: avatarId,
-                unregisterCallback: avatar.events.onAll(event => {
-                    this.ipcChannel.sendMessage("avatar-event", { handlerId: handlerId, avatarId: avatarId, event: event }, remoteId);
+                unregisterCallback: avatar.events.registerConsumer({
+                    handleEvent(mode: EventDispatchType, type: string, payload: any) {
+                        this.ipcChannel.sendMessage("avatar-event", { handlerId: handlerId, avatarId: avatarId, type, payload }, remoteId);
+                    }
                 })
             });
 

@@ -142,11 +142,11 @@ class RemoteAvatarManager extends AbstractAvatarManager {
         avatar.updateStateFromRemote(data.state, data.stateData);
     }
 
-    handleAvatarEvent(data: any) {
-        const avatar = this.knownAvatars.find(e => e.avatarId === data.avatarId);
+    handleAvatarEvent(type: string, payload: any) {
+        const avatar = this.knownAvatars.find(e => e.avatarId === payload.avatarId);
         if(!avatar) return;
 
-        avatar.events.fire(data.event.type, data.event, true);
+        avatar.events.fire(type as any, payload, true);
     }
 }
 
@@ -211,7 +211,7 @@ class RemoteAvatarManagerFactory extends AbstractAvatarManagerFactory {
                 manager?.handleAvatarLoadCallback(message.data);
             } else if(message.type === "avatar-event") {
                 const manager = this.manager[message.data.handlerId];
-                manager?.handleAvatarEvent(message.data);
+                manager?.handleAvatarEvent(message.data.type, message.data.payload);
             }
         }
     }

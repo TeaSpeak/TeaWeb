@@ -8,7 +8,7 @@ import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {VoiceClient} from "tc-shared/voice/VoiceClient";
 import {WhisperSession, WhisperTarget} from "tc-shared/voice/VoiceWhisper";
 import {AbstractServerConnection, ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
-import {Registry} from "tc-shared/events";
+import {EventDispatchType, Registry} from "tc-shared/events";
 import {VoicePlayerEvents, VoicePlayerLatencySettings, VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 import { tr } from "tc-shared/i18n/localize";
 import {RtpVoiceConnection} from "tc-backend/web/voice/Connection";
@@ -21,6 +21,7 @@ class ProxiedVoiceClient implements VoiceClient {
 
     private volume: number;
     private latencySettings: VoicePlayerLatencySettings | undefined;
+    private eventDisconnect: () => void;
 
     constructor(clientId: number) {
         this.clientId = clientId;
@@ -30,14 +31,36 @@ class ProxiedVoiceClient implements VoiceClient {
     }
 
     setHandle(handle: VoiceClient | undefined) {
-        this.handle?.events.disconnectAll(this.events);
+        if(this.eventDisconnect) {
+            this.eventDisconnect();
+            this.eventDisconnect = undefined;
+        }
         this.handle = handle;
 
         if(this.latencySettings) {
             this.handle?.setLatencySettings(this.latencySettings);
         }
         this.handle?.setVolume(this.volume);
-        this.handle?.events.connectAll(this.events);
+        if(this.handle) {
+            const targetEvents = this.events;
+            this.eventDisconnect = this.handle.events.registerConsumer({
+                handleEvent(mode: EventDispatchType, type: string, data: any) {
+                    switch (mode) {
+                        case "later":
+                            targetEvents.fire_later(type as any, data);
+                            break;
+
+                        case "react":
+                            targetEvents.fire_react(type as any, data);
+                            break;
+
+                        case "sync":
+                            targetEvents.fire(type as any, data);
+                            break;
+                    }
+                }
+            });
+        }
     }
 
     abortReplay() {
@@ -86,6 +109,7 @@ export class LegacySupportVoiceBridge extends AbstractVoiceConnection {
     private readonly oldVoiceBridge: VoiceConnection;
 
     private activeBridge: AbstractVoiceConnection;
+    private disconnectEvents: () => void;
 
     private encoderCodec: number;
     private currentRecorder: RecorderProfile;
@@ -108,11 +132,31 @@ export class LegacySupportVoiceBridge extends AbstractVoiceConnection {
                 e.setHandle(undefined);
             }
         });
-        this.activeBridge?.events.disconnectAll(this.events);
+        if(this.disconnectEvents) {
+            this.disconnectEvents();
+            this.disconnectEvents = undefined;
+        }
         this.activeBridge = type === "old" ? this.oldVoiceBridge : type === "new" ? this.newVoiceBride : undefined;
 
         if(this.activeBridge) {
-            this.activeBridge.events.connectAll(this.events);
+            const targetEvents = this.events;
+            this.disconnectEvents = this.activeBridge.events.registerConsumer({
+                handleEvent(mode: EventDispatchType, type: string, data: any) {
+                    switch (mode) {
+                        case "later":
+                            targetEvents.fire_later(type as any, data);
+                            break;
+
+                        case "react":
+                            targetEvents.fire_react(type as any, data);
+                            break;
+
+                        case "sync":
+                            targetEvents.fire(type as any, data);
+                            break;
+                    }
+                }
+            });
 
             this.registeredClients.forEach(e => {
                 if(!e.handle) {
