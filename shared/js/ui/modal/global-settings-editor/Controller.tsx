@@ -7,7 +7,7 @@ export function spawnGlobalSettingsEditor() {
     const events = new Registry<ModalGlobalSettingsEditorEvents>();
     initializeController(events);
 
-    const modal = spawnModal("global-settings-editor", [ events.generateIpcDescription() ], { popoutable: true, popedOut: true });
+    const modal = spawnModal("global-settings-editor", [ events.generateIpcDescription() ], { popoutable: true, popedOut: false });
     modal.show();
     modal.getEvents().on("destroy", () => {
         events.fire("notify_destroy");
