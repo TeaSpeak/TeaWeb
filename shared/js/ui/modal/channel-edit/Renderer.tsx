@@ -180,6 +180,7 @@ const ChannelName = React.memo(() => {
                 type={"boxed"}
                 title={useTr("Channel name mode")}
                 refSelect={refSelect}
+                disabled={!editable}
             >
                 <option value={"loading"} style={{ display: "none" }}>{useTr("loading")}</option>
                 <option value={"normal"}>{useTr("Normal Name")}</option>

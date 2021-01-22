@@ -1,4 +1,9 @@
 # Changelog:
+* **22.01.21**
+    - Allowing the user to easily change the channel name mode
+    - Fixed channel name mode parsing
+    - Improved the modal algorithms as preparation for easier popoutable modals
+  
 * **16.01.21**
     - Various bugfixes (Thanks to Vafin)
     
