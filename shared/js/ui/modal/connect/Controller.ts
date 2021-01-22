@@ -3,7 +3,6 @@ import {
     ConnectUiEvents,
     ConnectUiVariables,
 } from "tc-shared/ui/modal/connect/Definitions";
-import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {
     availableConnectProfiles,
@@ -21,8 +20,7 @@ import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
 import * as ipRegex from "ip-regex";
 import {UiVariableProvider} from "tc-shared/ui/utils/Variable";
 import {createIpcUiVariableProvider} from "tc-shared/ui/utils/IpcVariable";
-import {spawnExternalModal} from "tc-shared/ui/react-elements/external-modal";
-import ConnectModal = require("tc-shared/ui/modal/connect/Renderer");
+import {spawnModal} from "tc-shared/ui/react-elements/modal";
 
 const kRegexDomain = /^(localhost|((([a-zA-Z0-9_-]{0,63}\.){0,253})?[a-zA-Z0-9_-]{0,63}\.[a-zA-Z]{2,64}))$/i;
 
@@ -356,8 +354,7 @@ export function spawnConnectModalNew(options: ConnectModalOptions) {
         controller.setSelectedProfile(options.selectedProfile);
     }
 
-    const modal = spawnReactModal(ConnectModal, controller.uiEvents.generateIpcDescription(), variableProvider.generateConsumerDescription(), options.connectInANewTab || false);
-    //const modal = spawnExternalModal("modal-connect", [controller.uiEvents.generateIpcDescription(), variableProvider.generateConsumerDescription(), options.connectInANewTab || false]);
+    const modal = spawnModal("modal-connect", [controller.uiEvents.generateIpcDescription(), variableProvider.generateConsumerDescription(), options.connectInANewTab || false]);
     modal.show();
     modal.getEvents().one("destroy", () => {
         controller.destroy();
