@@ -1,6 +1,6 @@
 import * as React from "react";
 import {useContext, useState} from "react";
-import {Registry} from "tc-shared/events";
+import {IpcRegistryDescription, Registry} from "tc-shared/events";
 import {EchoTestEvents, TestState, VoiceConnectionState} from "./Definitions";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {ClientIcon} from "svg-sprites/client-icons";
@@ -8,10 +8,11 @@ import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
+import {AbstractModal} from "tc-shared/ui/react-elements/modal/Definitions";
 
 const cssStyle = require("./Renderer.scss");
 
-export const EchoTestEventRegistry = React.createContext<Registry<EchoTestEvents>>(undefined);
+const EchoTestEventRegistry = React.createContext<Registry<EchoTestEvents>>(undefined);
 
 const VoiceStateOverlay = () => {
     const events = useContext(EchoTestEventRegistry);
@@ -235,7 +236,7 @@ const TroubleshootingSoundOverlay = () => {
     )
 }
 
-export const TestToggle = () => {
+const TestToggle = () => {
     const events = useContext(EchoTestEventRegistry);
 
     const [state, setState] = useState<"loading" | boolean>(() => {
@@ -255,7 +256,7 @@ export const TestToggle = () => {
     )
 }
 
-export const EchoTestModal = () => {
+const EchoTestModalRenderer = () => {
     const events = useContext(EchoTestEventRegistry);
 
     return (
@@ -291,3 +292,27 @@ export const EchoTestModal = () => {
         </div>
     );
 };
+
+class ModalEchoTest extends AbstractModal {
+    private readonly events: Registry<EchoTestEvents>;
+
+    constructor(events: IpcRegistryDescription<EchoTestEvents>) {
+        super();
+
+        this.events = Registry.fromIpcDescription(events);
+    }
+
+    renderBody(): React.ReactElement {
+        return (
+            <EchoTestEventRegistry.Provider value={this.events}>
+                <EchoTestModalRenderer />
+            </EchoTestEventRegistry.Provider>
+        );
+    }
+
+    renderTitle(): string | React.ReactElement<Translatable> {
+        return <Translatable>Voice echo test</Translatable>;
+    }
+}
+
+export = ModalEchoTest;

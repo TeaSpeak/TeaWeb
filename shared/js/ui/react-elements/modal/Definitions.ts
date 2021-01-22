@@ -3,6 +3,7 @@ import {VideoViewerEvents} from "tc-shared/video-viewer/Definitions";
 import {ReactElement} from "react";
 import * as React from "react";
 import {ChannelEditEvents} from "tc-shared/ui/modal/channel-edit/Definitions";
+import {EchoTestEvents} from "tc-shared/ui/modal/echo-test/Definitions";
 
 export type ModalType = "error" | "warning" | "info" | "none";
 
@@ -111,6 +112,9 @@ export interface ModalConstructorArguments {
     "channel-edit": [
         /* events */ IpcRegistryDescription<ChannelEditEvents>,
         /* isChannelCreate */ boolean
+    ],
+    "echo-test": [
+        /* events */ IpcRegistryDescription<EchoTestEvents>
     ],
     "conversation": any,
     "css-editor": any,

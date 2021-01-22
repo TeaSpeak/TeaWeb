@@ -28,7 +28,13 @@ registerModal({
 registerModal({
     modalId: "channel-edit",
     classLoader: async () => await import("tc-shared/ui/modal/channel-edit/Renderer"),
-    popoutSupported: true
+    popoutSupported: false /* TODO: Needs style fixing */
+});
+
+registerModal({
+    modalId: "echo-test",
+    classLoader: async () => await import("tc-shared/ui/modal/echo-test/Renderer"),
+    popoutSupported: false /* TODO: Needs style fixing */
 });
 
 registerModal({
