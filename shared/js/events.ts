@@ -465,7 +465,7 @@ export function EventHandler<EventTypes>(events: (keyof EventTypes) | (keyof Eve
     }
 }
 
-export function ReactEventHandler<ObjectClass = React.Component<any, any>, Events extends EventMap<Events> = EventMap<any>>(registry_callback: (object: ObjectClass) => Registry<Events>) {
+export function ReactEventHandler<ObjectClass = React.Component<any, any>, Events = any>(registry_callback: (object: ObjectClass) => Registry<Events>) {
     return function (constructor: Function) {
         if(!React.Component.prototype.isPrototypeOf(constructor.prototype))
             throw "Class/object isn't an instance of React.Component";

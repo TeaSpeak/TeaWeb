@@ -38,6 +38,12 @@ registerModal({
 });
 
 registerModal({
+    modalId: "global-settings-editor",
+    classLoader: async () => await import("tc-shared/ui/modal/global-settings-editor/Renderer"),
+    popoutSupported: true
+});
+
+registerModal({
     modalId: "conversation",
     classLoader: async () => await import("../../frames/side/PopoutConversationRenderer"),
     popoutSupported: true

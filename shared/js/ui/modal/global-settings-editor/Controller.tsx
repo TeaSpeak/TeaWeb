@@ -1,5 +1,4 @@
-import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
-import {ModalGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-editor/Renderer";
+import {spawnModal} from "tc-shared/ui/react-elements/Modal";
 import {Registry} from "tc-shared/events";
 import {ModalGlobalSettingsEditorEvents, Setting} from "tc-shared/ui/modal/global-settings-editor/Definitions";
 import {RegistryKey, RegistryValueType, Settings, settings} from "tc-shared/settings";
@@ -8,9 +7,9 @@ export function spawnGlobalSettingsEditor() {
     const events = new Registry<ModalGlobalSettingsEditorEvents>();
     initializeController(events);
 
-    const modal = spawnReactModal(ModalGlobalSettingsEditor, events);
+    const modal = spawnModal("global-settings-editor", [ events.generateIpcDescription() ], { popoutable: true, popedOut: true });
     modal.show();
-    modal.events.on("destroy", () => {
+    modal.getEvents().on("destroy", () => {
         events.fire("notify_destroy");
         events.destroy();
     });

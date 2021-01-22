@@ -4,6 +4,7 @@ import {ReactElement} from "react";
 import * as React from "react";
 import {ChannelEditEvents} from "tc-shared/ui/modal/channel-edit/Definitions";
 import {EchoTestEvents} from "tc-shared/ui/modal/echo-test/Definitions";
+import {ModalGlobalSettingsEditorEvents} from "tc-shared/ui/modal/global-settings-editor/Definitions";
 
 export type ModalType = "error" | "warning" | "info" | "none";
 
@@ -115,6 +116,9 @@ export interface ModalConstructorArguments {
     ],
     "echo-test": [
         /* events */ IpcRegistryDescription<EchoTestEvents>
+    ],
+    "global-settings-editor": [
+        /* events */ IpcRegistryDescription<ModalGlobalSettingsEditorEvents>
     ],
     "conversation": any,
     "css-editor": any,
