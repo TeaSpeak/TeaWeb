@@ -22,6 +22,7 @@ import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
 import * as ipRegex from "ip-regex";
 import {UiVariableProvider} from "tc-shared/ui/utils/Variable";
 import {createLocalUiVariables} from "tc-shared/ui/utils/LocalVariable";
+import {createIpcUiVariableProvider} from "tc-shared/ui/utils/IpcVariable";
 
 const kRegexDomain = /^(localhost|((([a-zA-Z0-9_-]{0,63}\.){0,253})?[a-zA-Z0-9_-]{0,63}\.[a-zA-Z]{2,64}))$/i;
 
@@ -344,7 +345,7 @@ export type ConnectModalOptions = {
 }
 
 export function spawnConnectModalNew(options: ConnectModalOptions) {
-    const [ variableProvider, variableConsumer ] = createLocalUiVariables<ConnectUiVariables>();
+    const variableProvider = createIpcUiVariableProvider();
     const controller = new ConnectController(variableProvider);
 
     if(typeof options.selectedAddress === "string") {
@@ -355,7 +356,7 @@ export function spawnConnectModalNew(options: ConnectModalOptions) {
         controller.setSelectedProfile(options.selectedProfile);
     }
 
-    const modal = spawnReactModal(ConnectModal, controller.uiEvents, variableConsumer, options.connectInANewTab || false);
+    const modal = spawnReactModal(ConnectModal, controller.uiEvents, variableProvider.generateConsumerDescription(), options.connectInANewTab || false);
     modal.show();
 
     modal.events.one("destroy", () => {

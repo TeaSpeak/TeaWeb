@@ -17,6 +17,8 @@ import * as i18n from "../../../i18n/country";
 import {getIconManager} from "tc-shared/file/Icons";
 import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {UiVariableConsumer} from "tc-shared/ui/utils/Variable";
+import {createIpcUiVariableConsumer, IpcVariableDescriptor} from "tc-shared/ui/utils/IpcVariable";
+import {AbstractModal} from "tc-shared/ui/react-elements/ModalDefinitions";
 
 const EventContext = React.createContext<Registry<ConnectUiEvents>>(undefined);
 const VariablesContext = React.createContext<UiVariableConsumer<ConnectUiVariables>>(undefined);
@@ -31,7 +33,7 @@ const InputServerAddress = React.memo(() => {
 
     const variables = useContext(VariablesContext);
     const address = variables.useVariable("server_address");
-    const addressValid = variables.useReadOnly("server_address_valid", true) || address.localValue !== address.remoteValue;
+    const addressValid = variables.useReadOnly("server_address_valid", undefined, true) || address.localValue !== address.remoteValue;
 
     return (
         <ControlledFlatInputField
@@ -79,7 +81,7 @@ const InputNickname = () => {
     const variables = useContext(VariablesContext);
 
     const nickname = variables.useVariable("nickname");
-    const validState = variables.useReadOnly("nickname_valid", true) || nickname.localValue !== nickname.remoteValue;
+    const validState = variables.useReadOnly("nickname_valid", undefined, true) || nickname.localValue !== nickname.remoteValue;
 
     return (
         <ControlledFlatInputField
@@ -383,17 +385,23 @@ const HistoryContainer = () => {
     )
 }
 
-export class ConnectModal extends InternalModal {
+export class ConnectModal extends AbstractModal {
     private readonly events: Registry<ConnectUiEvents>;
     private readonly variables: UiVariableConsumer<ConnectUiVariables>;
     private readonly connectNewTabByDefault: boolean;
 
-    constructor(events: Registry<ConnectUiEvents>, variables: UiVariableConsumer<ConnectUiVariables>, connectNewTabByDefault: boolean) {
+    constructor(events: Registry<ConnectUiEvents>, variables: IpcVariableDescriptor<ConnectUiVariables>, connectNewTabByDefault: boolean) {
         super();
 
-        this.variables = variables;
+        this.variables = createIpcUiVariableConsumer(variables);
         this.events = events;
         this.connectNewTabByDefault = connectNewTabByDefault;
+    }
+
+    protected onDestroy() {
+        super.onDestroy();
+
+        this.variables.destroy();
     }
 
     renderBody(): React.ReactElement {

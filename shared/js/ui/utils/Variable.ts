@@ -363,6 +363,8 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
 
         useEffect(() => {
             /* Initial rendered */
+            cacheEntry.useCount++;
+
             let listener;
             cacheEntry.updateListener.push(listener = () => {
                 /* We can't just increment the old one by one since this update listener may fires twice before rendering */
