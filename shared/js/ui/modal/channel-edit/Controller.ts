@@ -25,7 +25,7 @@ export type ChannelEditChangedPermission = { permission: PermissionType, value: 
 export const spawnChannelEditNew = (connection: ConnectionHandler, channel: ChannelEntry | undefined, parent: ChannelEntry | undefined, callback: ChannelEditCallback) => {
     const controller = new ChannelEditController(connection, channel, parent);
     const modal = spawnModal("channel-edit", [controller.uiEvents.generateIpcDescription(), typeof channel !== "object"], {
-        popedOut: true,
+        popedOut: false,
         popoutable: true
     });
     modal.show().then(undefined);
