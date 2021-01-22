@@ -50,8 +50,13 @@ html:root {
         max-width: 100%; /* important for the repetitive channel name! */
         overflow-x: hidden;
 
+        &.align-left {
+            justify-content: flex-start;
+        }
+
         &.align-right {
-            justify-content: right;
+            justify-content: flex-end;
+            padding-right: .25em;
         }
 
         &.align-center, &.align-repetitive {

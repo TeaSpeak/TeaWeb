@@ -146,7 +146,7 @@ export class ParsedChannelName {
                     this.alignment = "right";
                     break;
                 case "l":
-                    this.alignment = "center";
+                    this.alignment = "left";
                     break;
                 case "c":
                     this.alignment = "center";
