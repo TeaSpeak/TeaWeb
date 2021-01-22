@@ -1,16 +1,14 @@
 import {
     ConnectHistoryEntry,
-    ConnectUiEvents, ConnectUiVariables,
+    ConnectUiEvents, ConnectUiVariables, kUnknownHistoryServerUniqueId,
 } from "tc-shared/ui/modal/connect/Definitions";
 import * as React from "react";
 import {useContext} from "react";
-import {Registry} from "tc-shared/events";
-import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
-import {Translatable} from "tc-shared/ui/react-elements/i18n";
-import {ControlledFlatInputField, ControlledSelect, FlatInputField} from "tc-shared/ui/react-elements/InputField";
+import {IpcRegistryDescription, Registry} from "tc-shared/events";
 import {joinClassList, useTr} from "tc-shared/ui/react-elements/Helper";
+import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {Button} from "tc-shared/ui/react-elements/Button";
-import {kUnknownHistoryServerUniqueId} from "tc-shared/connectionlog/History";
+import {ControlledFlatInputField, ControlledSelect, FlatInputField} from "tc-shared/ui/react-elements/InputField";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
 import * as i18n from "../../../i18n/country";
@@ -385,16 +383,16 @@ const HistoryContainer = () => {
     )
 }
 
-export class ConnectModal extends AbstractModal {
+class ConnectModal extends AbstractModal {
     private readonly events: Registry<ConnectUiEvents>;
     private readonly variables: UiVariableConsumer<ConnectUiVariables>;
     private readonly connectNewTabByDefault: boolean;
 
-    constructor(events: Registry<ConnectUiEvents>, variables: IpcVariableDescriptor<ConnectUiVariables>, connectNewTabByDefault: boolean) {
+    constructor(events: IpcRegistryDescription<ConnectUiEvents>, variables: IpcVariableDescriptor<ConnectUiVariables>, connectNewTabByDefault: boolean) {
         super();
 
         this.variables = createIpcUiVariableConsumer(variables);
-        this.events = events;
+        this.events = Registry.fromIpcDescription(events);
         this.connectNewTabByDefault = connectNewTabByDefault;
     }
 
@@ -432,3 +430,4 @@ export class ConnectModal extends AbstractModal {
         return "top";
     }
 }
+export = ConnectModal;
