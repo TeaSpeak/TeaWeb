@@ -2,7 +2,7 @@ import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controll
 import * as React from "react";
 import {useContext, useEffect, useRef, useState} from "react";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
-import {Registry} from "tc-shared/events";
+import {IpcRegistryDescription, Registry} from "tc-shared/events";
 import {
     ChannelEditablePermissions,
     ChannelEditablePermissionValue,
@@ -23,6 +23,7 @@ import {Slider} from "tc-shared/ui/react-elements/Slider";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {getIconManager} from "tc-shared/file/Icons";
+import {AbstractModal} from "tc-shared/ui/react-elements/modal/Definitions";
 
 const cssStyle = require("./Renderer.scss");
 
@@ -1138,13 +1139,13 @@ const Buttons = React.memo(() => {
     )
 });
 
-export class ChannelEditModal extends InternalModal {
+class ChannelEditModal extends AbstractModal {
     private readonly events: Registry<ChannelEditEvents>;
     private readonly isChannelCreate: boolean;
 
-    constructor(events: Registry<ChannelEditEvents>, isChannelCreate: boolean) {
+    constructor(events: IpcRegistryDescription<ChannelEditEvents>, isChannelCreate: boolean) {
         super();
-        this.events = events;
+        this.events = Registry.fromIpcDescription(events);
         this.isChannelCreate = isChannelCreate;
     }
 
@@ -1175,3 +1176,5 @@ export class ChannelEditModal extends InternalModal {
         return "blue";
     }
 }
+
+export = ChannelEditModal;

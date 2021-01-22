@@ -2,14 +2,12 @@ import {LogCategory, logDebug, logTrace} from "tc-shared/log";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import * as React from "react";
 import {useEffect, useRef, useState} from "react";
-import {Registry, RegistryMap} from "tc-shared/events";
+import {IpcRegistryDescription, Registry} from "tc-shared/events";
 import {PlayerStatus, VideoViewerEvents} from "./Definitions";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import ReactPlayer from 'react-player'
 import {HTMLRenderer} from "tc-shared/ui/react-elements/HTMLRenderer";
 import {Button} from "tc-shared/ui/react-elements/Button";
-
-import "tc-shared/file/RemoteAvatars";
 import {AvatarRenderer} from "tc-shared/ui/react-elements/Avatar";
 import {getGlobalAvatarManagerFactory} from "tc-shared/file/Avatars";
 import {Settings, settings} from "tc-shared/settings";
@@ -491,11 +489,11 @@ class ModalVideoPopout extends AbstractModal {
     readonly events: Registry<VideoViewerEvents>;
     readonly handlerId: string;
 
-    constructor(registryMap: RegistryMap, userData: any) {
+    constructor(events: IpcRegistryDescription<VideoViewerEvents>, handlerId: any) {
         super();
 
-        this.handlerId = userData.handlerId;
-        this.events = registryMap["default"] as any;
+        this.events = Registry.fromIpcDescription(events);
+        this.handlerId = handlerId;
     }
 
     renderTitle(): string | React.ReactElement<Translatable> {
@@ -503,13 +501,17 @@ class ModalVideoPopout extends AbstractModal {
     }
 
     renderBody(): React.ReactElement {
-        return <div className={cssStyle.container} >
-            <Sidebar events={this.events} handlerId={this.handlerId} />
-            <ToggleSidebarButton events={this.events} />
-            <div className={cssStyle.containerPlayer}>
-                <PlayerController events={this.events} />
+        return (
+            <div className={cssStyle.outerContainer}>
+                <div className={cssStyle.container} >
+                    <Sidebar events={this.events} handlerId={this.handlerId} />
+                    <ToggleSidebarButton events={this.events} />
+                    <div className={cssStyle.containerPlayer}>
+                        <PlayerController events={this.events} />
+                    </div>
+                </div>
             </div>
-        </div>;
+        );
     }
 }
 

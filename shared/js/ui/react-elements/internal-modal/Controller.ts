@@ -10,10 +10,14 @@ import {
 } from "../../../ui/react-elements/ModalDefinitions";
 import {InternalModalRenderer} from "../../../ui/react-elements/internal-modal/Renderer";
 import {tr} from "tc-shared/i18n/localize";
+import {RegisteredModal} from "tc-shared/ui/react-elements/modal/Registry";
 
-export class InternalModalController<InstanceType extends InternalModal = InternalModal> implements ModalController {
+export class InternalModalController implements ModalController {
     readonly events: Registry<ModalEvents>;
-    readonly modalInstance: InstanceType;
+
+    private readonly modalType: RegisteredModal<any>;
+    private readonly constructorArguments: any[];
+    private modalInstance: AbstractModal;
 
     private initializedPromise: Promise<void>;
 
@@ -21,10 +25,12 @@ export class InternalModalController<InstanceType extends InternalModal = Intern
     private refModal: React.RefObject<InternalModalRenderer>;
     private modalState_: ModalState = ModalState.HIDDEN;
 
-    constructor(instance: InstanceType) {
-        this.modalInstance = instance;
+    constructor(modalType: RegisteredModal<any>, constructorArguments: any[]) {
+        this.modalType = modalType;
+        this.constructorArguments = constructorArguments;
+
         this.events = new Registry<ModalEvents>();
-        this.initialize();
+        this.initializedPromise = this.initialize();
     }
 
     getOptions(): Readonly<ModalOptions> {
@@ -40,17 +46,19 @@ export class InternalModalController<InstanceType extends InternalModal = Intern
         return this.modalState_;
     }
 
-    private initialize() {
+    private async initialize() {
         this.refModal = React.createRef();
         this.domElement = document.createElement("div");
 
+        this.modalInstance = new (await this.modalType.classLoader())(...this.constructorArguments);
+        console.error(this.modalInstance);
         const element = React.createElement(InternalModalRenderer, {
             ref: this.refModal,
             modal: this.modalInstance,
             onClose: () => this.destroy()
         });
         document.body.appendChild(this.domElement);
-        this.initializedPromise = new Promise<void>(resolve => {
+        await new Promise<void>(resolve => {
             ReactDOM.render(element, this.domElement, () => setTimeout(resolve, 0));
         });
 
@@ -59,10 +67,11 @@ export class InternalModalController<InstanceType extends InternalModal = Intern
 
     async show() : Promise<void> {
         await this.initializedPromise;
-        if(this.modalState_ === ModalState.DESTROYED)
+        if(this.modalState_ === ModalState.DESTROYED) {
             throw tr("modal has been destroyed");
-        else if(this.modalState_ === ModalState.SHOWN)
+        } else if(this.modalState_ === ModalState.SHOWN) {
             return;
+        }
 
         this.refModal.current?.setState({ show: true });
         this.modalState_ = ModalState.SHOWN;

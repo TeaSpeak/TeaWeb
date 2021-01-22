@@ -2,9 +2,7 @@
 @import "../../css/static/properties";
 
 $sidebar-width: 20em;
-.container {
-    background: #19191b;
-
+.outerContainer {
     display: flex;
     flex-direction: row;
     justify-content: stretch;
@@ -15,13 +13,29 @@ $sidebar-width: 20em;
     min-height: 10em;
     min-width: 20em;
 
-    position: absolute;
+    /* We're using the full with by default */
+    width: 100vw;
+    height: 100vh;
+
+    max-height: 100%;
+    max-width: 100%;
+
+    position: relative;
+}
+
+.container {
+    background: #19191b;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
 
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
 
+    position: absolute;
     overflow: hidden;
 }
 

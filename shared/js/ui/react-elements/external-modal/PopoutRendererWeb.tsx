@@ -65,8 +65,9 @@ export class WebModalRenderer implements ModalRenderer {
     }
 
     renderModal(modal: AbstractModal | undefined) {
-        if(this.currentModal === modal)
+        if(this.currentModal === modal) {
             return;
+        }
 
         this.currentModal = modal;
         this.titleRenderer.setInstance(modal);

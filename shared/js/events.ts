@@ -1,10 +1,10 @@
 import {LogCategory, logTrace} from "./log";
 import {guid} from "./crypto/uid";
-import * as React from "react";
 import {useEffect} from "react";
 import {unstable_batchedUpdates} from "react-dom";
-import { tr } from "./i18n/localize";
+import * as React from "react";
 
+/*
 export type EventPayloadObject = {
     [key: string]: EventPayload
 } | {
@@ -12,6 +12,8 @@ export type EventPayloadObject = {
 };
 
 export type EventPayload = string | number | bigint | null | undefined | EventPayloadObject;
+*/
+export type EventPayloadObject = any;
 
 export type EventMap<P> = {
     [K in keyof P]: EventPayloadObject & {
@@ -41,6 +43,7 @@ namespace EventHelper {
     /* May inline this somehow? A function call seems to be 3% slower */
     export function createEvent<P extends EventMap<P>, T extends keyof P>(type: T, payload?: P[T]) : Event<P, T> {
         if(payload) {
+            (payload as any).type = type;
             let event = payload as any as Event<P, T>;
             event.as = as;
             event.asUnchecked = asUnchecked;
@@ -80,7 +83,7 @@ namespace EventHelper {
     }
 }
 
-export interface EventSender<Events extends { [key: string]: any } = { [key: string]: any }> {
+export interface EventSender<Events extends EventMap<Events> = EventMap<any>> {
     fire<T extends keyof Events>(event_type: T, data?: Events[T], overrideTypeKey?: boolean);
 
     /**
@@ -112,13 +115,15 @@ interface EventHandlerRegisterData {
 }
 
 const kEventAnnotationKey = guid();
-export class Registry<Events extends { [key: string]: any } = { [key: string]: any }> implements EventSender<Events> {
+export class Registry<Events extends EventMap<Events> = EventMap<any>> implements EventSender<Events> {
     protected readonly registryUniqueId;
 
     protected persistentEventHandler: { [key: string]: ((event) => void)[] } = {};
     protected oneShotEventHandler: { [key: string]: ((event) => void)[] } = {};
     protected genericEventHandler: ((event) => void)[] = [];
     protected consumer: EventConsumer[] = [];
+
+    private ipcConsumer: IpcEventBridge;
 
     private debugPrefix = undefined;
     private warnUnhandledEvents = false;
@@ -129,6 +134,13 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
     private pendingReactCallbacks: { type: any, data: any, callback: () => void }[];
     private pendingReactCallbacksFrame: number = 0;
 
+    static fromIpcDescription<Events extends EventMap<Events> = EventMap<any>>(description: IpcRegistryDescription<Events>) : Registry<Events> {
+        const registry = new Registry<Events>();
+        registry.ipcConsumer = new IpcEventBridge(registry as any, description.ipcChannelId);
+        registry.registerConsumer(registry.ipcConsumer);
+        return registry;
+    }
+
     constructor() {
         this.registryUniqueId = "evreg_data_" + guid();
     }
@@ -138,6 +150,9 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
         Object.values(this.oneShotEventHandler).forEach(handlers => handlers.splice(0, handlers.length));
         this.genericEventHandler.splice(0, this.genericEventHandler.length);
         this.consumer.splice(0, this.consumer.length);
+
+        this.ipcConsumer?.destroy();
+        this.ipcConsumer = undefined;
     }
 
     enableDebug(prefix: string) { this.debugPrefix = prefix || "---"; }
@@ -148,13 +163,13 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
 
     fire<T extends keyof Events>(eventType: T, data?: Events[T], overrideTypeKey?: boolean) {
         if(this.debugPrefix) {
-            logTrace(LogCategory.EVENT_REGISTRY, tr("[%s] Trigger event: %s"), this.debugPrefix, eventType);
+            logTrace(LogCategory.EVENT_REGISTRY, "[%s] Trigger event: %s", this.debugPrefix, eventType);
         }
 
         if(typeof data === "object" && 'type' in data && !overrideTypeKey) {
             if((data as any).type !== eventType) {
                 debugger;
-                throw tr("The keyword 'type' is reserved for the event type and should not be passed as argument");
+                throw "The keyword 'type' is reserved for the event type and should not be passed as argument";
             }
         }
 
@@ -250,10 +265,11 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
     /**
      * @param event
      * @param handler
-     * @param condition
+     * @param condition If a boolean the event handler will only be registered if the condition is true
      * @param reactEffectDependencies
      */
-    reactUse<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void, condition?: boolean, reactEffectDependencies?: any[]) {
+    reactUse<T extends keyof Events>(event: T | T[], handler: (event: Event<Events, T>) => void, condition?: boolean, reactEffectDependencies?: any[]);
+    reactUse(event, handler, condition?, reactEffectDependencies?) {
         if(typeof condition === "boolean" && !condition) {
             useEffect(() => {});
             return;
@@ -263,8 +279,9 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
 
         useEffect(() => {
             handlers.push(handler);
+
             return () => {
-                const index = handlers.findIndex(handler);
+                const index = handlers.indexOf(handler);
                 if(index !== -1) {
                     handlers.splice(index, 1);
                 }
@@ -291,7 +308,7 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
         /*
         let invokeCount = 0;
         if(this.warnUnhandledEvents && invokeCount === 0) {
-            logWarn(LogCategory.EVENT_REGISTRY, tr("Event handler (%s) triggered event %s which has no consumers."), this.debugPrefix, event.type);
+            logWarn(LogCategory.EVENT_REGISTRY, "Event handler (%s) triggered event %s which has no consumers.", this.debugPrefix, event.type);
         }
         */
     }
@@ -405,7 +422,7 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
 
         for(const event of Object.keys(data.registeredHandler)) {
             for(const handler of data.registeredHandler[event]) {
-                this.off(event, handler);
+                this.off(event as any, handler);
             }
         }
     }
@@ -419,6 +436,17 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
 
     unregisterConsumer(consumer: EventConsumer) {
         this.consumer.remove(consumer);
+    }
+
+    generateIpcDescription() : IpcRegistryDescription<Events> {
+        if(!this.ipcConsumer) {
+            this.ipcConsumer = new IpcEventBridge(this as any, undefined);
+            this.registerConsumer(this.ipcConsumer);
+        }
+
+        return {
+            ipcChannelId: this.ipcConsumer.ipcChannelId
+        };
     }
 }
 
@@ -437,7 +465,7 @@ export function EventHandler<EventTypes>(events: (keyof EventTypes) | (keyof Eve
     }
 }
 
-export function ReactEventHandler<ObjectClass = React.Component<any, any>, EventTypes = any>(registry_callback: (object: ObjectClass) => Registry<EventTypes>) {
+export function ReactEventHandler<ObjectClass = React.Component<any, any>, Events extends EventMap<Events> = EventMap<any>>(registry_callback: (object: ObjectClass) => Registry<Events>) {
     return function (constructor: Function) {
         if(!React.Component.prototype.isPrototypeOf(constructor.prototype))
             throw "Class/object isn't an instance of React.Component";
@@ -470,164 +498,72 @@ export function ReactEventHandler<ObjectClass = React.Component<any, any>, Event
     }
 }
 
-export namespace modal {
-    export namespace settings {
-        export type ProfileInfo = {
-            id: string,
-            name: string,
-            nickname: string,
-            identity_type: "teaforo" | "teamspeak" | "nickname",
+export type IpcRegistryDescription<Events extends EventMap<Events> = EventMap<any>> = {
+    ipcChannelId: string
+}
 
-            identity_forum?: {
-                valid: boolean,
-                fallback_name: string
-            },
-            identity_nickname?: {
-                name: string,
-                fallback_name: string
-            },
-            identity_teamspeak?: {
-                unique_id: string,
-                fallback_name: string
-            }
+class IpcEventBridge implements EventConsumer {
+    readonly registry: Registry;
+    readonly ipcChannelId: string;
+    private readonly ownBridgeId: string;
+    private broadcastChannel: BroadcastChannel;
+
+    constructor(registry: Registry, ipcChannelId: string | undefined) {
+        this.registry = registry;
+        this.ownBridgeId = guid();
+
+        this.ipcChannelId = ipcChannelId || ("teaspeak-ipc-events-" + guid());
+        this.broadcastChannel = new BroadcastChannel(this.ipcChannelId);
+        this.broadcastChannel.onmessage = event => this.handleIpcMessage(event.data, event.source, event.origin);
+    }
+
+    destroy() {
+        if(this.broadcastChannel) {
+            this.broadcastChannel.onmessage = undefined;
+            this.broadcastChannel.onmessageerror = undefined;
+            this.broadcastChannel.close();
         }
 
-        export interface profiles {
-            "reload-profile": { profile_id?: string },
-            "select-profile": { profile_id: string },
+        this.broadcastChannel = undefined;
+    }
 
-            "query-profile-list": { },
-            "query-profile-list-result": {
-                status: "error" | "success" | "timeout",
+    handleEvent(dispatchType: EventDispatchType, eventType: string, eventPayload: any) {
+        if(eventPayload && eventPayload[this.ownBridgeId]) {
+            return;
+        }
 
-                error?: string;
-                profiles?: ProfileInfo[]
+        this.broadcastChannel.postMessage({
+            type: "event",
+            source: this.ownBridgeId,
+
+            dispatchType,
+            eventType,
+            eventPayload,
+        });
+    }
+
+    private handleIpcMessage(message: any, _source: MessageEventSource | null, _origin: string) {
+        if(message.source === this.ownBridgeId) {
+            /* It's our own event */
+            return;
+        }
+
+        if(message.type === "event") {
+            const payload = message.eventPayload || {};
+            payload[this.ownBridgeId] = true;
+            switch(message.dispatchType as EventDispatchType) {
+                case "sync":
+                    this.registry.fire(message.eventType, payload);
+                    break;
+
+                case "react":
+                    this.registry.fire_react(message.eventType, payload);
+                    break;
+
+                case "later":
+                    this.registry.fire_later(message.eventType, payload);
+                    break;
             }
-
-            "query-profile": { profile_id: string },
-            "query-profile-result": {
-                status: "error" | "success" | "timeout",
-                profile_id: string,
-
-                error?: string;
-                info?: ProfileInfo
-            },
-
-            "select-identity-type": {
-                profile_id: string,
-                identity_type: "teamspeak" | "teaforo" | "nickname" | "unset"
-            },
-
-            "query-profile-validity": { profile_id: string },
-            "query-profile-validity-result": {
-                profile_id: string,
-                status: "error" | "success" | "timeout",
-
-                error?: string,
-                valid?: boolean
-            }
-
-            "create-profile": { name: string },
-            "create-profile-result": {
-                status: "error" | "success" | "timeout",
-                name: string;
-
-                profile_id?: string;
-                error?: string;
-            },
-
-            "delete-profile": { profile_id: string },
-            "delete-profile-result": {
-                status: "error" | "success" | "timeout",
-                profile_id: string,
-                error?: string
-            }
-
-            "set-default-profile": { profile_id: string },
-            "set-default-profile-result": {
-                status: "error" | "success" | "timeout",
-
-                /* the profile which now has the id "default" */
-                old_profile_id: string,
-
-                /* the "default" profile which now has a new id */
-                new_profile_id?: string
-
-                error?: string;
-            }
-
-            /* profile name events */
-            "set-profile-name": {
-                profile_id: string,
-                name: string
-            },
-            "set-profile-name-result": {
-                status: "error" | "success" | "timeout",
-                profile_id: string,
-                name?: string
-            },
-
-            /* profile nickname events */
-            "set-default-name": {
-                profile_id: string,
-                name: string | null
-            },
-            "set-default-name-result": {
-                status: "error" | "success" | "timeout",
-                profile_id: string,
-                name?: string | null
-            },
-
-            "query-identity-teamspeak": { profile_id: string },
-            "query-identity-teamspeak-result": {
-                status: "error" | "success" | "timeout",
-                profile_id: string,
-
-                error?: string,
-                level?: number
-            }
-
-            "set-identity-name-name": { profile_id: string, name: string },
-            "set-identity-name-name-result": {
-                status: "error" | "success" | "timeout",
-                profile_id: string,
-
-                error?: string,
-                name?: string
-            },
-
-            "generate-identity-teamspeak": { profile_id: string },
-            "generate-identity-teamspeak-result": {
-                profile_id: string,
-                status: "error" | "success" | "timeout",
-
-                error?: string,
-
-                level?: number
-                unique_id?: string
-            },
-
-            "improve-identity-teamspeak-level": { profile_id: string },
-            "improve-identity-teamspeak-level-update": {
-                profile_id: string,
-                new_level: number
-            },
-
-            "import-identity-teamspeak": { profile_id: string },
-            "import-identity-teamspeak-result": {
-                profile_id: string,
-
-                level?: number
-                unique_id?: string
-            }
-
-            "export-identity-teamspeak": {
-                profile_id: string,
-                filename: string
-            },
-
-
-            "setup-forum-connection": {}
         }
     }
 }

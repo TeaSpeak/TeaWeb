@@ -10,8 +10,7 @@ import {Registry} from "tc-shared/events";
 import {ChannelPropertyProviders} from "tc-shared/ui/modal/channel-edit/ControllerProperties";
 import {LogCategory, logDebug, logError} from "tc-shared/log";
 import {ChannelPropertyPermissionsProviders} from "tc-shared/ui/modal/channel-edit/ControllerPermissions";
-import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
-import {ChannelEditModal} from "tc-shared/ui/modal/channel-edit/Renderer";
+import {spawnModal} from "tc-shared/ui/react-elements/Modal";
 import {PermissionValue} from "tc-shared/permission/PermissionManager";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import PermissionType from "tc-shared/permission/PermissionType";
@@ -25,10 +24,13 @@ export type ChannelEditChangedPermission = { permission: PermissionType, value: 
 
 export const spawnChannelEditNew = (connection: ConnectionHandler, channel: ChannelEntry | undefined, parent: ChannelEntry | undefined, callback: ChannelEditCallback) => {
     const controller = new ChannelEditController(connection, channel, parent);
-    const modal = spawnReactModal(ChannelEditModal, controller.uiEvents, typeof channel !== "object");
+    const modal = spawnModal("channel-edit", [controller.uiEvents.generateIpcDescription(), typeof channel !== "object"], {
+        popedOut: true,
+        popoutable: true
+    });
     modal.show().then(undefined);
 
-    modal.events.on("destroy", () => {
+    modal.getEvents().on("destroy", () => {
         controller.destroy();
     });
 

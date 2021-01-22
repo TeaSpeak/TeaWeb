@@ -28,6 +28,164 @@ import {NotificationSettings} from "tc-shared/ui/modal/settings/Notifications";
 import {initialize_audio_microphone_controller, MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/Microphone";
 import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
 
+type ProfileInfoEvent = {
+    id: string,
+    name: string,
+    nickname: string,
+    identity_type: "teaforo" | "teamspeak" | "nickname",
+
+    identity_forum?: {
+        valid: boolean,
+        fallback_name: string
+    },
+    identity_nickname?: {
+        name: string,
+        fallback_name: string
+    },
+    identity_teamspeak?: {
+        unique_id: string,
+        fallback_name: string
+    }
+}
+
+export interface SettingProfileEvents {
+    "reload-profile": { profile_id?: string },
+    "select-profile": { profile_id: string },
+
+    "query-profile-list": { },
+    "query-profile-list-result": {
+        status: "error" | "success" | "timeout",
+
+        error?: string;
+        profiles?: ProfileInfoEvent[]
+    }
+
+    "query-profile": { profile_id: string },
+    "query-profile-result": {
+        status: "error" | "success" | "timeout",
+        profile_id: string,
+
+        error?: string;
+        info?: ProfileInfoEvent
+    },
+
+    "select-identity-type": {
+        profile_id: string,
+        identity_type: "teamspeak" | "teaforo" | "nickname" | "unset"
+    },
+
+    "query-profile-validity": { profile_id: string },
+    "query-profile-validity-result": {
+        profile_id: string,
+        status: "error" | "success" | "timeout",
+
+        error?: string,
+        valid?: boolean
+    }
+
+    "create-profile": { name: string },
+    "create-profile-result": {
+        status: "error" | "success" | "timeout",
+        name: string;
+
+        profile_id?: string;
+        error?: string;
+    },
+
+    "delete-profile": { profile_id: string },
+    "delete-profile-result": {
+        status: "error" | "success" | "timeout",
+        profile_id: string,
+        error?: string
+    }
+
+    "set-default-profile": { profile_id: string },
+    "set-default-profile-result": {
+        status: "error" | "success" | "timeout",
+
+        /* the profile which now has the id "default" */
+        old_profile_id: string,
+
+        /* the "default" profile which now has a new id */
+        new_profile_id?: string
+
+        error?: string;
+    }
+
+    /* profile name events */
+    "set-profile-name": {
+        profile_id: string,
+        name: string
+    },
+    "set-profile-name-result": {
+        status: "error" | "success" | "timeout",
+        profile_id: string,
+        name?: string
+    },
+
+    /* profile nickname events */
+    "set-default-name": {
+        profile_id: string,
+        name: string | null
+    },
+    "set-default-name-result": {
+        status: "error" | "success" | "timeout",
+        profile_id: string,
+        name?: string | null
+    },
+
+    "query-identity-teamspeak": { profile_id: string },
+    "query-identity-teamspeak-result": {
+        status: "error" | "success" | "timeout",
+        profile_id: string,
+
+        error?: string,
+        level?: number
+    }
+
+    "set-identity-name-name": { profile_id: string, name: string },
+    "set-identity-name-name-result": {
+        status: "error" | "success" | "timeout",
+        profile_id: string,
+
+        error?: string,
+        name?: string
+    },
+
+    "generate-identity-teamspeak": { profile_id: string },
+    "generate-identity-teamspeak-result": {
+        profile_id: string,
+        status: "error" | "success" | "timeout",
+
+        error?: string,
+
+        level?: number
+        unique_id?: string
+    },
+
+    "improve-identity-teamspeak-level": { profile_id: string },
+    "improve-identity-teamspeak-level-update": {
+        profile_id: string,
+        new_level: number
+    },
+
+    "import-identity-teamspeak": { profile_id: string },
+    "import-identity-teamspeak-result": {
+        profile_id: string,
+
+        level?: number
+        unique_id?: string
+    }
+
+    "export-identity-teamspeak": {
+        profile_id: string,
+        filename: string
+    },
+
+
+    "setup-forum-connection": {}
+}
+
 export function spawnSettingsModal(default_page?: string): Modal {
     let modal: Modal;
     modal = createModal({
@@ -449,7 +607,7 @@ function settings_audio_microphone(container: JQuery, modal: Modal) {
 }
 
 function settings_identity_profiles(container: JQuery, modal: Modal) {
-    const registry = new Registry<events.modal.settings.profiles>();
+    const registry = new Registry<SettingProfileEvents>();
     //registry.enable_debug("settings-identity");
     modal_settings.initialize_identity_profiles_controller(registry);
     modal_settings.initialize_identity_profiles_view(container, registry, {
@@ -689,7 +847,7 @@ export namespace modal_settings {
         forum_setuppable: boolean
     }
 
-    export function initialize_identity_profiles_controller(event_registry: Registry<events.modal.settings.profiles>) {
+    export function initialize_identity_profiles_controller(event_registry: Registry<SettingProfileEvents>) {
         const send_error = (event, profile, text) => event_registry.fire_react(event, {
             status: "error",
             profile_id: profile,
@@ -997,7 +1155,7 @@ export namespace modal_settings {
         });
     }
 
-    export function initialize_identity_profiles_view(container: JQuery, event_registry: Registry<events.modal.settings.profiles>, settings: ProfileViewSettings) {
+    export function initialize_identity_profiles_view(container: JQuery, event_registry: Registry<SettingProfileEvents>, settings: ProfileViewSettings) {
         /* profile list */
         {
             const container_profiles = container.find(".container-profiles");
@@ -1007,7 +1165,7 @@ export namespace modal_settings {
             const overlay_timeout = container_profiles.find(".overlay-timeout");
             const overlay_empty = container_profiles.find(".overlay-empty");
 
-            const build_profile = (profile: events.modal.settings.ProfileInfo, selected: boolean) => {
+            const build_profile = (profile: ProfileInfoEvent, selected: boolean) => {
                 let tag_avatar: JQuery, tag_default: JQuery;
                 let tag = $.spawn("div").addClass("profile").attr("profile-id", profile.id).append(
                     tag_avatar = $.spawn("div").addClass("container-avatar"),
@@ -1693,7 +1851,7 @@ export namespace modal_settings {
                 });
             }
 
-            const create_standard_timeout = (event: keyof events.modal.settings.profiles, response_event: keyof events.modal.settings.profiles, key: string) => {
+            const create_standard_timeout = (event: keyof SettingProfileEvents, response_event: keyof SettingProfileEvents, key: string) => {
                 const timeouts = {};
                 event_registry.on(event, event => {
                     clearTimeout(timeouts[event[key]]);

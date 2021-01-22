@@ -27,7 +27,6 @@ class IpcUiVariableProvider<Variables extends UiVariableMap> extends UiVariableP
     }
 
     protected doSendVariable(variable: string, customData: any, value: any) {
-        console.error("Sending variable: %o", variable);
         this.broadcastChannel.postMessage({
             type: "notify",
 

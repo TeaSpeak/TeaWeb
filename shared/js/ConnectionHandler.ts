@@ -41,6 +41,9 @@ import {ServerEventLog} from "tc-shared/connectionlog/ServerEventLog";
 import {PlaylistManager} from "tc-shared/music/PlaylistManager";
 import {connectionHistory} from "tc-shared/connectionlog/History";
 import {ConnectParameters} from "tc-shared/ui/modal/connect/Controller";
+import {assertMainApplication} from "tc-shared/ui/utils";
+
+assertMainApplication();
 
 export enum InputHardwareState {
     MISSING,
