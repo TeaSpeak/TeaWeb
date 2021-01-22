@@ -23,6 +23,7 @@ export interface BoxedInputFieldProperties {
     isInvalid?: boolean;
 
     className?: string;
+    maxLength?: number,
 
     size?: "normal" | "large" | "small";
     type?: "text" | "password" | "number";
@@ -86,6 +87,7 @@ export class BoxedInputField extends React.Component<BoxedInputFieldProperties, 
                            disabled={this.state.disabled || this.props.disabled}
                            onInput={this.props.onInput && (event => this.props.onInput(event.currentTarget.value))}
                            onKeyDown={e => this.onKeyDown(e)}
+                           maxLength={this.props.maxLength}
                     />
                 }
                 {this.props.suffix ? <a key={"suffix"} className={cssStyle.suffix}>{this.props.suffix}</a> : undefined}
@@ -399,6 +401,7 @@ export const ControlledSelect = (props: {
 
 export interface SelectProperties {
     type?: "flat" | "boxed";
+    refSelect?: React.RefObject<HTMLSelectElement>,
 
     defaultValue?: string;
     value?: string;
@@ -416,6 +419,8 @@ export interface SelectProperties {
     disabled?: boolean;
     editable?: boolean;
 
+    title?: string,
+
     onFocus?: () => void;
     onBlur?: () => void;
 
@@ -430,10 +435,12 @@ export interface SelectFieldState {
 }
 
 export class Select extends React.Component<SelectProperties, SelectFieldState> {
-    private refSelect = React.createRef<HTMLSelectElement>();
+    private refSelect;
 
     constructor(props) {
         super(props);
+
+        this.refSelect = this.props.refSelect || React.createRef<HTMLSelectElement>();
 
         this.state = {
             isInvalid: false,
@@ -453,6 +460,7 @@ export class Select extends React.Component<SelectProperties, SelectFieldState> 
                     value={this.props.value}
                     defaultValue={this.props.defaultValue}
                     disabled={disabled}
+                    title={this.props.title}
 
                     onFocus={this.props.onFocus}
                     onBlur={this.props.onBlur}

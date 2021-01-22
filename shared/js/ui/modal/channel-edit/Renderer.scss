@@ -40,6 +40,26 @@
     }
 }
 
+.channelName {
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+
+    width: 100%;
+    min-width: 10em;
+
+    .select {
+        margin-right: 1em;
+        width: 10em;
+    }
+
+    &.hasParent {
+        .select {
+            display: none;
+        }
+    }
+}
+
 .buttons {
     margin-top: 1em;
 

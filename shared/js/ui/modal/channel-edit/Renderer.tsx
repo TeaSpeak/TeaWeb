@@ -1,4 +1,3 @@
-import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import * as React from "react";
 import {useContext, useEffect, useRef, useState} from "react";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
@@ -16,7 +15,7 @@ import {Switch} from "tc-shared/ui/react-elements/Switch";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {Tab, TabEntry} from "tc-shared/ui/react-elements/Tab";
 import {Settings, settings} from "tc-shared/settings";
-import {useTr} from "tc-shared/ui/react-elements/Helper";
+import {joinClassList, useTr} from "tc-shared/ui/react-elements/Helper";
 import {IconTooltip} from "tc-shared/ui/react-elements/Tooltip";
 import {RadioButton} from "tc-shared/ui/react-elements/RadioButton";
 import {Slider} from "tc-shared/ui/react-elements/Slider";
@@ -24,6 +23,7 @@ import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {getIconManager} from "tc-shared/file/Icons";
 import {AbstractModal} from "tc-shared/ui/react-elements/modal/Definitions";
+import {ChannelNameAlignment, ChannelNameParser} from "tc-shared/tree/Channel";
 
 const cssStyle = require("./Renderer.scss");
 
@@ -122,6 +122,10 @@ function useValidationState<T extends keyof ChannelEditableProperty>(property: T
     return valid;
 }
 
+const ChannelNameType = (props: { selected: ChannelNameAlignment }) => {
+
+}
+
 const ChannelName = React.memo(() => {
     const modalType = useContext(ModalTypeContext);
 
@@ -129,16 +133,72 @@ const ChannelName = React.memo(() => {
     const editable = usePropertyPermission("name", modalType === "channel-create");
     const valid = useValidationState("name");
 
+    const refSelect = useRef<HTMLSelectElement>();
+
+    const setValue = (text: string | undefined, localOnly: boolean) => {
+        let rawName;
+        switch(propertyValue.hasParent ? "normal" : refSelect.current.value) {
+            case "center":
+                rawName = "[cspacer" + propertyValue.spacerUniqueId + "]" + text;
+                break;
+
+            case "left":
+                rawName = "[lspacer" + propertyValue.spacerUniqueId + "]" + text;
+                break;
+
+            case "right":
+                rawName = "[rspacer" + propertyValue.spacerUniqueId + "]" + text;
+                break;
+
+            case "repetitive":
+                rawName ="[*spacer" + propertyValue.spacerUniqueId + "]" + text;
+                break;
+
+            default:
+            case "normal":
+                rawName = text;
+                break;
+        }
+
+        setPropertyValue({
+            rawName,
+            parsedName: text,
+
+            hasParent: propertyValue.hasParent,
+            spacerUniqueId: propertyValue.spacerUniqueId,
+            maxNameLength: propertyValue.maxNameLength,
+            parsedAlignment: propertyValue.parsedAlignment
+        }, localOnly);
+    }
+
     return (
-        <BoxedInputField
-            className={cssStyle.input}
-            disabled={!editable || propertyState !== "normal"}
-            value={propertyValue || ""}
-            placeholder={propertyState === "normal" ? tr("Channel name") : tr("loading")}
-            onInput={value => setPropertyValue(value, true)}
-            onChange={value => setPropertyValue(value)}
-            isInvalid={!valid}
-        />
+        <div className={joinClassList(cssStyle.channelName, propertyValue?.hasParent && cssStyle.hasParent)}>
+            <Select
+                value={propertyValue?.parsedAlignment || "loading"}
+                className={cssStyle.select}
+                onChange={() => setValue(propertyValue.parsedName, false)}
+                type={"boxed"}
+                title={useTr("Channel name mode")}
+                refSelect={refSelect}
+            >
+                <option value={"loading"} style={{ display: "none" }}>{useTr("loading")}</option>
+                <option value={"normal"}>{useTr("Normal Name")}</option>
+                <option value={"center"}>{useTr("Centered")}</option>
+                <option value={"left"}>{useTr("Left Aligned")}</option>
+                <option value={"right"}>{useTr("Right Aligned")}</option>
+                <option value={"repetitive"}>{useTr("Repetitive")}</option>
+            </Select>
+            <BoxedInputField
+                className={cssStyle.input}
+                disabled={!editable || propertyState !== "normal"}
+                value={(propertyValue?.hasParent ? propertyValue?.rawName : propertyValue?.parsedName) || ""}
+                placeholder={propertyState === "normal" ? tr("Channel name") : tr("loading")}
+                onInput={value => setValue(value, true)}
+                onChange={value => setValue(value, false)}
+                isInvalid={!valid}
+                maxLength={propertyValue?.maxNameLength}
+            />
+        </div>
     );
 });
 

@@ -114,54 +114,72 @@ export interface ChannelEvents extends ChannelTreeEntryEvents {
     notify_description_changed: {}
 }
 
-export class ParsedChannelName {
+export type ChannelNameAlignment = "center" | "right" | "left" | "normal" | "repetitive";
+export class ChannelNameParser {
     readonly originalName: string;
-    alignment: "center" | "right" | "left" | "normal" | "repetitive";
+    alignment: ChannelNameAlignment;
     text: string; /* does not contain any alignment codes */
+    uniqueId: string;
 
     constructor(name: string, hasParentChannel: boolean) {
         this.originalName = name;
         this.parse(hasParentChannel);
     }
 
-    private parse(has_parent_channel: boolean) {
+    private parse(hasParentChannel: boolean) {
         this.alignment = "normal";
+        if(this.originalName.length < 3) {
+            this.text = this.originalName;
+            return;
+        }
 
-        parse_type:
-        if(!has_parent_channel && this.originalName.charAt(0) == '[') {
+
+        parseType:
+        if(!hasParentChannel && this.originalName.charAt(0) == '[') {
             let end = this.originalName.indexOf(']');
-            if(end === -1) break parse_type;
+            if(end === -1) {
+                break parseType;
+            }
 
             let options = this.originalName.substr(1, end - 1);
-            if(options.indexOf("spacer") === -1) break parse_type;
-            options = options.substr(0, options.indexOf("spacer"));
+            const spacerIndex = options.indexOf("spacer");
+            if(spacerIndex === -1) break parseType;
+            this.uniqueId = options.substring(spacerIndex + 6);
+            options = options.substr(0, spacerIndex);
 
-            if(options.length == 0)
+            if(options.length == 0) {
                 options = "l";
-            else if(options.length > 1)
+            } else if(options.length > 1) {
                 options = options[0];
+            }
 
             switch (options) {
                 case "r":
                     this.alignment = "right";
                     break;
+
                 case "l":
                     this.alignment = "left";
                     break;
+
                 case "c":
                     this.alignment = "center";
                     break;
+
                 case "*":
                     this.alignment = "repetitive";
                     break;
+
                 default:
-                    break parse_type;
+                    break parseType;
             }
 
             this.text = this.originalName.substr(end + 1);
         }
-        if(!this.text && this.alignment === "normal")
+
+        if(!this.text && this.alignment === "normal") {
             this.text = this.originalName;
+        }
     }
 }
 
@@ -177,7 +195,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
     readonly events: Registry<ChannelEvents>;
 
-    parsed_channel_name: ParsedChannelName;
+    parsed_channel_name: ChannelNameParser;
 
     private _family_index: number = 0;
 
@@ -206,7 +224,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         this.properties = new ChannelProperties();
         this.channelId = channelId;
         this.properties.channel_name = channelName;
-        this.parsed_channel_name = new ParsedChannelName(channelName, false);
+        this.parsed_channel_name = new ChannelNameParser(channelName, false);
 
         this.clientPropertyChangedListener = (event: ClientEvents["notify_properties_updated"]) => {
             if("client_nickname" in event.updated_properties || "client_talk_power" in event.updated_properties) {
@@ -627,7 +645,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
             if(hasUpdate) {
                 if(key == "channel_name") {
-                    this.parsed_channel_name = new ParsedChannelName(value, this.hasParent());
+                    this.parsed_channel_name = new ChannelNameParser(value, this.hasParent());
                 } else if(key == "channel_order") {
                     let order = this.channelTree.findChannel(this.properties.channel_order);
                     this.channelTree.moveChannel(this, order, this.parent, false);
