@@ -41,7 +41,7 @@ class VideoViewer {
         }
 
         this.modal = spawnModal("video-viewer", [ this.events.generateIpcDescription(), connection.handlerId ], {
-            popedOut: false,
+            popedOut: true,
         });
 
         this.registerPluginListeners();
