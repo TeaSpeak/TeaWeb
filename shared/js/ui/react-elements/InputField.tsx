@@ -451,7 +451,12 @@ export class Select extends React.Component<SelectProperties, SelectFieldState> 
     render() {
         const disabled = typeof this.state.disabled === "boolean" ? this.state.disabled : typeof this.props.disabled === "boolean" ? this.props.disabled : false;
         return (
-            <div className={(this.props.type === "boxed" ? cssStyle.containerBoxed : cssStyle.containerFlat) + " " + cssStyle["size-normal"] + " " + (this.state.isInvalid ? cssStyle.isInvalid : "") + " " + (this.props.className || "") + " " + cssStyle.noLeftIcon + " " + cssStyle.noRightIcon}>
+            <div className={
+                (this.props.type === "boxed" ? cssStyle.containerBoxed : cssStyle.containerFlat) + " " +
+                cssStyle["size-normal"] + " " + (this.state.isInvalid ? cssStyle.isInvalid : "") + " " +
+                (this.props.className || "") + " " + cssStyle.noLeftIcon + " " + cssStyle.noRightIcon + " " +
+                (this.props.disabled ? cssStyle.disabled : "")
+            }>
                 {this.props.label ?
                     <label className={cssStyle["type-static"] + " " + (this.props.labelClassName || "")}>{this.props.label}</label> : undefined}
                 <select
