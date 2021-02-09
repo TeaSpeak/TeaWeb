@@ -1,4 +1,4 @@
-import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnReactModal} from "tc-shared/ui/react-elements/modal";
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import * as React from "react";
 import {WhatsNew} from "tc-shared/ui/modal/whats-new/Renderer";

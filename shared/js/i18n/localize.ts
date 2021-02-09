@@ -49,7 +49,7 @@ export interface TranslationRepository {
 
 let translations: Translation[] = [];
 let translateCache: { [key:string]: string; } = {};
-export function tr(message: string, key?: string) {
+export function tr(message: string, key?: string) : string {
     const sloppy = translateCache[message];
     if(sloppy) {
         return sloppy;

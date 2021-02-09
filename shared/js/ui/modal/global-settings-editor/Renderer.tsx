@@ -1,7 +1,6 @@
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import * as React from "react";
 import {createContext, useContext, useRef, useState} from "react";
-import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import {IpcRegistryDescription, Registry} from "tc-shared/events";
 import {ModalGlobalSettingsEditorEvents, Setting} from "tc-shared/ui/modal/global-settings-editor/Definitions";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";

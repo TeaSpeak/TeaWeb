@@ -1,4 +1,4 @@
-import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnReactModal} from "tc-shared/ui/react-elements/modal";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {Registry} from "tc-shared/events";
 import * as React from "react";

@@ -1,7 +1,7 @@
 import {createErrorModal, createModal} from "../../ui/elements/Modal";
 import {ConnectionHandler} from "../../ConnectionHandler";
 import {MusicClientEntry} from "../../tree/Client";
-import {modal, Registry} from "../../events";
+import {Registry} from "../../events";
 import {CommandResult} from "../../connection/ServerConnectionDeclaration";
 import {LogCategory, logError, logWarn} from "../../log";
 import {tr, tra} from "../../i18n/localize";
@@ -12,8 +12,160 @@ import * as htmltags from "../../ui/htmltags";
 import {ErrorCode} from "../../connection/ErrorCode";
 import ServerGroup = find.ServerGroup;
 
+type BotStatusType = "name" | "description" | "volume" | "country_code" | "channel_commander" | "priority_speaker";
+type PlaylistStatusType = "replay_mode" | "finished" | "delete_played" | "max_size" | "notify_song_change";
+interface music_manage {
+    show_container: { container: "settings" | "permissions"; };
+
+    /* setting relevant */
+    query_bot_status: {},
+    bot_status: {
+        status: "success" | "error";
+        error_msg?: string;
+        data?: {
+            name: string,
+            description: string,
+            volume: number,
+
+            country_code: string,
+            default_country_code: string,
+
+            channel_commander: boolean,
+            priority_speaker: boolean,
+
+            client_version: string,
+            client_platform: string,
+
+            uptime_mode: number,
+            bot_type: number
+        }
+    },
+    set_bot_status: {
+        key: BotStatusType,
+        value: any
+    },
+    set_bot_status_result: {
+        key: BotStatusType,
+        status: "success" | "error" | "timeout",
+        error_msg?: string,
+        value?: any
+    }
+
+    query_playlist_status: {},
+    playlist_status: {
+        status: "success" | "error",
+        error_msg?: string,
+        data?: {
+            replay_mode: number,
+            finished: boolean,
+            delete_played: boolean,
+            max_size: number,
+            notify_song_change: boolean
+        }
+    },
+    set_playlist_status: {
+        key: PlaylistStatusType,
+        value: any
+    },
+    set_playlist_status_result: {
+        key: PlaylistStatusType,
+        status: "success" | "error" | "timeout",
+        error_msg?: string,
+        value?: any
+    }
+
+    /* permission relevant */
+    show_client_list: {},
+    hide_client_list: {},
+
+    filter_client_list: { filter: string | undefined },
+
+    "refresh_permissions": {},
+
+    query_special_clients: {},
+    special_client_list: {
+        status: "success" | "error" | "error-permission",
+        error_msg?: string,
+        clients?: {
+            name: string,
+            unique_id: string,
+            database_id: number
+        }[]
+    },
+
+    search_client: { text: string },
+    search_client_result: {
+        status: "error" | "timeout" | "empty" | "success",
+        error_msg?: string,
+        client?: {
+            name: string,
+            unique_id: string,
+            database_id: number
+        }
+    },
+
+    /* sets a client to set the permission for */
+    special_client_set: {
+        client?: {
+            name: string,
+            unique_id: string,
+            database_id: number
+        }
+    },
+
+    "query_general_permissions": {},
+    "general_permissions": {
+        status: "error" | "timeout" | "success",
+        error_msg?: string,
+        permissions?: {[key: string]:number}
+    },
+    "set_general_permission_result": {
+        status: "error" | "success",
+        key: string,
+        value?: number,
+        error_msg?: string
+    },
+    "set_general_permission": { /* try to change a permission for the server */
+        key: string,
+        value: number
+    },
+
+
+    "query_client_permissions": { client_database_id: number },
+    "client_permissions": {
+        status: "error" | "timeout" | "success",
+        client_database_id: number,
+        error_msg?: string,
+        permissions?: {[key: string]:number}
+    },
+    "set_client_permission_result": {
+        status: "error" | "success",
+        client_database_id: number,
+        key: string,
+        value?: number,
+        error_msg?: string
+    },
+    "set_client_permission": { /* try to change a permission for the server */
+        client_database_id: number,
+        key: string,
+        value: number
+    },
+
+    "query_group_permissions": { permission_name: string },
+    "group_permissions": {
+        permission_name: string;
+        status: "error" | "timeout" | "success"
+        groups?: {
+            name: string,
+            value: number,
+            id: number
+        }[],
+        error_msg?: string
+    }
+}
+
 export function openMusicManage(client: ConnectionHandler, bot: MusicClientEntry) {
-    const ev_registry = new Registry<modal.music_manage>();
+    const ev_registry = new Registry<music_manage>();
     ev_registry.enableDebug("music-manage");
     //dummy_controller(ev_registry);
     permission_controller(ev_registry, bot, client);
@@ -36,7 +188,7 @@ export function openMusicManage(client: ConnectionHandler, bot: MusicClientEntry
     modal.open();
 }
 
-function permission_controller(event_registry: Registry<modal.music_manage>, bot: MusicClientEntry, client: ConnectionHandler) {
+function permission_controller(event_registry: Registry<music_manage>, bot: MusicClientEntry, client: ConnectionHandler) {
     const error_msg = error => {
         if (error instanceof CommandResult) {
             if (error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
@@ -380,7 +532,7 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
     }
 }
 
-function dummy_controller(event_registry: Registry<modal.music_manage>) {
+function dummy_controller(event_registry: Registry<music_manage>) {
     /* settings */
     {
         event_registry.on("query_bot_status", event => {
@@ -510,7 +662,7 @@ function dummy_controller(event_registry: Registry<modal.music_manage>) {
 }
 
 
-function build_modal(event_registry: Registry<modal.music_manage>): JQuery<HTMLElement> {
+function build_modal(event_registry: Registry<music_manage>): JQuery<HTMLElement> {
     const tag = $("#tmpl_music_manage").renderTag();
 
     const container_settings = tag.find(".body > .category-settings");
@@ -563,7 +715,7 @@ function build_modal(event_registry: Registry<modal.music_manage>): JQuery<HTMLE
     return tag.children();
 }
 
-function build_settings_container(event_registry: Registry<modal.music_manage>, tag: JQuery<HTMLElement>) {
+function build_settings_container(event_registry: Registry<music_manage>, tag: JQuery<HTMLElement>) {
     const show_change_error = (header, message) => {
         createErrorModal(tr("Failed to change value"), header + "<br>" + message).open();
     };
@@ -1169,7 +1321,7 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
     }
 }
 
-function build_permission_container(event_registry: Registry<modal.music_manage>, tag: JQuery<HTMLElement>) {
+function build_permission_container(event_registry: Registry<music_manage>, tag: JQuery<HTMLElement>) {
     /* client search mechanism */
     {
         const container = tag.find(".table-head .column-client-specific .client-select");

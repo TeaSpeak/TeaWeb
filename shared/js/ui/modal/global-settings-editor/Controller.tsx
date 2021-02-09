@@ -1,4 +1,4 @@
-import {spawnModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnModal} from "tc-shared/ui/react-elements/modal";
 import {Registry} from "tc-shared/events";
 import {ModalGlobalSettingsEditorEvents, Setting} from "tc-shared/ui/modal/global-settings-editor/Definitions";
 import {RegistryKey, RegistryValueType, Settings, settings} from "tc-shared/settings";

@@ -1,4 +1,4 @@
-import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnReactModal} from "tc-shared/ui/react-elements/modal";
 import * as React from "react";
 import {Registry} from "tc-shared/events";
 import {FileBrowserRenderer, NavigationBar} from "./FileBrowserRenderer";

@@ -1,5 +1,5 @@
 import {Registry} from "tc-shared/events";
-import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnReactModal} from "tc-shared/ui/react-elements/modal";
 import {ModalVideoSourceEvents} from "tc-shared/ui/modal/video-source/Definitions";
 import {ModalVideoSource} from "tc-shared/ui/modal/video-source/Renderer";
 import {getVideoDriver, VideoPermissionStatus, VideoSource} from "tc-shared/video/VideoSource";

@@ -10,7 +10,7 @@ import {Registry} from "tc-shared/events";
 import {ChannelPropertyProviders} from "tc-shared/ui/modal/channel-edit/ControllerProperties";
 import {LogCategory, logDebug, logError} from "tc-shared/log";
 import {ChannelPropertyPermissionsProviders} from "tc-shared/ui/modal/channel-edit/ControllerPermissions";
-import {spawnModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnModal} from "tc-shared/ui/react-elements/modal";
 import {PermissionValue} from "tc-shared/permission/PermissionManager";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import PermissionType from "tc-shared/permission/PermissionType";

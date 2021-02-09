@@ -1,4 +1,4 @@
-import {spawnModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnModal} from "tc-shared/ui/react-elements/modal";
 import * as React from "react";
 import {Registry} from "tc-shared/events";
 import {EchoTestEvents, TestState} from "tc-shared/ui/modal/echo-test/Definitions";

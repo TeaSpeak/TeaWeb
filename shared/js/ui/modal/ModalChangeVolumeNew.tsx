@@ -1,4 +1,4 @@
-import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnReactModal} from "tc-shared/ui/react-elements/modal";
 import * as React from "react";
 import {Slider} from "tc-shared/ui/react-elements/Slider";
 import {Button} from "tc-shared/ui/react-elements/Button";

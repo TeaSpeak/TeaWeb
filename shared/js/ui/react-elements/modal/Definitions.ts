@@ -7,6 +7,7 @@ import {EchoTestEvents} from "tc-shared/ui/modal/echo-test/Definitions";
 import {ModalGlobalSettingsEditorEvents} from "tc-shared/ui/modal/global-settings-editor/Definitions";
 
 export type ModalType = "error" | "warning" | "info" | "none";
+export type ModalRenderType = "page" | "dialog";
 
 export interface ModalOptions {
     /**
