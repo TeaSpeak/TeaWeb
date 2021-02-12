@@ -1,4 +1,19 @@
 # Changelog:
+* **22.01.21**
+    - Allowing the user to easily change the channel name mode
+    - Fixed channel name mode parsing
+    - Improved the modal algorithms as preparation for easier popoutable modals
+  
+* **16.01.21**
+    - Various bugfixes (Thanks to Vafin)
+    
+* **15.01.21**
+    - Fixed the history toggle (Thanks to Vafin)
+    
+* **12.01.21**
+    - Fixed bug where the quick video select popup did not start the video broadcasting
+    - Fixed a bug where an invalid H264 codec may caused video connection setup failure
+    
 * **09.01.21**
     - The connect modal now connects when pressing `Enter` on the address line
     

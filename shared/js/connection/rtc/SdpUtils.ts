@@ -48,7 +48,7 @@ export class SdpProcessor {
             rate: 90000,
             rtcpFb: [ "nack", "nack pli", "ccm fir", "transport-cc" ],
         },
-        {
+        window.detectedBrowser.name.indexOf("ios") === -1 && window.detectedBrowser.name !== "safari" ? {
             payload: H264_PAYLOAD_TYPE,
             codec: "H264",
             rate: 90000,
@@ -57,10 +57,10 @@ export class SdpProcessor {
             fmtp: {
                 "level-asymmetry-allowed": 1,
                 "packetization-mode": 1,
-                "profile-level-id": "4d0028",
+                "profile-level-id": "42001f",
                 "max-fr": 30,
             }
-        },
+        } : undefined,
     ];
 
     private rtpRemoteChannelMapping: {[key: string]: number};
@@ -150,7 +150,11 @@ export class SdpProcessor {
             media.rtcpFb = [];
             media.rtcpFbTrrInt = [];
 
-            for(let codec of (media.type === "audio" ? this.kAudioCodecs : this.kVideoCodecs)) {
+            for(const codec of (media.type === "audio" ? this.kAudioCodecs : this.kVideoCodecs)) {
+                if(!codec) {
+                    continue;
+                }
+
                 media.rtp.push({
                     payload: codec.payload,
                     codec: codec.codec,

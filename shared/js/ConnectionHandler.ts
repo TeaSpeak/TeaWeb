@@ -41,6 +41,9 @@ import {ServerEventLog} from "tc-shared/connectionlog/ServerEventLog";
 import {PlaylistManager} from "tc-shared/music/PlaylistManager";
 import {connectionHistory} from "tc-shared/connectionlog/History";
 import {ConnectParameters} from "tc-shared/ui/modal/connect/Controller";
+import {assertMainApplication} from "tc-shared/ui/utils";
+
+assertMainApplication();
 
 export enum InputHardwareState {
     MISSING,
@@ -240,7 +243,7 @@ export class ConnectionHandler {
         this.localClient = new LocalClientEntry(this);
         this.localClient.channelTree = this.channelTree;
 
-        this.events_.register_handler(this);
+        this.events_.registerHandler(this);
         this.pluginCmdRegistry.registerHandler(new W2GPluginCmdHandler());
 
         this.events_.fire("notify_handler_initialized");
@@ -1073,7 +1076,7 @@ export class ConnectionHandler {
     }
 
     destroy() {
-        this.events_.unregister_handler(this);
+        this.events_.unregisterHandler(this);
         this.cancelAutoReconnect(true);
 
         this.pluginCmdRegistry?.destroy();

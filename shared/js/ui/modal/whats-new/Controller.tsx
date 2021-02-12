@@ -1,4 +1,4 @@
-import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnReactModal} from "tc-shared/ui/react-elements/modal";
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import * as React from "react";
 import {WhatsNew} from "tc-shared/ui/modal/whats-new/Renderer";
@@ -15,7 +15,7 @@ export function spawnUpdatedModal(changes: { changesUI?: ChangeLog, changesClien
             return <WhatsNew changesUI={changes.changesUI} changesClient={changes.changesClient}/>;
         }
 
-        title(): string | React.ReactElement<Translatable> {
+        renderTitle(): string | React.ReactElement<Translatable> {
             return <Translatable>We've updated the client for you</Translatable>;
         }
     });

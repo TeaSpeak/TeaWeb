@@ -143,6 +143,7 @@ export namespace AppParameters {
 
     parseParameters();
 }
+(window as any).AppParameters = AppParameters;
 
 export namespace AppParameters {
     export const KEY_CONNECT_ADDRESS: RegistryKey<string> = {
@@ -214,6 +215,12 @@ export namespace AppParameters {
         key: "ipc-address",
         valueType: "string",
         description: "Address of the owner for IPC communication."
+    };
+
+    export const KEY_IPC_REMOTE_POPOUT_CHANNEL: RegistryKey<string> = {
+        key: "ipc-channel",
+        valueType: "string",
+        description: "The channel name of the popout channel communication id"
     };
 
     export const KEY_MODAL_TARGET: RegistryKey<string> = {
@@ -641,6 +648,20 @@ export class Settings {
         key: "video_default_max_height",
         defaultValue: 720,
         description: "The default maximal height of the video being crated.",
+        valueType: "number",
+    };
+
+    static readonly KEY_VIDEO_DEFAULT_MAX_BANDWIDTH: ValuedRegistryKey<number> = {
+        key: "video_default_max_bandwidth",
+        defaultValue: 1_600_000,
+        description: "The default video bandwidth to use in bits/seconds.\nA too high value might not be allowed by all server permissions.",
+        valueType: "number",
+    };
+
+    static readonly KEY_VIDEO_DEFAULT_KEYFRAME_INTERVAL: ValuedRegistryKey<number> = {
+        key: "video_default_keyframe_interval",
+        defaultValue: 0,
+        description: "The default interval to forcibly request a keyframe from ourself in seconds. A value of zero means no such interval.",
         valueType: "number",
     };
 

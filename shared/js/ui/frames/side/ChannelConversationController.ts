@@ -36,14 +36,14 @@ export class ChannelConversationController extends AbstractConversationControlle
         });
         */
 
-        this.uiEvents.register_handler(this, true);
+        this.uiEvents.registerHandler(this, true);
     }
 
     destroy() {
         this.connectionListener.forEach(callback => callback());
         this.connectionListener = [];
 
-        this.uiEvents.unregister_handler(this);
+        this.uiEvents.unregisterHandler(this);
         super.destroy();
     }
 

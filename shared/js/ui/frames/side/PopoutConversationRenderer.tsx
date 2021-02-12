@@ -23,7 +23,7 @@ class PopoutConversationRenderer extends AbstractModal {
             noFirstMessageOverlay={this.userData.noFirstMessageOverlay} />;
     }
 
-    title() {
+    renderTitle() {
         return "Conversations";
     }
 }

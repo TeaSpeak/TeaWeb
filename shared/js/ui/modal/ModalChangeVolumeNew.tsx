@@ -1,4 +1,4 @@
-import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnReactModal} from "tc-shared/ui/react-elements/modal";
 import * as React from "react";
 import {Slider} from "tc-shared/ui/react-elements/Slider";
 import {Button} from "tc-shared/ui/react-elements/Button";
@@ -243,7 +243,7 @@ class VolumeChange extends InternalModal {
         return <VolumeChangeModal remote={false} clientName={this.client.clientNickName()} events={this.events} />;
     }
 
-    title() {
+    renderTitle() {
         return <Translatable>Change local volume</Translatable>;
     }
 }
@@ -284,7 +284,7 @@ class VolumeChangeBot extends InternalModal {
         return <VolumeChangeModal remote={true} clientName={this.client.clientNickName()} maxVolume={this.maxValue} events={this.events} />;
     }
 
-    title() {
+    renderTitle() {
         return <Translatable>Change remote volume</Translatable>;
     }
 }

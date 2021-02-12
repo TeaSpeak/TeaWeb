@@ -47,6 +47,9 @@ import "./ui/elements/ContextDivider";
 import "./ui/elements/Tab";
 import "./clientservice";
 import {initializeKeyControl} from "./KeyControl";
+import {assertMainApplication} from "tc-shared/ui/utils";
+
+assertMainApplication();
 
 let preventWelcomeUI = false;
 async function initialize() {

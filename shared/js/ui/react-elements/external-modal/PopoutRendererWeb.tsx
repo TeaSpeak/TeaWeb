@@ -25,7 +25,7 @@ class TitleRenderer {
 
         this.modalInstance = instance;
         if(this.modalInstance) {
-            ReactDOM.render(<>{this.modalInstance.title()}</>, this.htmlContainer);
+            ReactDOM.render(<>{this.modalInstance.renderTitle()}</>, this.htmlContainer);
         }
     }
 }
@@ -65,8 +65,9 @@ export class WebModalRenderer implements ModalRenderer {
     }
 
     renderModal(modal: AbstractModal | undefined) {
-        if(this.currentModal === modal)
+        if(this.currentModal === modal) {
             return;
+        }
 
         this.currentModal = modal;
         this.titleRenderer.setInstance(modal);

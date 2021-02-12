@@ -1354,7 +1354,7 @@ export class PermissionEditor extends React.Component<PermissionEditorProperties
             <div key={"footer"} className={cssStyle.containerFooter}>
                 <RefreshButton events={this.props.events}/>
             </div>
-        ]
+        ];
     }
 
     componentDidMount(): void {

@@ -1,28 +1,89 @@
-import {LogCategory, logTrace, logWarn} from "./log";
+import {LogCategory, logTrace} from "./log";
 import {guid} from "./crypto/uid";
-import * as React from "react";
 import {useEffect} from "react";
 import {unstable_batchedUpdates} from "react-dom";
-import { tr } from "./i18n/localize";
+import * as React from "react";
 
-export interface Event<Events, T = keyof Events> {
-    readonly type: T;
-    as<T extends keyof Events>() : Events[T];
+/*
+export type EventPayloadObject = {
+    [key: string]: EventPayload
+} | {
+    [key: number]: EventPayload
+};
+
+export type EventPayload = string | number | bigint | null | undefined | EventPayloadObject;
+*/
+export type EventPayloadObject = any;
+
+export type EventMap<P> = {
+    [K in keyof P]: EventPayloadObject & {
+        /* prohibit the type attribute on the highest layer (used to identify the event type) */
+        type?: never
+    }
+};
+
+export type Event<P extends EventMap<P>, T extends keyof P> = {
+    readonly type: T,
+
+    as<S extends T>(target: S) : Event<P, S>;
+    asUnchecked<S extends T>(target: S) : Event<P, S>;
+    asAnyUnchecked<S extends keyof P>(target: S) : Event<P, S>;
+
+    /**
+     * Return an object containing only the event payload specific key value pairs.
+     */
+    extractPayload() : P[T];
+} & P[T];
+
+namespace EventHelper {
+    /**
+     * Turn the payload object into a bus event object
+     * @param payload
+     */
+    /* May inline this somehow? A function call seems to be 3% slower */
+    export function createEvent<P extends EventMap<P>, T extends keyof P>(type: T, payload?: P[T]) : Event<P, T> {
+        if(payload) {
+            (payload as any).type = type;
+            let event = payload as any as Event<P, T>;
+            event.as = as;
+            event.asUnchecked = asUnchecked;
+            event.asAnyUnchecked = asUnchecked;
+            event.extractPayload = extractPayload;
+            return event;
+        } else {
+            return {
+                type,
+                as,
+                asUnchecked,
+                asAnyUnchecked: asUnchecked,
+                extractPayload
+            } as any;
+        }
+    }
+
+    function extractPayload() {
+        const result = Object.assign({}, this);
+        delete result["as"];
+        delete result["asUnchecked"];
+        delete result["asAnyUnchecked"];
+        delete result["extractPayload"];
+        return result;
+    }
+
+    function as(target) {
+        if(this.type !== target) {
+            throw "Mismatching event type. Expected: " + target + ", Got: " + this.type;
+        }
+
+        return this;
+    }
+
+    function asUnchecked() {
+        return this;
+    }
 }
 
-export interface SingletonEvents {
-    "singletone-instance": never;
-}
-
-export class SingletonEvent implements Event<SingletonEvents, "singletone-instance"> {
-    static readonly instance = new SingletonEvent();
-
-    readonly type = "singletone-instance";
-    private constructor() { }
-    as<T extends keyof SingletonEvents>() : SingletonEvents[T] { return; }
-}
-
-export interface EventReceiver<Events extends { [key: string]: any } = { [key: string]: any }> {
+export interface EventSender<Events extends EventMap<Events> = EventMap<any>> {
     fire<T extends keyof Events>(event_type: T, data?: Events[T], overrideTypeKey?: boolean);
 
     /**
@@ -43,16 +104,27 @@ export interface EventReceiver<Events extends { [key: string]: any } = { [key: s
     fire_react<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void);
 }
 
-const event_annotation_key = guid();
-export class Registry<Events extends { [key: string]: any } = { [key: string]: any }> implements EventReceiver<Events> {
-    private readonly registryUuid;
+export type EventDispatchType = "sync" | "later" | "react";
 
-    private handler: {[key: string]: ((event) => void)[]} = {};
-    private connections: {[key: string]: EventReceiver<Events>[]} = {};
-    private eventHandlerObjects: {
-        object: any,
-        handlers: {[key: string]: ((event) => void)[]}
-    }[] = [];
+export interface EventConsumer {
+    handleEvent(mode: EventDispatchType, type: string, data: any);
+}
+
+interface EventHandlerRegisterData {
+    registeredHandler: {[key: string]: ((event) => void)[]}
+}
+
+const kEventAnnotationKey = guid();
+export class Registry<Events extends EventMap<Events> = EventMap<any>> implements EventSender<Events> {
+    protected readonly registryUniqueId;
+
+    protected persistentEventHandler: { [key: string]: ((event) => void)[] } = {};
+    protected oneShotEventHandler: { [key: string]: ((event) => void)[] } = {};
+    protected genericEventHandler: ((event) => void)[] = [];
+    protected consumer: EventConsumer[] = [];
+
+    private ipcConsumer: IpcEventBridge;
+
     private debugPrefix = undefined;
     private warnUnhandledEvents = false;
 
@@ -62,183 +134,183 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
     private pendingReactCallbacks: { type: any, data: any, callback: () => void }[];
     private pendingReactCallbacksFrame: number = 0;
 
-    constructor() {
-        this.registryUuid = "evreg_data_" + guid();
+    static fromIpcDescription<Events extends EventMap<Events> = EventMap<any>>(description: IpcRegistryDescription<Events>) : Registry<Events> {
+        const registry = new Registry<Events>();
+        registry.ipcConsumer = new IpcEventBridge(registry as any, description.ipcChannelId);
+        registry.registerConsumer(registry.ipcConsumer);
+        return registry;
     }
 
+    constructor() {
+        this.registryUniqueId = "evreg_data_" + guid();
+    }
+
+    destroy() {
+        Object.values(this.persistentEventHandler).forEach(handlers => handlers.splice(0, handlers.length));
+        Object.values(this.oneShotEventHandler).forEach(handlers => handlers.splice(0, handlers.length));
+        this.genericEventHandler.splice(0, this.genericEventHandler.length);
+        this.consumer.splice(0, this.consumer.length);
+
+        this.ipcConsumer?.destroy();
+        this.ipcConsumer = undefined;
+    }
 
     enableDebug(prefix: string) { this.debugPrefix = prefix || "---"; }
     disableDebug() { this.debugPrefix = undefined; }
 
-    enable_warn_unhandled_events() { this.warnUnhandledEvents = true; }
-    disable_warn_unhandled_events() { this.warnUnhandledEvents = false; }
+    enableWarnUnhandledEvents() { this.warnUnhandledEvents = true; }
+    disableWarnUnhandledEvents() { this.warnUnhandledEvents = false; }
 
-    on<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void) : () => void;
-    on(events: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void) : () => void;
-    on(events, handler) : () => void {
-        if(!Array.isArray(events))
-            events = [events];
-
-        handler[this.registryUuid] = {
-            singleshot: false
-        };
-        for(const event of events) {
-            const handlers = this.handler[event] || (this.handler[event] = []);
-            handlers.push(handler);
+    fire<T extends keyof Events>(eventType: T, data?: Events[T], overrideTypeKey?: boolean) {
+        if(this.debugPrefix) {
+            logTrace(LogCategory.EVENT_REGISTRY, "[%s] Trigger event: %s", this.debugPrefix, eventType);
         }
-        return () => this.off(events, handler);
-    }
-
-    onAll(handler: (event?: Event<Events>) => void) : () => void {
-        handler[this.registryUuid] = {
-            singleshot: false
-        };
-        (this.handler[null as any] || (this.handler[null as any] = [])).push(handler);
-        return () => this.offAll(handler);
-    }
-
-    /* one */
-    one<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void) : () => void;
-    one(events: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void) : () => void;
-    one(events, handler) : () => void {
-        if(!Array.isArray(events))
-            events = [events];
-
-        for(const event of events) {
-            const handlers = this.handler[event] || (this.handler[event] = []);
-
-            handler[this.registryUuid] = { singleshot: true };
-            handlers.push(handler);
-        }
-        return () => this.off(events, handler);
-    }
-
-    off<T extends keyof Events>(handler: (event?) => void);
-    off<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void);
-    off(event: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void);
-    off(handler_or_events, handler?) {
-        if(typeof handler_or_events === "function") {
-            for(const key of Object.keys(this.handler))
-                this.handler[key].remove(handler_or_events);
-        } else {
-            if(!Array.isArray(handler_or_events))
-                handler_or_events = [handler_or_events];
-
-            for(const event of handler_or_events) {
-                const handlers = this.handler[event];
-                if(handlers) handlers.remove(handler);
-            }
-        }
-    }
-
-    offAll(handler: (event?: Event<Events>) => void) {
-        (this.handler[null as any] || []).remove(handler);
-    }
-
-
-    /* special helper methods for react components */
-    /**
-     * @param event
-     * @param handler
-     * @param condition
-     * @param reactEffectDependencies
-     */
-    reactUse<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void, condition?: boolean, reactEffectDependencies?: any[]) {
-        if(typeof condition === "boolean" && !condition) {
-            useEffect(() => {});
-            return;
-        }
-        const handlers = this.handler[event as any] || (this.handler[event as any] = []);
-
-        useEffect(() => {
-            handlers.push(handler);
-            return () => {
-                handlers.remove(handler);
-            };
-        }, reactEffectDependencies);
-    }
-
-    connectAll<EOther, T extends keyof Events & keyof EOther>(target: EventReceiver<Events>) {
-        (this.connections[null as any] || (this.connections[null as any] = [])).push(target as any);
-    }
-
-    connect<EOther, T extends (keyof Events & keyof EOther)>(events: T | T[], target: EventReceiver<EOther>) {
-        for(const event of Array.isArray(events) ? events : [events])
-            (this.connections[event as string] || (this.connections[event as string] = [])).push(target as any);
-    }
-
-    disconnect<EOther, T extends keyof Events & keyof EOther>(events: T | T[], target: EventReceiver<Events>) {
-        for(const event of Array.isArray(events) ? events : [events])
-            (this.connections[event as string] || []).remove(target as any);
-    }
-
-    disconnectAll<EOther>(target: EventReceiver<EOther>) {
-        this.connections[null as any]?.remove(target as any);
-        for(const event of Object.keys(this.connections))
-            this.connections[event].remove(target as any);
-    }
-
-    fire<T extends keyof Events>(event_type: T, data?: Events[T], overrideTypeKey?: boolean) {
-        if(this.debugPrefix)
-            logTrace(LogCategory.EVENT_REGISTRY, tr("[%s] Trigger event: %s"), this.debugPrefix, event_type);
 
         if(typeof data === "object" && 'type' in data && !overrideTypeKey) {
-            if((data as any).type !== event_type) {
+            if((data as any).type !== eventType) {
                 debugger;
-                throw tr("The keyword 'type' is reserved for the event type and should not be passed as argument");
+                throw "The keyword 'type' is reserved for the event type and should not be passed as argument";
             }
         }
-        const event = Object.assign(typeof data === "undefined" ? SingletonEvent.instance : data, {
-            type: event_type,
-            as: function () { return this; }
-        });
 
-        this.fire_event(event_type, event);
+        for(const consumer of this.consumer) {
+            consumer.handleEvent("sync", eventType as string, data);
+        }
+
+        this.doInvokeEvent(EventHelper.createEvent(eventType, data));
     }
 
-    private fire_event(type: keyof Events, data: any) {
-        let invokeCount = 0;
-
-        const typedHandler = this.handler[type as string] || [];
-        const generalHandler = this.handler[null as string] || [];
-        for(const handler of [...generalHandler, ...typedHandler]) {
-            handler(data);
-            invokeCount++;
-
-            const regData = handler[this.registryUuid];
-            if(typeof regData === "object" && regData.singleshot)
-                this.handler[type as string].remove(handler); /* FIXME: General single shot? */
-        }
-
-        const typedConnections = this.connections[type as string] || [];
-        const generalConnections = this.connections[null as string] || [];
-        for(const evhandler of [...generalConnections, ...typedConnections]) {
-            if('fire_event' in evhandler)
-                /* evhandler is an event registry as well. We don't have to check for any inappropriate keys */
-                (evhandler as any).fire_event(type, data);
-            else
-                evhandler.fire(type, data);
-            invokeCount++;
-        }
-        if(this.warnUnhandledEvents && invokeCount === 0) {
-            logWarn(LogCategory.EVENT_REGISTRY, tr("Event handler (%s) triggered event %s which has no consumers."), this.debugPrefix, type);
-        }
-    }
-
-    fire_later<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void) {
+    fire_later<T extends keyof Events>(eventType: T, data?: Events[T], callback?: () => void) {
         if(!this.pendingAsyncCallbacksTimeout) {
             this.pendingAsyncCallbacksTimeout = setTimeout(() => this.invokeAsyncCallbacks());
             this.pendingAsyncCallbacks = [];
         }
-        this.pendingAsyncCallbacks.push({ type: event_type, data: data, callback: callback });
+        this.pendingAsyncCallbacks.push({ type: eventType, data: data, callback: callback });
+
+        for(const consumer of this.consumer) {
+            consumer.handleEvent("later", eventType as string, data);
+        }
     }
 
-    fire_react<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void) {
+    fire_react<T extends keyof Events>(eventType: T, data?: Events[T], callback?: () => void) {
         if(!this.pendingReactCallbacks) {
             this.pendingReactCallbacksFrame = requestAnimationFrame(() => this.invokeReactCallbacks());
             this.pendingReactCallbacks = [];
         }
-        this.pendingReactCallbacks.push({ type: event_type, data: data, callback: callback });
+
+        this.pendingReactCallbacks.push({ type: eventType, data: data, callback: callback });
+
+        for(const consumer of this.consumer) {
+            consumer.handleEvent("react", eventType as string, data);
+        }
+    }
+
+    on<T extends keyof Events>(event: T | T[], handler: (event: Event<Events, T>) => void) : () => void;
+    on(events, handler) : () => void {
+        if(!Array.isArray(events)) {
+            events = [events];
+        }
+
+        for(const event of events as string[]) {
+            const persistentHandler = this.persistentEventHandler[event] || (this.persistentEventHandler[event] = []);
+            persistentHandler.push(handler);
+        }
+
+        return () => this.off(events, handler);
+    }
+
+    one<T extends keyof Events>(event: T | T[], handler: (event: Event<Events, T>) => void) : () => void;
+    one(events, handler) : () => void {
+        if(!Array.isArray(events)) {
+            events = [events];
+        }
+
+        for(const event of events as string[]) {
+            const persistentHandler = this.oneShotEventHandler[event] || (this.oneShotEventHandler[event] = []);
+            persistentHandler.push(handler);
+        }
+
+        return () => this.off(events, handler);
+    }
+
+    off(handler: (event: Event<Events, keyof Events>) => void);
+    off<T extends keyof Events>(events: T | T[], handler: (event: Event<Events, T>) => void);
+    off(handlerOrEvents, handler?) {
+        if(typeof handlerOrEvents === "function") {
+            this.offAll(handler);
+        } else if(typeof handlerOrEvents === "string") {
+            if(this.persistentEventHandler[handlerOrEvents]) {
+                this.persistentEventHandler[handlerOrEvents].remove(handler);
+            }
+
+            if(this.oneShotEventHandler[handlerOrEvents]) {
+                this.oneShotEventHandler[handlerOrEvents].remove(handler);
+            }
+        } else if(Array.isArray(handlerOrEvents)) {
+            handlerOrEvents.forEach(handler_or_event => this.off(handler_or_event, handler));
+        }
+    }
+
+    onAll(handler: (event: Event<Events, keyof Events>) => void): () => void {
+        this.genericEventHandler.push(handler);
+        return () => this.genericEventHandler.remove(handler);
+    }
+
+    offAll(handler: (event: Event<Events, keyof Events>) => void) {
+        Object.values(this.persistentEventHandler).forEach(persistentHandler => persistentHandler.remove(handler));
+        Object.values(this.oneShotEventHandler).forEach(oneShotHandler => oneShotHandler.remove(handler));
+        this.genericEventHandler.remove(handler);
+    }
+
+    /**
+     * @param event
+     * @param handler
+     * @param condition If a boolean the event handler will only be registered if the condition is true
+     * @param reactEffectDependencies
+     */
+    reactUse<T extends keyof Events>(event: T | T[], handler: (event: Event<Events, T>) => void, condition?: boolean, reactEffectDependencies?: any[]);
+    reactUse(event, handler, condition?, reactEffectDependencies?) {
+        if(typeof condition === "boolean" && !condition) {
+            useEffect(() => {});
+            return;
+        }
+
+        const handlers = this.persistentEventHandler[event as any] || (this.persistentEventHandler[event as any] = []);
+
+        useEffect(() => {
+            handlers.push(handler);
+
+            return () => {
+                const index = handlers.indexOf(handler);
+                if(index !== -1) {
+                    handlers.splice(index, 1);
+                }
+            };
+        }, reactEffectDependencies);
+    }
+
+    private doInvokeEvent(event: Event<Events, keyof Events>) {
+        const oneShotHandler = this.oneShotEventHandler[event.type];
+        if(oneShotHandler) {
+            delete this.oneShotEventHandler[event.type];
+            for(const handler of oneShotHandler) {
+                handler(event);
+            }
+        }
+
+        for(const handler of this.persistentEventHandler[event.type] || []) {
+            handler(event);
+        }
+
+        for(const handler of this.genericEventHandler) {
+            handler(event);
+        }
+        /*
+        let invokeCount = 0;
+        if(this.warnUnhandledEvents && invokeCount === 0) {
+            logWarn(LogCategory.EVENT_REGISTRY, "Event handler (%s) triggered event %s which has no consumers.", this.debugPrefix, event.type);
+        }
+        */
     }
 
     private invokeAsyncCallbacks() {
@@ -266,7 +338,7 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
         this.pendingReactCallbacksFrame = 0;
         this.pendingReactCallbacks = undefined;
 
-        /* run this after the requestAnimationFrame has been finished */
+        /* run this after the requestAnimationFrame has been finished since else it might be fired instantly */
         setTimeout(() => {
             /* batch all react updates */
             unstable_batchedUpdates(() => {
@@ -287,66 +359,94 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
         });
     }
 
-    destroy() {
-        this.handler = {};
-        this.connections = {};
-        this.eventHandlerObjects = [];
-    }
-
-    register_handler(handler: any, parentClasses?: boolean) {
-        if(typeof handler !== "object")
+    registerHandler(handler: any, parentClasses?: boolean) {
+        if(typeof handler !== "object") {
             throw "event handler must be an object";
+        }
 
-        const proto = Object.getPrototypeOf(handler);
-        if(typeof proto !== "object")
+        if(typeof handler[this.registryUniqueId] !== "undefined") {
+            throw "event handler already registered";
+        }
+
+        const prototype = Object.getPrototypeOf(handler);
+        if(typeof prototype !== "object") {
             throw "event handler must have a prototype";
+        }
 
-        let currentPrototype = proto;
-        let registered_events = {};
+        const data = handler[this.registryUniqueId] = {
+            registeredHandler: {}
+        } as EventHandlerRegisterData;
+
+        let currentPrototype = prototype;
         do {
-            Object.getOwnPropertyNames(currentPrototype).forEach(function_name => {
-                if(function_name === "constructor")
+            Object.getOwnPropertyNames(currentPrototype).forEach(functionName => {
+                if(functionName === "constructor") {
                     return;
+                }
 
-                if(typeof proto[function_name] !== "function")
+                if(typeof prototype[functionName] !== "function") {
                     return;
+                }
 
-                if(typeof proto[function_name][event_annotation_key] !== "object")
+                if(typeof prototype[functionName][kEventAnnotationKey] !== "object") {
                     return;
+                }
 
-                const event_data = proto[function_name][event_annotation_key];
-                const ev_handler = event => proto[function_name].call(handler, event);
-                for(const event of event_data.events) {
-                    registered_events[event] = registered_events[event] || [];
-                    registered_events[event].push(ev_handler);
-                    this.on(event, ev_handler);
+                const eventData = prototype[functionName][kEventAnnotationKey];
+                const eventHandler = event => prototype[functionName].call(handler, event);
+                for(const event of eventData.events) {
+                    const registeredHandler = data.registeredHandler[event] || (data.registeredHandler[event] = []);
+                    registeredHandler.push(eventHandler);
+
+                    this.on(event, eventHandler);
                 }
             });
 
-            if(!parentClasses)
+            if(!parentClasses) {
                 break;
+            }
         } while ((currentPrototype = Object.getPrototypeOf(currentPrototype)));
-        if(Object.keys(registered_events).length === 0) {
-            logWarn(LogCategory.EVENT_REGISTRY, tr("No events found in event handler which has been registered."));
-            return;
-        }
-
-        this.eventHandlerObjects.push({
-            handlers: registered_events,
-            object: handler
-        });
     }
 
-    unregister_handler(handler: any) {
-        const data = this.eventHandlerObjects.find(e => e.object === handler);
-        if(!data) return;
-
-        this.eventHandlerObjects.remove(data);
-
-        for(const key of Object.keys(data.handlers)) {
-            for(const evhandler of data.handlers[key])
-                this.off(evhandler);
+    unregisterHandler(handler: any) {
+        if(typeof handler !== "object") {
+            throw "event handler must be an object";
         }
+
+        if(typeof handler[this.registryUniqueId] === "undefined") {
+            throw "event handler not registered";
+        }
+
+        const data = handler[this.registryUniqueId] as EventHandlerRegisterData;
+        delete handler[this.registryUniqueId];
+
+        for(const event of Object.keys(data.registeredHandler)) {
+            for(const handler of data.registeredHandler[event]) {
+                this.off(event as any, handler);
+            }
+        }
+    }
+
+    registerConsumer(consumer: EventConsumer) : () => void {
+        const allConsumer = this.consumer;
+        allConsumer.push(consumer);
+
+        return () => allConsumer.remove(consumer);
+    }
+
+    unregisterConsumer(consumer: EventConsumer) {
+        this.consumer.remove(consumer);
+    }
+
+    generateIpcDescription() : IpcRegistryDescription<Events> {
+        if(!this.ipcConsumer) {
+            this.ipcConsumer = new IpcEventBridge(this as any, undefined);
+            this.registerConsumer(this.ipcConsumer);
+        }
+
+        return {
+            ipcChannelId: this.ipcConsumer.ipcChannelId
+        };
     }
 }
 
@@ -355,17 +455,17 @@ export type RegistryMap = {[key: string]: any /* can't use Registry here since t
 export function EventHandler<EventTypes>(events: (keyof EventTypes) | (keyof EventTypes)[]) {
     return function (target: any,
                      propertyKey: string,
-                     descriptor: PropertyDescriptor) {
+                     _descriptor: PropertyDescriptor) {
         if(typeof target[propertyKey] !== "function")
             throw "Invalid event handler annotation. Expected to be on a function type.";
 
-        target[propertyKey][event_annotation_key] = {
+        target[propertyKey][kEventAnnotationKey] = {
             events: Array.isArray(events) ? events : [events]
         };
     }
 }
 
-export function ReactEventHandler<ObjectClass = React.Component<any, any>, EventTypes = any>(registry_callback: (object: ObjectClass) => Registry<EventTypes>) {
+export function ReactEventHandler<ObjectClass = React.Component<any, any>, Events = any>(registry_callback: (object: ObjectClass) => Registry<Events>) {
     return function (constructor: Function) {
         if(!React.Component.prototype.isPrototypeOf(constructor.prototype))
             throw "Class/object isn't an instance of React.Component";
@@ -374,10 +474,11 @@ export function ReactEventHandler<ObjectClass = React.Component<any, any>, Event
         constructor.prototype.componentDidMount = function() {
             const registry = registry_callback(this);
             if(!registry) throw "Event registry returned for an event object is invalid";
-            registry.register_handler(this);
+            registry.registerHandler(this);
 
-            if(typeof didMount === "function")
+            if(typeof didMount === "function") {
                 didMount.call(this, arguments);
+            }
         };
 
         const willUnmount = constructor.prototype.componentWillUnmount;
@@ -385,396 +486,84 @@ export function ReactEventHandler<ObjectClass = React.Component<any, any>, Event
             const registry = registry_callback(this);
             if(!registry) throw "Event registry returned for an event object is invalid";
             try {
-                registry.unregister_handler(this);
+                registry.unregisterHandler(this);
             } catch (error) {
                 console.warn("Failed to unregister event handler: %o", error);
             }
 
-            if(typeof willUnmount === "function")
+            if(typeof willUnmount === "function") {
                 willUnmount.call(this, arguments);
+            }
         };
     }
 }
 
-export namespace modal {
-    export type BotStatusType = "name" | "description" | "volume" | "country_code" | "channel_commander" | "priority_speaker";
-    export type PlaylistStatusType = "replay_mode" | "finished" | "delete_played" | "max_size" | "notify_song_change";
-    export interface music_manage {
-        show_container: { container: "settings" | "permissions"; };
+export type IpcRegistryDescription<Events extends EventMap<Events> = EventMap<any>> = {
+    ipcChannelId: string
+}
 
-        /* setting relevant */
-        query_bot_status: {},
-        bot_status: {
-            status: "success" | "error";
-            error_msg?: string;
-            data?: {
-                name: string,
-                description: string,
-                volume: number,
+class IpcEventBridge implements EventConsumer {
+    readonly registry: Registry;
+    readonly ipcChannelId: string;
+    private readonly ownBridgeId: string;
+    private broadcastChannel: BroadcastChannel;
 
-                country_code: string,
-                default_country_code: string,
+    constructor(registry: Registry, ipcChannelId: string | undefined) {
+        this.registry = registry;
+        this.ownBridgeId = guid();
 
-                channel_commander: boolean,
-                priority_speaker: boolean,
-
-                client_version: string,
-                client_platform: string,
-
-                uptime_mode: number,
-                bot_type: number
-            }
-        },
-        set_bot_status: {
-            key: BotStatusType,
-            value: any
-        },
-        set_bot_status_result: {
-            key: BotStatusType,
-            status: "success" | "error" | "timeout",
-            error_msg?: string,
-            value?: any
-        }
-
-        query_playlist_status: {},
-        playlist_status: {
-            status: "success" | "error",
-            error_msg?: string,
-            data?: {
-                replay_mode: number,
-                finished: boolean,
-                delete_played: boolean,
-                max_size: number,
-                notify_song_change: boolean
-            }
-        },
-        set_playlist_status: {
-            key: PlaylistStatusType,
-            value: any
-        },
-        set_playlist_status_result: {
-            key: PlaylistStatusType,
-            status: "success" | "error" | "timeout",
-            error_msg?: string,
-            value?: any
-        }
-
-        /* permission relevant */
-        show_client_list: {},
-        hide_client_list: {},
-
-        filter_client_list: { filter: string | undefined },
-
-        "refresh_permissions": {},
-
-        query_special_clients: {},
-        special_client_list: {
-            status: "success" | "error" | "error-permission",
-            error_msg?: string,
-            clients?: {
-                name: string,
-                unique_id: string,
-                database_id: number
-            }[]
-        },
-
-        search_client: { text: string },
-        search_client_result: {
-            status: "error" | "timeout" | "empty" | "success",
-            error_msg?: string,
-            client?: {
-                name: string,
-                unique_id: string,
-                database_id: number
-            }
-        },
-
-        /* sets a client to set the permission for */
-        special_client_set: {
-            client?: {
-                name: string,
-                unique_id: string,
-                database_id: number
-            }
-        },
-
-        "query_general_permissions": {},
-        "general_permissions": {
-            status: "error" | "timeout" | "success",
-            error_msg?: string,
-            permissions?: {[key: string]:number}
-        },
-        "set_general_permission_result": {
-            status: "error" | "success",
-            key: string,
-            value?: number,
-            error_msg?: string
-        },
-        "set_general_permission": { /* try to change a permission for the server */
-            key: string,
-            value: number
-        },
-
-
-        "query_client_permissions": { client_database_id: number },
-        "client_permissions": {
-            status: "error" | "timeout" | "success",
-            client_database_id: number,
-            error_msg?: string,
-            permissions?: {[key: string]:number}
-        },
-        "set_client_permission_result": {
-            status: "error" | "success",
-            client_database_id: number,
-            key: string,
-            value?: number,
-            error_msg?: string
-        },
-        "set_client_permission": { /* try to change a permission for the server */
-            client_database_id: number,
-            key: string,
-            value: number
-        },
-
-        "query_group_permissions": { permission_name: string },
-        "group_permissions": {
-            permission_name: string;
-            status: "error" | "timeout" | "success"
-            groups?: {
-                name: string,
-                value: number,
-                id: number
-            }[],
-            error_msg?: string
-        }
+        this.ipcChannelId = ipcChannelId || ("teaspeak-ipc-events-" + guid());
+        this.broadcastChannel = new BroadcastChannel(this.ipcChannelId);
+        this.broadcastChannel.onmessage = event => this.handleIpcMessage(event.data, event.source, event.origin);
     }
 
-    export namespace settings {
-        export type ProfileInfo = {
-            id: string,
-            name: string,
-            nickname: string,
-            identity_type: "teaforo" | "teamspeak" | "nickname",
-
-            identity_forum?: {
-                valid: boolean,
-                fallback_name: string
-            },
-            identity_nickname?: {
-                name: string,
-                fallback_name: string
-            },
-            identity_teamspeak?: {
-                unique_id: string,
-                fallback_name: string
-            }
+    destroy() {
+        if(this.broadcastChannel) {
+            this.broadcastChannel.onmessage = undefined;
+            this.broadcastChannel.onmessageerror = undefined;
+            this.broadcastChannel.close();
         }
 
-        export interface profiles {
-            "reload-profile": { profile_id?: string },
-            "select-profile": { profile_id: string },
+        this.broadcastChannel = undefined;
+    }
 
-            "query-profile-list": { },
-            "query-profile-list-result": {
-                status: "error" | "success" | "timeout",
-
-                error?: string;
-                profiles?: ProfileInfo[]
-            }
-
-            "query-profile": { profile_id: string },
-            "query-profile-result": {
-                status: "error" | "success" | "timeout",
-                profile_id: string,
-
-                error?: string;
-                info?: ProfileInfo
-            },
-
-            "select-identity-type": {
-                profile_id: string,
-                identity_type: "teamspeak" | "teaforo" | "nickname" | "unset"
-            },
-
-            "query-profile-validity": { profile_id: string },
-            "query-profile-validity-result": {
-                profile_id: string,
-                status: "error" | "success" | "timeout",
-
-                error?: string,
-                valid?: boolean
-            }
-
-            "create-profile": { name: string },
-            "create-profile-result": {
-                status: "error" | "success" | "timeout",
-                name: string;
-
-                profile_id?: string;
-                error?: string;
-            },
-
-            "delete-profile": { profile_id: string },
-            "delete-profile-result": {
-                status: "error" | "success" | "timeout",
-                profile_id: string,
-                error?: string
-            }
-
-            "set-default-profile": { profile_id: string },
-            "set-default-profile-result": {
-                status: "error" | "success" | "timeout",
-
-                /* the profile which now has the id "default" */
-                old_profile_id: string,
-
-                /* the "default" profile which now has a new id */
-                new_profile_id?: string
-
-                error?: string;
-            }
-
-            /* profile name events */
-            "set-profile-name": {
-                profile_id: string,
-                name: string
-            },
-            "set-profile-name-result": {
-                status: "error" | "success" | "timeout",
-                profile_id: string,
-                name?: string
-            },
-
-            /* profile nickname events */
-            "set-default-name": {
-                profile_id: string,
-                name: string | null
-            },
-            "set-default-name-result": {
-                status: "error" | "success" | "timeout",
-                profile_id: string,
-                name?: string | null
-            },
-
-            "query-identity-teamspeak": { profile_id: string },
-            "query-identity-teamspeak-result": {
-                status: "error" | "success" | "timeout",
-                profile_id: string,
-
-                error?: string,
-                level?: number
-            }
-
-            "set-identity-name-name": { profile_id: string, name: string },
-            "set-identity-name-name-result": {
-                status: "error" | "success" | "timeout",
-                profile_id: string,
-
-                error?: string,
-                name?: string
-            },
-
-            "generate-identity-teamspeak": { profile_id: string },
-            "generate-identity-teamspeak-result": {
-                profile_id: string,
-                status: "error" | "success" | "timeout",
-
-                error?: string,
-
-                level?: number
-                unique_id?: string
-            },
-
-            "improve-identity-teamspeak-level": { profile_id: string },
-            "improve-identity-teamspeak-level-update": {
-                profile_id: string,
-                new_level: number
-            },
-
-            "import-identity-teamspeak": { profile_id: string },
-            "import-identity-teamspeak-result": {
-                profile_id: string,
-
-                level?: number
-                unique_id?: string
-            }
-
-            "export-identity-teamspeak": {
-                profile_id: string,
-                filename: string
-            },
-
-
-            "setup-forum-connection": {}
+    handleEvent(dispatchType: EventDispatchType, eventType: string, eventPayload: any) {
+        if(eventPayload && eventPayload[this.ownBridgeId]) {
+            return;
         }
 
-        export type MicrophoneSettings = "volume" | "vad-type" | "ppt-key" | "ppt-release-delay" | "ppt-release-delay-active" | "threshold-threshold";
-        export interface microphone {
-            "query-devices": { refresh_list: boolean },
-            "query-device-result": {
-                status: "success" | "error" | "timeout",
+        this.broadcastChannel.postMessage({
+            type: "event",
+            source: this.ownBridgeId,
 
-                error?: string,
-                devices?: {
-                    id: string,
-                    name: string,
-                    driver: string
-                }[]
-                active_device?: string;
-            },
+            dispatchType,
+            eventType,
+            eventPayload,
+        });
+    }
 
-            "query-settings": {},
-            "query-settings-result": {
-                status: "success" | "error" | "timeout",
+    private handleIpcMessage(message: any, _source: MessageEventSource | null, _origin: string) {
+        if(message.source === this.ownBridgeId) {
+            /* It's our own event */
+            return;
+        }
 
-                error?: string,
-                info?: {
-                    volume: number,
-                    vad_type: string,
+        if(message.type === "event") {
+            const payload = message.eventPayload || {};
+            payload[this.ownBridgeId] = true;
+            switch(message.dispatchType as EventDispatchType) {
+                case "sync":
+                    this.registry.fire(message.eventType, payload);
+                    break;
 
-                    vad_ppt: {
-                        key: any, /* ppt.KeyDescriptor */
-                        release_delay: number,
-                        release_delay_active: boolean
-                    },
-                    vad_threshold: {
-                        threshold: number
-                    }
-                }
-            },
+                case "react":
+                    this.registry.fire_react(message.eventType, payload);
+                    break;
 
-            "set-device": { device_id: string },
-            "set-device-result": {
-                device_id: string,
-                status: "success" | "error" | "timeout",
-
-                error?: string
-            },
-
-            "set-setting": {
-                setting: MicrophoneSettings;
-                value: any;
-            },
-            "set-setting-result": {
-                setting: MicrophoneSettings,
-                status: "success" | "error" | "timeout",
-
-                error?: string,
-                value?: any
-            },
-
-            "update-device-level": {
-                devices: {
-                    device_id: string,
-                    status: "success" | "error",
-
-                    level?: number,
-                    error?: string
-                }[]
-            },
-
-            "audio-initialized": {},
-            "deinitialize": {}
+                case "later":
+                    this.registry.fire_later(message.eventType, payload);
+                    break;
+            }
         }
     }
 }

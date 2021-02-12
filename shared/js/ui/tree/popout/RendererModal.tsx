@@ -1,12 +1,12 @@
 import {AbstractModal} from "tc-shared/ui/react-elements/ModalDefinitions";
-import {Registry, RegistryMap} from "tc-shared/events";
+import {Registry} from "tc-shared/events";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 import * as React from "react";
 import {useState} from "react";
 import {ChannelTreeRenderer} from "tc-shared/ui/tree/Renderer";
 import {ControlBarEvents} from "tc-shared/ui/frames/control-bar/Definitions";
 import {ControlBar2} from "tc-shared/ui/frames/control-bar/Renderer";
-import {ChannelTreePopoutEvents} from "tc-shared/ui/tree/popout/Definitions";
+import {ChannelTreePopoutConstructorArguments, ChannelTreePopoutEvents} from "tc-shared/ui/tree/popout/Definitions";
 
 const TitleRenderer = (props: { events: Registry<ChannelTreePopoutEvents> }) => {
     const [ title, setTitle ] = useState<string>(() => {
@@ -26,13 +26,13 @@ class ChannelTreeModal extends AbstractModal {
 
     readonly handlerId: string;
 
-    constructor(registryMap: RegistryMap, userData: any) {
+    constructor(info: ChannelTreePopoutConstructorArguments) {
         super();
 
-        this.handlerId = userData.handlerId;
-        this.eventsUI = registryMap["base"] as any;
-        this.eventsTree = registryMap["tree"] as any;
-        this.eventsControlBar = registryMap["controlBar"] as any;
+        this.handlerId = info.handlerId;
+        this.eventsUI = Registry.fromIpcDescription(info.events);
+        this.eventsTree = Registry.fromIpcDescription(info.eventsTree);
+        this.eventsControlBar = Registry.fromIpcDescription(info.eventsControlBar);
 
         this.eventsUI.fire("query_title");
     }
@@ -52,7 +52,7 @@ class ChannelTreeModal extends AbstractModal {
         )
     }
 
-    title(): React.ReactElement {
+    renderTitle(): React.ReactElement {
         return <TitleRenderer events={this.eventsUI} />;
     }
 }

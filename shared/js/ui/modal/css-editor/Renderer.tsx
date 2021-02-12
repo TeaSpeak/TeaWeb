@@ -1,7 +1,7 @@
 import * as React from "react";
 import {useState} from "react";
-import {CssEditorEvents, CssEditorUserData, CssVariable} from "tc-shared/ui/modal/css-editor/Definitions";
-import {Registry, RegistryMap} from "tc-shared/events";
+import {CssEditorEvents, CssVariable} from "tc-shared/ui/modal/css-editor/Definitions";
+import {IpcRegistryDescription, Registry} from "tc-shared/events";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {BoxedInputField, FlatInputField} from "tc-shared/ui/react-elements/InputField";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
@@ -391,14 +391,11 @@ const requestFileAsText = async (): Promise<string> => {
 
 class PopoutConversationUI extends AbstractModal {
     private readonly events: Registry<CssEditorEvents>;
-    private readonly userData: CssEditorUserData;
 
-    constructor(registryMap: RegistryMap, userData: CssEditorUserData) {
+    constructor(events: IpcRegistryDescription<CssEditorEvents>) {
         super();
 
-        this.userData = userData;
-        this.events = registryMap["default"] as any;
-
+        this.events = Registry.fromIpcDescription(events);
         this.events.on("notify_export_result", event => {
             createInfoModal(tr("Config exported successfully"), tr("The config has been exported successfully.")).open();
             downloadTextAsFile(event.config, "teaweb-style.json");
@@ -420,8 +417,8 @@ class PopoutConversationUI extends AbstractModal {
         );
     }
 
-    title() {
-        return "CSS Variable editor";
+    renderTitle() {
+        return <Translatable>"CSS Variable editor"</Translatable>;
     }
 }
 

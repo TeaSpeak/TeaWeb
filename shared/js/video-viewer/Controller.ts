@@ -1,6 +1,4 @@
-import * as log from "../log";
 import {LogCategory, logError, logWarn} from "../log";
-import {spawnExternalModal} from "../ui/react-elements/external-modal";
 import {EventHandler, Registry} from "../events";
 import {VideoViewerEvents} from "./Definitions";
 import {ConnectionHandler} from "../ConnectionHandler";
@@ -11,6 +9,7 @@ import {createErrorModal} from "../ui/elements/Modal";
 import {ModalController} from "../ui/react-elements/ModalDefinitions";
 import {server_connections} from "tc-shared/ConnectionManager";
 import { tr, tra } from "tc-shared/i18n/localize";
+import {spawnModal} from "tc-shared/ui/react-elements/modal";
 
 const parseWatcherId = (id: string): { clientId: number, clientUniqueId: string} => {
     const [ clientIdString, clientUniqueId ] = id.split(" - ");
@@ -34,14 +33,16 @@ class VideoViewer {
         this.connection = connection;
 
         this.events = new Registry<VideoViewerEvents>();
-        this.events.register_handler(this);
+        this.events.registerHandler(this);
 
         this.plugin = connection.getPluginCmdRegistry().getPluginHandler<W2GPluginCmdHandler>(W2GPluginCmdHandler.kPluginChannel);
         if(!this.plugin) {
             throw tr("Missing video viewer plugin");
         }
 
-        this.modal = spawnExternalModal("video-viewer", { default: this.events }, { handlerId: connection.handlerId });
+        this.modal = spawnModal("video-viewer", [ this.events.generateIpcDescription(), connection.handlerId ], {
+            popedOut: true,
+        });
 
         this.registerPluginListeners();
         this.plugin.getCurrentWatchers().forEach(watcher => this.registerWatcherEvents(watcher));
@@ -57,7 +58,7 @@ class VideoViewer {
         this.plugin.setLocalPlayerClosed();
 
         this.events.fire("notify_destroy");
-        this.events.unregister_handler(this);
+        this.events.unregisterHandler(this);
 
         this.modal.destroy();
         this.events.destroy();

@@ -1,4 +1,4 @@
-import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnReactModal} from "tc-shared/ui/react-elements/modal";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import * as React from "react";
 import {useState} from "react";
@@ -34,6 +34,7 @@ import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controll
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {PermissionEditorTab} from "tc-shared/events/GlobalEvents";
 import {LogCategory, logError, logWarn} from "tc-shared/log";
+import {useTr} from "tc-shared/ui/react-elements/Helper";
 
 const cssStyle = require("./ModalPermissionEditor.scss");
 
@@ -44,12 +45,12 @@ export type PermissionEditorSubject =
     | "client"
     | "client-channel"
     | "none";
-export const PermissionTabName: { [T in PermissionEditorTab]: { name: string, translated: string } } = {
-    "groups-server": {name: "Server Groups", translated: tr("Server Groups")},
-    "groups-channel": {name: "Channel Groups", translated: tr("Channel Groups")},
-    "channel": {name: "Channel Permissions", translated: tr("Channel Permissions")},
-    "client": {name: "Client Permissions", translated: tr("Client Permissions")},
-    "client-channel": {name: "Client Channel Permissions", translated: tr("Client Channel Permissions")},
+export const PermissionTabName: { [T in PermissionEditorTab]: { name: string, useTranslate: () => string, renderTranslate: () => React.ReactNode } } = {
+    "groups-server": {name: "Server Groups", useTranslate: () => useTr("Server Groups"), renderTranslate: () => <Translatable>Server Groups</Translatable>},
+    "groups-channel": {name: "Channel Groups", useTranslate: () => useTr("Channel Groups"), renderTranslate: () => <Translatable>Channel Groups</Translatable>},
+    "channel": {name: "Channel Permissions", useTranslate: () => useTr("Channel Permissions"), renderTranslate: () => <Translatable>Channel Permissions</Translatable>},
+    "client": {name: "Client Permissions", useTranslate: () => useTr("Client Permissions"), renderTranslate: () => <Translatable>Client Permissions</Translatable>},
+    "client-channel": {name: "Client Channel Permissions", useTranslate: () => useTr("Client Channel Permissions"), renderTranslate: () => <Translatable>Client Channel Permissions</Translatable>},
 };
 
 export type GroupProperties = {
@@ -244,13 +245,15 @@ const ActiveTabInfo = (props: { events: Registry<PermissionModalEvents> }) => {
     const [activeTab, setActiveTab] = useState<PermissionEditorTab>("groups-server");
     props.events.reactUse("action_activate_tab", event => setActiveTab(event.tab));
 
-    return <div className={cssStyle.header + " " + cssStyle.activeTabInfo}>
-        <div className={cssStyle.entry}>
-            <a title={PermissionTabName[activeTab].translated}>
-                <Translatable trIgnore={true}>{PermissionTabName[activeTab].name}</Translatable>
-            </a>
+    return (
+        <div className={cssStyle.header + " " + cssStyle.activeTabInfo}>
+            <div className={cssStyle.entry}>
+                <a title={PermissionTabName[activeTab].useTranslate()} key={"tab-" + activeTab}>
+                    {PermissionTabName[activeTab].renderTranslate()}
+                </a>
+            </div>
         </div>
-    </div>
+    );
 };
 
 const TabSelectorEntry = (props: { events: Registry<PermissionModalEvents>, entry: PermissionEditorTab }) => {
@@ -258,22 +261,26 @@ const TabSelectorEntry = (props: { events: Registry<PermissionModalEvents>, entr
 
     props.events.reactUse("action_activate_tab", event => setActive(event.tab === props.entry));
 
-    return <div className={cssStyle.entry + " " + (active ? cssStyle.selected : "")}
-                onClick={() => !active && props.events.fire("action_activate_tab", {tab: props.entry})}>
-        <a title={PermissionTabName[props.entry].translated}>
-            <Translatable trIgnore={true}>{PermissionTabName[props.entry].translated}</Translatable>
-        </a>
-    </div>;
+    return (
+        <div className={cssStyle.entry + " " + (active ? cssStyle.selected : "")}
+             onClick={() => !active && props.events.fire("action_activate_tab", {tab: props.entry})}>
+            <a title={PermissionTabName[props.entry].useTranslate()}>
+                {PermissionTabName[props.entry].renderTranslate()}
+            </a>
+        </div>
+    );
 };
 
 const TabSelector = (props: { events: Registry<PermissionModalEvents> }) => {
-    return <div className={cssStyle.header + " " + cssStyle.tabSelector}>
-        <TabSelectorEntry events={props.events} entry={"groups-server"}/>
-        <TabSelectorEntry events={props.events} entry={"groups-channel"}/>
-        <TabSelectorEntry events={props.events} entry={"channel"}/>
-        <TabSelectorEntry events={props.events} entry={"client"}/>
-        <TabSelectorEntry events={props.events} entry={"client-channel"}/>
-    </div>;
+    return (
+        <div className={cssStyle.header + " " + cssStyle.tabSelector}>
+            <TabSelectorEntry events={props.events} entry={"groups-server"}/>
+            <TabSelectorEntry events={props.events} entry={"groups-channel"}/>
+            <TabSelectorEntry events={props.events} entry={"channel"}/>
+            <TabSelectorEntry events={props.events} entry={"client"}/>
+            <TabSelectorEntry events={props.events} entry={"client-channel"}/>
+        </div>
+    );
 };
 
 export type DefaultTabValues = { groupId?: number, channelId?: number, clientDatabaseId?: number };
@@ -336,7 +343,7 @@ class PermissionEditorModal extends InternalModal {
         );
     }
 
-    title(): React.ReactElement<Translatable> {
+    renderTitle(): React.ReactElement<Translatable> {
         return <Translatable>Server permissions</Translatable>;
     }
 

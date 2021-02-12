@@ -23,6 +23,7 @@ export class VoicePlayer implements VoicePlayer {
     private currentRtpTrack: RemoteRTPAudioTrack;
 
     constructor() {
+        this.volume = 1;
         this.listenerTrackStateChanged = event => this.handleTrackStateChanged(event.newState);
         this.events = new Registry<VoicePlayerEvents>();
         this.currentState = VoicePlayerState.STOPPED;

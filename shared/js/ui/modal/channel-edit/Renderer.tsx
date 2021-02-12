@@ -1,8 +1,7 @@
-import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import * as React from "react";
 import {useContext, useEffect, useRef, useState} from "react";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
-import {Registry} from "tc-shared/events";
+import {IpcRegistryDescription, Registry} from "tc-shared/events";
 import {
     ChannelEditablePermissions,
     ChannelEditablePermissionValue,
@@ -16,13 +15,15 @@ import {Switch} from "tc-shared/ui/react-elements/Switch";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {Tab, TabEntry} from "tc-shared/ui/react-elements/Tab";
 import {Settings, settings} from "tc-shared/settings";
-import {useTr} from "tc-shared/ui/react-elements/Helper";
+import {joinClassList, useTr} from "tc-shared/ui/react-elements/Helper";
 import {IconTooltip} from "tc-shared/ui/react-elements/Tooltip";
 import {RadioButton} from "tc-shared/ui/react-elements/RadioButton";
 import {Slider} from "tc-shared/ui/react-elements/Slider";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {getIconManager} from "tc-shared/file/Icons";
+import {AbstractModal} from "tc-shared/ui/react-elements/modal/Definitions";
+import {ChannelNameAlignment, ChannelNameParser} from "tc-shared/tree/Channel";
 
 const cssStyle = require("./Renderer.scss");
 
@@ -121,6 +122,10 @@ function useValidationState<T extends keyof ChannelEditableProperty>(property: T
     return valid;
 }
 
+const ChannelNameType = (props: { selected: ChannelNameAlignment }) => {
+
+}
+
 const ChannelName = React.memo(() => {
     const modalType = useContext(ModalTypeContext);
 
@@ -128,16 +133,73 @@ const ChannelName = React.memo(() => {
     const editable = usePropertyPermission("name", modalType === "channel-create");
     const valid = useValidationState("name");
 
+    const refSelect = useRef<HTMLSelectElement>();
+
+    const setValue = (text: string | undefined, localOnly: boolean) => {
+        let rawName;
+        switch(propertyValue.hasParent ? "normal" : refSelect.current.value) {
+            case "center":
+                rawName = "[cspacer" + propertyValue.spacerUniqueId + "]" + text;
+                break;
+
+            case "left":
+                rawName = "[lspacer" + propertyValue.spacerUniqueId + "]" + text;
+                break;
+
+            case "right":
+                rawName = "[rspacer" + propertyValue.spacerUniqueId + "]" + text;
+                break;
+
+            case "repetitive":
+                rawName ="[*spacer" + propertyValue.spacerUniqueId + "]" + text;
+                break;
+
+            default:
+            case "normal":
+                rawName = text;
+                break;
+        }
+
+        setPropertyValue({
+            rawName,
+            parsedName: text,
+
+            hasParent: propertyValue.hasParent,
+            spacerUniqueId: propertyValue.spacerUniqueId,
+            maxNameLength: propertyValue.maxNameLength,
+            parsedAlignment: propertyValue.parsedAlignment
+        }, localOnly);
+    }
+
     return (
-        <BoxedInputField
-            className={cssStyle.input}
-            disabled={!editable || propertyState !== "normal"}
-            value={propertyValue || ""}
-            placeholder={propertyState === "normal" ? tr("Channel name") : tr("loading")}
-            onInput={value => setPropertyValue(value, true)}
-            onChange={value => setPropertyValue(value)}
-            isInvalid={!valid}
-        />
+        <div className={joinClassList(cssStyle.channelName, propertyValue?.hasParent && cssStyle.hasParent)}>
+            <Select
+                value={propertyValue?.parsedAlignment || "loading"}
+                className={cssStyle.select}
+                onChange={() => setValue(propertyValue.parsedName, false)}
+                type={"boxed"}
+                title={useTr("Channel name mode")}
+                refSelect={refSelect}
+                disabled={!editable}
+            >
+                <option value={"loading"} style={{ display: "none" }}>{useTr("loading")}</option>
+                <option value={"normal"}>{useTr("Normal Name")}</option>
+                <option value={"center"}>{useTr("Centered")}</option>
+                <option value={"left"}>{useTr("Left Aligned")}</option>
+                <option value={"right"}>{useTr("Right Aligned")}</option>
+                <option value={"repetitive"}>{useTr("Repetitive")}</option>
+            </Select>
+            <BoxedInputField
+                className={cssStyle.input}
+                disabled={!editable || propertyState !== "normal"}
+                value={(propertyValue?.hasParent ? propertyValue?.rawName : propertyValue?.parsedName) || ""}
+                placeholder={propertyState === "normal" ? tr("Channel name") : tr("loading")}
+                onInput={value => setValue(value, true)}
+                onChange={value => setValue(value, false)}
+                isInvalid={!valid}
+                maxLength={propertyValue?.maxNameLength}
+            />
+        </div>
     );
 });
 
@@ -159,7 +221,7 @@ const ChannelIcon = () => {
                     <div className="arrow down" />
                 </div>
                 <div className={cssStyle.dropdown}>
-                    <div className={cssStyle.entry} onClick={() => enabled && events.fire("action_icon_select")}>Edit icon</div>
+                    <div className={cssStyle.entry} onClick={() => enabled && events.fire("action_icon_select")}><Translatable>Edit icon</Translatable></div>
                     <div className={cssStyle.entry} onClick={() => {
                         if(!enabled) {
                             return;
@@ -173,7 +235,7 @@ const ChannelIcon = () => {
                                 serverUniqueId: propertyValue.remoteIcon.serverUniqueId
                             }
                         });
-                    }}>Remove icon</div>
+                    }}><Translatable>Remove icon</Translatable></div>
                 </div>
             </div>
         </div>
@@ -351,31 +413,31 @@ const SidebarType = React.memo(() => {
     );
 });
 
-type SimpleCodecQualityTemplate = { id: string, codec: number, quality: number, name: string };
+type SimpleCodecQualityTemplate = { id: string, codec: number, quality: number, name: () => string };
 const kCodecTemplates: SimpleCodecQualityTemplate[] = [
     {
         id: "mobile",
         codec: 4,
         quality: 4,
-        name: useTr("Mobile")
+        name: () => useTr("Mobile")
     },
     {
         id: "voice",
         codec: 4,
         quality: 6,
-        name: useTr("Voice")
+        name: () => useTr("Voice")
     },
     {
         id: "music",
         codec: 5,
         quality: 6,
-        name: useTr("Music")
+        name: () => useTr("Music")
     },
     {
         id: "loading",
         codec: undefined,
         quality: undefined,
-        name: useTr("loading")
+        name: () => useTr("loading")
     }
 ];
 
@@ -404,7 +466,7 @@ const SimpleCodecQuality = React.memo(() => {
             >
                 {
                     kCodecTemplates.map(template => (
-                        <option style={{ display: template.id === "loading" ? "none" : undefined }} key={template.id} value={template.id} disabled={!hasPermission(template)}>{template.name}</option>
+                        <option style={{ display: template.id === "loading" ? "none" : undefined }} key={template.id} value={template.id} disabled={!hasPermission(template)}>{template.name()}</option>
                     ))
                 }
                 <option style={{ display: "none" }} key={"advanced"} value={"advanced"}>{useTr("Custom (Advanced settings)")}</option>
@@ -431,7 +493,7 @@ const AdvancedCodecPresets = React.memo(() => {
                         disabled={!hasPermission(template) || propertyState !== "normal"}
                         onChange={() => setPropertyValue({ quality: template.quality, type: template.codec})}
                     >
-                        <div>{template.name}</div>
+                        <div>{template.name()}</div>
                     </RadioButton>
                 ))
             }
@@ -1138,13 +1200,13 @@ const Buttons = React.memo(() => {
     )
 });
 
-export class ChannelEditModal extends InternalModal {
+class ChannelEditModal extends AbstractModal {
     private readonly events: Registry<ChannelEditEvents>;
     private readonly isChannelCreate: boolean;
 
-    constructor(events: Registry<ChannelEditEvents>, isChannelCreate: boolean) {
+    constructor(events: IpcRegistryDescription<ChannelEditEvents>, isChannelCreate: boolean) {
         super();
-        this.events = events;
+        this.events = Registry.fromIpcDescription(events);
         this.isChannelCreate = isChannelCreate;
     }
 
@@ -1162,7 +1224,7 @@ export class ChannelEditModal extends InternalModal {
         );
     }
 
-    title(): string | React.ReactElement {
+    renderTitle(): string | React.ReactElement {
         if(this.isChannelCreate) {
             return <Translatable key={"create"}>Create channel</Translatable>;
         } else {
@@ -1175,3 +1237,5 @@ export class ChannelEditModal extends InternalModal {
         return "blue";
     }
 }
+
+export = ChannelEditModal;

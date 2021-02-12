@@ -1,141 +1,109 @@
 import {
     ConnectHistoryEntry,
-    ConnectHistoryServerInfo,
-    ConnectProperties,
-    ConnectUiEvents,
-    PropertyValidState
+    ConnectUiEvents, ConnectUiVariables, kUnknownHistoryServerUniqueId,
 } from "tc-shared/ui/modal/connect/Definitions";
 import * as React from "react";
-import {useContext, useState} from "react";
-import {Registry} from "tc-shared/events";
-import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
-import {Translatable} from "tc-shared/ui/react-elements/i18n";
-import {ControlledFlatInputField, ControlledSelect, FlatInputField} from "tc-shared/ui/react-elements/InputField";
+import {useContext} from "react";
+import {IpcRegistryDescription, Registry} from "tc-shared/events";
 import {joinClassList, useTr} from "tc-shared/ui/react-elements/Helper";
+import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {Button} from "tc-shared/ui/react-elements/Button";
-import {kUnknownHistoryServerUniqueId} from "tc-shared/connectionlog/History";
+import {ControlledFlatInputField, ControlledSelect, FlatInputField} from "tc-shared/ui/react-elements/InputField";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
 import * as i18n from "../../../i18n/country";
 import {getIconManager} from "tc-shared/file/Icons";
 import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
+import {UiVariableConsumer} from "tc-shared/ui/utils/Variable";
+import {createIpcUiVariableConsumer, IpcVariableDescriptor} from "tc-shared/ui/utils/IpcVariable";
+import {AbstractModal} from "tc-shared/ui/react-elements/ModalDefinitions";
 
 const EventContext = React.createContext<Registry<ConnectUiEvents>>(undefined);
+const VariablesContext = React.createContext<UiVariableConsumer<ConnectUiVariables>>(undefined);
+
 const ConnectDefaultNewTabContext = React.createContext<boolean>(false);
 
 const cssStyle = require("./Renderer.scss");
 
-function useProperty<T extends keyof ConnectProperties, V>(key: T, defaultValue: V) : [ConnectProperties[T] | V, (value: ConnectProperties[T]) => void] {
+const InputServerAddress = React.memo(() => {
     const events = useContext(EventContext);
-    const [ value, setValue ] = useState<ConnectProperties[T] | V>(() => {
-        events.fire("query_property", { property: key });
-        return defaultValue;
-    });
-    events.reactUse("notify_property", event => event.property === key && setValue(event.value as any));
-
-    return [value, setValue];
-}
-
-function usePropertyValid<T extends keyof PropertyValidState>(key: T, defaultValue: PropertyValidState[T]) : PropertyValidState[T] {
-    const events = useContext(EventContext);
-    const [ value, setValue ] = useState<PropertyValidState[T]>(() => {
-        events.fire("query_property_valid", { property: key });
-        return defaultValue;
-    });
-    events.reactUse("notify_property_valid", event => event.property === key && setValue(event.value as any));
-
-    return value;
-}
-
-const InputServerAddress = () => {
-    const events = useContext(EventContext);
-    const [address, setAddress] = useProperty("address", undefined);
-    const valid = usePropertyValid("address", true);
     const newTab = useContext(ConnectDefaultNewTabContext);
+
+    const variables = useContext(VariablesContext);
+    const address = variables.useVariable("server_address");
+    const addressValid = variables.useReadOnly("server_address_valid", undefined, true) || address.localValue !== address.remoteValue;
 
     return (
         <ControlledFlatInputField
-            value={address?.currentAddress || ""}
-            placeholder={address?.defaultAddress || tr("Please enter a address")}
+            value={address.localValue?.currentAddress || ""}
+            placeholder={address.remoteValue?.defaultAddress || tr("Please enter a address")}
 
             className={cssStyle.inputAddress}
 
             label={<Translatable>Server address</Translatable>}
             labelType={"static"}
 
-            invalid={valid ? undefined : <Translatable>Please enter a valid server address</Translatable>}
+            invalid={addressValid ? undefined : <Translatable>Please enter a valid server address</Translatable>}
+            editable={address.status === "loaded"}
 
-            onInput={value => {
-                setAddress({ currentAddress: value, defaultAddress: address.defaultAddress });
-                events.fire("action_set_address", { address: value, validate: true, updateUi: false });
-            }}
-            onBlur={() => {
-                events.fire("action_set_address", { address: address?.currentAddress, validate: true, updateUi: true });
-            }}
+            onInput={value => address.setValue({ currentAddress: value }, true)}
+            onBlur={() => address.setValue({ currentAddress: address.localValue?.currentAddress })}
             onEnter={() => {
                 /* Setting the address just to ensure */
-                events.fire("action_set_address", { address: address?.currentAddress, validate: true, updateUi: true });
+                address.setValue({ currentAddress: address.localValue?.currentAddress });
                 events.fire("action_connect", { newTab });
             }}
         />
     )
-}
+});
 
 const InputServerPassword = () => {
-    const events = useContext(EventContext);
-    const [password, setPassword] = useProperty("password", undefined);
+    const variables = useContext(VariablesContext);
+    const password = variables.useVariable("password");
 
     return (
         <FlatInputField
             className={cssStyle.inputPassword}
-            value={!password?.hashed ? password?.password || "" : ""}
-            placeholder={password?.hashed ? tr("Password Hidden") : null}
+            value={!password.localValue?.hashed ? password.localValue?.password || "" : ""}
+            placeholder={password.localValue?.hashed ? tr("Password Hidden") : null}
             type={"password"}
             label={<Translatable>Server password</Translatable>}
-            labelType={password?.hashed ? "static" : "floating"}
-            onInput={value => {
-                setPassword({ password: value, hashed: false });
-                events.fire("action_set_password", { password: value, hashed: false, updateUi: false });
-            }}
-            onBlur={() => {
-                if(password) {
-                    events.fire("action_set_password", { password: password.password, hashed: password.hashed, updateUi: true });
-                }
-            }}
+            labelType={password.localValue?.hashed ? "static" : "floating"}
+            onInput={value => password.setValue({ password: value, hashed: false }, true)}
+            onBlur={() => password.setValue(password.localValue)}
         />
     )
 }
 
 const InputNickname = () => {
-    const events = useContext(EventContext);
-    const [nickname, setNickname] = useProperty("nickname", undefined);
-    const valid = usePropertyValid("nickname", true);
+    const variables = useContext(VariablesContext);
+
+    const nickname = variables.useVariable("nickname");
+    const validState = variables.useReadOnly("nickname_valid", undefined, true) || nickname.localValue !== nickname.remoteValue;
 
     return (
         <ControlledFlatInputField
             className={cssStyle.inputNickname}
-            value={nickname?.currentNickname || ""}
-            placeholder={nickname ? nickname.defaultNickname ? nickname.defaultNickname : tr("Please enter a nickname") : tr("loading...")}
+            value={nickname.localValue?.currentNickname || ""}
+            placeholder={nickname.remoteValue ? nickname.remoteValue.defaultNickname ? nickname.remoteValue.defaultNickname : tr("Please enter a nickname") : tr("loading...")}
             label={<Translatable>Nickname</Translatable>}
             labelType={"static"}
-            invalid={valid ? undefined : <Translatable>Nickname too short or too long</Translatable>}
-            onInput={value => {
-                setNickname({ currentNickname: value, defaultNickname: nickname.defaultNickname });
-                events.fire("action_set_nickname", { nickname: value, validate: true, updateUi: false });
-            }}
-            onBlur={() => events.fire("action_set_nickname", { nickname: nickname?.currentNickname, validate: true, updateUi: true })}
+            invalid={validState ? undefined : <Translatable>Nickname too short or too long</Translatable>}
+            onInput={value => nickname.setValue({ currentNickname: value }, true)}
+            onBlur={() => nickname.setValue({ currentNickname: nickname.localValue?.currentNickname })}
         />
     );
 }
 
 const InputProfile = () => {
     const events = useContext(EventContext);
-    const [profiles] = useProperty("profiles", undefined);
-    const selectedProfile = profiles?.profiles.find(profile => profile.id === profiles?.selected);
+    const variables = useContext(VariablesContext);
+    const profiles = variables.useVariable("profiles");
+    const selectedProfile = profiles.remoteValue?.profiles.find(profile => profile.id === profiles.remoteValue?.selected);
 
     let invalidMarker;
     if(profiles) {
-        if(!profiles.selected) {
+        if(!profiles.remoteValue?.selected) {
             /* We have to select a profile. */
             /* TODO: Only show if we've tried to press connect */
             //invalidMarker = <Translatable key={"no-profile"}>Please select a profile</Translatable>;
@@ -150,19 +118,23 @@ const InputProfile = () => {
         <div className={cssStyle.inputProfile}>
             <ControlledSelect
                 className={cssStyle.input}
-                value={selectedProfile ? selectedProfile.id : profiles?.selected ? "invalid" : profiles ? "no-selected" : "loading"}
+                value={selectedProfile ? selectedProfile.id : profiles.remoteValue?.selected ? "invalid" : profiles ? "no-selected" : "loading"}
                 type={"flat"}
                 label={<Translatable>Connect profile</Translatable>}
                 invalid={invalidMarker}
                 invalidClassName={cssStyle.invalidFeedback}
-                onChange={event => events.fire("action_select_profile", { id: event.target.value })}
+                onChange={event => profiles.setValue({ selected: event.target.value })}
             >
-                <option key={"no-selected"} value={"no-selected"} style={{ display: "none" }}>{useTr("please select")}</option>
-                <option key={"invalid"} value={"invalid"} style={{ display: "none" }}>{useTr("unknown profile")}</option>
-                <option key={"loading"} value={"loading"} style={{ display: "none" }}>{useTr("loading") + "..."}</option>
-                {profiles?.profiles.map(profile => (
-                    <option key={"profile-" + profile.id} value={profile.id}>{profile.name}</option>
-                ))}
+                <option value={"no-selected"} style={{ display: "none" }}>{useTr("please select")}</option>
+                <option value={"invalid"} style={{ display: "none" }}>{useTr("unknown profile")}</option>
+                <option value={"loading"} style={{ display: "none" }}>{useTr("loading") + "..."}</option>
+                <React.Fragment>
+                    {
+                        profiles.remoteValue?.profiles.map(profile => (
+                            <option key={"profile-" + profile.id} value={profile.id}>{profile.name}</option>
+                        ))
+                    }
+                </React.Fragment>
             </ControlledSelect>
             <Button className={cssStyle.button} type={"small"} color={"none"} onClick={() => events.fire("action_manage_profiles")}>
                 <Translatable>Profiles</Translatable>
@@ -174,6 +146,7 @@ const InputProfile = () => {
 const ConnectContainer = () => (
     <div className={cssStyle.connectContainer}>
         <div className={cssStyle.row}>
+            {/* <InputServerAddress /> */}
             <InputServerAddress />
             <InputServerPassword />
         </div>
@@ -185,11 +158,11 @@ const ConnectContainer = () => (
 );
 
 const ButtonToggleHistory = () => {
-    const state = useProperty("historyShown", false);
-    const events = useContext(EventContext);
+    const variables = useContext(VariablesContext);
+    const historyShown = variables.useVariable("historyShown");
 
     let body;
-    if(state) {
+    if(historyShown.localValue) {
         body = (
             <React.Fragment key={"hide"}>
                 <div className={cssStyle.containerText}><Translatable>Hide connect history</Translatable></div>
@@ -209,7 +182,7 @@ const ButtonToggleHistory = () => {
             className={cssStyle.buttonShowHistory + " " + cssStyle.button}
             type={"small"}
             color={"none"}
-            onClick={() => events.fire("action_toggle_history", { enabled: !state })}
+            onClick={() => historyShown.setValue(!historyShown.localValue)}
         >
             {body}
         </Button>
@@ -281,35 +254,24 @@ const HistoryTableEntryConnectCount = React.memo((props: { entry: ConnectHistory
     const targetType = props.entry.uniqueServerId === kUnknownHistoryServerUniqueId ? "address" : "server-unique-id";
     const target = targetType === "address" ? props.entry.targetAddress : props.entry.uniqueServerId;
 
-    const events = useContext(EventContext);
-    const [ amount, setAmount ] = useState(() => {
-        events.fire("query_history_connections", {
-            target,
-            targetType
-        });
-        return -1;
-    });
+    const value = useContext(VariablesContext).useReadOnly("history_connections", {
+        target,
+        targetType
+    }, -1);
 
-    events.reactUse("notify_history_connections", event => event.targetType === targetType && event.target === target && setAmount(event.value));
-
-    if(amount >= 0) {
-        return <React.Fragment key={"set"}>{amount}</React.Fragment>;
+    if(value >= 0) {
+        return <React.Fragment key={"set"}>{value}</React.Fragment>;
     } else {
         return null;
     }
 });
 
 const HistoryTableEntry = React.memo((props: { entry: ConnectHistoryEntry, selected: boolean }) => {
-    const connectNewTab = useContext(ConnectDefaultNewTabContext);
     const events = useContext(EventContext);
-    const [ info, setInfo ] = useState<ConnectHistoryServerInfo>(() => {
-        if(props.entry.uniqueServerId !== kUnknownHistoryServerUniqueId) {
-            events.fire("query_history_entry", { serverUniqueId: props.entry.uniqueServerId });
-        }
-        return undefined;
-    });
-    events.reactUse("notify_history_entry", event => event.serverUniqueId === props.entry.uniqueServerId && setInfo(event.info));
+    const connectNewTab = useContext(ConnectDefaultNewTabContext);
+    const variables = useContext(VariablesContext);
 
+    const info = variables.useReadOnly("history_entry", { serverUniqueId: props.entry.uniqueServerId }, undefined);
     const icon = getIconManager().resolveIcon(info ? info.icon.iconId : 0, info?.icon.serverUniqueId, info?.icon.handlerId);
 
     return (
@@ -364,9 +326,9 @@ const HistoryTableEntry = React.memo((props: { entry: ConnectHistoryEntry, selec
 });
 
 const HistoryTable = () => {
-    const [history] = useProperty("history", undefined);
-    let body;
+    const history = useContext(VariablesContext).useReadOnly("history", undefined, undefined);
 
+    let body;
     if(history) {
         if(history.history.length > 0) {
             body = history.history.map(entry => <HistoryTableEntry entry={entry} key={"entry-" + entry.id} selected={entry.id === history.selected} />);
@@ -385,22 +347,22 @@ const HistoryTable = () => {
             <div className={cssStyle.head}>
                 <div className={cssStyle.column + " " + cssStyle.delete} />
                 <div className={cssStyle.column + " " + cssStyle.name}>
-                    <Translatable>Name</Translatable>
+                    <a title={useTr("Name")}><Translatable>Name</Translatable></a>
                 </div>
                 <div className={cssStyle.column + " " + cssStyle.address}>
-                    <Translatable>Address</Translatable>
+                    <a title={useTr("Address")}><Translatable>Address</Translatable></a>
                 </div>
                 <div className={cssStyle.column + " " + cssStyle.password}>
-                    <Translatable>Password</Translatable>
+                    <a title={useTr("Password")}><Translatable>Password</Translatable></a>
                 </div>
                 <div className={cssStyle.column + " " + cssStyle.country}>
-                    <Translatable>Country</Translatable>
+                    <a title={useTr("Country")}><Translatable>Country</Translatable></a>
                 </div>
                 <div className={cssStyle.column + " " + cssStyle.clients}>
-                    <Translatable>Clients</Translatable>
+                    <a title={useTr("Clients")}><Translatable>Clients</Translatable></a>
                 </div>
                 <div className={cssStyle.column + " " + cssStyle.connections}>
-                    <Translatable>Connections</Translatable>
+                    <a title={useTr("Connections")}><Translatable>Connections</Translatable></a>
                 </div>
             </div>
             <div className={cssStyle.body}>
@@ -411,7 +373,8 @@ const HistoryTable = () => {
 }
 
 const HistoryContainer = () => {
-    const historyShown = useProperty("historyShown", false);
+    const variables = useContext(VariablesContext);
+    const historyShown = variables.useReadOnly("historyShown", undefined, false);
 
     return (
         <div className={joinClassList(cssStyle.historyContainer, historyShown && cssStyle.shown)}>
@@ -420,32 +383,42 @@ const HistoryContainer = () => {
     )
 }
 
-export class ConnectModal extends InternalModal {
+class ConnectModal extends AbstractModal {
     private readonly events: Registry<ConnectUiEvents>;
+    private readonly variables: UiVariableConsumer<ConnectUiVariables>;
     private readonly connectNewTabByDefault: boolean;
 
-    constructor(events: Registry<ConnectUiEvents>, connectNewTabByDefault: boolean) {
+    constructor(events: IpcRegistryDescription<ConnectUiEvents>, variables: IpcVariableDescriptor<ConnectUiVariables>, connectNewTabByDefault: boolean) {
         super();
 
-        this.events = events;
+        this.variables = createIpcUiVariableConsumer(variables);
+        this.events = Registry.fromIpcDescription(events);
         this.connectNewTabByDefault = connectNewTabByDefault;
+    }
+
+    protected onDestroy() {
+        super.onDestroy();
+
+        this.variables.destroy();
     }
 
     renderBody(): React.ReactElement {
         return (
             <EventContext.Provider value={this.events}>
-                <ConnectDefaultNewTabContext.Provider value={this.connectNewTabByDefault}>
-                    <div className={cssStyle.container}>
-                        <ConnectContainer />
-                        <ButtonContainer />
-                        <HistoryContainer />
-                    </div>
-                </ConnectDefaultNewTabContext.Provider>
+                <VariablesContext.Provider value={this.variables}>
+                    <ConnectDefaultNewTabContext.Provider value={this.connectNewTabByDefault}>
+                        <div className={cssStyle.container}>
+                            <ConnectContainer />
+                            <ButtonContainer />
+                            <HistoryContainer />
+                        </div>
+                    </ConnectDefaultNewTabContext.Provider>
+                </VariablesContext.Provider>
             </EventContext.Provider>
         );
     }
 
-    title(): string | React.ReactElement {
+    renderTitle(): string | React.ReactElement {
         return <Translatable>Connect to a server</Translatable>;
     }
 
@@ -457,3 +430,4 @@ export class ConnectModal extends InternalModal {
         return "top";
     }
 }
+export = ConnectModal;

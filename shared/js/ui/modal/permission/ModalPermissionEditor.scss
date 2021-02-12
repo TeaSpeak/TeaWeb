@@ -54,9 +54,10 @@ html:root {
     min-width: 20em;
     max-width: 100%;
 
+    min-height: 20em;
+
     flex-shrink: 1;
     flex-grow: 1;
-
 
     .contextContainer {
         display: flex;

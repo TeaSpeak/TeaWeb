@@ -6,10 +6,6 @@ export interface CssVariable {
     customValue?: string;
 }
 
-export interface CssEditorUserData {
-
-}
-
 export interface CssEditorEvents {
     action_set_filter: { filter: string | undefined },
     action_select_entry: { variable: CssVariable },

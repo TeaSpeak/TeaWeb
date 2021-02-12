@@ -1,8 +1,5 @@
-import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
-import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
+import {spawnModal} from "tc-shared/ui/react-elements/modal";
 import * as React from "react";
-import {Translatable} from "tc-shared/ui/react-elements/i18n";
-import {EchoTestEventRegistry, EchoTestModal} from "tc-shared/ui/modal/echo-test/Renderer";
 import {Registry} from "tc-shared/events";
 import {EchoTestEvents, TestState} from "tc-shared/ui/modal/echo-test/Definitions";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
@@ -18,30 +15,13 @@ export function spawnEchoTestModal(connection: ConnectionHandler) {
 
     initializeController(connection, events);
 
-    const modal = spawnReactModal(class extends InternalModal {
-        constructor() {
-            super();
-        }
-
-        renderBody(): React.ReactElement {
-            return (
-                <EchoTestEventRegistry.Provider value={events}>
-                    <EchoTestModal/>
-                </EchoTestEventRegistry.Provider>
-            );
-        }
-
-        title(): string | React.ReactElement<Translatable> {
-            return <Translatable>Voice echo test</Translatable>;
-        }
-    });
-
+    const modal = spawnModal("echo-test", [ events.generateIpcDescription() ], { popedOut: false });
     events.on("action_close", () => {
         modal.destroy();
     });
 
-    modal.events.on("close", () => events.fire_react("notify_close"));
-    modal.events.on("destroy", () => {
+    modal.getEvents().on("close", () => events.fire_react("notify_close"));
+    modal.getEvents().on("destroy", () => {
         events.fire("notify_destroy");
         events.destroy();
     });

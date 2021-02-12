@@ -29,7 +29,7 @@ export class ServerFeatures {
     readonly events: Registry<ServerFeatureEvents>;
     private readonly connection: ConnectionHandler;
     private readonly explicitCommandHandler: ExplicitCommandHandler;
-    private readonly stateChangeListener: (event: ConnectionEvents["notify_connection_state_changed"]) => void;
+    private readonly stateChangeListener: () => void;
 
     private featureAwait: Promise<boolean>;
     private featureAwaitCallback: (success: boolean) => void;
@@ -68,7 +68,7 @@ export class ServerFeatures {
             }
         });
 
-        this.connection.events().on("notify_connection_state_changed", this.stateChangeListener = event => {
+        this.stateChangeListener = this.connection.events().on("notify_connection_state_changed", event => {
             if(event.newState === ConnectionState.CONNECTED) {
                 this.connection.getServerConnection().send_command("listfeaturesupport").catch(error => {
                     this.disableAllFeatures();
@@ -95,7 +95,7 @@ export class ServerFeatures {
     }
 
     destroy() {
-        this.connection.events().off(this.stateChangeListener);
+        this.stateChangeListener();
         this.connection.getServerConnection()?.command_handler_boss()?.unregister_explicit_handler("notifyfeaturesupport", this.explicitCommandHandler);
 
         if(this.featureAwaitCallback) {

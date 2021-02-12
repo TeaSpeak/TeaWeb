@@ -1,4 +1,4 @@
-import {LogCategory, logError, logInfo, logWarn} from "../log";
+import {LogCategory, logDebug, logError, logInfo, logTrace, logWarn} from "../log";
 import {guid} from "../crypto/uid";
 import {Settings, StaticSettings} from "../settings";
 import * as loader from "tc-loader";
@@ -48,22 +48,29 @@ export interface TranslationRepository {
 }
 
 let translations: Translation[] = [];
-let fast_translate: { [key:string]:string; } = {};
-export function tr(message: string, key?: string) {
-    const sloppy = fast_translate[message];
-    if(sloppy) return sloppy;
+let translateCache: { [key:string]: string; } = {};
+export function tr(message: string, key?: string) : string {
+    const sloppy = translateCache[message];
+    if(sloppy) {
+        return sloppy;
+    }
 
-    logInfo(LogCategory.I18N, "Translating \"%s\". Default: \"%s\"", key, message);
+    logTrace(LogCategory.I18N, "Translating \"%s\". Default: \"%s\"", key, message);
 
-    let translated = message;
+    let translated;
     for(const translation of translations) {
-        if(translation.key.message == message) {
+        if(translation.key.message === message) {
             translated = translation.translated;
             break;
         }
     }
 
-    fast_translate[message] = translated;
+    if(typeof translated === "string") {
+        translateCache[message] = translated;
+    } else {
+        logDebug(LogCategory.I18N, "Missing translation for \"%s\".", message);
+        translateCache[message] = translated = message;
+    }
     return translated;
 }
 
@@ -316,6 +323,7 @@ export async function initialize() {
     if(cfg.current_translation_url) {
         try {
             await load_file(cfg.current_translation_url, cfg.current_translation_path);
+            translateCache = {};
         } catch (error) {
             logError(LogCategory.I18N, tr("Failed to initialize selected translation: %o"), error);
             const show_error = () => {

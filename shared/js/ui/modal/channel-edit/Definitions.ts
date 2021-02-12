@@ -32,7 +32,14 @@ export type ChannelEditPermissionsState = {
 };
 
 export interface ChannelEditableProperty {
-    "name": string,
+    "name": {
+        rawName: string,
+        parsedName?: string,
+        parsedAlignment?: "center" | "right" | "left" | "normal" | "repetitive",
+        maxNameLength?: number,
+        hasParent?: boolean,
+        spacerUniqueId?: string
+    },
     "phoneticName": string,
 
     "icon": {

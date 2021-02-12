@@ -2,6 +2,9 @@ import {ConnectionHandler, DisconnectReason} from "./ConnectionHandler";
 import {Registry} from "./events";
 import {Stage} from "tc-loader";
 import * as loader from "tc-loader";
+import {assertMainApplication} from "tc-shared/ui/utils";
+
+assertMainApplication();
 
 export interface ConnectionManagerEvents {
     notify_handler_created: {

@@ -1,7 +1,7 @@
 import {createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
-import {modal as emodal, Registry} from "tc-shared/events";
-import {modal_settings} from "tc-shared/ui/modal/ModalSettings";
+import {Registry} from "tc-shared/events";
+import {modal_settings, SettingProfileEvents} from "tc-shared/ui/modal/ModalSettings";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {initialize_audio_microphone_controller, MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/Microphone";
 import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
@@ -151,7 +151,7 @@ function initializeStepFinish(tag: JQuery, event_registry: Registry<EventModalNe
 }
 
 function initializeStepIdentity(tag: JQuery, event_registry: Registry<EventModalNewcomer>) {
-    const profile_events = new Registry<emodal.settings.profiles>();
+    const profile_events = new Registry<SettingProfileEvents>();
     profile_events.enableDebug("settings-identity");
     modal_settings.initialize_identity_profiles_controller(profile_events);
     modal_settings.initialize_identity_profiles_view(tag, profile_events, {forum_setuppable: false});

@@ -1,11 +1,11 @@
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import * as React from "react";
 import {createContext, useContext, useRef, useState} from "react";
-import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
-import {Registry} from "tc-shared/events";
+import {IpcRegistryDescription, Registry} from "tc-shared/events";
 import {ModalGlobalSettingsEditorEvents, Setting} from "tc-shared/ui/modal/global-settings-editor/Definitions";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {FlatInputField} from "tc-shared/ui/react-elements/InputField";
+import {AbstractModal} from "tc-shared/ui/react-elements/modal/Definitions";
 
 const ModalEvents = createContext<Registry<ModalGlobalSettingsEditorEvents>>(undefined);
 const cssStyle = require("./Renderer.scss");
@@ -159,13 +159,13 @@ const SettingList = () => {
     );
 }
 
-export class ModalGlobalSettingsEditor extends InternalModal {
+class ModalGlobalSettingsEditor extends AbstractModal {
     protected readonly events: Registry<ModalGlobalSettingsEditorEvents>;
 
-    constructor(events: Registry<ModalGlobalSettingsEditorEvents>) {
+    constructor(events: IpcRegistryDescription<ModalGlobalSettingsEditorEvents>) {
         super();
 
-        this.events = events;
+        this.events = Registry.fromIpcDescription(events);
     }
 
     renderBody(): React.ReactElement {
@@ -189,8 +189,9 @@ export class ModalGlobalSettingsEditor extends InternalModal {
         );
     }
 
-    title(): string | React.ReactElement<Translatable> {
+    renderTitle(): string | React.ReactElement<Translatable> {
         return <Translatable>Global settings registry</Translatable>;
     }
 }
 
+export = ModalGlobalSettingsEditor;

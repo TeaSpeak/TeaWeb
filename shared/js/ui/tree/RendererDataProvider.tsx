@@ -338,7 +338,7 @@ export class RDPChannelTree {
     }
 
     initialize() {
-        this.events.register_handler(this);
+        this.events.registerHandler(this);
 
         const events = this.registeredEventHandlers;
 
@@ -466,7 +466,7 @@ export class RDPChannelTree {
         document.removeEventListener("focusout", this.documentDragStopListener);
         document.removeEventListener("mouseout", this.documentDragStopListener);
 
-        this.events.unregister_handler(this);
+        this.events.unregisterHandler(this);
         this.registeredEventHandlers.forEach(callback => callback());
         this.registeredEventHandlers = [];
     }

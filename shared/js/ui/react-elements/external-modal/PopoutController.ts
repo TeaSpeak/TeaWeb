@@ -5,29 +5,32 @@ import {
     EventControllerBase,
     PopoutIPCMessage
 } from "../../../ui/react-elements/external-modal/IPCMessage";
-import {Registry, RegistryMap} from "../../../events";
 
 let controller: PopoutController;
 export function getPopoutController() {
-    if(!controller)
+    if(!controller) {
         controller = new PopoutController();
+    }
+
     return controller;
 }
 
 
 class PopoutController extends EventControllerBase<"popout"> {
-    private userData: any;
+    private constructorArguments: any[];
     private callbackControllerHello: (accepted: boolean | string) => void;
 
     constructor() {
         super();
         this.ipcRemoteId = AppParameters.getValue(AppParameters.KEY_IPC_REMOTE_ADDRESS, "invalid");
 
-        this.ipcChannel = getIPCInstance().createChannel(this.ipcRemoteId, AppParameters.getValue(AppParameters.KEY_IPC_REMOTE_ADDRESS, "invalid"));
+        this.ipcChannel = getIPCInstance().createChannel(this.ipcRemoteId, AppParameters.getValue(AppParameters.KEY_IPC_REMOTE_POPOUT_CHANNEL, "invalid"));
         this.ipcChannel.messageHandler = this.handleIPCMessage.bind(this);
     }
 
-    getEventRegistries() : RegistryMap { return this.localRegistries; }
+    getConstructorArguments() : any[] {
+        return this.constructorArguments;
+    }
 
     async initialize() {
         this.sendIPCMessage("hello-popout", { version: __build.version });
@@ -63,37 +66,15 @@ class PopoutController extends EventControllerBase<"popout"> {
                     return;
                 }
 
-                if(this.getEventRegistries()) {
-                    const registries = this.getEventRegistries();
-                    const invalidIndex = tpayload.registries.findIndex(reg => !registries[reg]);
-                    if(invalidIndex !== -1) {
-                        console.error("Received miss matching event registry keys (missing %s)", tpayload.registries[invalidIndex]);
-                        this.callbackControllerHello("miss matching registry keys (locally)");
-                    }
-                } else {
-                    let map = {};
-                    tpayload.registries.forEach(reg => map[reg] = new Registry());
-                    this.initializeRegistries(map);
-                }
-
-                this.userData = tpayload.userData;
+                this.constructorArguments = tpayload.constructorArguments;
                 this.callbackControllerHello(tpayload.accepted ? true : tpayload.message || false);
                 break;
             }
-
-            case "fire-event-callback":
-            case "fire-event":
-                /* handled by out base class */
-                break;
 
             default:
                 console.warn("Received unknown message type from controller: %s", type);
                 return;
         }
-    }
-
-    getUserData() {
-        return this.userData;
     }
 
     doClose() {

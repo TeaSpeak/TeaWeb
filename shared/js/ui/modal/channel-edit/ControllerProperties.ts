@@ -1,4 +1,4 @@
-import {ChannelEntry, ChannelProperties, ChannelSidebarMode} from "tc-shared/tree/Channel";
+import {ChannelEntry, ChannelNameParser, ChannelProperties, ChannelSidebarMode} from "tc-shared/tree/Channel";
 import {ChannelEditableProperty} from "tc-shared/ui/modal/channel-edit/Definitions";
 import {ChannelTree} from "tc-shared/tree/ChannelTree";
 import {ServerFeature} from "tc-shared/connection/ServerFeatures";
@@ -17,7 +17,41 @@ const SimplePropertyProvider = <P extends keyof ChannelProperties>(channelProper
     };
 }
 
-ChannelPropertyProviders["name"] = SimplePropertyProvider("channel_name", "");
+ChannelPropertyProviders["name"] = {
+    provider: async (properties, channel, parentChannel, channelTree) => {
+        let spacerUniqueId = 0;
+        const hasParent = !!(channel?.hasParent() || parentChannel);
+        if(!hasParent) {
+            const channels = channelTree.rootChannel();
+            while(true) {
+                let matchFound = false;
+                for(const channel of channels) {
+                    if(channel.parsed_channel_name.uniqueId === spacerUniqueId.toString()) {
+                        matchFound = true;
+                        break;
+                    }
+                }
+
+                if(!matchFound) {
+                    break;
+                }
+
+                spacerUniqueId++;
+            }
+        }
+
+        const parsed = new ChannelNameParser(properties.channel_name, hasParent);
+        return {
+            rawName: properties.channel_name,
+            spacerUniqueId: parsed.uniqueId || spacerUniqueId.toString(),
+            hasParent,
+            maxNameLength: 30 - (parsed.originalName.length - parsed.text.length),
+            parsedAlignment: parsed.alignment,
+            parsedName: parsed.text
+        }
+    },
+    applier: (value, properties) => properties.channel_name = value.rawName
+}
 ChannelPropertyProviders["phoneticName"] = SimplePropertyProvider("channel_name_phonetic", "");
 ChannelPropertyProviders["icon"] = {
     provider: async (properties, _channel, _parentChannel, channelTree) => {

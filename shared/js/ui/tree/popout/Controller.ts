@@ -1,14 +1,14 @@
 import {Registry} from "tc-shared/events";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
-import {spawnExternalModal} from "tc-shared/ui/react-elements/external-modal";
 import {initializeChannelTreeController} from "tc-shared/ui/tree/Controller";
 import {ControlBarEvents} from "tc-shared/ui/frames/control-bar/Definitions";
 import {initializePopoutControlBarController} from "tc-shared/ui/frames/control-bar/Controller";
 import {ChannelTree} from "tc-shared/tree/ChannelTree";
 import {ModalController} from "tc-shared/ui/react-elements/ModalDefinitions";
-import {ChannelTreePopoutEvents} from "tc-shared/ui/tree/popout/Definitions";
+import {ChannelTreePopoutConstructorArguments, ChannelTreePopoutEvents} from "tc-shared/ui/tree/popout/Definitions";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
 import {tr, tra} from "tc-shared/i18n/localize";
+import {spawnModal} from "tc-shared/ui/react-elements/modal";
 
 export class ChannelTreePopoutController {
     readonly channelTree: ChannelTree;
@@ -58,11 +58,15 @@ export class ChannelTreePopoutController {
         this.controlBarEvents = new Registry<ControlBarEvents>();
         initializePopoutControlBarController(this.controlBarEvents, this.channelTree.client);
 
-        this.popoutInstance = spawnExternalModal("channel-tree", {
-            tree: this.treeEvents,
-            controlBar: this.controlBarEvents,
-            base: this.uiEvents
-        }, { handlerId: this.channelTree.client.handlerId }, "channel-tree-" + this.channelTree.client.handlerId);
+        this.popoutInstance = spawnModal("channel-tree", [{
+            events: this.uiEvents.generateIpcDescription(),
+            eventsTree: this.treeEvents.generateIpcDescription(),
+            eventsControlBar: this.controlBarEvents.generateIpcDescription(),
+            handlerId: this.channelTree.client.handlerId
+        } as ChannelTreePopoutConstructorArguments], {
+            uniqueId: "channel-tree-" + this.channelTree.client.handlerId,
+            popedOut: true
+        });
 
         this.popoutInstance.getEvents().one("destroy", () => {
             this.treeEvents.fire("notify_destroy");

@@ -1,6 +1,6 @@
+import {InternalModalContentRenderer} from "tc-shared/ui/react-elements/internal-modal/Renderer";
 import {AbstractModal, ModalRenderer} from "tc-shared/ui/react-elements/ModalDefinitions";
 import * as ReactDOM from "react-dom";
-import {InternalModalContentRenderer} from "tc-shared/ui/react-elements/internal-modal/Renderer";
 import * as React from "react";
 
 export interface ModalControlFunctions {
@@ -39,11 +39,13 @@ export class ClientModalRenderer implements ModalRenderer {
     }
 
     renderModal(modal: AbstractModal | undefined) {
-        if(this.currentModal === modal)
+        if(this.currentModal === modal) {
             return;
+        }
 
         this.titleChangeObserver.disconnect();
         ReactDOM.unmountComponentAtNode(this.container);
+
         this.currentModal = modal;
         ReactDOM.render(
             <InternalModalContentRenderer
@@ -71,8 +73,9 @@ export class ClientModalRenderer implements ModalRenderer {
     }
 
     private updateTitle() {
-        if(!this.titleContainer)
+        if(!this.titleContainer) {
             return;
+        }
 
         this.titleElement.innerText = this.titleContainer.textContent;
     }

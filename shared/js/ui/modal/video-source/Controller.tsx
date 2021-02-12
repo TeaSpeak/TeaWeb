@@ -1,5 +1,5 @@
 import {Registry} from "tc-shared/events";
-import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnReactModal} from "tc-shared/ui/react-elements/modal";
 import {ModalVideoSourceEvents} from "tc-shared/ui/modal/video-source/Definitions";
 import {ModalVideoSource} from "tc-shared/ui/modal/video-source/Renderer";
 import {getVideoDriver, VideoPermissionStatus, VideoSource} from "tc-shared/video/VideoSource";
@@ -94,7 +94,10 @@ export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, mode
                 }
 
                 if(event.status.status === "preview") {
-                    /* we've successfully selected something */
+                    /* We've successfully selected something. Use that device instead. */
+                    result.source?.deref();
+                    result.source = controller.getCurrentSource()?.ref();
+                    result.config = controller.getBroadcastConstraints();
                     modal.destroy();
                 }
             });
@@ -125,13 +128,20 @@ async function generateAndApplyDefaultConfig(source: VideoSource) : Promise<Vide
     const trackSettings = videoTrack.getSettings();
     const capabilities = source.getCapabilities();
 
-    maxHeight = Math.min(maxHeight, capabilities.maxHeight);
-    maxWidth = Math.min(maxWidth, capabilities.maxWidth);
+    /* Safari */
+    if(trackSettings.height === 0) {
+        trackSettings.height = capabilities.maxHeight;
+    }
+    if(trackSettings.width === 0) {
+        trackSettings.width = capabilities.maxWidth;
+    }
 
-    /* FIXME: Get these values somewhere else! */
+    maxHeight = maxHeight ? Math.min(maxHeight, capabilities.maxHeight) : capabilities.maxHeight;
+    maxWidth = maxWidth ? Math.min(maxWidth, capabilities.maxWidth) : capabilities.maxWidth;
+
     const broadcastConstraints: VideoBroadcastConfig = {
-        maxBandwidth: 1_600_000,
-        keyframeInterval: 0
+        maxBandwidth: settings.getValue(Settings.KEY_VIDEO_DEFAULT_MAX_BANDWIDTH),
+        keyframeInterval: settings.getValue(Settings.KEY_VIDEO_DEFAULT_KEYFRAME_INTERVAL)
     } as VideoBroadcastConfig;
 
     {
@@ -160,7 +170,7 @@ async function generateAndApplyDefaultConfig(source: VideoSource) : Promise<Vide
     try {
         await applyBroadcastConfig(source, broadcastConstraints);
     } catch (error) {
-        logWarn(LogCategory.VIDEO, tr("Failed to apply initial default broadcast config: %o"), error);
+        logWarn(LogCategory.VIDEO, tr("Failed to apply initial default broadcast config (%o): %o"), broadcastConstraints, error);
     }
 
     updateBroadcastConfigFromSource(source, broadcastConstraints);

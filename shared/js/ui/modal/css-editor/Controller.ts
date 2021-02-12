@@ -1,10 +1,10 @@
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {CssEditorEvents, CssVariable} from "../../../ui/modal/css-editor/Definitions";
-import {spawnExternalModal} from "../../../ui/react-elements/external-modal";
 import {Registry} from "../../../events";
 import {LogCategory, logWarn} from "../../../log";
 import {tr} from "tc-shared/i18n/localize";
+import {spawnModal} from "tc-shared/ui/react-elements/modal";
 
 interface CustomVariable {
     name: string;
@@ -172,7 +172,7 @@ export function spawnModalCssVariableEditor() {
     const events = new Registry<CssEditorEvents>();
     cssVariableEditorController(events);
 
-    const modal = spawnExternalModal("css-editor", { default: events }, {});
+    const modal = spawnModal("css-editor", [ events.generateIpcDescription() ], { popedOut: true });
     modal.show();
 }
 

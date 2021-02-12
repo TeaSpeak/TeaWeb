@@ -7,6 +7,6 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     priority: 50,
     name: "external modal controller factory setup",
     function: async () => {
-        setExternalModalControllerFactory((modal, events, userData, uniqueModalId) => new ExternalModalController(modal, events, userData, uniqueModalId));
+        setExternalModalControllerFactory((modalType, constructorArguments, options) => new ExternalModalController(modalType, constructorArguments, options));
     }
 });

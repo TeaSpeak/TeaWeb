@@ -1,7 +1,7 @@
 import {LogCategory, logDebug, logTrace, logWarn} from "../../../log";
 import * as ipc from "../../../ipc/BrowserIPC";
 import {ChannelMessage} from "../../../ipc/BrowserIPC";
-import {Registry, RegistryMap} from "../../../events";
+import {Registry} from "../../../events";
 import {
     EventControllerBase,
     Popout2ControllerMessages,
@@ -11,7 +11,7 @@ import {ModalController, ModalEvents, ModalOptions, ModalState} from "../../../u
 
 export abstract class AbstractExternalModalController extends EventControllerBase<"controller"> implements ModalController {
     public readonly modalType: string;
-    public readonly userData: any;
+    public readonly constructorArguments: any[];
 
     private readonly modalEvents: Registry<ModalEvents>;
     private modalState: ModalState = ModalState.DESTROYED;
@@ -19,14 +19,12 @@ export abstract class AbstractExternalModalController extends EventControllerBas
     private readonly documentUnloadListener: () => void;
     private callbackWindowInitialized: (error?: string) => void;
 
-    protected constructor(modal: string, registries: RegistryMap, userData: any) {
+    protected constructor(modalType: string, constructorArguments: any[]) {
         super();
-        this.initializeRegistries(registries);
+        this.modalType = modalType;
+        this.constructorArguments = constructorArguments;
 
         this.modalEvents = new Registry<ModalEvents>();
-
-        this.modalType = modal;
-        this.userData = userData;
 
         this.ipcChannel = ipc.getIpcInstance().createChannel();
         this.ipcChannel.messageHandler = this.handleIPCMessage.bind(this);
@@ -156,14 +154,9 @@ export abstract class AbstractExternalModalController extends EventControllerBas
                     this.callbackWindowInitialized = undefined;
                 }
 
-                this.sendIPCMessage("hello-controller", { accepted: true, userData: this.userData, registries: Object.keys(this.localRegistries) });
+                this.sendIPCMessage("hello-controller", { accepted: true, constructorArguments: this.constructorArguments });
                 break;
             }
-
-            case "fire-event":
-            case "fire-event-callback":
-                /* already handled by out base class */
-                break;
 
             case "invoke-modal-action":
                 /* must be handled by the underlying handler */

@@ -63,7 +63,6 @@ class RetryTimeCalculator {
     }
 
     calculateRetryTime() {
-        return 0;
         if(this.retryCount >= 5) {
             /* no more retries */
             return 0;
@@ -542,6 +541,8 @@ export class RTCConnection {
         this.reset(true);
 
         this.connection.events.on("notify_connection_state_changed", event => this.handleConnectionStateChanged(event));
+
+        (window as any).rtp = this;
     }
 
     destroy() {
