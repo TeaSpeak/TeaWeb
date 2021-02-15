@@ -619,7 +619,7 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
                 timestampRefSet = true;
             }
 
-            if(event.timestamp >= this.unreadTimestamp && !unreadSet) {
+            if(event.timestamp > this.unreadTimestamp && !unreadSet) {
                 this.viewEntries.push(<UnreadEntry refDiv={this.refUnread} key={"u" + this.viewElementIndex++} />);
                 unreadSet = true;
             }

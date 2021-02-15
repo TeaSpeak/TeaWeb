@@ -18,7 +18,17 @@ async function requestDatabase() {
         } else if(databaseMode === "opening" || databaseMode === "updating") {
             await new Promise(resolve => databaseStateChangedCallbacks.push(resolve));
         } else if(databaseMode === "closed") {
-            await doOpenDatabase(false);
+            try {
+                await doOpenDatabase(false);
+            } catch (error) {
+                currentDatabase = undefined;
+                if(databaseMode !== "closed") {
+                    databaseMode = "closed";
+                    fireDatabaseStateChanged();
+                }
+
+                throw error;
+            }
         }
     }
 }
@@ -143,6 +153,11 @@ async function importChatsFromCacheStorage(database: IDBDatabase) {
 }
 
 async function doOpenDatabase(forceUpgrade: boolean) {
+    if(!('indexedDB' in window)) {
+        loader.critical_error(tr("Missing Indexed DB support"));
+        throw tr("Missing Indexed DB support");
+    }
+
     if(databaseMode === "closed") {
         databaseMode = "opening";
         fireDatabaseStateChanged();
@@ -231,13 +246,8 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     priority: 0,
     name: "Chat history setup",
     function: async () => {
-        if(!('indexedDB' in window)) {
-            loader.critical_error(tr("Missing Indexed DB support"));
-            throw tr("Missing Indexed DB support");
-        }
-
         try {
-            await doOpenDatabase(false);
+            await requestDatabase();
             logDebug(LogCategory.CHAT, tr("Successfully initialized private conversation history database"));
         } catch (error) {
             logError(LogCategory.CHAT, tr("Failed to initialize private conversation history database: %o"), error);
@@ -255,8 +265,9 @@ export async function queryConversationEvents(clientUniqueId: string, query: {
     const storeName = clientUniqueId2StoreName(clientUniqueId);
 
     await requestDatabase();
-    if(!currentDatabase.objectStoreNames.contains(storeName))
+    if(!currentDatabase.objectStoreNames.contains(storeName)) {
         return { events: [], hasMore: false };
+    }
 
     const transaction = currentDatabase.transaction(storeName, "readonly");
     const store = transaction.objectStore(storeName);

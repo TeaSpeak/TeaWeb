@@ -283,6 +283,20 @@ export class PrivateConversation extends AbstractChat<PrivateConversationEvents>
             this.setHistory(!!result.hasMore);
 
             this.setCurrentMode("normal");
+        }).catch(error => {
+            console.error("Error open!");
+            this.presentEvents = [];
+            this.presentMessages = [];
+            this.setHistory(false);
+
+            this.registerChatEvent({
+                type: "query-failed",
+                timestamp: Date.now(),
+                uniqueId: "la-" + this.chatId + "-" + Date.now(),
+                message: tr("Failed to query chat history:\n") + error
+            }, false);
+
+            this.setCurrentMode("normal");
         });
     }
 
