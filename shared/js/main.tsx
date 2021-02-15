@@ -73,10 +73,14 @@ async function initializeApp() {
 
     aplayer.on_ready(() => aplayer.set_master_volume(settings.getValue(Settings.KEY_SOUND_MASTER) / 100));
 
-    setDefaultRecorder(new RecorderProfile("default"));
-    defaultRecorder.initialize().catch(error => {
+    const recorder = new RecorderProfile("default");
+    try {
+        await recorder.initialize();
+    } catch (error) {
+        /* TODO: Recover into a defined state? */
         logError(LogCategory.AUDIO, tr("Failed to initialize default recorder: %o"), error);
-    });
+    }
+    setDefaultRecorder(recorder);
 
     sound.initialize().then(() => {
         logInfo(LogCategory.AUDIO, tr("Sounds initialized"));

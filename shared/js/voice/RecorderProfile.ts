@@ -9,6 +9,7 @@ import * as ppt from "tc-backend/ppt";
 import {getRecorderBackend, IDevice} from "../audio/recorder";
 import {FilterType, StateFilter, ThresholdFilter} from "../voice/Filter";
 import { tr } from "tc-shared/i18n/localize";
+import {Registry} from "tc-shared/events";
 
 export type VadType = "threshold" | "push_to_talk" | "active";
 export interface RecorderProfileConfig {
@@ -35,12 +36,25 @@ export interface RecorderProfileConfig {
     }
 }
 
+export interface DefaultRecorderEvents {
+    notify_default_recorder_changed: {}
+}
+
 export let defaultRecorder: RecorderProfile; /* needs initialize */
+export const defaultRecorderEvents: Registry<DefaultRecorderEvents> = new Registry<DefaultRecorderEvents>();
+
 export function setDefaultRecorder(recorder: RecorderProfile) {
     defaultRecorder = recorder;
+    (window as any).defaultRecorder = defaultRecorder;
+    defaultRecorderEvents.fire("notify_default_recorder_changed");
+}
+
+export interface RecorderProfileEvents {
+    notify_device_changed: { },
 }
 
 export class RecorderProfile {
+    readonly events: Registry<RecorderProfileEvents>;
     readonly name;
     readonly volatile; /* not saving profile */
 
@@ -66,6 +80,7 @@ export class RecorderProfile {
     }
 
     constructor(name: string, volatile?: boolean) {
+        this.events = new Registry<RecorderProfileEvents>();
         this.name = name;
         this.volatile = typeof(volatile) === "boolean" ? volatile : false;
 
@@ -95,6 +110,7 @@ export class RecorderProfile {
         /* TODO */
         this.input?.destroy();
         this.input = undefined;
+        this.events.destroy();
     }
 
     async initialize() : Promise<void> {
@@ -109,7 +125,7 @@ export class RecorderProfile {
             /* default values */
             this.config = {
                 version: 1,
-                device_id: undefined,
+                device_id: IDevice.DefaultDeviceId,
                 volume: 100,
 
                 vad_threshold: {
@@ -306,10 +322,22 @@ export class RecorderProfile {
         this.save();
     }
 
-    getDeviceId() : string { return this.config.device_id; }
-    setDevice(device: IDevice | undefined) : Promise<void> {
-        this.config.device_id = device ? device.deviceId : IDevice.NoDeviceId;
+    getDeviceId() : string | typeof IDevice.DefaultDeviceId | typeof IDevice.NoDeviceId { return this.config.device_id; }
+    setDevice(device: IDevice | typeof IDevice.DefaultDeviceId | typeof IDevice.NoDeviceId) : Promise<void> {
+        let deviceId;
+        if(typeof device === "object") {
+            deviceId = device.deviceId;
+        } else {
+            deviceId = device;
+        }
+
+        if(this.config.device_id === deviceId) {
+            return;
+        }
+        this.config.device_id = deviceId;
+
         this.save();
+        this.events.fire("notify_device_changed");
         return this.input?.setDeviceId(this.config.device_id) || Promise.resolve();
     }
 

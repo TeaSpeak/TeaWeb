@@ -3,7 +3,7 @@ import {useEffect, useRef, useState} from "react";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {Registry} from "tc-shared/events";
-import {MicrophoneDevice, MicrophoneSettingsEvents, MicrophoneSettingsSelectedMicrophone} from "tc-shared/ui/modal/settings/Microphone";
+import {MicrophoneDevice, MicrophoneSettingsEvents, SelectedMicrophone} from "tc-shared/ui/modal/settings/Microphone";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
@@ -174,8 +174,8 @@ const MicrophoneList = (props: { events: Registry<MicrophoneSettingsEvents> }) =
         return {type: "loading"};
     });
     const [selectedDevice, setSelectedDevice] = useState<{
-        selectedDevice: MicrophoneSettingsSelectedMicrophone,
-        selectingDevice: MicrophoneSettingsSelectedMicrophone | undefined
+        selectedDevice: SelectedMicrophone,
+        selectingDevice: SelectedMicrophone | undefined
     }>();
     const [deviceList, setDeviceList] = useState<MicrophoneDevice[]>([]);
 
@@ -219,16 +219,15 @@ const MicrophoneList = (props: { events: Registry<MicrophoneSettingsEvents> }) =
                 selectedDevice: selectedDevice?.selectedDevice,
                 selectingDevice: undefined
             });
-        } else {
-            setSelectedDevice({
-                selectedDevice: event.selectedDevice,
-                selectingDevice: undefined
-            });
         }
     });
 
+    props.events.reactUse("notify_device_selected", event => {
+        setSelectedDevice({ selectedDevice: event.device, selectingDevice: undefined });
+    })
+
     const deviceSelectState = (device: MicrophoneDevice | "none" | "default"): MicrophoneSelectedState => {
-        let selected: MicrophoneSettingsSelectedMicrophone;
+        let selected: SelectedMicrophone;
         let mode: MicrophoneSelectedState;
         if(typeof selectedDevice?.selectingDevice !== "undefined") {
             selected = selectedDevice.selectingDevice;
@@ -569,7 +568,7 @@ const ThresholdSelector = (props: { events: Registry<MicrophoneSettingsEvents> }
     const defaultDeviceId = useRef<string | undefined>();
     const [isVadActive, setVadActive] = useState(false);
 
-    const changeCurrentDevice = (selected: MicrophoneSettingsSelectedMicrophone) => {
+    const changeCurrentDevice = (selected: SelectedMicrophone) => {
         switch (selected.type) {
             case "none":
                 setCurrentDevice({ type: "none" });
@@ -612,11 +611,7 @@ const ThresholdSelector = (props: { events: Registry<MicrophoneSettingsEvents> }
         }
     });
 
-    props.events.reactUse("action_set_selected_device_result", event => {
-        if(event.status === "success") {
-            changeCurrentDevice(event.selectedDevice);
-        }
-    });
+    props.events.reactUse("notify_device_selected", event => changeCurrentDevice(event.device));
 
     let isActive = isVadActive && currentDevice.type === "device";
     return (

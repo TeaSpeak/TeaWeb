@@ -5,7 +5,7 @@ import {
     ConnectionState,
     ControlBarEvents,
     ControlBarMode,
-    HostButtonInfo,
+    HostButtonInfo, MicrophoneDeviceInfo,
     MicrophoneState,
     VideoDeviceInfo,
     VideoState
@@ -316,16 +316,107 @@ const MicrophoneButton = () => {
     events.on("notify_microphone_state", event => setState(event.state));
 
     if(state === "muted") {
-        return <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={ClientIcon.InputMuted} tooltip={tr("Unmute microphone")}
-                       onToggle={() => events.fire("action_toggle_microphone", { enabled: true })} key={"muted"} />;
+        return (
+            <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={ClientIcon.InputMuted} tooltip={tr("Unmute microphone")}
+                    onToggle={() => events.fire("action_toggle_microphone", { enabled: true })} key={"muted"}>
+                <DropdownEntry
+                    icon={ClientIcon.InputMuted}
+                    text={<Translatable>Unmute microphone</Translatable>}
+                    onClick={() => events.fire("action_toggle_microphone", { enabled: true })}
+                />
+                <DropdownEntry
+                    icon={ClientIcon.Settings}
+                    text={<Translatable>Open microphone settings</Translatable>}
+                    onClick={() => events.fire("action_open_microphone_settings", {})}
+                />
+                <MicrophoneDeviceList />
+            </Button>
+        );
     } else if(state === "enabled") {
-        return <Button colorTheme={"red"} autoSwitch={false} iconNormal={ClientIcon.InputMuted} tooltip={tr("Mute microphone")}
-                       onToggle={() => events.fire("action_toggle_microphone", { enabled: false })} key={"enabled"} />;
+        return (
+            <Button colorTheme={"red"} autoSwitch={false} iconNormal={ClientIcon.InputMuted} tooltip={tr("Mute microphone")}
+                    onToggle={() => events.fire("action_toggle_microphone", { enabled: false })} key={"enabled"}>
+                <DropdownEntry
+                    icon={ClientIcon.InputMuted}
+                    text={<Translatable>Mute microphone</Translatable>}
+                    onClick={() => events.fire("action_toggle_microphone", { enabled: false })}
+                />
+                <DropdownEntry
+                    icon={ClientIcon.Settings}
+                    text={<Translatable>Open microphone settings</Translatable>}
+                    onClick={() => events.fire("action_open_microphone_settings", {})}
+                />
+                <MicrophoneDeviceList />
+            </Button>
+        );
     } else {
-        return <Button autoSwitch={false} iconNormal={ClientIcon.ActivateMicrophone} tooltip={tr("Enable your microphone on this server")}
-                       onToggle={() => events.fire("action_toggle_microphone", { enabled: true })} key={"disabled"} />;
+        return (
+            <Button autoSwitch={false} iconNormal={ClientIcon.ActivateMicrophone} tooltip={tr("Enable your microphone on this server")}
+                    onToggle={() => events.fire("action_toggle_microphone", { enabled: true })} key={"disabled"}>
+                <DropdownEntry
+                    icon={ClientIcon.ActivateMicrophone}
+                    text={<Translatable>Enable your microphone</Translatable>}
+                    onClick={() => events.fire("action_toggle_microphone", { enabled: true })}
+                />
+                <DropdownEntry
+                    icon={ClientIcon.Settings}
+                    text={<Translatable>Open microphone settings</Translatable>}
+                    onClick={() => events.fire("action_open_microphone_settings", {})}
+                />
+                <MicrophoneDeviceList />
+            </Button>
+        );
     }
 }
+
+/* This should be above all driver weights */
+const kDriverWeightSelected = 1000;
+const kDriverWeights = {
+    "MME": 100,
+    "Windows DirectSound": 80,
+    "Windows WASAPI": 50
+};
+
+const MicrophoneDeviceList = React.memo(() => {
+    const events = useContext(Events);
+    const [ deviceList, setDeviceList ] = useState<MicrophoneDeviceInfo[]>(() => {
+        events.fire("query_microphone_list");
+        return [];
+    });
+    events.reactUse("notify_microphone_list", event => setDeviceList(event.devices));
+
+    if(deviceList.length <= 1) {
+        /* we don't need a select here */
+        return null;
+    }
+
+    const devices: {[key: string]: { weight: number, device: MicrophoneDeviceInfo }} = {};
+    for(const entry of deviceList) {
+        const weight = entry.selected ? kDriverWeightSelected : (kDriverWeights[entry.driver] | 0);
+        if(typeof devices[entry.name] !== "undefined" && devices[entry.name].weight >= weight) {
+            continue;
+        }
+
+        devices[entry.name] = {
+            weight,
+            device: entry
+        }
+    }
+
+    return (
+        <>
+            <hr key={"hr"} />
+            {Object.values(devices).map(({ device }) => (
+                <DropdownEntry
+                    text={device.name || tr("Unknown device name")}
+                    key={"m-" + device.id}
+                    icon={device.selected ? ClientIcon.Apply : undefined}
+                    onClick={() => events.fire("action_toggle_microphone", { enabled: true, targetDeviceId: device.id })}
+                />
+            ))}
+        </>
+    );
+});
 
 const SpeakerButton = () => {
     const events = useContext(Events);
