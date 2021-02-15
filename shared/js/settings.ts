@@ -591,10 +591,30 @@ export class Settings {
         valueType: "boolean",
     };
 
+    static readonly KEY_RTC_EXTRA_VIDEO_CHANNELS: ValuedRegistryKey<number> = {
+        key: "rtc_extra_video_channels",
+        defaultValue: 0,
+        requireRestart: true,
+        valueType: "number",
+        description: "Extra video channels within the initial WebRTC sdp offer.\n" +
+            "Note: By default the screen/camera share channels are already present"
+    };
+
+    static readonly KEY_RTC_EXTRA_AUDIO_CHANNELS: ValuedRegistryKey<number> = {
+        key: "rtc_extra_audio_channels",
+        defaultValue: 6,
+        requireRestart: true,
+        valueType: "number",
+        description: "Extra audio channels within the initial WebRTC sdp offer.\n" +
+            "Note:\n" +
+            "1. By default the voice/whisper channels are already present.\n" +
+            "2. This setting does not work for Firefox."
+    };
+
     static readonly KEY_RNNOISE_FILTER: ValuedRegistryKey<boolean> = {
         key: "rnnoise_filter",
         defaultValue: true,
-        description: "Enable the rnnoise filter for supressing background noise",
+        description: "Enable the rnnoise filter for suppressing background noise",
         valueType: "boolean",
     };
 

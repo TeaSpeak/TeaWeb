@@ -28,7 +28,7 @@ export class SdpProcessor {
             rate: 48000,
             encoding: 2,
             fmtp: { minptime: 1, maxptime: 20, useinbandfec: 1, usedtx: 1, stereo: 0, "sprop-stereo": 0 },
-            rtcpFb: [ "transport-cc" ]
+            rtcpFb: [ "transport-cc", "nack", "goog-remb" ]
         },
         {
             // Opus Stereo/Opus Music
@@ -37,7 +37,7 @@ export class SdpProcessor {
             rate: 48000,
             encoding: 2,
             fmtp: { minptime: 1, maxptime: 20, useinbandfec: 1, usedtx: 1, stereo: 1, "sprop-stereo": 1 },
-            rtcpFb: [ "transport-cc" ]
+            rtcpFb: [ "transport-cc", "nack", "goog-remb" ]
         },
     ];
 

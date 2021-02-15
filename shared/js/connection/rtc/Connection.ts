@@ -11,6 +11,7 @@ import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {WhisperTarget} from "tc-shared/voice/VoiceWhisper";
 import {globalAudioContext} from "tc-backend/audio/player";
 import {VideoBroadcastConfig, VideoBroadcastType} from "tc-shared/connection/VideoConnection";
+import {Settings, settings} from "tc-shared/settings";
 
 const kSdpCompressionMode = 1;
 
@@ -372,9 +373,7 @@ class InternalRemoteRTPAudioTrack extends RemoteRTPAudioTrack {
         if(state === 1) {
             validateInfo();
             this.shouldReplay = true;
-            if(this.gainNode) {
-                this.gainNode.gain.value = this.gain;
-            }
+            this.updateGainNode();
             this.setState(RemoteRTPTrackState.Started);
         } else {
             /* There wil be no info present */
@@ -383,9 +382,7 @@ class InternalRemoteRTPAudioTrack extends RemoteRTPAudioTrack {
             /* since we're might still having some jitter stuff */
             this.muteTimeout = setTimeout(() => {
                 this.shouldReplay = false;
-                if(this.gainNode) {
-                    this.gainNode.gain.value = 0;
-                }
+                this.updateGainNode();
             }, 1000);
         }
     }
@@ -882,18 +879,23 @@ export class RTCConnection {
             iceServers: [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }]
         });
 
-        /* If set to false FF failed: FIXME! */
-        const kAddGenericTransceiver = true;
-
         if(this.audioSupport) {
             this.currentTransceiver["audio"] = this.peer.addTransceiver("audio");
             this.currentTransceiver["audio-whisper"] = this.peer.addTransceiver("audio");
 
-            /* add some other transceivers for later use */
-            for(let i = 0; i < 8 && kAddGenericTransceiver; i++) {
-                const transceiver = this.peer.addTransceiver("audio");
-                /* we only want to received on that and don't share any bandwidth limits */
-                transceiver.direction = "recvonly";
+            if(window.detectedBrowser.name === "firefox") {
+                /*
+                 * For some reason FF (<= 85.0) does not replay any audio from extra added transceivers.
+                 * On the other hand, if the server is creating that track or we're using it for sending audio as well
+                 * it works. So we just wait for the server to come up with new streams (even though we need to renegotiate...).
+                 * For Chrome we only need to negotiate once in most cases.
+                 * Side note: This does not apply to video channels!
+                 */
+            } else {
+                /* add some other transceivers for later use */
+                for(let i = 0; i < settings.getValue(Settings.KEY_RTC_EXTRA_AUDIO_CHANNELS); i++) {
+                    this.peer.addTransceiver("audio", { direction: "recvonly" });
+                }
             }
         }
 
@@ -901,10 +903,8 @@ export class RTCConnection {
         this.currentTransceiver["video-screen"] = this.peer.addTransceiver("video");
 
         /* add some other transceivers for later use */
-        for(let i = 0; i < 4 && kAddGenericTransceiver; i++) {
-            const transceiver = this.peer.addTransceiver("video");
-            /* we only want to received on that and don't share any bandwidth limits */
-            transceiver.direction = "recvonly";
+        for(let i = 0; i < settings.getValue(Settings.KEY_RTC_EXTRA_VIDEO_CHANNELS); i++) {
+            this.peer.addTransceiver("video", { direction: "recvonly" });
         }
 
         this.peer.onicecandidate = event => this.handleLocalIceCandidate(event.candidate);

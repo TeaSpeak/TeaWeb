@@ -1,3 +1,4 @@
+import * as aplayer from "../audio/player";
 import {
     AbstractVoiceConnection,
     VoiceConnectionStatus,
@@ -15,7 +16,6 @@ import {RTCConnection, RTCConnectionEvents, RTPConnectionState} from "tc-shared/
 import {AbstractServerConnection, ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
 import {VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 import {LogCategory, logDebug, logError, logInfo, logTrace, logWarn} from "tc-shared/log";
-import * as aplayer from "../audio/player";
 import {tr} from "tc-shared/i18n/localize";
 import {RtpVoiceClient} from "tc-backend/web/voice/VoiceClient";
 import {InputConsumerType} from "tc-shared/voice/RecorderBase";
@@ -279,9 +279,9 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
         }
 
         const client = new RtpVoiceClient(clientId);
-        this.voiceClients[clientId] = client;
-        this.voiceClients[clientId].setGloballyMuted(this.speakerMuted);
+        client.setGloballyMuted(this.speakerMuted);
         client.events.on("notify_state_changed", this.voiceClientStateChangedEventListener);
+        this.voiceClients[clientId] = client;
         return client;
     }
 
@@ -414,8 +414,9 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
     }
 
     private setConnectionState(state: VoiceConnectionStatus) {
-        if(this.connectionState === state)
+        if(this.connectionState === state) {
             return;
+        }
 
         const oldState = this.connectionState;
         this.connectionState = state;

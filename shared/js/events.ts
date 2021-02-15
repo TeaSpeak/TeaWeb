@@ -298,7 +298,8 @@ export class Registry<Events extends EventMap<Events> = EventMap<any>> implement
             }
         }
 
-        for(const handler of this.persistentEventHandler[event.type] || []) {
+        const handlers = [...(this.persistentEventHandler[event.type] || [])];
+        for(const handler of handlers) {
             handler(event);
         }
 

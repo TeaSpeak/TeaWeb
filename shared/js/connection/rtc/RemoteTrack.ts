@@ -65,7 +65,7 @@ export class RemoteRTPTrack {
     }
 
     getSsrc() : number {
-        return this.ssrc;
+        return this.ssrc >>> 0;
     }
 
     getTrack() : MediaStreamTrack {
@@ -144,7 +144,20 @@ export class RemoteRTPAudioTrack extends RemoteRTPTrack {
         this.htmlAudioNode.msRealTime = true;
 
         /*
-        TODO: ontimeupdate may gives us a hint whatever we're still replaying audio or not
+        {
+            const track = transceiver.receiver.track;
+            for(let key in track) {
+                if(!key.startsWith("on")) {
+                    continue;
+                }
+
+                track[key] = () => console.log("Track %d: %s", this.getSsrc(), key);
+            }
+        }
+        */
+
+        /*
+        //TODO: ontimeupdate may gives us a hint whatever we're still replaying audio or not
         for(let key in this.htmlAudioNode) {
             if(!key.startsWith("on")) {
                 continue;
@@ -153,7 +166,7 @@ export class RemoteRTPAudioTrack extends RemoteRTPTrack {
             this.htmlAudioNode[key] = () => console.log("AudioElement %d: %s", this.getSsrc(), key);
             this.htmlAudioNode.ontimeupdate = () => {
                 console.log("AudioElement %d: Time update. Current time: %d", this.getSsrc(), this.htmlAudioNode.currentTime, this.htmlAudioNode.buffered)
-            }
+            };
         }
         */
 
@@ -166,8 +179,7 @@ export class RemoteRTPAudioTrack extends RemoteRTPTrack {
             const audioContext = globalAudioContext();
             this.audioNode = audioContext.createMediaStreamSource(this.mediaStream);
             this.gainNode = audioContext.createGain();
-
-            this.gainNode.gain.value = this.shouldReplay ? this.gain : 0;
+            this.updateGainNode();
 
             this.audioNode.connect(this.gainNode);
             this.gainNode.connect(audioContext.destination);
@@ -195,10 +207,7 @@ export class RemoteRTPAudioTrack extends RemoteRTPTrack {
 
     setGain(value: number) {
         this.gain = value;
-
-        if(this.gainNode) {
-            this.gainNode.gain.value = this.shouldReplay ? this.gain : 0;
-        }
+        this.updateGainNode();
     }
 
     /**
@@ -208,5 +217,14 @@ export class RemoteRTPAudioTrack extends RemoteRTPTrack {
         if(this.gainNode) {
             this.gainNode.gain.value = 0;
         }
+    }
+
+    protected updateGainNode() {
+        if(!this.gainNode) {
+            return;
+        }
+
+        this.gainNode.gain.value = this.shouldReplay ? this.gain : 0;
+        //console.error("Change gain for %d to %f (%o)", this.getSsrc(), this.gainNode.gain.value, this.shouldReplay);
     }
 }

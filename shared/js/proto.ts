@@ -156,7 +156,7 @@ if(!JSON.map_field_to) {
 
 if (!Array.prototype.remove) {
     Array.prototype.remove = function<T>(elem?: T): boolean {
-        const index = this.indexOf(elem, 0);
+        const index = this.indexOf(elem);
         if (index > -1) {
             this.splice(index, 1);
             return true;

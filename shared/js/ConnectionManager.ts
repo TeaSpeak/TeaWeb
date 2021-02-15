@@ -138,6 +138,7 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     name: "server manager init",
     function: async () => {
         server_connections = new ConnectionManager();
+        (window as any).server_connections = server_connections;
     },
     priority: 80
 });
