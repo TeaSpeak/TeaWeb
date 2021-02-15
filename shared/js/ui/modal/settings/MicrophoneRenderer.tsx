@@ -3,7 +3,7 @@ import {useEffect, useRef, useState} from "react";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {Registry} from "tc-shared/events";
-import {MicrophoneDevice, MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/Microphone";
+import {MicrophoneDevice, MicrophoneSettingsEvents, MicrophoneSettingsSelectedMicrophone} from "tc-shared/ui/modal/settings/Microphone";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
@@ -43,22 +43,26 @@ type ActivityBarStatus =
     | { mode: "error", message: string }
     | { mode: "loading" }
     | { mode: "uninitialized" };
-const ActivityBar = (props: { events: Registry<MicrophoneSettingsEvents>, deviceId: string, disabled?: boolean }) => {
+const ActivityBar = (props: { events: Registry<MicrophoneSettingsEvents>, deviceId: string | "none", disabled?: boolean }) => {
     const refHider = useRef<HTMLDivElement>();
-    const [status, setStatus] = useState<ActivityBarStatus>({mode: "loading"});
+    const [status, setStatus] = useState<ActivityBarStatus>({ mode: "loading" });
 
-    if(typeof props.deviceId === "undefined") { throw "invalid device id"; }
+    if(typeof props.deviceId === "undefined") {
+        throw "invalid device id";
+    }
 
     props.events.reactUse("notify_device_level", event => {
         if (event.status === "uninitialized") {
-            if (status.mode === "uninitialized")
+            if (status.mode === "uninitialized") {
                 return;
+            }
 
             setStatus({mode: "uninitialized"});
         } else if (event.status === "no-permissions") {
             const noPermissionsMessage = tr("no permissions");
-            if (status.mode === "error" && status.message === noPermissionsMessage)
+            if (status.mode === "error" && status.message === noPermissionsMessage) {
                 return;
+            }
 
             setStatus({mode: "error", message: noPermissionsMessage});
         } else {
@@ -73,10 +77,12 @@ const ActivityBar = (props: { events: Registry<MicrophoneSettingsEvents>, device
                 if (status.mode !== "success") {
                     setStatus({mode: "success"});
                 }
+
                 refHider.current.style.width = (100 - device.level) + "%";
             } else {
-                if (status.mode === "error" && status.message === device.error)
+                if (status.mode === "error" && status.message === device.error) {
                     return;
+                }
 
                 setStatus({mode: "error", message: device.error + ""});
             }
@@ -117,7 +123,7 @@ const Microphone = (props: { events: Registry<MicrophoneSettingsEvents>, device:
                 <MicrophoneStatus state={props.state}/>
             </div>
             <div className={cssStyle.containerName}>
-                <div className={cssStyle.driver}>{props.device.driver}</div>
+                <div className={cssStyle.driver}>{props.device.driver + (props.device.default ? " (Default Device)" : "")}</div>
                 <div className={cssStyle.name}>{props.device.name}</div>
             </div>
             <div className={cssStyle.containerActivity}>
@@ -167,7 +173,10 @@ const MicrophoneList = (props: { events: Registry<MicrophoneSettingsEvents> }) =
         props.events.fire("query_devices");
         return {type: "loading"};
     });
-    const [selectedDevice, setSelectedDevice] = useState<{ deviceId: string, mode: "selected" | "selecting" }>();
+    const [selectedDevice, setSelectedDevice] = useState<{
+        selectedDevice: MicrophoneSettingsSelectedMicrophone,
+        selectingDevice: MicrophoneSettingsSelectedMicrophone | undefined
+    }>();
     const [deviceList, setDeviceList] = useState<MicrophoneDevice[]>([]);
 
     props.events.reactUse("notify_devices", event => {
@@ -176,7 +185,10 @@ const MicrophoneList = (props: { events: Registry<MicrophoneSettingsEvents> }) =
             case "success":
                 setDeviceList(event.devices.slice(0));
                 setState({type: "normal"});
-                setSelectedDevice({mode: "selected", deviceId: event.selectedDevice});
+                setSelectedDevice({
+                    selectedDevice: event.selectedDevice,
+                    selectingDevice: undefined
+                });
                 break;
 
             case "error":
@@ -194,15 +206,48 @@ const MicrophoneList = (props: { events: Registry<MicrophoneSettingsEvents> }) =
     });
 
     props.events.reactUse("action_set_selected_device", event => {
-        setSelectedDevice({mode: "selecting", deviceId: event.deviceId});
+        setSelectedDevice({
+            selectedDevice: selectedDevice?.selectedDevice,
+            selectingDevice: event.target
+        });
     });
 
     props.events.reactUse("action_set_selected_device_result", event => {
-        if (event.status === "error")
-            createErrorModal(tr("Failed to select microphone"), tra("Failed to select microphone:\n{}", event.error)).open();
-
-        setSelectedDevice({mode: "selected", deviceId: event.deviceId});
+        if (event.status === "error") {
+            createErrorModal(tr("Failed to select microphone"), tra("Failed to select microphone:\n{}", event.reason)).open();
+            setSelectedDevice({
+                selectedDevice: selectedDevice?.selectedDevice,
+                selectingDevice: undefined
+            });
+        } else {
+            setSelectedDevice({
+                selectedDevice: event.selectedDevice,
+                selectingDevice: undefined
+            });
+        }
     });
+
+    const deviceSelectState = (device: MicrophoneDevice | "none" | "default"): MicrophoneSelectedState => {
+        let selected: MicrophoneSettingsSelectedMicrophone;
+        let mode: MicrophoneSelectedState;
+        if(typeof selectedDevice?.selectingDevice !== "undefined") {
+            selected = selectedDevice.selectingDevice;
+            mode = "applying";
+        } else if(typeof selectedDevice?.selectedDevice !== "undefined") {
+            selected = selectedDevice.selectedDevice;
+            mode = "selected";
+        } else {
+            return "unselected";
+        }
+
+        if(selected.type === "default") {
+            return device === "default" || (typeof device === "object" && device.default) ? mode : "unselected";
+        } else if(selected.type === "none") {
+            return device === "none" ? mode : "unselected";
+        } else {
+            return typeof device === "object" && device.id === selected.deviceId ? mode : "unselected";
+        }
+    }
 
     return (
         <div className={cssStyle.body + " " + cssStyle.containerDevices}>
@@ -232,28 +277,39 @@ const MicrophoneList = (props: { events: Registry<MicrophoneSettingsEvents> }) =
             <div className={cssStyle.overlay + " " + (state.type !== "loading" ? cssStyle.hidden : undefined)}>
                 <a><Translatable>Loading</Translatable>&nbsp;<LoadingDots/></a>
             </div>
-            <Microphone key={"d-default"}
-                        device={{id: IDevice.NoDeviceId, driver: tr("No device"), name: tr("No device")}}
+            <Microphone key={"d-no-device"}
+                        device={{
+                            id: "none",
+                            driver: tr("No device"),
+                            name: tr("No device"),
+                            default: false
+                        }}
                         events={props.events}
-                        state={IDevice.NoDeviceId === selectedDevice?.deviceId ? selectedDevice.mode === "selecting" ? "applying" : "selected" : "unselected"}
+                        state={deviceSelectState("none")}
                         onClick={() => {
-                            if (state.type !== "normal" || selectedDevice?.mode === "selecting")
+                            if (state.type !== "normal" || selectedDevice?.selectingDevice) {
                                 return;
+                            }
 
-                            props.events.fire("action_set_selected_device", {deviceId: IDevice.NoDeviceId});
+                            props.events.fire("action_set_selected_device", { target: { type: "none" } });
                         }}
             />
 
-            {deviceList.map(e => <Microphone
-                key={"d-" + e.id}
-                device={e}
+            {deviceList.map(device => <Microphone
+                key={"d-" + device.id}
+                device={device}
                 events={props.events}
-                state={e.id === selectedDevice?.deviceId ? selectedDevice.mode === "selecting" ? "applying" : "selected" : "unselected"}
+                state={deviceSelectState(device)}
                 onClick={() => {
-                    if (state.type !== "normal" || selectedDevice?.mode === "selecting")
+                    if (state.type !== "normal" || selectedDevice?.selectingDevice) {
                         return;
+                    }
 
-                    props.events.fire("action_set_selected_device", {deviceId: e.id});
+                    if(device.default) {
+                        props.events.fire("action_set_selected_device", { target: { type: "default" } });
+                    } else {
+                        props.events.fire("action_set_selected_device", { target: { type: "device", deviceId: device.id } });
+                    }
                 }}
             />)}
         </div>
@@ -509,30 +565,64 @@ const ThresholdSelector = (props: { events: Registry<MicrophoneSettingsEvents> }
         return "loading";
     });
 
-    const [currentDevice, setCurrentDevice] = useState(undefined);
-    const [isActive, setActive] = useState(false);
+    const [currentDevice, setCurrentDevice] = useState<{ type: "none" } | { type: "device", deviceId: string }>({ type: "none" });
+    const defaultDeviceId = useRef<string | undefined>();
+    const [isVadActive, setVadActive] = useState(false);
+
+    const changeCurrentDevice = (selected: MicrophoneSettingsSelectedMicrophone) => {
+        switch (selected.type) {
+            case "none":
+                setCurrentDevice({ type: "none" });
+                break;
+
+            case "device":
+                setCurrentDevice({ type: "device", deviceId: selected.deviceId });
+                break;
+
+            case "default":
+                if(defaultDeviceId.current) {
+                    setCurrentDevice({ type: "device", deviceId: defaultDeviceId.current });
+                } else {
+                    setCurrentDevice({ type: "none" });
+                }
+                break;
+
+            default:
+                throw tr("invalid device type");
+        }
+    }
 
     props.events.reactUse("notify_setting", event => {
         if (event.setting === "threshold-threshold") {
             refSlider.current?.setState({value: event.value});
             setValue(event.value);
         } else if (event.setting === "vad-type") {
-            setActive(event.value === "threshold");
+            setVadActive(event.value === "threshold");
         }
     });
 
     props.events.reactUse("notify_devices", event => {
-        setCurrentDevice(event.selectedDevice);
+        if(event.status === "success") {
+            const defaultDevice = event.devices.find(device => device.default);
+            defaultDeviceId.current = defaultDevice?.id;
+            changeCurrentDevice(event.selectedDevice);
+        } else {
+            defaultDeviceId.current = undefined;
+            setCurrentDevice({ type: "none" });
+        }
     });
 
     props.events.reactUse("action_set_selected_device_result", event => {
-        setCurrentDevice(event.deviceId);
+        if(event.status === "success") {
+            changeCurrentDevice(event.selectedDevice);
+        }
     });
 
+    let isActive = isVadActive && currentDevice.type === "device";
     return (
         <div className={cssStyle.containerSensitivity}>
             <div className={cssStyle.containerBar}>
-                <ActivityBar events={props.events} deviceId={currentDevice || "none"} disabled={!isActive || !currentDevice} key={"activity-" + currentDevice} />
+                <ActivityBar events={props.events} deviceId={currentDevice.type === "device" ? currentDevice.deviceId : "none"} disabled={!isActive || !currentDevice} key={"activity-" + currentDevice} />
             </div>
             <Slider
                 ref={refSlider}
