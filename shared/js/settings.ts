@@ -495,6 +495,12 @@ export class Settings {
         valueType: "string",
     };
 
+    static readonly KEY_CHAT_LAST_USED_EMOJI: ValuedRegistryKey<string> = {
+        key: "chat_last_used_emoji",
+        defaultValue: ":joy:",
+        valueType: "string",
+    };
+
     static readonly KEY_SWITCH_INSTANT_CHAT: ValuedRegistryKey<boolean> = {
         key: "switch_instant_chat",
         defaultValue: true,

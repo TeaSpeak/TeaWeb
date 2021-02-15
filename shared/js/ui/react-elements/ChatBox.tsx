@@ -3,9 +3,12 @@ import {useEffect, useRef, useState} from "react";
 import {Registry} from "tc-shared/events";
 
 import '!style-loader!css-loader!emoji-mart/css/emoji-mart.css'
-import {Picker} from 'emoji-mart'
+import {Picker, emojiIndex} from 'emoji-mart'
 import {settings, Settings} from "tc-shared/settings";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
+import {getTwenmojiHashFromNativeEmoji} from "tc-shared/text/bbcode/EmojiUtil";
+import {BaseEmoji} from "emoji-mart";
+import {useGlobalSetting} from "tc-shared/ui/react-elements/Helper";
 
 const cssStyle = require("./ChatBox.scss");
 
@@ -22,6 +25,18 @@ interface ChatBoxEvents {
     },
 
     notify_typing: {}
+}
+
+const LastUsedEmoji = () => {
+    const settingValue = useGlobalSetting(Settings.KEY_CHAT_LAST_USED_EMOJI);
+    const lastEmoji: BaseEmoji = (emojiIndex.emojis[settingValue] || emojiIndex.emojis["joy"]) as any;
+    if(!lastEmoji?.native) {
+        return <img key={"fallback"} alt={""} src={"img/smiley-smile.svg"} />;
+    }
+
+    return (
+        <img draggable={false} src={"https://twemoji.maxcdn.com/v/12.1.2/72x72/" + getTwenmojiHashFromNativeEmoji(lastEmoji.native) + ".png"} alt={lastEmoji.native} className={cssStyle.emoji} />
+    )
 }
 
 const EmojiButton = (props: { events: Registry<ChatBoxEvents> }) => {
@@ -56,7 +71,7 @@ const EmojiButton = (props: { events: Registry<ChatBoxEvents> }) => {
     return (
         <div className={cssStyle.containerEmojis} ref={refContainer}>
             <div className={cssStyle.button} onClick={() => enabled && setShown(true)}>
-                <img alt={""} src={"img/smiley-smile.svg"} />
+                <LastUsedEmoji />
             </div>
             <div className={cssStyle.picker} style={{ display: shown ? undefined : "none" }}>
                 {!shown ? undefined :
@@ -72,6 +87,7 @@ const EmojiButton = (props: { events: Registry<ChatBoxEvents> }) => {
 
                         onSelect={(emoji: any) => {
                             if(enabled) {
+                                settings.setValue(Settings.KEY_CHAT_LAST_USED_EMOJI, emoji.id as string);
                                 props.events.fire("action_insert_text", { text: emoji.native, focus: true });
                             }
                         }}
@@ -352,13 +368,15 @@ export class ChatBox extends React.Component<ChatBoxProperties, ChatBoxState> {
     }
 
     render() {
-        return <div className={cssStyle.container + " " + this.props.className}>
-            <div className={cssStyle.chatbox}>
-                <EmojiButton events={this.events} />
-                <TextInput events={this.events} placeholder={tr("Type your message here...")} />
+        return (
+            <div className={cssStyle.container + " " + this.props.className}>
+                <div className={cssStyle.chatbox}>
+                    <EmojiButton events={this.events} />
+                    <TextInput events={this.events} placeholder={tr("Type your message here...")} />
+                </div>
+                <MarkdownFormatHelper />
             </div>
-            <MarkdownFormatHelper />
-        </div>
+        )
     }
 
     componentDidUpdate(prevProps: Readonly<ChatBoxProperties>, prevState: Readonly<ChatBoxState>, snapshot?: any): void {

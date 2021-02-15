@@ -536,4 +536,9 @@ export class ServerConnection extends AbstractServerConnection {
     getControlStatistics(): ConnectionStatistics {
         return this.socket?.getControlStatistics() || { bytesSend: 0, bytesReceived: 0 };
     }
+
+    getServerType(): "teaspeak" | "teamspeak" | "unknown" {
+        /* It's simple. Only TeaSpeak support web clients */
+        return "teaspeak";
+    }
 }
