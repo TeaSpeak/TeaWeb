@@ -181,7 +181,7 @@ export class PermissionManager extends AbstractCommandHandler {
     }[] = [];
 
     initializedListener: ((initialized: boolean) => void)[] = [];
-    private _cacheNeededPermissions: any;
+    private cacheNeededPermissions: any;
 
     /* Static info mapping until TeaSpeak implements a detailed info */
     static readonly group_mapping: {name: string, deep: number}[] = [
@@ -280,7 +280,7 @@ export class PermissionManager extends AbstractCommandHandler {
                 delete this[key];
 
         this.initializedListener = undefined;
-        this._cacheNeededPermissions = undefined;
+        this.cacheNeededPermissions = undefined;
     }
 
     handle_command(command: ServerCommand): boolean {
@@ -361,68 +361,95 @@ export class PermissionManager extends AbstractCommandHandler {
         group.end();
 
         logInfo(LogCategory.PERMISSIONS, tr("Got %i permissions"), this.permissionList.length);
-        if(this._cacheNeededPermissions)
-            this.onNeededPermissions(this._cacheNeededPermissions);
-        for(let listener of this.initializedListener)
+        if(this.cacheNeededPermissions) {
+            this.onNeededPermissions(this.cacheNeededPermissions);
+        }
+
+        for(let listener of this.initializedListener) {
             listener(true);
+        }
     }
 
-    private onNeededPermissions(json) {
+    private onNeededPermissions(json: any[]) {
         if(this.permissionList.length == 0) {
             logWarn(LogCategory.PERMISSIONS, tr("Got needed permissions but don't have a permission list!"));
-            this._cacheNeededPermissions = json;
+            this.cacheNeededPermissions = json;
             return;
         }
-        this._cacheNeededPermissions = undefined;
+        this.cacheNeededPermissions = undefined;
 
-        let copy = this.neededPermissions.slice();
-        let addcount = 0;
+        let permissionsCopy = this.neededPermissions.slice();
+        let permissionAddCount = 0;
+        let permissionRemoveCount = 0;
 
         let group = log.group(log.LogType.TRACE, LogCategory.PERMISSIONS, tr("Got %d needed permissions."), json.length);
-        const table_entries = [];
+        const tableEntries = [];
 
-        for(let e of json) {
+        for(let notifyEntry of json) {
             let entry: NeededPermissionValue = undefined;
-            for(let p of copy) {
-                if(p.type.id == e["permid"]) {
-                    entry = p;
-                    copy.remove(p);
+            for(let permission of permissionsCopy) {
+                if(permission.type.id == notifyEntry["permid"]) {
+                    entry = permission;
+                    permissionsCopy.remove(permission);
                     break;
                 }
             }
+
+            const permissionValue = parseInt(notifyEntry["permvalue"]);
+            if(permissionValue === 0) {
+                if(entry) {
+                    permissionRemoveCount++;
+
+                    entry.value = -2;
+                    for(const listener of this.needed_permission_change_listener[entry.type.name] || []) {
+                        listener();
+                    }
+                }
+                /*
+                 * Permission hasn't been granted.
+                 * TeamSpeak uses this as "permission removed".
+                 */
+                continue;
+            }
+
             if(!entry) {
-                let info = this.resolveInfo(e["permid"]);
+                let info = this.resolveInfo(notifyEntry["permid"]);
                 if(info) {
                     entry = new NeededPermissionValue(info, -2);
                     this.neededPermissions.push(entry);
                 } else {
-                    logWarn(LogCategory.PERMISSIONS, tr("Could not resolve perm for id %s (%o|%o)"), e["permid"], e, info);
+                    logWarn(LogCategory.PERMISSIONS, tr("Could not resolve perm for id %s (%o|%o)"), notifyEntry["permid"], notifyEntry, info);
                     continue;
                 }
-                addcount++;
+                permissionAddCount++;
+            }
+            entry.value = permissionValue;
+
+            for(const listener of this.needed_permission_change_listener[entry.type.name] || []) {
+                listener();
             }
 
-            if(entry.value == parseInt(e["permvalue"])) continue;
-            entry.value = parseInt(e["permvalue"]);
-
-            for(const listener of this.needed_permission_change_listener[entry.type.name] || [])
-                listener();
-
-            table_entries.push({
+            tableEntries.push({
                 "permission": entry.type.name,
                 "value": entry.value
             });
         }
 
-        log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Needed client permissions", table_entries);
+        log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Needed client permissions", tableEntries);
         group.end();
 
-        logDebug(LogCategory.PERMISSIONS, tr("Dropping %o needed permissions and added %o permissions."), copy.length, addcount);
-        for(let e of copy) {
-            e.value = -2;
-            for(const listener of this.needed_permission_change_listener[e.type.name] || [])
-                listener();
+        if(this.handle.serverConnection.getServerType() === "teamspeak" || json[0]["relative"] === "1") {
+            /* We don't update the full list every time. Instead we're only propagating changes. */
+        } else {
+            permissionRemoveCount = permissionsCopy.length;
+            for(let entry of permissionsCopy) {
+                entry.value = -2;
+                for(const listener of this.needed_permission_change_listener[entry.type.name] || []) {
+                    listener();
+                }
+            }
         }
+        logDebug(LogCategory.PERMISSIONS, tr("Dropping %o needed permissions and added %o permissions."), permissionRemoveCount, permissionAddCount);
 
         this.events.fire("client_permissions_changed");
     }

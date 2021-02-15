@@ -283,8 +283,8 @@ const PermissionEntryRow = (props: {
     const [valueEditing, setValueEditing] = useState(false);
     const [valueApplying, setValueApplying] = useState(false);
 
-    const [flagNegated, setFlagNegated] = useState(props.value.flagNegate);
-    const [flagSkip, setFlagSkip] = useState(props.value.flagSkip);
+    const [flagNegated, setFlagNegated] = useState(props.value.flagNegate || false);
+    const [flagSkip, setFlagSkip] = useState(props.value.flagSkip || false);
 
     const [granted, setGranted] = useState(props.value.granted);
     const [forceGrantedUpdate, setForceGrantedUpdate] = useState(false);
