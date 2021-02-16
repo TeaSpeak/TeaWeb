@@ -4654,7 +4654,7 @@
       }
     },
     {
-      "translated": "Расходная группа",
+      "translated": "Развернуть группу",
       "flags": [
         "google-translate"
       ],
@@ -4663,7 +4663,7 @@
       }
     },
     {
-      "translated": "Расходовать все",
+      "translated": "Развернуть все",
       "flags": [
         "google-translate"
       ],
@@ -4708,7 +4708,7 @@
       }
     },
     {
-      "translated": "Добавить разрешение на грант",
+      "translated": "Добавить возможность предоставления прав",
       "flags": [
         "google-translate"
       ],
@@ -4717,7 +4717,7 @@
       }
     },
     {
-      "translated": "Удалить разрешение на выдачу",
+      "translated": "Удалить возможность предоставления прав",
       "flags": [
         "google-translate"
       ],
@@ -6769,7 +6769,7 @@
       }
     },
     {
-      "translated": "канал",
+      "translated": "Канал",
       "flags": [
         "google-translate"
       ],
@@ -6796,7 +6796,7 @@
       }
     },
     {
-      "translated": "клиент",
+      "translated": "Клиент",
       "flags": [
         "google-translate"
       ],
@@ -10707,7 +10707,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "Talk power:"
+        "message": "Talk power"
       }
     },
     {
@@ -13167,6 +13167,304 @@
       "key": {
         "message": "License"
       }
+    },
+    {
+      "translated": "Настройки микрофона",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Open microphone settings"
+      }
+    },
+    {
+      "translated": "Свернуть подканалы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Collapse sub channels"
+      }
+    },
+    {
+      "translated": "Развернуть подканалы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Expend sub channels"
+      }
+    },
+    {
+      "translated": "Нормально",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Normal Name"
+      }
+    },
+    {
+      "translated": "По центру",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Centered"
+      }
+    },
+    {
+      "translated": "Слева",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Left Aligned"
+      }
+    },
+    {
+      "translated": "Справа",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Right Aligned"
+      }
+    },
+    {
+      "translated": "Повторяющийся",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Repetitive"
+      }
+    },
+    {
+      "translated": "Управление",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Control"
+      }
+    },
+    {
+      "translated": "Видео",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Video"
+      }
+    },
+    {
+      "translated": "Добавить разрешение для группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Add permissions to this group"
+      }
+    },
+    {
+      "translated": "Удалить разрешение для группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Remove permissions from this group"
+      }
+    },
+    {
+      "translated": "Добавить предоставленные разрешения для группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Add granted permissions to this group"
+      }
+    },
+    {
+      "translated": "Удалить предоставленные разрешения для группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Remove granted permissions from this group"
+      }
+    },
+    {
+      "translated": "Виртуальный сервер",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Virtual Server"
+      }
+    },
+    {
+      "translated": "Управление виртуальным сервером",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Virtual server management"
+      }
+    },
+    {
+      "translated": "Администрирование",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Administration"
+      }
+    },
+    {
+      "translated": "Доступ",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Access"
+      }
+    },
+    {
+      "translated": "Группа",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Group"
+      }
+    },
+    {
+      "translated": "Передача файлов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "File Transfer"
+      }
+    },
+    {
+      "translated": "Администратор",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Admin"
+      }
+    },
+    {
+      "translated": "Основы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Basics"
+      }
+    },
+    {
+      "translated": "Слоты",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Slots"
+      }
+    },
+    {
+      "translated": "Первый запуск",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "First run"
+      }
+    },
+    {
+      "translated": "Время работы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Uptime"
+      }
+    },
+    {
+      "translated": "Платформа",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Platform"
+      }
+    },
+    {
+      "translated": "Средний пинг",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Average ping"
+      }
+    },
+    {
+      "translated": "Средняя потеря пакетов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Average packet loss"
+      }
+    },
+    {
+      "translated": "Уникальный ID",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Global unique ID"
+      }
+    },
+    {
+      "translated": "Текущие Каналы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Current Channels"
+      }
+    },
+    {
+      "translated": "Шифрование данных",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Voice data encryption"
+      }
+    },
+    {
+      "translated": "Уровень безопасности",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Minimal security level"
+      }
+    },
+    {
+      "translated": "Жалоб до бана",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Complains until ban"
+      }
     }
+    
   ]
 }
