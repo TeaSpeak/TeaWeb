@@ -972,7 +972,7 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
             if (error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                 events.fire("action_set_mode", {
                     mode: "no-permissions",
-                    failedPermission: connection.permissions.resolveInfo(parseInt(error.json["failed_permid"]))?.name || tr("unknwon")
+                    failedPermission: connection.permissions.getFailedPermission(error)
                 });
                 return;
             }

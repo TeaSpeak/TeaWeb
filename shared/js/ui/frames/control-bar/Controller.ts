@@ -27,6 +27,8 @@ import {VideoBroadcastType, VideoConnectionStatus} from "tc-shared/connection/Vi
 import {tr} from "tc-shared/i18n/localize";
 import {getVideoDriver} from "tc-shared/video/VideoSource";
 import {kLocalBroadcastChannels} from "tc-shared/ui/frames/video/Definitions";
+import {getRecorderBackend, IDevice} from "tc-shared/audio/recorder";
+import {defaultRecorder, defaultRecorderEvents} from "tc-shared/voice/RecorderProfile";
 
 class InfoController {
     private readonly mode: ControlBarMode;
@@ -36,6 +38,7 @@ class InfoController {
     private globalEvents: (() => void)[] = [];
     private globalHandlerRegisteredEvents: {[key: string]: (() => void)[]} = {};
     private handlerRegisteredEvents: (() => void)[] = [];
+    private defaultRecorderListener: () => void;
 
     constructor(events: Registry<ControlBarEvents>, mode: ControlBarMode) {
         this.events = events;
@@ -64,7 +67,13 @@ class InfoController {
             this.sendVideoState("camera");
         }));
         events.push(bookmarkEvents.on("notify_bookmarks_updated", () => this.sendBookmarks()));
-        events.push(getVideoDriver().getEvents().on("notify_device_list_changed", () => this.sendCameraList()))
+        events.push(getVideoDriver().getEvents().on("notify_device_list_changed", () => this.sendCameraList()));
+        events.push(getRecorderBackend().getDeviceList().getEvents().on("notify_list_updated", () => this.sendMicrophoneList()));
+        events.push(defaultRecorderEvents.on("notify_default_recorder_changed", () => {
+            this.unregisterDefaultRecorderEvents();
+            this.registerDefaultRecorderEvents();
+            this.sendMicrophoneList();
+        }));
         if(this.mode === "main") {
             events.push(server_connections.events().on("notify_active_handler_changed", event => this.setConnectionHandler(event.newHandler)));
         }
@@ -73,11 +82,28 @@ class InfoController {
     }
 
     public destroy() {
+        this.unregisterDefaultRecorderEvents();
+
         server_connections.getAllConnectionHandlers().forEach(handler => this.unregisterGlobalHandlerEvents(handler));
         this.unregisterCurrentHandlerEvents();
 
         this.globalEvents.forEach(callback => callback());
         this.globalEvents = [];
+    }
+
+    private registerDefaultRecorderEvents() {
+        if(!defaultRecorder) {
+            return;
+        }
+
+        this.defaultRecorderListener = defaultRecorder.events.on("notify_device_changed", () => this.sendMicrophoneList());
+    }
+
+    private unregisterDefaultRecorderEvents() {
+        if(this.defaultRecorderListener) {
+            this.defaultRecorderListener();
+            this.defaultRecorderListener = undefined;
+        }
     }
 
     private registerGlobalHandlerEvents(handler: ConnectionHandler) {
@@ -219,6 +245,31 @@ class InfoController {
         });
     }
 
+    public sendMicrophoneList() {
+        const deviceList = getRecorderBackend().getDeviceList();
+        const devices = deviceList.getDevices();
+        const defaultDevice = deviceList.getDefaultDeviceId();
+        const selectedDevice = defaultRecorder?.getDeviceId();
+
+        this.events.fire_react("notify_microphone_list", {
+            devices: devices.map(device => {
+                let selected = false;
+                if(selectedDevice === IDevice.DefaultDeviceId && device.deviceId === defaultDevice) {
+                    selected = true;
+                } else if(selectedDevice === device.deviceId) {
+                    selected = true;
+                }
+
+                return {
+                    name: device.name,
+                    driver: device.driver,
+                    id: device.deviceId,
+                    selected: selected
+                };
+            })
+        })
+    }
+
     public sendSpeakerState() {
         this.events.fire_react("notify_speaker_state", {
             enabled: !this.currentHandler?.isSpeakerMuted()
@@ -303,10 +354,6 @@ export function initializePopoutControlBarController(events: Registry<ControlBar
     infoHandler.setConnectionHandler(handler);
 }
 
-export function initializeClientControlBarController(events: Registry<ControlBarEvents>) {
-    initializeControlBarController(events, "main");
-}
-
 export function initializeControlBarController(events: Registry<ControlBarEvents>, mode: ControlBarMode) : InfoController {
     const infoHandler = new InfoController(events, mode);
     infoHandler.initialize();
@@ -318,6 +365,7 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
     events.on("query_bookmarks", () => infoHandler.sendBookmarks());
     events.on("query_away_state", () => infoHandler.sendAwayState());
     events.on("query_microphone_state", () => infoHandler.sendMicrophoneState());
+    events.on("query_microphone_list", () => infoHandler.sendMicrophoneList());
     events.on("query_speaker_state", () => infoHandler.sendSpeakerState());
     events.on("query_subscribe_state", () => infoHandler.sendSubscribeState());
     events.on("query_host_button", () => infoHandler.sendHostButton());
@@ -373,9 +421,23 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
         }
     });
 
-    events.on("action_toggle_microphone", event => {
+    events.on("action_toggle_microphone", async event => {
         /* change the default global setting */
         settings.setValue(Settings.KEY_CLIENT_STATE_MICROPHONE_MUTED,  !event.enabled);
+
+        if(typeof event.targetDeviceId === "string") {
+            const device = getRecorderBackend().getDeviceList().getDevices().find(device => device.deviceId === event.targetDeviceId);
+            try {
+                if(!device) {
+                    throw tr("Target device could not be found.");
+                }
+
+                await defaultRecorder?.setDevice(device);
+            } catch (error) {
+                createErrorModal(tr("Failed to change microphone"), tr("Failed to change microphone.\nTarget device could not be found.")).open();
+                return;
+            }
+        }
 
         const current_connection_handler = infoHandler.getCurrentHandler();
         if(current_connection_handler) {
@@ -388,6 +450,10 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
                 current_connection_handler.acquireInputHardware().then(() => {});
             }
         }
+    });
+
+    events.on("action_open_microphone_settings", () => {
+        global_client_actions.fire("action_open_window_settings", { defaultCategory: "audio-microphone" });
     });
 
     events.on("action_toggle_speaker", event => {

@@ -58,6 +58,8 @@ export abstract class AbstractServerConnection {
     abstract connected() : boolean;
     abstract disconnect(reason?: string) : Promise<void>;
 
+    abstract getServerType() : "teaspeak" | "teamspeak" | "unknown";
+
     abstract getVoiceConnection() : AbstractVoiceConnection;
     abstract getVideoConnection() : VideoConnection;
 

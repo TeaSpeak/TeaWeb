@@ -1,5 +1,5 @@
 import {createModal} from "../../ui/elements/Modal";
-import {LogCategory, logError} from "../../log";
+import {getBackend} from "tc-shared/backend";
 import {tr} from "tc-shared/i18n/localize";
 
 function format_date(date: number) {
@@ -30,11 +30,7 @@ export function spawnAbout() {
     connectModal.open();
 
     if (__build.target !== "web") {
-        (window as any).native.client_version().then(version => {
-            connectModal.htmlTag.find(".version-client").text(version);
-        }).catch(error => {
-            logError(LogCategory.GENERAL, tr("Failed to load client version: %o"), error);
-            connectModal.htmlTag.find(".version-client").text("unknown");
-        });
+        const version = getBackend("native").getVersionInfo();
+        connectModal.htmlTag.find(".version-client").text(version.version);
     }
 }

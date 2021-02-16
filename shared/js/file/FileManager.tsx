@@ -558,8 +558,9 @@ export class FileManager {
                     "proto": 1
                 }, {process_result: false});
 
-                if(transfer.transferState() === FileTransferState.INITIALIZING)
+                if(transfer.transferState() === FileTransferState.INITIALIZING) {
                     throw tr("missing transfer start notify");
+                }
 
             } catch (error) {
                 transfer.setFailed({
@@ -620,8 +621,9 @@ export class FileManager {
             transfer: transfer,
             executeCallback: async () => {
                 await callbackInitialize(transfer); /* noexcept */
-                if(transfer.transferState() !== FileTransferState.CONNECTING)
+                if(transfer.transferState() !== FileTransferState.CONNECTING) {
                     return;
+                }
                 
                 try {
                     const provider = TransferProvider.provider();
@@ -633,12 +635,13 @@ export class FileManager {
                         return;
                     }
 
-                    if(transfer instanceof FileDownloadTransfer)
+                    if(transfer instanceof FileDownloadTransfer) {
                         provider.executeFileDownload(transfer);
-                    else if(transfer instanceof FileUploadTransfer)
+                    } else if(transfer instanceof FileUploadTransfer) {
                         provider.executeFileUpload(transfer);
-                    else
+                    } else {
                         throw tr("unknown transfer type");
+                    }
                 } catch (error) {
                     const message = typeof error === "string" ? error : error instanceof Error ? error.message : tr("Unknown error");
                     transfer.setFailed({
@@ -651,7 +654,7 @@ export class FileManager {
             finishPromise: new Promise(resolve => {
                 const unregisterTransfer = () => {
                     transfer.events.off("notify_state_updated", stateListener);
-                    transfer.events.off("action_request_cancel", cancelListener);
+                    transfer.events.off("notify_transfer_canceled", unregisterTransfer);
 
                     const index = this.registeredTransfers_.findIndex(e => e.transfer === transfer);
                     if(index === -1) {
@@ -681,6 +684,9 @@ export class FileManager {
                     } else {
                         logWarn(LogCategory.FILE_TRANSFER, tra("File transfer finished callback called with invalid transfer state ({0})", FileTransferState[state]));
                     }
+
+                    /* destroy the transfer after all events have been fired */
+                    setTimeout(() => transfer.destroy(), 250);
                 };
 
                 const stateListener = () => {
@@ -690,13 +696,9 @@ export class FileManager {
                     }
                 };
 
-                const cancelListener = () => {
-                    unregisterTransfer();
-                    transfer.events.fire_later("notify_transfer_canceled", {}, resolve);
-                };
-
                 transfer.events.on("notify_state_updated", stateListener);
-                transfer.events.on("action_request_cancel", cancelListener);
+                transfer.events.on("notify_transfer_canceled", unregisterTransfer);
+                stateListener();
             })
         });
 
@@ -705,8 +707,9 @@ export class FileManager {
     }
 
     private scheduleTransferUpdate() {
-        if(this.scheduledTransferUpdate)
+        if(this.scheduledTransferUpdate) {
             return;
+        }
 
         this.scheduledTransferUpdate = setTimeout(() => {
             this.scheduledTransferUpdate = undefined;

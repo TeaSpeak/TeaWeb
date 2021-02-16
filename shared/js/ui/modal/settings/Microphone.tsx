@@ -19,10 +19,24 @@ export type MicrophoneSetting =
 export type MicrophoneDevice = {
     id: string,
     name: string,
-    driver: string
+    driver: string,
+    default: boolean
 };
 
-
+export type SelectedMicrophone = { type: "default" } | { type: "none" } | { type: "device", deviceId: string };
+export type MicrophoneDevices = {
+    status: "error",
+    error: string
+} | {
+    status: "audio-not-initialized"
+} | {
+    status: "no-permissions",
+    shouldAsk: boolean
+} | {
+    status: "success",
+    devices: MicrophoneDevice[]
+    selectedDevice: SelectedMicrophone;
+};
 export interface MicrophoneSettingsEvents {
     "query_devices": { refresh_list: boolean },
     "query_help": {},
@@ -32,12 +46,12 @@ export interface MicrophoneSettingsEvents {
 
     "action_help_click": {},
     "action_request_permissions": {},
-    "action_set_selected_device": { deviceId: string },
+    "action_set_selected_device": { target: SelectedMicrophone },
     "action_set_selected_device_result": {
-        deviceId: string, /* on error it will contain the current selected device */
-        status: "success" | "error",
-
-        error?: string
+        status: "success",
+    } | {
+        status: "error",
+        reason: string
     },
 
     "action_set_setting": {
@@ -50,15 +64,8 @@ export interface MicrophoneSettingsEvents {
         value: any;
     }
 
-    "notify_devices": {
-        status: "success" | "error" | "audio-not-initialized" | "no-permissions",
-
-        error?: string,
-        shouldAsk?: boolean,
-
-        devices?: MicrophoneDevice[]
-        selectedDevice?: string;
-    },
+    notify_devices: MicrophoneDevices,
+    notify_device_selected: { device: SelectedMicrophone },
 
     notify_device_level: {
         level: {
@@ -164,9 +171,22 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
 
     /* device list */
     {
+        const currentSelectedDevice = (): SelectedMicrophone => {
+            let deviceId = defaultRecorder.getDeviceId();
+            if(deviceId === IDevice.DefaultDeviceId) {
+                return { type: "default" };
+            } else if(deviceId === IDevice.NoDeviceId) {
+                return { type: "none" };
+            } else {
+                return { type: "device", deviceId: deviceId };
+            }
+        };
+
         events.on("query_devices", event => {
             if (!aplayer.initialized()) {
-                events.fire_react("notify_devices", {status: "audio-not-initialized"});
+                events.fire_react("notify_devices", {
+                    status: "audio-not-initialized"
+                });
                 return;
             }
 
@@ -180,46 +200,90 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
                     return;
 
                 case "uninitialized":
-                    events.fire_react("notify_devices", {status: "audio-not-initialized"});
+                    events.fire_react("notify_devices", {
+                        status: "audio-not-initialized"
+                    });
                     return;
             }
 
             if (event.refresh_list && deviceList.isRefreshAvailable()) {
                 /* will automatically trigger a device list changed event if something has changed */
-                deviceList.refresh().then(() => {
-                });
+                deviceList.refresh().then(() => { });
             } else {
                 const devices = deviceList.getDevices();
 
+                const defaultDeviceId = getRecorderBackend().getDeviceList().getDefaultDeviceId();
                 events.fire_react("notify_devices", {
                     status: "success",
-                    selectedDevice: defaultRecorder.getDeviceId(),
                     devices: devices.map(e => {
-                        return {id: e.deviceId, name: e.name, driver: e.driver}
-                    })
+                        return {
+                            id: e.deviceId,
+                            name: e.name,
+                            driver: e.driver,
+                            default: defaultDeviceId === e.deviceId
+                        }
+                    }),
+                    selectedDevice: currentSelectedDevice(),
                 });
             }
         });
 
         events.on("action_set_selected_device", event => {
-            const device = recorderBackend.getDeviceList().getDevices().find(e => e.deviceId === event.deviceId);
-            if (!device && event.deviceId !== IDevice.NoDeviceId) {
-                events.fire_react("action_set_selected_device_result", {
-                    status: "error",
-                    error: tr("Invalid device id"),
-                    deviceId: defaultRecorder.getDeviceId()
-                });
-                return;
+            let promise;
+
+            const target = event.target;
+
+            let displayName: string;
+            switch (target.type) {
+                case "none":
+                    promise = defaultRecorder.setDevice("none");
+                    displayName = tr("No device");
+                    break;
+
+                case "default":
+                    promise = defaultRecorder.setDevice("default");
+                    displayName = tr("Default device");
+                    break;
+
+                case "device":
+                    const device = recorderBackend.getDeviceList().getDevices().find(e => e.deviceId === target.deviceId);
+                    if (!device) {
+                        events.fire_react("action_set_selected_device_result", {
+                            status: "error",
+                            reason: tr("Invalid device id"),
+                        });
+                        return;
+                    }
+
+                    displayName = target.deviceId;
+                    promise = defaultRecorder.setDevice(device);
+                    break;
+
+                default:
+                    events.fire_react("action_set_selected_device_result", {
+                        status: "error",
+                        reason: tr("Invalid device target"),
+                    });
+                    return;
+
             }
 
-            defaultRecorder.setDevice(device).then(() => {
-                logTrace(LogCategory.GENERAL, tr("Changed default microphone device to %s"), event.deviceId);
-                events.fire_react("action_set_selected_device_result", {status: "success", deviceId: event.deviceId});
+            promise.then(() => {
+                /* TODO:
+                 * This isn't needed since the defaultRecorder might already fire a device change event which will update our ui.
+                 * We only have this since we can't ensure that the recorder does so.
+                 */
+                events.fire_react("notify_device_selected", { device: currentSelectedDevice() });
+                logTrace(LogCategory.GENERAL, tr("Changed default microphone device to %s"), displayName);
             }).catch((error) => {
-                logWarn(LogCategory.AUDIO, tr("Failed to change microphone to device %s: %o"), device ? device.deviceId : IDevice.NoDeviceId, error);
-                events.fire_react("action_set_selected_device_result", {status: "success", deviceId: event.deviceId});
+                logWarn(LogCategory.AUDIO, tr("Failed to change microphone to device %s: %o"), displayName, error);
+                events.fire_react("action_set_selected_device_result", {status: "error", reason: error || tr("lookup the console") });
             });
         });
+
+        events.on("notify_destroy", defaultRecorder.events.on("notify_device_changed", () => {
+            events.fire_react("notify_device_selected", { device: currentSelectedDevice() });
+        }));
     }
 
     /* settings */

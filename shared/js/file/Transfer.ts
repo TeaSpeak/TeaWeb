@@ -113,8 +113,6 @@ export enum FileTransferDirection {
 export interface FileTransferEvents {
     "notify_state_updated": { oldState: FileTransferState, newState: FileTransferState },
     "notify_progress": { progress: TransferProgress },
-
-    "action_request_cancel": { reason: CancelReason },
     "notify_transfer_canceled": {}
 }
 
@@ -239,9 +237,14 @@ export class FileTransfer {
         this.setTransferState(FileTransferState.PENDING);
 
         this.events = new Registry<FileTransferEvents>();
-        this.events.on("notify_transfer_canceled", () => {
+    }
+
+    destroy() {
+        if(!this.isFinished()) {
             this.setTransferState(FileTransferState.CANCELED);
-        });
+        }
+
+        this.events.destroy();
     }
 
     isRunning() {
@@ -253,7 +256,7 @@ export class FileTransfer {
     }
 
     isFinished() {
-        return this.transferState() === FileTransferState.FINISHED || this.transferState() === FileTransferState.ERRORED || this.transferState() === FileTransferState.CANCELED;
+        return this.transferState_ === FileTransferState.FINISHED || this.transferState_ === FileTransferState.ERRORED || this.transferState_ === FileTransferState.CANCELED;
     }
 
     transferState() {
@@ -297,16 +300,19 @@ export class FileTransfer {
     }
 
     requestCancel(reason: CancelReason) {
-        if(this.isFinished())
+        if(this.isFinished()) {
             throw tr("invalid transfer state");
+        }
 
         this.cancelReason = reason;
-        this.events.fire("action_request_cancel");
+        this.events.fire("notify_transfer_canceled");
+        this.setTransferState(FileTransferState.CANCELED);
     }
 
     setTransferState(newState: FileTransferState) {
-        if(this.transferState_ === newState)
+        if(this.transferState_ === newState) {
             return;
+        }
 
         const newIsFinishedState = newState === FileTransferState.CANCELED || newState === FileTransferState.ERRORED || newState === FileTransferState.FINISHED;
         try {
@@ -335,8 +341,9 @@ export class FileTransfer {
                 case FileTransferState.FINISHED:
                 case FileTransferState.CANCELED:
                 case FileTransferState.ERRORED:
-                    if(this.isFinished())
+                    if(this.isFinished()) {
                         throw void 0;
+                    }
                     this.timings.timestampEnd = Date.now();
                     break;
             }
@@ -358,7 +365,6 @@ export class FileTransfer {
             }
         } catch (e) {
             throw "invalid transfer state transform from " + this.transferState_ + " to " + newState;
-            return;
         }
 
         const oldState = this.transferState_;
@@ -368,7 +374,7 @@ export class FileTransfer {
 
     updateProgress(progress: TransferProgress) {
         this.progress_ = progress;
-        this.events.fire_later("notify_progress", { progress: progress });
+        this.events.fire("notify_progress", { progress: progress });
     }
 
     awaitFinished() : Promise<void> {

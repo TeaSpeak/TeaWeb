@@ -7,6 +7,7 @@ import ReactRenderer from "vendor/xbbcode/renderer/react";
 import {Settings, settings} from "tc-shared/settings";
 
 import * as emojiRegex from "emoji-regex";
+import {getTwenmojiHashFromNativeEmoji} from "tc-shared/text/bbcode/EmojiUtil";
 
 const emojiRegexInstance = (emojiRegex as any)() as RegExp;
 
@@ -15,39 +16,11 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     function: async () => {
         let reactId = 0;
 
-        function toCodePoint(unicodeSurrogates) {
-            let r = [],
-                c = 0,
-                p = 0,
-                i = 0;
-            while (i < unicodeSurrogates.length) {
-                c = unicodeSurrogates.charCodeAt(i++);
-                if (p) {
-                    r.push((0x10000 + ((p - 0xD800) << 10) + (c - 0xDC00)).toString(16));
-                    p = 0;
-                } else if (0xD800 <= c && c <= 0xDBFF) {
-                    p = c;
-                } else {
-                    r.push(c.toString(16));
-                }
-            }
-            return r.join("-");
-        }
-
-        const U200D = String.fromCharCode(0x200D);
-        const UFE0Fg = /\uFE0F/g;
-        function grabTheRightIcon(rawText) {
-            // if variant is present as \uFE0F
-            return toCodePoint(rawText.indexOf(U200D) < 0 ?
-                rawText.replace(UFE0Fg, '') :
-                rawText
-            );
-        }
-
         rendererReact.setTextRenderer(new class extends ElementRenderer<TextElement, React.ReactNode> {
             render(element: TextElement, renderer: ReactRenderer): React.ReactNode {
-                if(!settings.getValue(Settings.KEY_CHAT_COLORED_EMOJIES))
+                if(!settings.getValue(Settings.KEY_CHAT_COLORED_EMOJIES)) {
                     return element.text();
+                }
 
                 let text = element.text();
                 emojiRegexInstance.lastIndex = 0;
@@ -59,13 +32,15 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
                     let match = emojiRegexInstance.exec(text);
 
                     const rawText = text.substring(lastIndex, match?.index);
-                    if(rawText)
+                    if(rawText) {
                         result.push(renderer.renderAsText(rawText, false));
+                    }
 
-                    if(!match)
+                    if(!match) {
                         break;
+                    }
 
-                    let hash = grabTheRightIcon(match[0]);
+                    let hash = getTwenmojiHashFromNativeEmoji(match[0]);
                     result.push(<img key={"er-" + ++reactId} draggable={false} src={"https://twemoji.maxcdn.com/v/12.1.2/72x72/" + hash + ".png"} alt={match[0]} className={"chat-emoji"} />);
                     lastIndex = match.index + match[0].length;
                 }

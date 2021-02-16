@@ -79,7 +79,6 @@ function resolveKey<ValueType extends RegistryValueType, DefaultType>(
     resolver: (key: string) => string | undefined,
     defaultValue: DefaultType
 ) : ValueType | DefaultType {
-
     let value = resolver(key.key);
     if(typeof value === "string") {
         return decodeValueFromString(value, key.valueType);
@@ -92,17 +91,14 @@ function resolveKey<ValueType extends RegistryValueType, DefaultType>(
             continue;
         }
 
-        if(!key.fallbackImports) {
-            break;
+        if(key.fallbackImports) {
+            const fallbackValueImporter = key.fallbackImports[fallback];
+            if(fallbackValueImporter) {
+                return fallbackValueImporter(value);
+            }
         }
 
-        /* fallback key succeeded */
-        const fallbackValueImporter = key.fallbackImports[fallback];
-        if(fallbackValueImporter) {
-            return fallbackValueImporter(value);
-        }
-
-        break;
+        return decodeValueFromString(value, key.valueType);
     }
 
     return defaultValue;
@@ -499,6 +495,12 @@ export class Settings {
         valueType: "string",
     };
 
+    static readonly KEY_CHAT_LAST_USED_EMOJI: ValuedRegistryKey<string> = {
+        key: "chat_last_used_emoji",
+        defaultValue: ":joy:",
+        valueType: "string",
+    };
+
     static readonly KEY_SWITCH_INSTANT_CHAT: ValuedRegistryKey<boolean> = {
         key: "switch_instant_chat",
         defaultValue: true,
@@ -595,10 +597,30 @@ export class Settings {
         valueType: "boolean",
     };
 
+    static readonly KEY_RTC_EXTRA_VIDEO_CHANNELS: ValuedRegistryKey<number> = {
+        key: "rtc_extra_video_channels",
+        defaultValue: 0,
+        requireRestart: true,
+        valueType: "number",
+        description: "Extra video channels within the initial WebRTC sdp offer.\n" +
+            "Note: By default the screen/camera share channels are already present"
+    };
+
+    static readonly KEY_RTC_EXTRA_AUDIO_CHANNELS: ValuedRegistryKey<number> = {
+        key: "rtc_extra_audio_channels",
+        defaultValue: 6,
+        requireRestart: true,
+        valueType: "number",
+        description: "Extra audio channels within the initial WebRTC sdp offer.\n" +
+            "Note:\n" +
+            "1. By default the voice/whisper channels are already present.\n" +
+            "2. This setting does not work for Firefox."
+    };
+
     static readonly KEY_RNNOISE_FILTER: ValuedRegistryKey<boolean> = {
         key: "rnnoise_filter",
         defaultValue: true,
-        description: "Enable the rnnoise filter for supressing background noise",
+        description: "Enable the rnnoise filter for suppressing background noise",
         valueType: "boolean",
     };
 

@@ -1,4 +1,13 @@
 # Changelog:
+* **15.02.21**
+    - Fixed critical bug within the event registry class
+    - Added a dropdown for the microphone control button to quickly change microphones    
+    - Fixed the microphone settings microphone selection (The default device wasn't selected)
+    - Adding a hint whatever the device is the default device or not
+    - Fixed issue [#169](https://github.com/TeaSpeak/TeaWeb/issues/169) (Adding permissions dosn't work for TS3 server)
+    - Fixed issue [#166](https://github.com/TeaSpeak/TeaWeb/issues/166) (Private conversations are not accessible when IndexDB could not be opened)
+    - Using the last used emoji to indicate the chat emoji button
+  
 * **22.01.21**
     - Allowing the user to easily change the channel name mode
     - Fixed channel name mode parsing

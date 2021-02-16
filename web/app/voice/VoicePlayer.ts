@@ -1,12 +1,8 @@
-import {
-    VoicePlayerEvents,
-    VoicePlayerLatencySettings,
-    VoicePlayerState
-} from "tc-shared/voice/VoicePlayer";
+import {VoicePlayerEvents, VoicePlayerLatencySettings, VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 import {Registry} from "tc-shared/events";
-import {LogCategory, logWarn} from "tc-shared/log";
+import {LogCategory, logTrace, logWarn} from "tc-shared/log";
 import {RemoteRTPAudioTrack, RemoteRTPTrackState} from "tc-shared/connection/rtc/RemoteTrack";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 
 export interface RtpVoicePlayerEvents {
     notify_state_changed: { oldState: VoicePlayerState, newState: VoicePlayerState }
