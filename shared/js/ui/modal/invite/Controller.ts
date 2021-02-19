@@ -243,6 +243,7 @@ class InviteController {
 
         {
             propertiesInfo["server-name"] = server.properties.virtualserver_name;
+            propertiesInfo["server-unique-id"] = server.properties.virtualserver_unique_identifier;
             propertiesInfo["slots-used"] = server.properties.virtualserver_clientsonline.toString();
             propertiesInfo["slots-max"] = server.properties.virtualserver_maxclients.toString();
 
