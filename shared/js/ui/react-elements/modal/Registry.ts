@@ -66,3 +66,10 @@ registerModal({
     classLoader: async () => await import("tc-shared/ui/modal/connect/Renderer"),
     popoutSupported: true
 });
+
+registerModal({
+    modalId: "modal-invite",
+    classLoader: async () => await import("tc-shared/ui/modal/invite/Renderer"),
+    popoutSupported: true
+});
+

@@ -1,18 +1,18 @@
 import * as loader from "tc-loader";
+import {Stage} from "tc-loader";
 import * as bipc from "./ipc/BrowserIPC";
 import * as sound from "./sound/Sounds";
 import * as i18n from "./i18n/localize";
+import {tra} from "./i18n/localize";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
 import * as aplayer from "tc-backend/audio/player";
 import * as ppt from "tc-backend/ppt";
 import * as global_ev_handler from "./events/ClientGlobalControlHandler";
-import {Stage} from "tc-loader";
-import {AppParameters, settings, Settings} from "tc-shared/settings";
-import {LogCategory, logError, logInfo} from "tc-shared/log";
-import {tra} from "./i18n/localize";
+import {AppParameters, settings, Settings, UrlParameterBuilder, UrlParameterParser} from "tc-shared/settings";
+import {LogCategory, logError, logInfo, logWarn} from "tc-shared/log";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {createInfoModal} from "tc-shared/ui/elements/Modal";
-import {defaultRecorder, RecorderProfile, setDefaultRecorder} from "tc-shared/voice/RecorderProfile";
+import {RecorderProfile, setDefaultRecorder} from "tc-shared/voice/RecorderProfile";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {openModalNewcomer} from "tc-shared/ui/modal/ModalNewcomer";
@@ -25,6 +25,8 @@ import {ConnectRequestData} from "tc-shared/ipc/ConnectHandler";
 import {defaultConnectProfile, findConnectProfile} from "tc-shared/profiles/ConnectionProfile";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {spawnConnectModalNew} from "tc-shared/ui/modal/connect/Controller";
+import {initializeKeyControl} from "./KeyControl";
+import {assertMainApplication} from "tc-shared/ui/utils";
 
 /* required import for init */
 import "svg-sprites/client-icons";
@@ -46,8 +48,6 @@ import "./ui/modal/connect/Controller";
 import "./ui/elements/ContextDivider";
 import "./ui/elements/Tab";
 import "./clientservice";
-import {initializeKeyControl} from "./KeyControl";
-import {assertMainApplication} from "tc-shared/ui/utils";
 
 assertMainApplication();
 
@@ -96,43 +96,89 @@ async function initializeApp() {
     }
 }
 
-/* Used by the native client... We can't refactor this yet */
-export function handle_connect_request(properties: ConnectRequestData, connection: ConnectionHandler) {
-    const profile = findConnectProfile(properties.profile) || defaultConnectProfile();
-    const username = properties.username || profile.connectUsername();
-
-    const password = properties.password ? properties.password.value : "";
-    const password_hashed = properties.password ? properties.password.hashed : false;
-
-    if(profile && profile.valid()) {
-        settings.setValue(Settings.KEY_USER_IS_NEW, false);
-
-        if(!aplayer.initialized()) {
-            /* Trick the client into clicking somewhere on the site */
-            spawnYesNo(tra("Connect to {}", properties.address), tra("Would you like to connect to {}?", properties.address), result => {
-                if(result) {
-                    aplayer.on_ready(() => handle_connect_request(properties, connection));
-                } else {
-                    /* Well... the client don't want to... */
-                }
-            }).open();
-            return;
+/* The native client has received a connect request. */
+export function handleNativeConnectRequest(url: URL) {
+    let serverAddress = url.host;
+    if(url.searchParams.has("port")) {
+        if(serverAddress.indexOf(':') !== -1) {
+            logWarn(LogCategory.GENERAL, tr("Received connect request which specified the port twice (via parameter and host). Using host port."));
+        } else if(serverAddress.indexOf(":") === -1) {
+            serverAddress += ":" + url.searchParams.get("port");
+        } else {
+            serverAddress = `[${serverAddress}]:${url.searchParams.get("port")}`;
         }
+    }
 
-        connection.startConnection(properties.address, profile, true, {
-            nickname: username,
-            password: password.length > 0 ? {
-                password: password,
-                hashed: password_hashed
-            } : undefined
-        });
-        server_connections.setActiveConnectionHandler(connection);
-    } else {
+    handleConnectRequest(serverAddress, new UrlParameterParser(url));
+}
+
+function handleConnectRequest(serverAddress: string, parameters: UrlParameterParser) {
+    const profileId = parameters.getValue(AppParameters.KEY_CONNECT_PROFILE, undefined);
+    const profile = findConnectProfile(profileId) || defaultConnectProfile();
+
+    if(!profile || !profile.valid()) {
         spawnConnectModalNew({
-            selectedAddress: properties.address,
+            selectedAddress: serverAddress,
             selectedProfile: profile
         });
+        return;
     }
+
+    if(!aplayer.initialized()) {
+        /* Trick the client into clicking somewhere on the site */
+        spawnYesNo(tra("Connect to {}", serverAddress), tra("Would you like to connect to {}?", serverAddress), result => {
+            if(result) {
+                aplayer.on_ready(() => handleConnectRequest(serverAddress, parameters));
+            } else {
+                /* Well... the client don't want to... */
+            }
+        }).open();
+        return;
+    }
+
+    const clientNickname = parameters.getValue(AppParameters.KEY_CONNECT_NICKNAME, undefined);
+
+    const serverPassword = parameters.getValue(AppParameters.KEY_CONNECT_SERVER_PASSWORD, undefined);
+    const passwordsHashed = parameters.getValue(AppParameters.KEY_CONNECT_PASSWORDS_HASHED);
+
+    const channel = parameters.getValue(AppParameters.KEY_CONNECT_CHANNEL, undefined);
+    const channelPassword = parameters.getValue(AppParameters.KEY_CONNECT_CHANNEL_PASSWORD, undefined);
+
+    let connection = server_connections.getActiveConnectionHandler();
+    if(connection.connected) {
+        connection = server_connections.spawnConnectionHandler();
+    }
+
+    connection.startConnectionNew({
+        targetAddress: serverAddress,
+
+        nickname: clientNickname,
+        nicknameSpecified: false,
+
+        profile: profile,
+        token: undefined,
+
+        serverPassword: serverPassword,
+        serverPasswordHashed: passwordsHashed,
+
+        defaultChannel: channel,
+        defaultChannelPassword: channelPassword,
+        defaultChannelPasswordHashed: passwordsHashed
+    }, false).then(undefined);
+    server_connections.setActiveConnectionHandler(connection);
+}
+
+/* Used by the old native clients (an within the multi instance handler). Delete it later */
+export function handle_connect_request(properties: ConnectRequestData, _connection: ConnectionHandler) {
+    const urlBuilder = new UrlParameterBuilder();
+    urlBuilder.setValue(AppParameters.KEY_CONNECT_PROFILE, properties.profile);
+    urlBuilder.setValue(AppParameters.KEY_CONNECT_NICKNAME, properties.username);
+
+    urlBuilder.setValue(AppParameters.KEY_CONNECT_SERVER_PASSWORD, properties.password?.value);
+    urlBuilder.setValue(AppParameters.KEY_CONNECT_PASSWORDS_HASHED, properties.password?.hashed);
+
+    const url = new URL(`https://localhost/?${urlBuilder.build()}`);
+    handleConnectRequest(properties.address, new UrlParameterParser(url));
 }
 
 function main() {
@@ -235,7 +281,7 @@ const task_connect_handler: loader.Task = {
             return;
         }
 
-        /* FIXME: All additional parameters! */
+        /* FIXME: All additional connect parameters! */
         const connectData = {
             address: address,
 
@@ -293,7 +339,7 @@ const task_connect_handler: loader.Task = {
         preventWelcomeUI = true;
         loader.register_task(loader.Stage.LOADED, {
             priority: 0,
-            function: async () => handle_connect_request(connectData, server_connections.getActiveConnectionHandler() || server_connections.spawnConnectionHandler()),
+            function: async () => handleConnectRequest(address, AppParameters.Instance),
             name: tr("default url connect")
         });
         loader.register_task(loader.Stage.LOADED, task_teaweb_starter);

@@ -8,6 +8,7 @@ export type ConnectRequestData = {
 
     profile?: string;
     username?: string;
+
     password?: {
         value: string;
         hashed: boolean;

@@ -13,6 +13,7 @@ import {spawnAvatarList} from "../ui/modal/ModalAvatarList";
 import {Registry} from "../events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 import { tr } from "tc-shared/i18n/localize";
+import {spawnInviteGenerator} from "tc-shared/ui/modal/invite/Controller";
 
 export class ServerProperties {
     virtualserver_host: string = "";
@@ -209,7 +210,7 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-invite_buddy",
                 name: tr("Invite buddy"),
-                callback: () => spawnInviteEditor(this.channelTree.client)
+                callback: () => spawnInviteGenerator(this)
             }, {
                 type: contextmenu.MenuEntryType.HR,
                 name: ''

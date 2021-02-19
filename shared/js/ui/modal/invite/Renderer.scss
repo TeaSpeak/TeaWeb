@@ -1,0 +1,215 @@
+@import "../../../../css/static/mixin";
+@import "../../../../css/static/properties";
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    width: 30em;
+    padding: 1em;
+
+    @include user-select(none);
+
+    .title {
+        color: #557edc;
+        text-transform: uppercase;
+    }
+}
+
+.containerOptions {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    margin-bottom: .5em;
+
+    .generalOptions {
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        .general, .channel {
+            display: flex;
+            flex-direction: column;
+            justify-content: stretch;
+
+            width: 50%;
+        }
+    }
+
+    .advancedOptions {
+
+    }
+
+    .option {
+        margin-bottom: .5em;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+
+        .optionTitle {
+
+        }
+
+        .optionValue {
+            height: 2em;
+        }
+    }
+}
+
+.containerOptionsAdvanced {
+    margin-bottom: .5em;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.containerButtons {
+    margin-top: 1em;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+.containerLink {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    .output {
+        position: relative;
+
+        color: #999999;
+        background-color: #28292b;
+
+        border: 1px #161616 solid;
+        border-radius: .2em;
+
+        padding: .5em;
+        padding-right: 1.5em;
+
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        a {
+            @include text-dotdotdot();
+        }
+
+        &.generating {
+            a {
+                color: #606060;
+            }
+        }
+
+        &.errored {
+            a {
+                color: #e62222;
+            }
+        }
+
+        &.success, &.errored {
+            @include user-select(text);
+        }
+    }
+
+    .linkExpire {
+        font-size: .8em;
+        text-align: left;
+        color: #666;
+        margin-bottom: -1em;
+    }
+}
+
+
+.containerCopy {
+    position: absolute;
+
+    right: .5em;
+    top: 0;
+    bottom: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    .button {
+        font-size: 1.3em;
+        padding: .1em;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        cursor: pointer;
+        border-radius: .115em;
+
+        transition: background-color .25s ease-in-out;
+
+        &:hover {
+            background-color: #ffffff10;
+        }
+
+        img {
+            height: 1em;
+            width: 1em;
+        }
+    }
+
+    $copied-color: #222224;
+    .copied {
+        opacity: 0;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.24);
+
+        position: absolute;
+
+        width: 4em;
+        height: 1.5em;
+
+        background: $copied-color;
+
+        top: 100%;
+        left: 50%;
+
+        border-radius: .1em;
+        margin-left: -2em;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        transition: opacity .1s ease-in-out;
+
+        &.shown {
+            opacity: 1;
+        }
+
+        a {
+            color: #389738;
+            z-index: 1;
+            align-self: center;
+        }
+
+        $width: .5em;
+        &::before {
+            content: ' ';
+
+            position: absolute;
+
+            left: 50%;
+            top: 0;
+            margin-left: -$width / 2;
+            margin-top: -$width / 2;
+
+            transform: rotate(45deg);
+
+            width: $width;
+            height: $width;
+
+            background: $copied-color;
+        }
+    }
+}

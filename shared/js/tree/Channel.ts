@@ -22,6 +22,7 @@ import {ClientIcon} from "svg-sprites/client-icons";
 import { tr } from "tc-shared/i18n/localize";
 import {EventChannelData} from "tc-shared/connectionlog/Definitions";
 import {spawnChannelEditNew} from "tc-shared/ui/modal/channel-edit/Controller";
+import {spawnInviteGenerator} from "tc-shared/ui/modal/invite/Controller";
 
 export enum ChannelType {
     PERMANENT,
@@ -456,7 +457,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 name: bold(tr("Switch to channel")),
                 callback: () => this.joinChannel(),
                 visible: this !== this.channelTree.client.getClient()?.currentChannel()
-            },{
+            }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-filetransfer",
                 name: bold(tr("Open channel file browser")),
@@ -482,6 +483,11 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                     openChannelInfo(this);
                 },
                 icon_class: "client-about"
+            }, {
+                type: contextmenu.MenuEntryType.ENTRY,
+                name: tr("Invite People"),
+                callback: () => spawnInviteGenerator(this),
+                icon_class: ClientIcon.InviteBuddy
             },
             ...(() => {
                 const local_client = this.channelTree.client.getClient();

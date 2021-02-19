@@ -26,8 +26,8 @@ const kRegexDomain = /^(localhost|((([a-zA-Z0-9_-]{0,63}\.){0,253})?[a-zA-Z0-9_-
 
 export type ConnectParameters = {
     targetAddress: string,
-    targetPassword?: string,
-    targetPasswordHashed?: boolean,
+    serverPassword?: string,
+    serverPasswordHashed?: boolean,
 
     nickname: string,
     nicknameSpecified: boolean,
@@ -38,6 +38,7 @@ export type ConnectParameters = {
 
     defaultChannel?: string | number,
     defaultChannelPassword?: string,
+    defaultChannelPasswordHashed?: boolean,
 }
 
 class ConnectController {
@@ -272,8 +273,8 @@ class ConnectController {
 
             profile: this.currentProfile,
 
-            targetPassword: this.currentPassword,
-            targetPasswordHashed: this.currentPasswordHashed
+            serverPassword: this.currentPassword,
+            serverPasswordHashed: this.currentPasswordHashed
         };
     }
 
