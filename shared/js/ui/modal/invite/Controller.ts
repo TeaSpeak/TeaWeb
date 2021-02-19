@@ -330,6 +330,7 @@ export function spawnInviteGenerator(target: ChannelEntry | ServerEntry) {
     }
 
     const modal = spawnModal("modal-invite", [ controller.events.generateIpcDescription(), controller.variables.generateConsumerDescription(), serverName ]);
+    controller.events.one("action_close", () => modal.destroy());
     modal.getEvents().on("destroy", () => controller.destroy());
     modal.show().then(undefined);
 }
