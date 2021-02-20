@@ -13464,6 +13464,213 @@
       "key": {
         "message": "Complains until ban"
       }
+    },
+    {
+      "translated": "Пригласить людей",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Invite People"
+      }
+    },
+    {
+      "translated": "Пригласить людей на",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Invite People to"
+      }
+    },
+    {
+      "translated": "Короткий URL",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Use short URL"
+      }
+    },
+    {
+      "translated": "Дополнительные настройки",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Advanced settings"
+      }
+    },
+    {
+      "translated": "Ссылка",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Link"
+      }
+    },
+    {
+      "translated": "Ссылка никогда не истекает",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Link expires never"
+      }
+    },
+    {
+      "translated": "Автоприсоединение к каналу",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Automatically join channel"
+      }
+    },
+    {
+      "translated": "Не используйте пароль",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Don't use a password"
+      }
+    },
+    {
+      "translated": "Скопировано!",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Copied!"
+      }
+    },
+    {
+      "translated": "Дополнительные опции",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Advanced options"
+      }
+    },
+    {
+      "translated": "Токен / ключ привилегии",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Token"
+      }
+    },
+    {
+      "translated": "Не используйте токен",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Don't use a token"
+      }
+    },
+    {
+      "translated": "Ссылка для Веб Клиента",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "WebClient URL"
+      }
+    },
+    {
+      "translated": "Время истечения ссылки",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Link expire time"
+      }
+    },
+    {
+      "translated": "Ссылка истекает",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Link expires at"
+      }
+    },
+    {
+      "translated": "Никогда",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "never"
+      }
+    },
+    {
+      "translated": "5 минут",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "5 Minutes"
+      }
+    },
+    {
+      "translated": "1 час",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "1 hour"
+      }
+    },
+    {
+      "translated": "24 часа",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "24 hours"
+      }
+    },
+    {
+      "translated": "1 неделя",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "1 Week"
+      }
+    },
+    {
+      "translated": "1 месяц",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "1 Month"
+      }
+    },
+    {
+      "translated": "Открыть режим разработчика",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Open developer tools"
+      }
+    },
+    {
+      "translated": "Перезагрузить UI ",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Reload UI"
+      }
     }
     
   ]
