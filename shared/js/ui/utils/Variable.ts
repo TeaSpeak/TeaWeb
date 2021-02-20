@@ -45,6 +45,10 @@ export abstract class UiVariableProvider<Variables extends UiVariableMap> {
         this.variableProvider[variable as any] = provider;
     }
 
+    /**
+     * @param variable
+     * @param editor If the editor returns `false` or a new variable, such variable will be used
+     */
     setVariableEditor<T extends keyof Variables>(variable: T, editor: UiVariableEditor<Variables, T>) {
         this.variableEditor[variable as any] = editor;
     }
@@ -247,7 +251,7 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
             /* Variable constructor */
             cacheEntry.useCount++;
 
-            if(cacheEntry.status === "loading") {
+            if(cacheEntry.status === "loaded") {
                 return {
                     status: "set",
                     value: cacheEntry.currentValue

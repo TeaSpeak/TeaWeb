@@ -230,7 +230,9 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
     resolve: {
         extensions: ['.tsx', '.ts', '.js', ".scss", ".css", ".wasm"],
         alias: {
-            "vendor/xbbcode": path.resolve(__dirname, "vendor/xbbcode/src")
+            "vendor/xbbcode": path.resolve(__dirname, "vendor/xbbcode/src"),
+            "tc-events": path.resolve(__dirname, "vendor/TeaEventBus/src/index.ts"),
+            "tc-services": path.resolve(__dirname, "vendor/TeaClientServices/src/index.ts"),
         },
     },
     externals: [

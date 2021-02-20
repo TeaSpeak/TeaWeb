@@ -270,6 +270,19 @@ export class ChannelTree {
         return undefined;
     }
 
+    /**
+     * Resolve a channel by its path
+     */
+    resolveChannelPath(target: string) : ChannelEntry | undefined {
+        if(target.match(/^\/[0-9]+$/)) {
+            const channelId = parseInt(target.substring(1));
+            return this.findChannel(channelId);
+        } else {
+            /* TODO: Resolve the whole channel path */
+            return undefined;
+        }
+    }
+
     find_channel_by_name(name: string, parent?: ChannelEntry, force_parent: boolean = true) : ChannelEntry | undefined {
         for(let index = 0; index < this.channels.length; index++)
             if(this.channels[index].channelName() == name && (!force_parent || parent == this.channels[index].parent))

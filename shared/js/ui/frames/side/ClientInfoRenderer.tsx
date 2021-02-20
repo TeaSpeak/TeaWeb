@@ -432,7 +432,7 @@ const ServerGroupRenderer = () => {
 
     return (
         <InfoBlock clientIcon={ClientIcon.PermissionChannel} valueClass={cssStyle.groups}>
-            <Translatable>Channel group</Translatable>
+            <Translatable>Server groups</Translatable>
             <>{body}</>
         </InfoBlock>
     );

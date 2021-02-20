@@ -15,6 +15,8 @@
       "tc-backend/web/*": ["web/app/*"], /* specific web part */
       "tc-backend/*": ["shared/backend.d/*"],
       "tc-loader": ["loader/exports/loader.d.ts"],
+      "tc-events": ["vendor/TeaEventBus/src/index.ts"],
+      "tc-services": ["vendor/TeaClientServices/src/index.ts"],
 
       "svg-sprites/*": ["shared/svg-sprites/*"],
       "vendor/xbbcode/*": ["vendor/xbbcode/src/*"]

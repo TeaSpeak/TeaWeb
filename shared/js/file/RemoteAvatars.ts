@@ -8,7 +8,7 @@ import {
     kIPCAvatarChannel,
     setGlobalAvatarManagerFactory, uniqueId2AvatarId
 } from "../file/Avatars";
-import {IPCChannel} from "../ipc/BrowserIPC";
+import {getIpcInstance, IPCChannel} from "../ipc/BrowserIPC";
 import {AppParameters} from "../settings";
 import {ChannelMessage} from "../ipc/BrowserIPC";
 import {guid} from "../crypto/uid";
@@ -159,7 +159,7 @@ class RemoteAvatarManagerFactory extends AbstractAvatarManagerFactory {
     constructor() {
         super();
 
-        this.ipcChannel = ipc.getIpcInstance().createChannel(AppParameters.getValue(AppParameters.KEY_IPC_REMOTE_ADDRESS, "invalid"), kIPCAvatarChannel);
+        this.ipcChannel = ipc.getIpcInstance().createCoreControlChannel(kIPCAvatarChannel);
         this.ipcChannel.messageHandler = this.handleIpcMessage.bind(this);
     }
 

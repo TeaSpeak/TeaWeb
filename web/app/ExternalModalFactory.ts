@@ -1,11 +1,13 @@
 import {AbstractExternalModalController} from "tc-shared/ui/react-elements/external-modal/Controller";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
-import * as ipc from "tc-shared/ipc/BrowserIPC";
-import {ChannelMessage} from "tc-shared/ipc/BrowserIPC";
+import {ChannelMessage, getIpcInstance} from "tc-shared/ipc/BrowserIPC";
 import {LogCategory, logDebug, logWarn} from "tc-shared/log";
 import {Popout2ControllerMessages, PopoutIPCMessage} from "tc-shared/ui/react-elements/external-modal/IPCMessage";
 import {tr, tra} from "tc-shared/i18n/localize";
 import {ModalOptions} from "tc-shared/ui/react-elements/modal/Definitions";
+import {assertMainApplication} from "tc-shared/ui/utils";
+
+assertMainApplication();
 
 export class ExternalModalController extends AbstractExternalModalController {
     private readonly options: ModalOptions;
@@ -87,8 +89,9 @@ export class ExternalModalController extends AbstractExternalModalController {
             "loader-target": "manifest",
             "chunk": "modal-external",
             "modal-target": this.modalType,
-            "ipc-channel": this.ipcChannel.channelId,
-            "ipc-address": ipc.getIpcInstance().getLocalAddress(),
+            "modal-identify": this.ipcAuthenticationCode,
+            "ipc-address": getIpcInstance().getApplicationChannelId(),
+            "ipc-core-peer": getIpcInstance().getLocalPeerId(),
             "disableGlobalContextMenu": __build.mode === "debug" ? 1 : 0,
             "loader-abort": __build.mode === "debug" ? 1 : 0,
         };
@@ -113,7 +116,7 @@ export class ExternalModalController extends AbstractExternalModalController {
     }
 
     protected handleIPCMessage(remoteId: string, broadcast: boolean, message: ChannelMessage) {
-        if(!broadcast && this.ipcRemoteId !== remoteId) {
+        if(!broadcast && this.ipcRemotePeerId !== remoteId) {
             if(this.windowClosedTestInterval > 0) {
                 clearInterval(this.windowClosedTestInterval);
                 this.windowClosedTestInterval = 0;
@@ -127,8 +130,12 @@ export class ExternalModalController extends AbstractExternalModalController {
         super.handleIPCMessage(remoteId, broadcast, message);
     }
 
-    protected handleTypedIPCMessage<T extends Popout2ControllerMessages>(type: T, payload: PopoutIPCMessage[T]) {
-        super.handleTypedIPCMessage(type, payload);
+    protected handleTypedIPCMessage<T extends Popout2ControllerMessages>(remoteId: string, isBroadcast: boolean, type: T, payload: PopoutIPCMessage[T]) {
+        super.handleTypedIPCMessage(remoteId, isBroadcast, type, payload);
+
+        if(isBroadcast) {
+            return;
+        }
 
         switch (type) {
             case "invoke-modal-action":

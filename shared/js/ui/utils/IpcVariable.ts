@@ -2,7 +2,7 @@ import {UiVariableConsumer, UiVariableMap, UiVariableProvider} from "tc-shared/u
 import {guid} from "tc-shared/crypto/uid";
 import {LogCategory, logWarn} from "tc-shared/log";
 
-class IpcUiVariableProvider<Variables extends UiVariableMap> extends UiVariableProvider<Variables> {
+export class IpcUiVariableProvider<Variables extends UiVariableMap> extends UiVariableProvider<Variables> {
     readonly ipcChannelId: string;
     private broadcastChannel: BroadcastChannel;
 
@@ -146,7 +146,6 @@ class IpcUiVariableConsumer<Variables extends UiVariableMap> extends UiVariableC
 
     private handleIpcMessage(message: any, _source: MessageEventSource | null) {
         if(message.type === "notify") {
-            console.error("Received notify %s", message.variable);
             this.notifyRemoteVariable(message.variable, message.customData, message.value);
         } else if(message.type === "edit-result") {
             const payload = this.editListener[message.token];

@@ -8,6 +8,7 @@ import ReactRenderer from "vendor/xbbcode/renderer/react";
 import {rendererReact, rendererText, BBCodeHandlerContext} from "tc-shared/text/bbcode/renderer";
 import {ClientTag} from "tc-shared/ui/tree/EntryTags";
 import {isYoutubeLink, YoutubeRenderer} from "tc-shared/text/bbcode/youtube";
+import {InviteLinkRenderer, isInviteLink} from "tc-shared/text/bbcode/InviteRenderer";
 
 function spawnUrlContextMenu(pageX: number, pageY: number, target: string) {
     contextmenu.spawn_context_menu(pageX, pageY, {
@@ -34,6 +35,17 @@ function spawnUrlContextMenu(pageX: number, pageY: number, target: string) {
 }
 
 const ClientUrlRegex = /client:\/\/([0-9]+)\/([-A-Za-z0-9+/=]+)~/g;
+
+export const SimpleUrlRenderer = (props: { target: string, children }) => {
+    return  (
+        <a className={"xbbcode xbbcode-tag-url"} href={props.target} target={"_blank"} onContextMenu={event => {
+            event.preventDefault();
+            spawnUrlContextMenu(event.pageX, event.pageY, props.target);
+        }}>
+            {props.children}
+        </a>
+    );
+}
 
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     name: "XBBCode code tag init",
@@ -65,23 +77,26 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
                                     const clientDatabaseId = parseInt(clientData[1]);
                                     const clientUniqueId = clientDatabaseId[2];
 
-                                    return <ClientTag
-                                        key={"er-" + ++reactId}
-                                        clientName={rendererText.renderContent(element).join("")}
-                                        clientUniqueId={clientUniqueId}
-                                        clientDatabaseId={clientDatabaseId > 0 ? clientDatabaseId : undefined}
-                                        handlerId={handlerId}
-                                    />;
+                                    return (
+                                        <ClientTag
+                                            key={"er-" + ++reactId}
+                                            clientName={rendererText.renderContent(element).join("")}
+                                            clientUniqueId={clientUniqueId}
+                                            clientDatabaseId={clientDatabaseId > 0 ? clientDatabaseId : undefined}
+                                            handlerId={handlerId}
+                                        />
+                                    );
+                                }
+
+                                if(isInviteLink(target)) {
+                                    return <InviteLinkRenderer key={"er-" + ++reactId} handlerId={handlerId} url={target} />;
                                 }
                             }
 
                             const body = (
-                                <a key={"er-" + ++reactId} className={"xbbcode xbbcode-tag-url"} href={target} target={"_blank"} onContextMenu={event => {
-                                    event.preventDefault();
-                                    spawnUrlContextMenu(event.pageX, event.pageY, target);
-                                }}>
+                                <SimpleUrlRenderer key={"er-" + ++reactId} target={target}>
                                     {renderer.renderContent(element)}
-                                </a>
+                                </SimpleUrlRenderer>
                             );
 
                             if(isYoutubeLink(target)) {

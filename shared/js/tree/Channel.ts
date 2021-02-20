@@ -22,6 +22,7 @@ import {ClientIcon} from "svg-sprites/client-icons";
 import { tr } from "tc-shared/i18n/localize";
 import {EventChannelData} from "tc-shared/connectionlog/Definitions";
 import {spawnChannelEditNew} from "tc-shared/ui/modal/channel-edit/Controller";
+import {spawnInviteGenerator} from "tc-shared/ui/modal/invite/Controller";
 
 export enum ChannelType {
     PERMANENT,
@@ -456,7 +457,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 name: bold(tr("Switch to channel")),
                 callback: () => this.joinChannel(),
                 visible: this !== this.channelTree.client.getClient()?.currentChannel()
-            },{
+            }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-filetransfer",
                 name: bold(tr("Open channel file browser")),
@@ -482,6 +483,11 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                     openChannelInfo(this);
                 },
                 icon_class: "client-about"
+            }, {
+                type: contextmenu.MenuEntryType.ENTRY,
+                name: tr("Invite People"),
+                callback: () => spawnInviteGenerator(this),
+                icon_class: ClientIcon.InviteBuddy
             },
             ...(() => {
                 const local_client = this.channelTree.client.getClient();
@@ -687,42 +693,51 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         return ChannelType.TEMPORARY;
     }
 
-    joinChannel(ignorePasswordFlag?: boolean) {
-        if(this.channelTree.client.getClient().currentChannel() === this)
-            return;
+    async joinChannel(ignorePasswordFlag?: boolean) : Promise<boolean> {
+        if(this.channelTree.client.getClient().currentChannel() === this) {
+            return true;
 
-        if(this.properties.channel_flag_password === true && !this.cachedPasswordHash && !ignorePasswordFlag) {
-            this.requestChannelPassword(PermissionType.B_CHANNEL_JOIN_IGNORE_PASSWORD).then(() => {
-                this.joinChannel(true);
-            });
-            return;
         }
 
-        this.channelTree.client.serverConnection.send_command("clientmove", {
-            "clid": this.channelTree.client.getClientId(),
-            "cid": this.getChannelId(),
-            "cpw": this.cachedPasswordHash || ""
-        }).then(() => {
+        if(this.properties.channel_flag_password === true && !this.cachedPasswordHash && !ignorePasswordFlag) {
+            const password = await this.requestChannelPassword(PermissionType.B_CHANNEL_JOIN_IGNORE_PASSWORD);
+            if(typeof password === "undefined") {
+                /* aborted */
+                return;
+            }
+        }
+
+        try {
+            await this.channelTree.client.serverConnection.send_command("clientmove", {
+                "clid": this.channelTree.client.getClientId(),
+                "cid": this.getChannelId(),
+                "cpw": this.cachedPasswordHash || ""
+            });
             this.channelTree.client.sound.play(Sound.CHANNEL_JOINED);
-        }).catch(error => {
+            return true;
+        } catch (error) {
             if(error instanceof CommandResult) {
                 if(error.id == ErrorCode.CHANNEL_INVALID_PASSWORD) { //Invalid password
                     this.invalidateCachedPassword();
                 }
             }
-        });
+            return false;
+        }
     }
 
     async requestChannelPassword(ignorePermission: PermissionType) : Promise<{ hash: string } | undefined> {
-        if(this.cachedPasswordHash)
+        if(this.cachedPasswordHash) {
             return { hash: this.cachedPasswordHash };
+        }
 
-        if(this.channelTree.client.permissions.neededPermission(ignorePermission).granted(1))
+        if(this.channelTree.client.permissions.neededPermission(ignorePermission).granted(1)) {
             return { hash: "having ignore permission" };
+        }
 
         const password = await new Promise(resolve => createInputModal(tr("Channel password"), tr("Channel password:"), () => true, resolve).open())
-        if(typeof(password) !== "string" || !password)
+        if(typeof(password) !== "string" || !password) {
             return;
+        }
 
         const hash = await hashPassword(password);
         this.cachedPasswordHash = hash;
@@ -735,7 +750,11 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         this.events.fire("notify_cached_password_updated", { reason: "password-miss-match" });
     }
 
-    cached_password() { return this.cachedPasswordHash; }
+    setCachedHashedPassword(passwordHash: string) {
+        this.cachedPasswordHash = passwordHash;
+    }
+
+    getCachedPasswordHash() { return this.cachedPasswordHash; }
 
     async updateSubscribeMode() {
         let shouldBeSubscribed = false;
@@ -839,7 +858,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         }
 
         const subscribed = this.isSubscribed();
-        if (this.properties.channel_flag_password === true && !this.cached_password()) {
+        if (this.properties.channel_flag_password === true && !this.getCachedPasswordHash()) {
             return subscribed ? ClientIcon.ChannelYellowSubscribed : ClientIcon.ChannelYellow;
         } else if (!this.properties.channel_flag_maxclients_unlimited && this.clients().length >= this.properties.channel_maxclients) {
             return subscribed ? ClientIcon.ChannelRedSubscribed : ClientIcon.ChannelRed;

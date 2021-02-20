@@ -4,6 +4,89 @@ import {joinClassList} from "tc-shared/ui/react-elements/Helper";
 
 const cssStyle = require("./InputField.scss");
 
+export const ControlledBoxedInputField = (props: {
+    prefix?: string;
+    suffix?: string;
+
+    placeholder?: string;
+
+    disabled?: boolean;
+    editable?: boolean;
+
+    value?: string;
+
+    rightIcon?: () => ReactElement;
+    leftIcon?: () => ReactElement;
+    inputBox?: () => ReactElement; /* if set the onChange and onInput will not work anymore! */
+
+    isInvalid?: boolean;
+
+    className?: string;
+    maxLength?: number,
+
+    size?: "normal" | "large" | "small";
+    type?: "text" | "password" | "number";
+
+    onChange: (newValue?: string) => void,
+    onEnter?: () => void,
+
+    onFocus?: () => void,
+    onBlur?: () => void,
+
+    finishOnEnter?: boolean,
+}) => {
+
+    return (
+        <div
+            draggable={false}
+            className={
+                cssStyle.containerBoxed + " " +
+                cssStyle["size-" + (props.size || "normal")] + " " +
+                (props.disabled ? cssStyle.disabled : "") + " " +
+                (props.isInvalid ? cssStyle.isInvalid : "") + " " +
+                (typeof props.editable !== "boolean" || props.editable ? cssStyle.editable : "") + " " +
+                (props.leftIcon ? "" : cssStyle.noLeftIcon) + " " +
+                (props.rightIcon ? "" : cssStyle.noRightIcon) + " " +
+                props.className
+            }
+            onFocus={props.onFocus}
+            onBlur={() => props.onBlur()}
+        >
+            {props.leftIcon ? props.leftIcon() : ""}
+            {props.prefix ? <a key={"prefix"} className={cssStyle.prefix}>{props.prefix}</a> : undefined}
+            {props.inputBox ?
+                <span key={"custom-input"}
+                      className={cssStyle.inputBox + " " + (props.editable ? cssStyle.editable : "")}
+                      onClick={props.onFocus}>{props.inputBox()}</span> :
+
+                <input key={"input"}
+
+                       value={props.value || ""}
+                       placeholder={props.placeholder}
+
+                       readOnly={typeof props.editable === "boolean" ? !props.editable : false}
+                       disabled={typeof props.disabled === "boolean" ? props.disabled : false}
+
+                       onChange={event => props.onChange(event.currentTarget.value)}
+                       onKeyPress={event => {
+                           if(event.key === "Enter") {
+                               if(props.finishOnEnter) {
+                                   event.currentTarget.blur();
+                               }
+
+                               if(props.onEnter) {
+                                   props.onEnter();
+                               }
+                           }
+                       }}
+                />
+            }
+            {props.suffix ? <a key={"suffix"} className={cssStyle.suffix}>{props.suffix}</a> : undefined}
+            {props.rightIcon ? props.rightIcon() : ""}
+        </div>
+    );
+}
+
 export interface BoxedInputFieldProperties {
     prefix?: string;
     suffix?: string;
@@ -33,6 +116,8 @@ export interface BoxedInputFieldProperties {
 
     onChange?: (newValue: string) => void;
     onInput?: (newValue: string) => void;
+
+    finishOnEnter?: boolean,
 }
 
 export interface BoxedInputFieldState {

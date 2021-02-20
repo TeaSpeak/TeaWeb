@@ -281,17 +281,32 @@ export class ConnectionHandler {
             client_nickname: parameters.nickname
         });
 
-        this.channelTree.initialiseHead(parameters.targetAddress, resolvedAddress);
+        this.channelTree.initialiseHead(parameters.targetAddress, parsedAddress);
 
         /* hash the password if not already hashed */
-        if(parameters.targetPassword && !parameters.targetPasswordHashed) {
+        if(parameters.serverPassword && !parameters.serverPasswordHashed) {
             try {
-                parameters.targetPassword = await hashPassword(parameters.targetPassword);
-                parameters.targetPasswordHashed = true;
+                parameters.serverPassword = await hashPassword(parameters.serverPassword);
+                parameters.serverPasswordHashed = true;
             } catch(error) {
                 logError(LogCategory.CLIENT, tr("Failed to hash connect password: %o"), error);
                 createErrorModal(tr("Error while hashing password"), tr("Failed to hash server password!<br>") + error).open();
+                /* FIXME: Abort connection attempt */
+            }
 
+            if(this.connectAttemptId !== localConnectionAttemptId) {
+                /* Our attempt has been aborted */
+                return;
+            }
+        }
+
+        if(parameters.defaultChannelPassword && !parameters.defaultChannelPasswordHashed) {
+            try {
+                parameters.defaultChannelPassword = await hashPassword(parameters.defaultChannelPassword);
+                parameters.defaultChannelPasswordHashed = true;
+            } catch(error) {
+                logError(LogCategory.CLIENT, tr("Failed to hash channel password: %o"), error);
+                createErrorModal(tr("Error while hashing password"), tr("Failed to hash channel password!<br>") + error).open();
                 /* FIXME: Abort connection attempt */
             }
 
@@ -332,6 +347,7 @@ export class ConnectionHandler {
                 }
 
                 this.handleDisconnect(DisconnectReason.DNS_FAILED, error);
+                return;
             }
         } else {
             this.handleDisconnect(DisconnectReason.DNS_FAILED, tr("Unable to resolve hostname"));
@@ -343,7 +359,7 @@ export class ConnectionHandler {
         } else {
             this.currentConnectId = await connectionHistory.logConnectionAttempt({
                 nickname: parameters.nicknameSpecified ? parameters.nickname : undefined,
-                hashedPassword: parameters.targetPassword, /* Password will be hashed by now! */
+                hashedPassword: parameters.serverPassword, /* Password will be hashed by now! */
                 targetAddress: parameters.targetAddress,
             });
         }
@@ -359,8 +375,8 @@ export class ConnectionHandler {
             nickname: parameters.nickname,
             nicknameSpecified: true,
 
-            targetPassword: parameters.password?.password,
-            targetPasswordHashed: parameters.password?.hashed,
+            serverPassword: parameters.password?.password,
+            serverPasswordHashed: parameters.password?.hashed,
 
             defaultChannel: parameters?.channel?.target,
             defaultChannelPassword: parameters?.channel?.password,
@@ -968,11 +984,11 @@ export class ConnectionHandler {
         const connectParameters = this.serverConnection.handshake_handler().parameters;
 
         return {
-            channel: targetChannel ? {target: "/" + targetChannel.channelId, password: targetChannel.cached_password()} : undefined,
+            channel: targetChannel ? {target: "/" + targetChannel.channelId, password: targetChannel.getCachedPasswordHash()} : undefined,
             nickname: name,
-            password: connectParameters.targetPassword ? {
-                password: connectParameters.targetPassword,
-                hashed: connectParameters.targetPasswordHashed
+            password: connectParameters.serverPassword ? {
+                password: connectParameters.serverPassword,
+                hashed: connectParameters.serverPasswordHashed
             } : undefined
         }
     }

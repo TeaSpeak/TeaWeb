@@ -4,3 +4,9 @@
 [submodule "web/native-codec/libraries/opus"]
 	path = web/native-codec/libraries/opus
 	url = https://github.com/xiph/opus.git
+[submodule "vendor/TeaEventBus"]
+	path = vendor/TeaEventBus
+	url = https://github.com/WolverinDEV/TeaEventBus.git
+[submodule "vendor/TeaClientServices"]
+	path = vendor/TeaClientServices
+	url = https://github.com/WolverinDEV/TeaClientServices.git

@@ -1,7 +1,9 @@
-import {ChannelMessage, IPCChannel} from "../../../ipc/BrowserIPC";
+import {IPCChannel} from "../../../ipc/BrowserIPC";
+
+export const kPopoutIPCChannelId = "popout-channel";
 
 export interface PopoutIPCMessage {
-    "hello-popout": { version: string },
+    "hello-popout": { version: string, authenticationCode: string },
     "hello-controller": { accepted: boolean, message?: string, constructorArguments?: any[] },
     "invoke-modal-action": {
         action: "close" | "minimize"
@@ -22,28 +24,24 @@ export interface ReceivedIPCMessage {
 }
 
 export abstract class EventControllerBase<Type extends "controller" | "popout"> {
+    protected readonly ipcAuthenticationCode: string;
+    protected ipcRemotePeerId: string;
     protected ipcChannel: IPCChannel;
-    protected ipcRemoteId: string;
 
-    protected constructor() { }
-
-    protected handleIPCMessage(remoteId: string, broadcast: boolean, message: ChannelMessage) {
-        if(this.ipcRemoteId !== remoteId) {
-            console.warn("Received message from unknown end: %s. Expected: %s", remoteId, this.ipcRemoteId);
-            return;
-        }
-
-        this.handleTypedIPCMessage(message.type as any, message.data);
+    protected constructor(ipcAuthenticationCode: string) {
+        this.ipcAuthenticationCode = ipcAuthenticationCode;
     }
 
     protected sendIPCMessage<T extends SendIPCMessage[Type]>(type: T, payload: PopoutIPCMessage[T]) {
-        this.ipcChannel.sendMessage(type, payload, this.ipcRemoteId);
+        this.ipcChannel.sendMessage(type, payload, this.ipcRemotePeerId);
     }
 
-    protected handleTypedIPCMessage<T extends ReceivedIPCMessage[Type]>(type: T, payload: PopoutIPCMessage[T]) {}
+    protected handleTypedIPCMessage<T extends ReceivedIPCMessage[Type]>(remoteId: string, isBroadcast: boolean, type: T, payload: PopoutIPCMessage[T]) {
+
+    }
 
     protected destroyIPC() {
         this.ipcChannel = undefined;
-        this.ipcRemoteId = undefined;
+        this.ipcRemotePeerId = undefined;
     }
 }

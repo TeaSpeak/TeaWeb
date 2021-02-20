@@ -68,7 +68,7 @@ class IconManager extends AbstractIconManager {
     constructor() {
         super();
 
-        this.ipcChannel = ipc.getIpcInstance().createChannel(undefined, kIPCIconChannel);
+        this.ipcChannel = ipc.getIpcInstance().createChannel(kIPCIconChannel);
         this.ipcChannel.messageHandler = this.handleIpcMessage.bind(this);
 
         server_connections.events().on("notify_handler_created", event => {

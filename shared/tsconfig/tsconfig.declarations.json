@@ -13,7 +13,9 @@
       "tc-backend/*": ["shared/backend.d/*"],
       "tc-loader": ["loader/exports/loader.d.ts"],
       "svg-sprites/*": ["shared/svg-sprites/*"],
-      "vendor/xbbcode/*": ["vendor/xbbcode/src/*"]
+      "vendor/xbbcode/*": ["vendor/xbbcode/src/*"],
+      "tc-events": ["vendor/TeaEventBus/src/index.ts"],
+      "tc-services": ["vendor/TeaClientServices/src/index.ts"]
     }
   },
   "exclude": [
@@ -24,6 +26,8 @@
     "../js/main.tsx",
     "../backend.d",
     "../js/**/*.ts",
-    "../../webpack/build-definitions.d.ts"
+    "../../webpack/build-definitions.d.ts",
+    "../../vendor/TeaEventBus/src/**/*.ts",
+    "../../vendor/TeaClientServices/src/**/*.ts"
   ]
 }

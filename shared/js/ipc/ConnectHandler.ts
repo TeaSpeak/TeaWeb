@@ -8,6 +8,7 @@ export type ConnectRequestData = {
 
     profile?: string;
     username?: string;
+
     password?: {
         value: string;
         hashed: boolean;
@@ -75,7 +76,7 @@ export class ConnectHandler {
     }
 
     public setup() {
-        this.ipc_channel = this.ipc_handler.createChannel(undefined, ConnectHandler.CHANNEL_NAME);
+        this.ipc_channel = this.ipc_handler.createChannel(ConnectHandler.CHANNEL_NAME);
         this.ipc_channel.messageHandler = this.onMessage.bind(this);
     }
 

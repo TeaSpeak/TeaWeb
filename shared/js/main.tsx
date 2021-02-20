@@ -1,18 +1,18 @@
 import * as loader from "tc-loader";
+import {Stage} from "tc-loader";
 import * as bipc from "./ipc/BrowserIPC";
 import * as sound from "./sound/Sounds";
 import * as i18n from "./i18n/localize";
+import {tra} from "./i18n/localize";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
 import * as aplayer from "tc-backend/audio/player";
 import * as ppt from "tc-backend/ppt";
 import * as global_ev_handler from "./events/ClientGlobalControlHandler";
-import {Stage} from "tc-loader";
-import {AppParameters, settings, Settings} from "tc-shared/settings";
-import {LogCategory, logError, logInfo} from "tc-shared/log";
-import {tra} from "./i18n/localize";
+import {AppParameters, settings, Settings, UrlParameterBuilder, UrlParameterParser} from "tc-shared/settings";
+import {LogCategory, logDebug, logError, logInfo, logWarn} from "tc-shared/log";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {createInfoModal} from "tc-shared/ui/elements/Modal";
-import {defaultRecorder, RecorderProfile, setDefaultRecorder} from "tc-shared/voice/RecorderProfile";
+import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
+import {RecorderProfile, setDefaultRecorder} from "tc-shared/voice/RecorderProfile";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {openModalNewcomer} from "tc-shared/ui/modal/ModalNewcomer";
@@ -25,6 +25,8 @@ import {ConnectRequestData} from "tc-shared/ipc/ConnectHandler";
 import {defaultConnectProfile, findConnectProfile} from "tc-shared/profiles/ConnectionProfile";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {spawnConnectModalNew} from "tc-shared/ui/modal/connect/Controller";
+import {initializeKeyControl} from "./KeyControl";
+import {assertMainApplication} from "tc-shared/ui/utils";
 
 /* required import for init */
 import "svg-sprites/client-icons";
@@ -46,8 +48,9 @@ import "./ui/modal/connect/Controller";
 import "./ui/elements/ContextDivider";
 import "./ui/elements/Tab";
 import "./clientservice";
-import {initializeKeyControl} from "./KeyControl";
-import {assertMainApplication} from "tc-shared/ui/utils";
+import "./text/bbcode/InviteController";
+import {clientServiceInvite} from "tc-shared/clientservice";
+import {ActionResult} from "tc-services";
 
 assertMainApplication();
 
@@ -61,7 +64,7 @@ async function initialize() {
         return;
     }
 
-    bipc.setup();
+    bipc.setupIpcHandler();
 }
 
 async function initializeApp() {
@@ -96,43 +99,214 @@ async function initializeApp() {
     }
 }
 
-/* Used by the native client... We can't refactor this yet */
-export function handle_connect_request(properties: ConnectRequestData, connection: ConnectionHandler) {
-    const profile = findConnectProfile(properties.profile) || defaultConnectProfile();
-    const username = properties.username || profile.connectUsername();
-
-    const password = properties.password ? properties.password.value : "";
-    const password_hashed = properties.password ? properties.password.hashed : false;
-
-    if(profile && profile.valid()) {
-        settings.setValue(Settings.KEY_USER_IS_NEW, false);
-
-        if(!aplayer.initialized()) {
-            /* Trick the client into clicking somewhere on the site */
-            spawnYesNo(tra("Connect to {}", properties.address), tra("Would you like to connect to {}?", properties.address), result => {
-                if(result) {
-                    aplayer.on_ready(() => handle_connect_request(properties, connection));
-                } else {
-                    /* Well... the client don't want to... */
-                }
-            }).open();
-            return;
+/* The native client has received a connect request. */
+export function handleNativeConnectRequest(url: URL) {
+    let serverAddress = url.host;
+    if(url.searchParams.has("port")) {
+        if(serverAddress.indexOf(':') !== -1) {
+            logWarn(LogCategory.GENERAL, tr("Received connect request which specified the port twice (via parameter and host). Using host port."));
+        } else if(serverAddress.indexOf(":") === -1) {
+            serverAddress += ":" + url.searchParams.get("port");
+        } else {
+            serverAddress = `[${serverAddress}]:${url.searchParams.get("port")}`;
         }
+    }
 
-        connection.startConnection(properties.address, profile, true, {
-            nickname: username,
-            password: password.length > 0 ? {
-                password: password,
-                hashed: password_hashed
-            } : undefined
-        });
-        server_connections.setActiveConnectionHandler(connection);
-    } else {
-        spawnConnectModalNew({
-            selectedAddress: properties.address,
-            selectedProfile: profile
+    handleConnectRequest(serverAddress, undefined, new UrlParameterParser(url)).then(undefined);
+}
+
+export async function handleConnectRequest(serverAddress: string, serverUniqueId: string | undefined, parameters: UrlParameterParser) {
+    const inviteLinkId = parameters.getValue(AppParameters.KEY_CONNECT_INVITE_REFERENCE, undefined);
+    logDebug(LogCategory.STATISTICS, tr("Executing connect request with invite key reference: %o"), inviteLinkId);
+
+    if(inviteLinkId) {
+        clientServiceInvite.logAction(inviteLinkId, "ConnectAttempt").then(result => {
+            if(result.status !== "success") {
+                logWarn(LogCategory.STATISTICS, tr("Failed to register connect attempt: %o"), result.result);
+            }
         });
     }
+
+    const result = await doHandleConnectRequest(serverAddress, serverUniqueId, parameters);
+    if(inviteLinkId) {
+        let promise: Promise<ActionResult<void>>;
+        switch (result.status) {
+            case "success":
+                promise = clientServiceInvite.logAction(inviteLinkId, "ConnectSuccess");
+                break;
+
+            case "channel-already-joined":
+            case "server-already-joined":
+                promise = clientServiceInvite.logAction(inviteLinkId, "ConnectNoAction", { reason: result.status });
+                break;
+
+            default:
+                promise = clientServiceInvite.logAction(inviteLinkId, "ConnectFailure", { reason: result.status });
+                break;
+        }
+
+        promise.then(result => {
+            if(result.status !== "success") {
+                logWarn(LogCategory.STATISTICS, tr("Failed to register connect result: %o"), result.result);
+            }
+        });
+    }
+}
+
+type ConnectRequestResult = {
+    status:
+        "success" |
+        "profile-invalid" |
+        "client-aborted" |
+        "server-join-failed" |
+        "server-already-joined" |
+        "channel-already-joined" |
+        "channel-not-visible" |
+        "channel-join-failed"
+}
+
+/**
+ * @param serverAddress The target address to connect to
+ * @param serverUniqueId If given a server unique id. If any of our current connections matches it, such connection will be used
+ * @param parameters General connect parameters from the connect URL
+ */
+async function doHandleConnectRequest(serverAddress: string, serverUniqueId: string | undefined, parameters: UrlParameterParser) : Promise<ConnectRequestResult> {
+
+    let targetServerConnection: ConnectionHandler;
+    let isCurrentServerConnection: boolean;
+
+    if(serverUniqueId) {
+        if(server_connections.getActiveConnectionHandler()?.getCurrentServerUniqueId() === serverUniqueId) {
+            targetServerConnection = server_connections.getActiveConnectionHandler();
+            isCurrentServerConnection = true;
+        } else {
+            targetServerConnection = server_connections.getAllConnectionHandlers().find(connection => connection.getCurrentServerUniqueId() === serverUniqueId);
+            isCurrentServerConnection = false;
+        }
+    }
+
+    const profileId = parameters.getValue(AppParameters.KEY_CONNECT_PROFILE, undefined);
+    const profile = findConnectProfile(profileId) || targetServerConnection?.serverConnection.handshake_handler()?.parameters.profile || defaultConnectProfile();
+
+    if(!profile || !profile.valid()) {
+        spawnConnectModalNew({
+            selectedAddress: serverAddress,
+            selectedProfile: profile
+        });
+        return { status: "profile-invalid" };
+    }
+
+    if(!aplayer.initialized()) {
+        /* Trick the client into clicking somewhere on the site to initialize audio */
+        const resultPromise = new Promise<boolean>(resolve => {
+            spawnYesNo(tra("Connect to {}", serverAddress), tra("Would you like to connect to {}?", serverAddress), resolve).open();
+        });
+
+        if(!(await resultPromise)) {
+            /* Well... the client don't want to... */
+            return { status: "client-aborted" };
+        }
+
+        await new Promise(resolve => aplayer.on_ready(resolve));
+    }
+
+    const clientNickname = parameters.getValue(AppParameters.KEY_CONNECT_NICKNAME, undefined);
+
+    const serverPassword = parameters.getValue(AppParameters.KEY_CONNECT_SERVER_PASSWORD, undefined);
+    const passwordsHashed = parameters.getValue(AppParameters.KEY_CONNECT_PASSWORDS_HASHED);
+
+    const channel = parameters.getValue(AppParameters.KEY_CONNECT_CHANNEL, undefined);
+    const channelPassword = parameters.getValue(AppParameters.KEY_CONNECT_CHANNEL_PASSWORD, undefined);
+
+    if(!targetServerConnection) {
+        targetServerConnection = server_connections.getActiveConnectionHandler();
+        if(targetServerConnection.connected) {
+            targetServerConnection = server_connections.spawnConnectionHandler();
+        }
+    }
+
+    server_connections.setActiveConnectionHandler(targetServerConnection);
+    if(targetServerConnection.getCurrentServerUniqueId() === serverUniqueId) {
+        /* Just join the new channel and may use the token (before) */
+
+        /* TODO: Use the token! */
+        let containsToken = false;
+
+        if(!channel) {
+            /* No need to join any channel */
+            if(!containsToken) {
+                createInfoModal(tr("Already connected"), tr("You're already connected to the target server.")).open();
+            } else {
+                /* Don't show a message since a token has been used */
+            }
+
+            return { status: "server-already-joined" };
+        }
+
+        const targetChannel = targetServerConnection.channelTree.resolveChannelPath(channel);
+        if(!targetChannel) {
+            createErrorModal(tr("Missing target channel"), tr("Failed to join channel since it is not visible.")).open();
+            return { status: "channel-not-visible" };
+        }
+
+        if(targetServerConnection.getClient().currentChannel() === targetChannel) {
+            createErrorModal(tr("Channel already joined"), tr("You already joined the channel.")).open();
+            return { status: "channel-already-joined" };
+        }
+
+        if(targetChannel.getCachedPasswordHash()) {
+            const succeeded = await targetChannel.joinChannel();
+            if(succeeded) {
+                /* Successfully joined channel with a password we already knew */
+                return { status: "success" };
+            }
+        }
+
+        targetChannel.setCachedHashedPassword(channelPassword);
+        if(await targetChannel.joinChannel()) {
+            return { status: "success" };
+        } else {
+            /* TODO: More detail? */
+            return { status: "channel-join-failed" };
+        }
+    } else {
+        await targetServerConnection.startConnectionNew({
+            targetAddress: serverAddress,
+
+            nickname: clientNickname,
+            nicknameSpecified: false,
+
+            profile: profile,
+            token: undefined,
+
+            serverPassword: serverPassword,
+            serverPasswordHashed: passwordsHashed,
+
+            defaultChannel: channel,
+            defaultChannelPassword: channelPassword,
+            defaultChannelPasswordHashed: passwordsHashed
+        }, false);
+
+        if(targetServerConnection.connected) {
+            return { status: "success" };
+        } else {
+            /* TODO: More detail? */
+            return { status: "server-join-failed" };
+        }
+    }
+}
+
+/* Used by the old native clients (an within the multi instance handler). Delete it later */
+export function handle_connect_request(properties: ConnectRequestData, _connection: ConnectionHandler) {
+    const urlBuilder = new UrlParameterBuilder();
+    urlBuilder.setValue(AppParameters.KEY_CONNECT_PROFILE, properties.profile);
+    urlBuilder.setValue(AppParameters.KEY_CONNECT_NICKNAME, properties.username);
+
+    urlBuilder.setValue(AppParameters.KEY_CONNECT_SERVER_PASSWORD, properties.password?.value);
+    urlBuilder.setValue(AppParameters.KEY_CONNECT_PASSWORDS_HASHED, properties.password?.hashed);
+
+    const url = new URL(`https://localhost/?${urlBuilder.build()}`);
+    handleConnectRequest(properties.address, undefined, new UrlParameterParser(url));
 }
 
 function main() {
@@ -235,7 +409,7 @@ const task_connect_handler: loader.Task = {
             return;
         }
 
-        /* FIXME: All additional parameters! */
+        /* FIXME: All additional connect parameters! */
         const connectData = {
             address: address,
 
@@ -293,7 +467,7 @@ const task_connect_handler: loader.Task = {
         preventWelcomeUI = true;
         loader.register_task(loader.Stage.LOADED, {
             priority: 0,
-            function: async () => handle_connect_request(connectData, server_connections.getActiveConnectionHandler() || server_connections.spawnConnectionHandler()),
+            function: async () => handleConnectRequest(address, undefined, AppParameters.Instance),
             name: tr("default url connect")
         });
         loader.register_task(loader.Stage.LOADED, task_teaweb_starter);

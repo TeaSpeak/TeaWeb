@@ -87,7 +87,7 @@ export class HandshakeHandler {
             client_default_channel_password: this.parameters.defaultChannelPassword || "",
             client_default_token: this.parameters.token,
 
-            client_server_password: this.parameters.targetPassword,
+            client_server_password: this.parameters.serverPassword,
 
             client_input_hardware: this.connection.client.isMicrophoneDisabled(),
             client_output_hardware: this.connection.client.hasOutputHardware(),

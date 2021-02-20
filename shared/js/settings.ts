@@ -76,10 +76,11 @@ function encodeValueToString<T extends RegistryValueType>(input: T) : string {
 
 function resolveKey<ValueType extends RegistryValueType, DefaultType>(
     key: RegistryKey<ValueType>,
-    resolver: (key: string) => string | undefined,
+    resolver: (key: string) => string | undefined | null,
     defaultValue: DefaultType
 ) : ValueType | DefaultType {
     let value = resolver(key.key);
+
     if(typeof value === "string") {
         return decodeValueFromString(value, key.valueType);
     }
@@ -104,41 +105,71 @@ function resolveKey<ValueType extends RegistryValueType, DefaultType>(
     return defaultValue;
 }
 
+export class UrlParameterParser {
+    private readonly url: URL;
+
+    constructor(url: URL) {
+        this.url = url;
+    }
+
+    private getParameter(key: string) : string | undefined {
+        const value = this.url.searchParams.get(key);
+        if(value === null) {
+            return undefined;
+        }
+
+        return decodeURIComponent(value);
+    }
+
+    getValue<V extends RegistryValueType, DV>(key: RegistryKey<V>, defaultValue: DV) : V | DV;
+    getValue<V extends RegistryValueType>(key: ValuedRegistryKey<V>, defaultValue?: V) : V;
+    getValue<V extends RegistryValueType, DV>(key: RegistryKey<V> | ValuedRegistryKey<V>, defaultValue: DV) : V | DV {
+        if(arguments.length > 1) {
+            return resolveKey(key, key => this.getParameter(key), defaultValue);
+        } else if("defaultValue" in key) {
+            return resolveKey(key, key => this.getParameter(key), key.defaultValue);
+        } else {
+            throw tr("missing value");
+        }
+    }
+}
+
+export class UrlParameterBuilder {
+    private parameters = {};
+
+    setValue<V extends RegistryValueType>(key: RegistryKey<V>, value: V) {
+        if(value === undefined) {
+            delete this.parameters[key.key];
+        } else {
+            this.parameters[key.key] = encodeURIComponent(encodeValueToString(value));
+        }
+    }
+
+    build() : string {
+        return Object.keys(this.parameters).map(key => `${key}=${this.parameters[key]}`).join("&");
+    }
+}
+
 /**
  * Switched appended to the application via the URL.
  * TODO: Passing native client switches
  */
 export namespace AppParameters {
-    const parameters = {};
-
-    function parseParameters() {
-        let search;
-        if(window.opener && window.opener !== window) {
-            search = new URL(window.location.href).search;
-        } else {
-            search = location.search;
-        }
-
-        search.substr(1).split("&").forEach(part => {
-            let item = part.split("=");
-            parameters[item[0]] = decodeURIComponent(item[1]);
-        });
-    }
+    export const Instance = new UrlParameterParser(new URL(window.location.href));
 
     export function getValue<V extends RegistryValueType, DV>(key: RegistryKey<V>, defaultValue: DV) : V | DV;
     export function getValue<V extends RegistryValueType>(key: ValuedRegistryKey<V>, defaultValue?: V) : V;
     export function getValue<V extends RegistryValueType, DV>(key: RegistryKey<V> | ValuedRegistryKey<V>, defaultValue: DV) : V | DV {
         if(arguments.length > 1) {
-            return resolveKey(key, key => parameters[key], defaultValue);
+            return Instance.getValue(key, defaultValue);
         } else if("defaultValue" in key) {
-            return resolveKey(key, key => parameters[key], key.defaultValue);
+            return Instance.getValue(key);
         } else {
             throw tr("missing value");
         }
     }
-
-    parseParameters();
 }
+
 (window as any).AppParameters = AppParameters;
 
 export namespace AppParameters {
@@ -149,6 +180,12 @@ export namespace AppParameters {
         description: "A target address to automatically connect to."
     };
 
+    export const KEY_CONNECT_INVITE_REFERENCE: RegistryKey<string> = {
+        key: "cir",
+        fallbackKeys: ["connect-invite-reference"],
+        valueType: "string",
+        description: "The invite link used to generate the connect parameters"
+    };
 
     export const KEY_CONNECT_NO_SINGLE_INSTANCE: ValuedRegistryKey<boolean> = {
         key: "cnsi",
@@ -167,13 +204,13 @@ export namespace AppParameters {
 
     export const KEY_CONNECT_NICKNAME: RegistryKey<string> = {
         key: "cn",
-        fallbackKeys: ["connect_username"],
+        fallbackKeys: ["connect_username", "nickname"],
         valueType: "string"
     };
 
     export const KEY_CONNECT_TOKEN: RegistryKey<string> = {
         key: "ctk",
-        fallbackKeys: ["connect_token"],
+        fallbackKeys: ["connect_token", "connect-token", "token"],
         valueType: "string",
         description: "Token which will be used by default if the connection attempt succeeded."
     };
@@ -187,9 +224,17 @@ export namespace AppParameters {
 
     export const KEY_CONNECT_SERVER_PASSWORD: RegistryKey<string> = {
         key: "csp",
-        fallbackKeys: ["connect_server_password"],
+        fallbackKeys: ["connect_server_password", "server-password"],
         valueType: "string",
-        description: "The password (hashed) for the auto connect attempt."
+        description: "The password for the auto connect attempt."
+    };
+
+    export const KEY_CONNECT_PASSWORDS_HASHED: ValuedRegistryKey<boolean> = {
+        key: "cph",
+        fallbackKeys: ["connect_passwords_hashed", "passwords-hashed"],
+        valueType: "boolean",
+        description: "Indicate whatever all passwords are hashed or not",
+        defaultValue: false
     };
 
     export const KEY_CONNECT_CHANNEL: RegistryKey<string> = {
@@ -201,22 +246,28 @@ export namespace AppParameters {
 
     export const KEY_CONNECT_CHANNEL_PASSWORD: RegistryKey<string> = {
         key: "ccp",
-        fallbackKeys: ["connect_channel_password"],
+        fallbackKeys: ["connect_channel_password", "channel-password"],
         valueType: "string",
         description: "The target channel password (hashed) for the connect attempt."
     };
 
 
-    export const KEY_IPC_REMOTE_ADDRESS: RegistryKey<string> = {
+    export const KEY_IPC_APP_ADDRESS: RegistryKey<string> = {
         key: "ipc-address",
         valueType: "string",
-        description: "Address of the owner for IPC communication."
+        description: "Address of the apps IPC channel"
     };
 
-    export const KEY_IPC_REMOTE_POPOUT_CHANNEL: RegistryKey<string> = {
-        key: "ipc-channel",
+    export const KEY_IPC_CORE_PEER_ADDRESS: RegistryKey<string> = {
+        key: "ipc-core-peer",
         valueType: "string",
-        description: "The channel name of the popout channel communication id"
+        description: "Peer address of the apps core",
+    };
+
+    export const KEY_MODAL_IDENTITY_CODE: RegistryKey<string> = {
+        key: "modal-identify",
+        valueType: "string",
+        description: "An authentication code used to register the new process as the modal"
     };
 
     export const KEY_MODAL_TARGET: RegistryKey<string> = {
@@ -705,6 +756,20 @@ export class Settings {
         key: "video_quick_setup",
         defaultValue: true,
         description: "Automatically select the default video device and start broadcasting without the video configure dialog.",
+        valueType: "boolean",
+    };
+
+    static readonly KEY_INVITE_SHORT_URL: ValuedRegistryKey<boolean> = {
+        key: "invite_short_url",
+        defaultValue: true,
+        description: "Enable/disable the short url for the invite menu",
+        valueType: "boolean",
+    };
+
+    static readonly KEY_INVITE_ADVANCED_ENABLED: ValuedRegistryKey<boolean> = {
+        key: "invite_advanced_enabled",
+        defaultValue: false,
+        description: "Enable/disable the advanced menu for the invite menu",
         valueType: "boolean",
     };
 

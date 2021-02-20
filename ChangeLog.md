@@ -1,4 +1,8 @@
 # Changelog:
+* **20.02.21**
+    - Improved the browser IPC module
+    - Added support for client invite links
+  
 * **15.02.21**
     - Fixed critical bug within the event registry class
     - Added a dropdown for the microphone control button to quickly change microphones    

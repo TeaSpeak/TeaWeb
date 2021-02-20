@@ -27,7 +27,7 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     function: async () => {
         await import("tc-shared/proto");
         await i18n.initialize();
-        ipc.setup();
+        ipc.setupIpcHandler();
 
         setupJSRender();
     }
