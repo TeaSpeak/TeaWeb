@@ -7,3 +7,6 @@
 [submodule "vendor/TeaEventBus"]
 	path = vendor/TeaEventBus
 	url = https://github.com/WolverinDEV/TeaEventBus.git
+[submodule "vendor\\TeaClientServices"]
+	path = vendor\\TeaClientServices
+	url = https://github.com/WolverinDEV/TeaClientServices.git
