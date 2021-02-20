@@ -713,6 +713,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 "cid": this.getChannelId(),
                 "cpw": this.cachedPasswordHash || ""
             });
+            this.channelTree.client.sound.play(Sound.CHANNEL_JOINED);
             return true;
         } catch (error) {
             if(error instanceof CommandResult) {
