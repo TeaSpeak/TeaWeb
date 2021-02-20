@@ -252,16 +252,22 @@ export namespace AppParameters {
     };
 
 
-    export const KEY_IPC_REMOTE_ADDRESS: RegistryKey<string> = {
+    export const KEY_IPC_APP_ADDRESS: RegistryKey<string> = {
         key: "ipc-address",
         valueType: "string",
         description: "Address of the apps IPC channel"
     };
 
-    export const KEY_IPC_REMOTE_POPOUT_CHANNEL: RegistryKey<string> = {
-        key: "ipc-channel",
+    export const KEY_IPC_CORE_PEER_ADDRESS: RegistryKey<string> = {
+        key: "ipc-core-peer",
         valueType: "string",
-        description: "The channel name of the popout channel communication id"
+        description: "Peer address of the apps core",
+    };
+
+    export const KEY_MODAL_IDENTITY_CODE: RegistryKey<string> = {
+        key: "modal-identify",
+        valueType: "string",
+        description: "An authentication code used to register the new process as the modal"
     };
 
     export const KEY_MODAL_TARGET: RegistryKey<string> = {

@@ -13,7 +13,7 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     priority: 10,
     function: async () => {
         await i18n.initialize();
-        ipc.setup();
+        ipc.setupIpcHandler();
     }
 });
 

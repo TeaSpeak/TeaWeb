@@ -1,9 +1,10 @@
-import {LogCategory, logDebug, logTrace, logWarn} from "../../../log";
+import {LogCategory, logDebug, logTrace} from "../../../log";
 import * as ipc from "../../../ipc/BrowserIPC";
 import {ChannelMessage} from "../../../ipc/BrowserIPC";
-import {Registry} from "../../../events";
+import {Registry} from "tc-events";
 import {
     EventControllerBase,
+    kPopoutIPCChannelId,
     Popout2ControllerMessages,
     PopoutIPCMessage
 } from "../../../ui/react-elements/external-modal/IPCMessage";
@@ -21,13 +22,13 @@ export abstract class AbstractExternalModalController extends EventControllerBas
     private callbackWindowInitialized: (error?: string) => void;
 
     protected constructor(modalType: string, constructorArguments: any[]) {
-        super();
+        super(guid());
         this.modalType = modalType;
         this.constructorArguments = constructorArguments;
 
         this.modalEvents = new Registry<ModalEvents>();
 
-        this.ipcChannel = ipc.getIpcInstance().createChannel(undefined, "modal-" + guid());
+        this.ipcChannel = ipc.getIpcInstance().createChannel(kPopoutIPCChannelId);
         this.ipcChannel.messageHandler = this.handleIPCMessage.bind(this);
 
         this.documentUnloadListener = () => this.destroy();
@@ -121,51 +122,46 @@ export abstract class AbstractExternalModalController extends EventControllerBas
     }
 
     protected handleIPCMessage(remoteId: string, broadcast: boolean, message: ChannelMessage) {
-        if(broadcast)
+        if(!broadcast && remoteId !== this.ipcRemotePeerId) {
+            logDebug(LogCategory.IPC, tr("Received direct IPC message for popout controller from unknown source: %s"), remoteId);
             return;
-
-        if(this.ipcRemoteId === undefined) {
-            logDebug(LogCategory.IPC, tr("Remote window connected with id %s"), remoteId);
-            this.ipcRemoteId = remoteId;
-        } else if(this.ipcRemoteId !== remoteId) {
-            this.ipcRemoteId = remoteId;
         }
 
-        super.handleIPCMessage(remoteId, broadcast, message);
+        this.handleTypedIPCMessage(remoteId, broadcast, message.type as any, message.data);
     }
 
-    protected handleTypedIPCMessage<T extends Popout2ControllerMessages>(type: T, payload: PopoutIPCMessage[T]) {
-        super.handleTypedIPCMessage(type, payload);
+    protected handleTypedIPCMessage<T extends Popout2ControllerMessages>(remoteId: string, isBroadcast: boolean, type: T, payload: PopoutIPCMessage[T]) {
+        super.handleTypedIPCMessage(remoteId, isBroadcast, type, payload);
 
-        switch (type) {
-            case "hello-popout": {
-                const tpayload = payload as PopoutIPCMessage["hello-popout"];
-                logTrace(LogCategory.IPC, "Received Hello World from popup with version %s (expected %s).", tpayload.version, __build.version);
-                if(tpayload.version !== __build.version) {
-                    this.sendIPCMessage("hello-controller", { accepted: false, message: tr("version miss match") });
-                    if(this.callbackWindowInitialized) {
-                        this.callbackWindowInitialized(tr("version miss match"));
-                        this.callbackWindowInitialized = undefined;
-                    }
-                    return;
-                }
-
-                if(this.callbackWindowInitialized) {
-                    this.callbackWindowInitialized();
-                    this.callbackWindowInitialized = undefined;
-                }
-
-                this.sendIPCMessage("hello-controller", { accepted: true, constructorArguments: this.constructorArguments });
-                break;
+        if(type === "hello-popout") {
+            const messageHello = payload as PopoutIPCMessage["hello-popout"];
+            if(messageHello.authenticationCode !== this.ipcAuthenticationCode) {
+                /* most likely not for us */
+                return;
             }
 
-            case "invoke-modal-action":
-                /* must be handled by the underlying handler */
-                break;
+            if(this.ipcRemotePeerId) {
+                logTrace(LogCategory.IPC, tr("Modal popout slave changed from %s to %s. Side reload?"), this.ipcRemotePeerId, remoteId);
+                /* TODO: Send a good by to the old modal */
+            }
+            this.ipcRemotePeerId = remoteId;
 
-            default:
-                logWarn(LogCategory.IPC, "Received unknown message type from popup window: %s", type);
+            logTrace(LogCategory.IPC, "Received Hello World from popup (peer id %s) with version %s (expected %s).", remoteId, messageHello.version, __build.version);
+            if(messageHello.version !== __build.version) {
+                this.sendIPCMessage("hello-controller", { accepted: false, message: tr("version miss match") });
+                if(this.callbackWindowInitialized) {
+                    this.callbackWindowInitialized(tr("version miss match"));
+                    this.callbackWindowInitialized = undefined;
+                }
                 return;
+            }
+
+            if(this.callbackWindowInitialized) {
+                this.callbackWindowInitialized();
+                this.callbackWindowInitialized = undefined;
+            }
+
+            this.sendIPCMessage("hello-controller", { accepted: true, constructorArguments: this.constructorArguments });
         }
     }
 }

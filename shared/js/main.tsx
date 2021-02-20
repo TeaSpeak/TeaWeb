@@ -64,7 +64,7 @@ async function initialize() {
         return;
     }
 
-    bipc.setup();
+    bipc.setupIpcHandler();
 }
 
 async function initializeApp() {

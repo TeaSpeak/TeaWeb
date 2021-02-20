@@ -95,7 +95,7 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     name: "entry tags",
     priority: 10,
     function: async () => {
-        const channel = getIpcInstance().createChannel(undefined, kIpcChannel);
+        const channel = getIpcInstance().createChannel(kIpcChannel);
         channel.messageHandler = (_remoteId, _broadcast, message) => handleIpcMessage(message.type, message.data);
     }
 });

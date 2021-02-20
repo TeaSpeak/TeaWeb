@@ -2,8 +2,8 @@ import {getIpcInstance as getIPCInstance} from "../../../ipc/BrowserIPC";
 import {AppParameters} from "../../../settings";
 import {
     Controller2PopoutMessages,
-    EventControllerBase,
-    PopoutIPCMessage
+    EventControllerBase, kPopoutIPCChannelId,
+    PopoutIPCMessage,
 } from "../../../ui/react-elements/external-modal/IPCMessage";
 
 let controller: PopoutController;
@@ -21,11 +21,12 @@ class PopoutController extends EventControllerBase<"popout"> {
     private callbackControllerHello: (accepted: boolean | string) => void;
 
     constructor() {
-        super();
-        this.ipcRemoteId = AppParameters.getValue(AppParameters.KEY_IPC_REMOTE_ADDRESS, "invalid");
+        super(AppParameters.getValue(AppParameters.KEY_MODAL_IDENTITY_CODE, "invalid"));
 
-        this.ipcChannel = getIPCInstance().createChannel(this.ipcRemoteId, AppParameters.getValue(AppParameters.KEY_IPC_REMOTE_POPOUT_CHANNEL, "invalid"));
-        this.ipcChannel.messageHandler = this.handleIPCMessage.bind(this);
+        this.ipcChannel = getIPCInstance().createChannel(kPopoutIPCChannelId);
+        this.ipcChannel.messageHandler = (sourcePeerId, broadcast, message) => {
+            this.handleTypedIPCMessage(sourcePeerId, broadcast, message.type as any, message.data);
+        };
     }
 
     getConstructorArguments() : any[] {
@@ -33,7 +34,7 @@ class PopoutController extends EventControllerBase<"popout"> {
     }
 
     async initialize() {
-        this.sendIPCMessage("hello-popout", { version: __build.version });
+        this.sendIPCMessage("hello-popout", { version: __build.version, authenticationCode: this.ipcAuthenticationCode });
 
         await new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
@@ -55,13 +56,14 @@ class PopoutController extends EventControllerBase<"popout"> {
         });
     }
 
-    protected handleTypedIPCMessage<T extends Controller2PopoutMessages>(type: T, payload: PopoutIPCMessage[T]) {
-        super.handleTypedIPCMessage(type, payload);
+    protected handleTypedIPCMessage<T extends Controller2PopoutMessages>(remoteId: string, isBroadcast: boolean, type: T, payload: PopoutIPCMessage[T]) {
+        super.handleTypedIPCMessage(remoteId, isBroadcast, type, payload);
 
         switch (type) {
             case "hello-controller": {
                 const tpayload = payload as PopoutIPCMessage["hello-controller"];
-                console.log("Received Hello World from controller. Window instance accpected: %o", tpayload.accepted);
+                this.ipcRemotePeerId = remoteId;
+                console.log("Received Hello World from controller (peer id %s). Window instance accepted: %o", this.ipcRemotePeerId, tpayload.accepted);
                 if(!this.callbackControllerHello) {
                     return;
                 }

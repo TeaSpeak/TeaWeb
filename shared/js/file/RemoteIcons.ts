@@ -3,7 +3,6 @@ import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {ChannelMessage, IPCChannel} from "tc-shared/ipc/BrowserIPC";
 import * as ipc from "tc-shared/ipc/BrowserIPC";
-import {AppParameters} from "tc-shared/settings";
 import {LogCategory, logWarn} from "tc-shared/log";
 
 class RemoteRemoteIcon extends RemoteIcon {
@@ -33,7 +32,7 @@ class RemoteIconManager extends AbstractIconManager {
     constructor() {
         super();
 
-        this.ipcChannel = ipc.getIpcInstance().createChannel(AppParameters.getValue(AppParameters.KEY_IPC_REMOTE_ADDRESS, "invalid"), kIPCIconChannel);
+        this.ipcChannel = ipc.getIpcInstance().createCoreControlChannel(kIPCIconChannel);
         this.ipcChannel.messageHandler = this.handleIpcMessage.bind(this);
     }
 

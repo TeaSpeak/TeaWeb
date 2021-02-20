@@ -208,7 +208,7 @@ let ipcChannel: IPCChannel;
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     name: "Invite controller init",
     function: async () => {
-        ipcChannel = getIpcInstance().createChannel(AppParameters.getValue(AppParameters.KEY_IPC_REMOTE_ADDRESS, undefined), "invite-info");
+        ipcChannel = getIpcInstance().createCoreControlChannel("invite-info");
         ipcChannel.messageHandler = handleIpcMessage;
     },
     priority: 10

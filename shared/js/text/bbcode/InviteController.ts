@@ -1,6 +1,6 @@
 import * as loader from "tc-loader";
 import {ChannelMessage, getIpcInstance, IPCChannel} from "tc-shared/ipc/BrowserIPC";
-import {AppParameters, UrlParameterParser} from "tc-shared/settings";
+import {UrlParameterParser} from "tc-shared/settings";
 import {IpcInviteInfo} from "tc-shared/text/bbcode/InviteDefinitions";
 import {LogCategory, logError} from "tc-shared/log";
 import {clientServiceInvite, clientServices} from "tc-shared/clientservice";
@@ -10,7 +10,7 @@ let ipcChannel: IPCChannel;
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     name: "Invite controller init",
     function: async () => {
-        ipcChannel = getIpcInstance().createChannel(AppParameters.getValue(AppParameters.KEY_IPC_REMOTE_ADDRESS, undefined), "invite-info");
+        ipcChannel = getIpcInstance().createChannel("invite-info");
         ipcChannel.messageHandler = handleIpcMessage;
     },
     priority: 10
