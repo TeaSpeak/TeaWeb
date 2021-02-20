@@ -8,6 +8,7 @@ import {
     PopoutIPCMessage
 } from "../../../ui/react-elements/external-modal/IPCMessage";
 import {ModalController, ModalEvents, ModalOptions, ModalState} from "../../../ui/react-elements/ModalDefinitions";
+import {guid} from "tc-shared/crypto/uid";
 
 export abstract class AbstractExternalModalController extends EventControllerBase<"controller"> implements ModalController {
     public readonly modalType: string;
@@ -26,7 +27,7 @@ export abstract class AbstractExternalModalController extends EventControllerBas
 
         this.modalEvents = new Registry<ModalEvents>();
 
-        this.ipcChannel = ipc.getIpcInstance().createChannel();
+        this.ipcChannel = ipc.getIpcInstance().createChannel(undefined, "modal-" + guid());
         this.ipcChannel.messageHandler = this.handleIPCMessage.bind(this);
 
         this.documentUnloadListener = () => this.destroy();

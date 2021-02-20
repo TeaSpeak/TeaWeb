@@ -441,7 +441,7 @@ export class ChannelConversationManager extends AbstractChatManager<ChannelConve
     }
 
     queryUnreadFlags() {
-        const commandData = this.connection.channelTree.channels.map(e => { return { cid: e.channelId, cpw: e.cached_password() }});
+        const commandData = this.connection.channelTree.channels.map(e => { return { cid: e.channelId, cpw: e.getCachedPasswordHash() }});
         this.connection.serverConnection.send_command("conversationfetch", commandData).catch(error => {
             logWarn(LogCategory.CHAT, tr("Failed to query conversation indexes: %o"), error);
         });

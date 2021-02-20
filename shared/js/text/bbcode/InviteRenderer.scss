@@ -1,0 +1,140 @@
+@import "../../../css/static/mixin";
+
+.container {
+    margin-top: .25em;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+
+    height: 3em;
+
+    background: #454545;
+    border-radius: .2em;
+
+    padding: .2em .3em;
+
+
+    &:not(:last-child) {
+        margin-bottom: .5em;
+    }
+
+    &.info, &.loading {
+        .left, .right {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .right {
+            margin-left: 1em;
+            flex-shrink: 0;
+            flex-grow: 0;
+            width: 6em;
+        }
+
+        .left {
+            flex-grow: 1;
+            flex-shrink: 1;
+
+            height: 2.4em;
+            align-self: center;
+
+            min-width: 1em;
+            max-width: 20em;
+
+            line-height: 1.2em;
+
+            .loading {
+                display: block;
+            }
+
+            .joinServer {
+                flex-shrink: 1;
+                flex-grow: 0;
+
+                min-height: 0;
+                height: 1em;
+
+                overflow: hidden;
+            }
+
+            .channelName {
+                display: flex;
+                flex-direction: row;
+                justify-content: flex-start;
+
+                color: #b3b3b3;
+                font-weight: 700;
+
+                max-height: 1em;
+
+                .name {
+                    margin-left: .25em;
+                    align-self: center;
+                    @include text-dotdotdot();
+                }
+            }
+
+            .serverName {
+                flex-shrink: 0;
+                color: #b3b3b3;
+
+                &.large {
+                    max-height: 2.4em;
+                    overflow: hidden;
+                    font-weight: 700;
+                }
+
+                &.short {
+                    max-height: 1.2em;
+                    @include text-dotdotdot();
+                }
+            }
+        }
+    }
+
+    &.error {
+        flex-direction: column;
+
+        .containerError {
+            height: 2.4em;
+            color: #cf1717;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: stretch;
+
+
+            &.noTitle {
+                justify-content: center;
+
+                .title {
+                    display: none;
+                }
+
+                .message {
+                    text-align: center;
+                }
+            }
+
+            .title {
+                flex-shrink: 1;
+                flex-grow: 0;
+
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            .message {
+                flex-shrink: 0;
+                font-weight: 700;
+
+                max-height: 2.4em;
+                overflow: hidden;
+
+                line-height: 1.2em;
+            }
+        }
+    }
+}

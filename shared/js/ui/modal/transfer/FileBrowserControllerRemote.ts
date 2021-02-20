@@ -533,7 +533,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 return {
                     path: e.info.path,
                     cid: e.info.channelId,
-                    cpw: e.info.channel?.cached_password(),
+                    cpw: e.info.channel?.getCachedPasswordHash(),
                     name: e.name
                 }
             })).then(async result => {
@@ -647,7 +647,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         //ftcreatedir cid=4 cpw dirname=\/TestDir return_code=1:17
         connection.serverConnection.send_command("ftcreatedir", {
             cid: path.channelId,
-            cpw: path.channel.cached_password(),
+            cpw: path.channel.getCachedPasswordHash(),
             dirname: path.path + event.name
         }).then(() => {
             events.fire("action_create_directory_result", {path: event.path, name: event.name, status: "success"});
@@ -709,7 +709,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                     channel: info.channelId,
                     path: info.type === "channel" ? info.path : "",
                     name: info.type === "channel" ? file.name : "/" + file.name,
-                    channelPassword: info.channel?.cached_password(),
+                    channelPassword: info.channel?.getCachedPasswordHash(),
                     targetSupplier: targetSupplier
                 });
                 transfer.awaitFinished().then(() => {
@@ -752,7 +752,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 const fileName = file.name;
                 const transfer = connection.fileManager.initializeFileUpload({
                     channel: pathInfo.channelId,
-                    channelPassword: pathInfo.channel?.cached_password(),
+                    channelPassword: pathInfo.channel?.getCachedPasswordHash(),
                     name: file.name,
                     path: pathInfo.path,
                     source: async () => TransferProvider.provider().createBrowserFileSource(file)

@@ -14,7 +14,7 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     function: async () => {
         clientServices = new ClientServices(new class implements ClientServiceConfig {
             getServiceHost(): string {
-                //return "localhost:1244";
+                return "localhost:1244";
                 return "client-services.teaspeak.de:27791";
             }
 

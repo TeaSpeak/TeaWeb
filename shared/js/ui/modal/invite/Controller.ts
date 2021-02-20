@@ -182,7 +182,7 @@ class InviteController {
 
             this.targetChannelId = channel.channelId;
             this.targetChannelName = channel.channelName();
-            this.targetChannelPasswordHashed = channel.cached_password();
+            this.targetChannelPasswordHashed = channel.getCachedPasswordHash();
             this.targetChannelPasswordRaw = undefined;
         } else if(this.targetChannelId === 0) {
             return;
@@ -281,7 +281,7 @@ class InviteController {
         const inviteLink = result.unwrap();
         this.linkAdminToken = inviteLink.adminToken;
         this.inviteLinkShort = `https://teaspeak.de/${inviteLink.linkId}`;
-        this.inviteLinkLong = `https://join.teaspeak.de/invite/${inviteLink.linkId}`;
+        this.inviteLinkLong = `https://join.teaspeak.de/${inviteLink.linkId}`;
         this.inviteLinkExpireDate = this.linkExpiresAfter;
     }
 }

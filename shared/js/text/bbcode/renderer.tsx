@@ -13,11 +13,13 @@ import "./highlight";
 import "./youtube";
 import "./url";
 import "./image";
+import {ElementRenderer, Renderer} from "vendor/xbbcode/renderer/base";
+import {TextElement} from "vendor/xbbcode/elements";
 
 export let BBCodeHandlerContext: Context<string>;
 
 export const rendererText = new TextRenderer();
-export const rendererReact = new ReactRenderer();
+export const rendererReact = new ReactRenderer(true);
 export const rendererHTML = new HTMLRenderer(rendererReact);
 
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {

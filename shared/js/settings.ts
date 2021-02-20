@@ -180,6 +180,12 @@ export namespace AppParameters {
         description: "A target address to automatically connect to."
     };
 
+    export const KEY_CONNECT_INVITE_REFERENCE: RegistryKey<string> = {
+        key: "cir",
+        fallbackKeys: ["connect-invite-reference"],
+        valueType: "string",
+        description: "The invite link used to generate the connect parameters"
+    };
 
     export const KEY_CONNECT_NO_SINGLE_INSTANCE: ValuedRegistryKey<boolean> = {
         key: "cnsi",
@@ -249,7 +255,7 @@ export namespace AppParameters {
     export const KEY_IPC_REMOTE_ADDRESS: RegistryKey<string> = {
         key: "ipc-address",
         valueType: "string",
-        description: "Address of the owner for IPC communication."
+        description: "Address of the apps IPC channel"
     };
 
     export const KEY_IPC_REMOTE_POPOUT_CHANNEL: RegistryKey<string> = {

@@ -984,7 +984,7 @@ export class ConnectionHandler {
         const connectParameters = this.serverConnection.handshake_handler().parameters;
 
         return {
-            channel: targetChannel ? {target: "/" + targetChannel.channelId, password: targetChannel.cached_password()} : undefined,
+            channel: targetChannel ? {target: "/" + targetChannel.channelId, password: targetChannel.getCachedPasswordHash()} : undefined,
             nickname: name,
             password: connectParameters.serverPassword ? {
                 password: connectParameters.serverPassword,
