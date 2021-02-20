@@ -1,7 +1,6 @@
 import {AbstractExternalModalController} from "tc-shared/ui/react-elements/external-modal/Controller";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
-import * as ipc from "tc-shared/ipc/BrowserIPC";
-import {ChannelMessage} from "tc-shared/ipc/BrowserIPC";
+import {ChannelMessage, getIpcInstance} from "tc-shared/ipc/BrowserIPC";
 import {LogCategory, logDebug, logWarn} from "tc-shared/log";
 import {Popout2ControllerMessages, PopoutIPCMessage} from "tc-shared/ui/react-elements/external-modal/IPCMessage";
 import {tr, tra} from "tc-shared/i18n/localize";
@@ -91,8 +90,8 @@ export class ExternalModalController extends AbstractExternalModalController {
             "chunk": "modal-external",
             "modal-target": this.modalType,
             "modal-identify": this.ipcAuthenticationCode,
-            "ipc-address": ipc.getIpcInstance().getApplicationChannelId(),
-            "ipc-core-peer": ipc.getIpcInstance().getLocalPeerId(),
+            "ipc-address": getIpcInstance().getApplicationChannelId(),
+            "ipc-core-peer": getIpcInstance().getLocalPeerId(),
             "disableGlobalContextMenu": __build.mode === "debug" ? 1 : 0,
             "loader-abort": __build.mode === "debug" ? 1 : 0,
         };

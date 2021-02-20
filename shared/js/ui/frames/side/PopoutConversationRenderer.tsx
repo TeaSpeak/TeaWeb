@@ -1,4 +1,4 @@
-import {Registry, RegistryMap} from "tc-shared/events";
+import {IpcRegistryDescription, Registry} from "tc-shared/events";
 import {AbstractConversationUiEvents} from "./AbstractConversationDefinitions";
 import {ConversationPanel} from "./AbstractConversationRenderer";
 import * as React from "react";
@@ -8,11 +8,11 @@ class PopoutConversationRenderer extends AbstractModal {
     private readonly events: Registry<AbstractConversationUiEvents>;
     private readonly userData: any;
 
-    constructor(registryMap: RegistryMap, userData: any) {
+    constructor(events: IpcRegistryDescription<AbstractConversationUiEvents>, userData: any) {
         super();
 
         this.userData = userData;
-        this.events = registryMap["default"] as any;
+        this.events = Registry.fromIpcDescription(events);
     }
 
     renderBody() {

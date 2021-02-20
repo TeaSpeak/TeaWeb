@@ -78,7 +78,7 @@ async function executePendingInvites() {
     while(pendingInviteQueries.length > 0) {
         const invite = pendingInviteQueries.pop_front();
         await invite();
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     executingPendingInvites = false;

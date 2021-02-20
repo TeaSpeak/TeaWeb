@@ -216,7 +216,6 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
 
 
 function handleIpcMessage(remoteId: string, broadcast: boolean, message: ChannelMessage) {
-    console.error(message);
     if(message.type === "query-result") {
         if(!localInviteCache[message.data.linkId]) {
             return;
