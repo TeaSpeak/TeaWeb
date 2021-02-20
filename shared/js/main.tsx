@@ -226,7 +226,7 @@ async function doHandleConnectRequest(serverAddress: string, serverUniqueId: str
     }
 
     server_connections.setActiveConnectionHandler(targetServerConnection);
-    if(isCurrentServerConnection) {
+    if(targetServerConnection.getCurrentServerUniqueId() === serverUniqueId) {
         /* Just join the new channel and may use the token (before) */
 
         /* TODO: Use the token! */
