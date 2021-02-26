@@ -51,6 +51,8 @@ import "./clientservice";
 import "./text/bbcode/InviteController";
 import {clientServiceInvite} from "tc-shared/clientservice";
 import {ActionResult} from "tc-services";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 assertMainApplication();
 
@@ -218,6 +220,8 @@ async function doHandleConnectRequest(serverAddress: string, serverUniqueId: str
     const channel = parameters.getValue(AppParameters.KEY_CONNECT_CHANNEL, undefined);
     const channelPassword = parameters.getValue(AppParameters.KEY_CONNECT_CHANNEL_PASSWORD, undefined);
 
+    const connectToken = parameters.getValue(AppParameters.KEY_CONNECT_TOKEN, undefined);
+
     if(!targetServerConnection) {
         targetServerConnection = server_connections.getActiveConnectionHandler();
         if(targetServerConnection.connected) {
@@ -229,12 +233,29 @@ async function doHandleConnectRequest(serverAddress: string, serverUniqueId: str
     if(targetServerConnection.getCurrentServerUniqueId() === serverUniqueId) {
         /* Just join the new channel and may use the token (before) */
 
-        /* TODO: Use the token! */
-        let containsToken = false;
+        if(connectToken) {
+            try {
+                await targetServerConnection.serverConnection.send_command("tokenuse", { token: connectToken }, { process_result: false });
+            } catch (error) {
+                if(error instanceof CommandResult) {
+                    if(error.id === ErrorCode.TOKEN_INVALID_ID) {
+                        targetServerConnection.log.log("error.custom", { message: tr("Try to use invite key token but the token is invalid.")});
+                    } else if(error.id == ErrorCode.TOKEN_EXPIRED) {
+                        targetServerConnection.log.log("error.custom", { message: tr("Try to use invite key token but the token is expired.")});
+                    } else if(error.id === ErrorCode.TOKEN_USE_LIMIT_EXCEEDED) {
+                        targetServerConnection.log.log("error.custom", { message: tr("Try to use invite key token but the token has been used too many times.")});
+                    } else {
+                        targetServerConnection.log.log("error.custom", { message: tra("Try to use invite key token but an error occurred: {}", error.formattedMessage())});
+                    }
+                } else {
+                    logError(LogCategory.GENERAL, tr("Failed to use token: {}"), error);
+                }
+            }
+        }
 
         if(!channel) {
             /* No need to join any channel */
-            if(!containsToken) {
+            if(!connectToken) {
                 createInfoModal(tr("Already connected"), tr("You're already connected to the target server.")).open();
             } else {
                 /* Don't show a message since a token has been used */
@@ -263,7 +284,8 @@ async function doHandleConnectRequest(serverAddress: string, serverUniqueId: str
         }
 
         targetChannel.setCachedHashedPassword(channelPassword);
-        if(await targetChannel.joinChannel()) {
+        /* Force join the channel. Either we have the password, can ignore the password or we don't want to join. */
+        if(await targetChannel.joinChannel(true)) {
             return { status: "success" };
         } else {
             /* TODO: More detail? */
@@ -277,7 +299,7 @@ async function doHandleConnectRequest(serverAddress: string, serverUniqueId: str
             nicknameSpecified: false,
 
             profile: profile,
-            token: undefined,
+            token: connectToken,
 
             serverPassword: serverPassword,
             serverPasswordHashed: passwordsHashed,
