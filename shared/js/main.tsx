@@ -489,7 +489,9 @@ const task_connect_handler: loader.Task = {
         preventWelcomeUI = true;
         loader.register_task(loader.Stage.LOADED, {
             priority: 0,
-            function: async () => handleConnectRequest(address, undefined, AppParameters.Instance),
+            function: async () => {
+                handleConnectRequest(address, undefined, AppParameters.Instance).then(undefined);
+            },
             name: tr("default url connect")
         });
         loader.register_task(loader.Stage.LOADED, task_teaweb_starter);
