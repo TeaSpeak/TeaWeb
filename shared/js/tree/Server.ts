@@ -5,7 +5,6 @@ import * as log from "../log";
 import {LogCategory, logInfo, LogType} from "../log";
 import {Sound} from "../sound/Sounds";
 import * as bookmarks from "../bookmarks";
-import {spawnInviteEditor} from "../ui/modal/ModalInvite";
 import {openServerInfo} from "../ui/modal/ModalServerInfo";
 import {createServerModal} from "../ui/modal/ModalServerEdit";
 import {spawnIconSelect} from "../ui/modal/ModalIconSelect";

@@ -699,7 +699,9 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
         }
 
+        let passwordPrompted = false;
         if(this.properties.channel_flag_password === true && !this.cachedPasswordHash && !ignorePasswordFlag) {
+            passwordPrompted = true;
             const password = await this.requestChannelPassword(PermissionType.B_CHANNEL_JOIN_IGNORE_PASSWORD);
             if(typeof password === "undefined") {
                 /* aborted */
@@ -717,8 +719,12 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
             return true;
         } catch (error) {
             if(error instanceof CommandResult) {
-                if(error.id == ErrorCode.CHANNEL_INVALID_PASSWORD) { //Invalid password
+                if(error.id == ErrorCode.CHANNEL_INVALID_PASSWORD) {
                     this.invalidateCachedPassword();
+                    if(!passwordPrompted) {
+                        /* It seems like our cached password isn't valid any more */
+                        return await this.joinChannel(false);
+                    }
                 }
             }
             return false;

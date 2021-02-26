@@ -902,6 +902,7 @@ export class ChannelTree {
     spawnCreateChannel(parent?: ChannelEntry) {
         spawnChannelEditNew(this.client, undefined, parent, (properties, permissions) => {
             properties["cpid"] = parent ? parent.channelId : 0;
+
             logDebug(LogCategory.CHANNEL, tr("Creating a new channel.\nProperties: %o\nPermissions: %o"), properties);
             this.client.serverConnection.send_command("channelcreate", properties).then(() => {
                 let channel = this.find_channel_by_name(properties.channel_name, parent, true);
@@ -910,6 +911,7 @@ export class ChannelTree {
                     return;
                 }
 
+                channel.setCachedHashedPassword(properties.channel_password);
                 if(permissions && permissions.length > 0) {
                     let perms = [];
                     for(let perm of permissions) {

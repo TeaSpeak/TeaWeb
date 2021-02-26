@@ -2,7 +2,14 @@ import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {config} from "tc-shared/i18n/localize";
 import {getBackend} from "tc-shared/backend";
-import {ClientServiceConfig, ClientServiceInvite, ClientServices, ClientSessionType, LocalAgent} from "tc-services";
+import {
+    ClientServiceConfig,
+    ClientServiceInvite,
+    ClientServices,
+    ClientSessionType,
+    initializeClientServices,
+    LocalAgent
+} from "tc-services";
 
 import translation_config = config.translation_config;
 
@@ -12,6 +19,7 @@ export let clientServiceInvite: ClientServiceInvite;
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     priority: 30,
     function: async () => {
+        initializeClientServices();
         clientServices = new ClientServices(new class implements ClientServiceConfig {
             getServiceHost(): string {
                 //return "localhost:1244";

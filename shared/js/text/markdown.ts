@@ -1,4 +1,3 @@
-import * as log from "../log";
 import {LogCategory, logDebug, logTrace, logWarn} from "../log";
 import {
     CodeToken,
