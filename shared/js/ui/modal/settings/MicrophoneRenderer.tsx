@@ -52,6 +52,7 @@ const ActivityBar = (props: { events: Registry<MicrophoneSettingsEvents>, device
     }
 
     props.events.reactUse("notify_device_level", event => {
+        refHider.current.style.width = "100%";
         if (event.status === "uninitialized") {
             if (status.mode === "uninitialized") {
                 return;

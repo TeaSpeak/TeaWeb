@@ -1,4 +1,3 @@
-import * as log from "./log";
 import {LogCategory, logError, logTrace} from "./log";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
@@ -770,6 +769,12 @@ export class Settings {
         key: "invite_advanced_enabled",
         defaultValue: false,
         description: "Enable/disable the advanced menu for the invite menu",
+        valueType: "boolean",
+    };
+
+    static readonly KEY_MICROPHONE_LEVEL_INDICATOR: RegistryKey<boolean> = {
+        key: "microphone_level_indicator",
+        description: "Enable/disable the microphone level indicator when opening the microphone settings. The default is true, except for the linux native client.",
         valueType: "boolean",
     };
 

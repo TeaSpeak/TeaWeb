@@ -6,6 +6,8 @@ import {LogCategory, logTrace, logWarn} from "tc-shared/log";
 import {defaultRecorder} from "tc-shared/voice/RecorderProfile";
 import {DeviceListState, getRecorderBackend, IDevice} from "tc-shared/audio/recorder";
 import {Settings, settings} from "tc-shared/settings";
+import {getBackend} from "tc-shared/backend";
+import * as _ from "lodash";
 
 export type MicrophoneSetting =
     "volume"
@@ -48,8 +50,6 @@ export interface MicrophoneSettingsEvents {
     "action_request_permissions": {},
     "action_set_selected_device": { target: SelectedMicrophone },
     "action_set_selected_device_result": {
-        status: "success",
-    } | {
         status: "error",
         reason: string
     },
@@ -96,6 +96,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
         const levelMeterInitializePromises: { [key: string]: Promise<LevelMeter> } = {};
         const deviceLevelInfo: { [key: string]: any } = {};
         let deviceLevelUpdateTask;
+        let selectedDevice: SelectedMicrophone = { type: "none" };
 
         const destroyLevelIndicators = () => {
             Object.keys(levelMeterInitializePromises).forEach(e => {
@@ -110,39 +111,77 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
         const updateLevelMeter = () => {
             destroyLevelIndicators();
 
+            let levelMeterEnabled;
+            {
+                let defaultValue = true;
+                if(__build.target === "client" && getBackend("native").getVersionInfo().os_platform === "linux") {
+                    defaultValue = false;
+                }
+
+                levelMeterEnabled = settings.getValue(Settings.KEY_MICROPHONE_LEVEL_INDICATOR, defaultValue);
+            }
             deviceLevelInfo["none"] = {deviceId: "none", status: "success", level: 0};
 
+            const defaultDeviceId = recorderBackend.getDeviceList().getDefaultDeviceId();
             for (const device of recorderBackend.getDeviceList().getDevices()) {
-                let promise = recorderBackend.createLevelMeter(device).then(meter => {
-                    meter.setObserver(level => {
+                let createLevelMeter;
+                if(!levelMeterEnabled) {
+                    switch (selectedDevice.type) {
+                        case "default":
+                            createLevelMeter = device.deviceId == defaultDeviceId;
+                            break;
+
+                        case "device":
+                            createLevelMeter = device.deviceId == selectedDevice.deviceId;
+                            break;
+
+                        case "none":
+                            createLevelMeter = false;
+                            break;
+                    }
+                } else {
+                    createLevelMeter = true;
+                }
+
+                if(createLevelMeter) {
+                    let promise = recorderBackend.createLevelMeter(device).then(meter => {
+                        meter.setObserver(level => {
+                            if (levelMeterInitializePromises[device.deviceId] !== promise) {
+                                /* old level meter */
+                                return;
+                            }
+
+                            deviceLevelInfo[device.deviceId] = {
+                                deviceId: device.deviceId,
+                                status: "success",
+                                level: level
+                            };
+                        });
+                        return Promise.resolve(meter);
+                    }).catch(error => {
                         if (levelMeterInitializePromises[device.deviceId] !== promise) {
                             /* old level meter */
                             return;
                         }
-
                         deviceLevelInfo[device.deviceId] = {
                             deviceId: device.deviceId,
-                            status: "success",
-                            level: level
+                            status: "error",
+
+                            error: error
                         };
+
+                        logWarn(LogCategory.AUDIO, tr("Failed to initialize a level meter for device %s (%s): %o"), device.deviceId, device.driver + ":" + device.name, error);
+                        return Promise.reject(error);
                     });
-                    return Promise.resolve(meter);
-                }).catch(error => {
-                    if (levelMeterInitializePromises[device.deviceId] !== promise) {
-                        /* old level meter */
-                        return;
-                    }
+                    levelMeterInitializePromises[device.deviceId] = promise;
+                } else {
                     deviceLevelInfo[device.deviceId] = {
                         deviceId: device.deviceId,
                         status: "error",
 
-                        error: error
+                        error: tr("level meter disabled")
                     };
-
-                    logWarn(LogCategory.AUDIO, tr("Failed to initialize a level meter for device %s (%s): %o"), device.deviceId, device.driver + ":" + device.name, error);
-                    return Promise.reject(error);
-                });
-                levelMeterInitializePromises[device.deviceId] = promise;
+                }
             }
         };
 
@@ -160,12 +199,22 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
                 return;
             }
 
+            selectedDevice = event.selectedDevice;
             updateLevelMeter();
         });
 
         events.on("notify_destroy", () => {
             destroyLevelIndicators();
             clearInterval(deviceLevelUpdateTask);
+        });
+
+        events.on("notify_device_selected", event => {
+            if(_.isEqual(selectedDevice, event.device)) {
+                return;
+            }
+
+            selectedDevice = event.device;
+            updateLevelMeter();
         });
     }
 
