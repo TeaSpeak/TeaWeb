@@ -778,6 +778,25 @@ export class Settings {
         valueType: "boolean",
     };
 
+    static readonly KEY_MICROPHONE_THRESHOLD_ATTACK_SMOOTH: ValuedRegistryKey<number> = {
+        key: "microphone_threshold_attack_smooth",
+        valueType: "number",
+        defaultValue: .25
+    };
+
+    static readonly KEY_MICROPHONE_THRESHOLD_RELEASE_SMOOTH: ValuedRegistryKey<number> = {
+        key: "microphone_threshold_release_smooth",
+        valueType: "number",
+        defaultValue: .9
+
+    };
+    static readonly KEY_MICROPHONE_THRESHOLD_RELEASE_DELAY: ValuedRegistryKey<number> = {
+        key: "microphone_threshold_release_delay",
+        valueType: "number",
+        description: "Delay for the client to cut of the audio in ms.",
+        defaultValue: 500
+    };
+
     static readonly FN_LOG_ENABLED: (category: string) => RegistryKey<boolean> = category => {
         return {
             key: "log." + category.toLowerCase() + ".enabled",

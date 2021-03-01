@@ -115,6 +115,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
             {
                 let defaultValue = true;
                 if(__build.target === "client" && getBackend("native").getVersionInfo().os_platform === "linux") {
+                    /* The linux client crashes when it fails to open an alsa stream due too many opened streams */
                     defaultValue = false;
                 }
 

@@ -236,9 +236,16 @@ export class RecorderProfile {
             filter.setEnabled(true);
             filter.setThreshold(this.config.vad_threshold.threshold);
 
-            filter.setMarginFrames(10); /* 500ms */
-            filter.setAttackSmooth(.25);
-            filter.setReleaseSmooth(.9);
+            const releaseDelayMs = settings.getValue(Settings.KEY_MICROPHONE_THRESHOLD_RELEASE_DELAY);
+            if(__build.target === "web") {
+                /* One frame is 20ms */
+                filter.setMarginFrames(Math.ceil(releaseDelayMs / 20));
+            } else {
+                /* the client calculates it wrongly... */
+                filter.setMarginFrames(releaseDelayMs * 960);
+            }
+            filter.setAttackSmooth(settings.getValue(Settings.KEY_MICROPHONE_THRESHOLD_ATTACK_SMOOTH));
+            filter.setReleaseSmooth(settings.getValue(Settings.KEY_MICROPHONE_THRESHOLD_RELEASE_SMOOTH));
         } else if(this.config.vad_type === "push_to_talk") {
             const filter = this.registeredFilter["ppt-gate"];
             filter.setEnabled(true);
