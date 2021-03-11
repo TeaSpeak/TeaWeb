@@ -163,7 +163,7 @@ const VideoGeneralAvailableRenderer = (props: { videoId: string, haveScreen: boo
     const events = useContext(EventContext);
 
     const subscribeInfo = useContext(SubscribeContext);
-    if(props.haveCamera && canSubscribe(subscribeInfo, "camera") || props.haveScreen && canSubscribe(subscribeInfo, "screen")) {
+    if((props.haveCamera && canSubscribe(subscribeInfo, "camera")) || (props.haveScreen && canSubscribe(subscribeInfo, "screen"))) {
         return (
             <div className={cssStyle.text + " " + props.className} key={"video-muted"}>
                 <div className={cssStyle.videoAvailable}>

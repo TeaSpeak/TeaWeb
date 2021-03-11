@@ -337,13 +337,6 @@ class LocalVideoController extends RemoteClientVideoController {
                 }
         }
     }
-
-    /*
-    protected getBroadcastStream(target: VideoBroadcastType) : MediaStream | undefined {
-        const videoConnection = this.client.channelTree.client.serverConnection.getVideoConnection();
-        return videoConnection.getBroadcastingSource(target)?.getStream();
-    }
-    */
 }
 
 class ChannelVideoController {
