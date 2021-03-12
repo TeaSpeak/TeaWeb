@@ -104,7 +104,7 @@ export interface PermissionModalEvents {
     }
 
     action_set_permission_editor_subject: {
-        mode: PermissionEditorSubject;
+        mode: PermissionEditorSubject | undefined;
 
         groupId?: number;
         channelId?: number;
@@ -160,42 +160,27 @@ export interface PermissionModalEvents {
     query_groups: {
         target: "server" | "channel",
     },
-    query_groups_result: {
-        target: "server" | "channel",
-        groups: GroupProperties[]
-    },
     query_group_clients: {
         id: number
     },
-    query_group_clients_result: {
-        id: number,
-        status: "success" | "error" | "no-permissions",
-        error?: string;
-        clients?: {
-            name: string;
-            databaseId: number;
-            uniqueId: string;
-        }[]
-    },
-
     query_channels: {},
-    query_channels_result: {
-        channels: ChannelInfo[]
-    }
-
-    query_client_permissions: {}, /* will cause the notify_client_permissions */
+    query_client_permissions: {},
     query_client_info: {
         client: number | string; /* client database id or unique id */
     },
-    query_client_info_result: {
+
+
+    notify_channels: {
+        channels: ChannelInfo[]
+    },
+    notify_client_info: {
         client: number | string;
         state: "success" | "error" | "no-such-client" | "no-permission";
 
         error?: string;
         info?: { name: string, uniqueId: string, databaseId: number },
         failedPermission?: string;
-    }
-
+    },
     notify_group_updated: {
         target: "server" | "channel";
         id: number;
@@ -210,8 +195,21 @@ export interface PermissionModalEvents {
         target: "server" | "channel";
         groups: number[]
     },
-
-    notify_groups_reset: {}
+    notify_group_clients: {
+        id: number,
+        status: "success" | "error" | "no-permissions",
+        error?: string;
+        clients?: {
+            name: string;
+            databaseId: number;
+            uniqueId: string;
+        }[]
+    },
+    notify_groups_reset: {},
+    notify_groups: {
+        target: "server" | "channel",
+        groups: GroupProperties[]
+    },
 
     notify_client_permissions: {
         permissionModifyPower: number;
@@ -417,7 +415,7 @@ const stringifyError = error => {
 function initializePermissionModalController(connection: ConnectionHandler, events: Registry<PermissionModalEvents>) {
     events.on("query_groups", event => {
         const groups = event.target === "server" ? connection.groups.serverGroups : connection.groups.channelGroups;
-        events.fire_react("query_groups_result", {
+        events.fire_react("notify_groups", {
             target: event.target, groups: groups.map(group => {
                 return {
                     id: group.id,
@@ -613,6 +611,14 @@ function initializePermissionModalController(connection: ConnectionHandler, even
                 clientPermissionList: connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CLIENT_PERMISSION_LIST).granted(1),
                 clientChannelPermissionList: connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CHANNELCLIENT_PERMISSION_LIST).granted(1),
             });
+
+            /* Update the permission subject (we may now have or not have any more the permissions to edit him) */
+            events.fire("action_set_permission_editor_subject", {
+                channelId: undefined,
+                clientDatabaseId: undefined,
+                groupId: undefined,
+                mode: undefined
+            });
         };
 
         events.on("query_client_permissions", () => sendClientPermissions());
@@ -621,7 +627,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
 
     events.on("query_group_clients", event => {
         connection.serverConnection.command_helper.requestClientsByServerGroup(event.id).then(clients => {
-            events.fire("query_group_clients_result", {
+            events.fire("notify_group_clients", {
                 id: event.id, status: "success", clients: clients.map(e => {
                     return {
                         name: e.client_nickname,
@@ -632,12 +638,12 @@ function initializePermissionModalController(connection: ConnectionHandler, even
             });
         }).catch(error => {
             if (error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
-                events.fire("query_group_clients_result", {id: event.id, status: "no-permissions"});
+                events.fire("notify_group_clients", {id: event.id, status: "no-permissions"});
                 return;
             }
 
             logWarn(LogCategory.PERMISSIONS, tr("Failed to request server group client list: %o"), error);
-            events.fire("query_group_clients_result", {id: event.id, status: "error", error: stringifyError(error)});
+            events.fire("notify_group_clients", {id: event.id, status: "error", error: stringifyError(error)});
         });
     });
 
@@ -713,7 +719,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
     }));
 
     events.on("query_channels", () => {
-        events.fire_react("query_channels_result", {
+        events.fire_react("notify_channels", {
             channels: connection.channelTree.channelsOrdered().map(e => {
                 return {
                     id: e.channelId,
@@ -734,13 +740,13 @@ function initializePermissionModalController(connection: ConnectionHandler, even
         }
         promise.then(result => {
             if (result.length === 0) {
-                events.fire("query_client_info_result", {
+                events.fire("notify_client_info", {
                     client: event.client,
                     state: "no-such-client"
                 });
                 return;
             }
-            events.fire("query_client_info_result", {
+            events.fire("notify_client_info", {
                 client: event.client,
                 state: "success",
                 info: {
@@ -751,7 +757,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
             });
         }).catch(error => {
             if (error instanceof CommandResult) {
-                events.fire("query_client_info_result", {
+                events.fire("notify_client_info", {
                     client: event.client,
                     state: "no-permission",
                     failedPermission: connection.permissions.resolveInfo(parseInt(error.json["failed_permid"]))?.name || tr("unknwon")
@@ -760,7 +766,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
             }
 
             logWarn(LogCategory.PERMISSIONS, tr("Failed to query client info for %o: %o"), event.client, error);
-            events.fire("query_client_info_result", {
+            events.fire("notify_client_info", {
                 client: event.client,
                 state: "error",
                 error: stringifyError(error)
@@ -849,7 +855,7 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
         clientDatabaseId = typeof event.clientDatabaseId === "number" ? event.clientDatabaseId : clientDatabaseId;
         groupId = typeof event.groupId === "number" ? event.groupId : groupId;
 
-        mode = event.mode;
+        mode = event.mode || mode;
 
         let editorMode: "unset" | "normal" = "unset";
         switch (mode) {

@@ -323,8 +323,8 @@ class GroupsList extends React.Component<{ connection: ConnectionHandler, events
         this.groups.splice(0, this.groups.length);
     }
 
-    @EventHandler<PermissionModalEvents>("query_groups_result")
-    private handleQueryResult(event: PermissionModalEvents["query_groups_result"]) {
+    @EventHandler<PermissionModalEvents>("notify_groups")
+    private handleQueryResult(event: PermissionModalEvents["notify_groups"]) {
         if (event.target !== this.props.target)
             return;
 
@@ -585,8 +585,8 @@ class ServerClientList extends React.Component<{ connection: ConnectionHandler, 
         this.setState({state: "loading"});
     }
 
-    @EventHandler<PermissionModalEvents>("query_group_clients_result")
-    private handleQueryClientsResult(event: PermissionModalEvents["query_group_clients_result"]) {
+    @EventHandler<PermissionModalEvents>("notify_group_clients")
+    private handleQueryClientsResult(event: PermissionModalEvents["notify_group_clients"]) {
         if (event.id !== this.state.selectedGroupId)
             return;
 
@@ -642,8 +642,8 @@ class ServerClientList extends React.Component<{ connection: ConnectionHandler, 
         });
     }
 
-    @EventHandler<PermissionModalEvents>("query_groups_result")
-    private handleQueryResult(event: PermissionModalEvents["query_groups_result"]) {
+    @EventHandler<PermissionModalEvents>("notify_groups")
+    private handleQueryResult(event: PermissionModalEvents["notify_groups"]) {
         if (event.target !== "server")
             return;
 
@@ -862,8 +862,8 @@ class ChannelList extends React.Component<{ connection: ConnectionHandler, event
         this.props.events.fire("query_channels");
     }
 
-    @EventHandler<PermissionModalEvents>("query_channels_result")
-    private handleQueryChannelsResult(event: PermissionModalEvents["query_channels_result"]) {
+    @EventHandler<PermissionModalEvents>("notify_channels")
+    private handleQueryChannelsResult(event: PermissionModalEvents["notify_channels"]) {
         this.channels = event.channels.slice(0);
         if (this.channels.length > 0 && this.channels.findIndex(e => e.id === this.state.selectedChanelId) === -1)
             this.setState({selectedChanelId: this.channels[0].id});
@@ -988,7 +988,7 @@ const ClientSelect = (props: { events: Registry<PermissionModalEvents>, tabTarge
         props.events.fire("action_set_permission_editor_subject", {mode: props.tabTarget, clientDatabaseId: 0});
     });
 
-    props.events.reactUse("query_client_info_result", event => {
+    props.events.reactUse("notify_client_info", event => {
         if (event.client !== clientIdentifier)
             return;
 

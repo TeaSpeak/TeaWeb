@@ -2,6 +2,8 @@
 * **12.03.21**
     - Added a new video spotlight mode which allows showing multiple videos at the same time as well as 
       dragging and resizing them
+    - Fixed a minor bug within the permission editor
+    - Fixed the creation of channel groups
   
 * **20.02.21**
     - Improved the browser IPC module

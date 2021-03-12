@@ -328,13 +328,13 @@ function initializeGroupCreateController(connection: ConnectionHandler, events: 
         let promise: Promise<CommandResult>;
         if(event.source <= 0) {
             /* real group create */
-            promise = connection.serverConnection.send_command("servergroupadd", {
+            promise = connection.serverConnection.send_command(target + "groupadd", {
                 name: event.name,
                 type: event.target === "query" ? 2 : event.target === "template" ? 0 : 1
             });
         } else {
             /* group copy */
-            promise = connection.serverConnection.send_command("servergroupcopy", {
+            promise = connection.serverConnection.send_command(target + "groupcopy", {
                 ssgid: event.source,
                 name: event.name,
                 type: event.target === "query" ? 2 : event.target === "template" ? 0 : 1
