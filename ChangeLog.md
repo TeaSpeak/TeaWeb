@@ -1,4 +1,8 @@
 # Changelog:
+* **12.03.21**
+    - Added a new video spotlight mode which allows showing multiple videos at the same time as well as 
+      dragging and resizing them
+  
 * **20.02.21**
     - Improved the browser IPC module
     - Added support for client invite links

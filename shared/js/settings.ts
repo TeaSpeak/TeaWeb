@@ -758,6 +758,13 @@ export class Settings {
         valueType: "boolean",
     };
 
+    static readonly KEY_VIDEO_SPOTLIGHT_MODE: ValuedRegistryKey<number> = {
+        key: "video_spotlight_mode",
+        defaultValue: 1,
+        description: "Select the video spotlight mode.\n0: Single video\n1: Video grid",
+        valueType: "number",
+    };
+
     static readonly KEY_INVITE_SHORT_URL: ValuedRegistryKey<boolean> = {
         key: "invite_short_url",
         defaultValue: true,

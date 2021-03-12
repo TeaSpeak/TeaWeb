@@ -11,7 +11,6 @@ import {
     LevelMeter,
     NodeInputConsumer
 } from "tc-shared/voice/RecorderBase";
-import * as log from "tc-shared/log";
 import {LogCategory, logDebug, logWarn} from "tc-shared/log";
 import * as aplayer from "./player";
 import {JAbstractFilter, JStateFilter, JThresholdFilter} from "./RecorderFilter";

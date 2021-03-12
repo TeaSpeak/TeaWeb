@@ -21,39 +21,6 @@ import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 
 const cssStyle = require("./AppRenderer.scss");
 
-/*
-<div class="app-container">
-    <div class="app">
-        <!-- navigation bar -->
-        <div class="container-control-bar">
-            <div id="control_bar" class="control_bar">
-            </div>
-        </div>
-        <div class="container-connection-handlers" id="connection-handler-list"></div>
-        <div class="container-app-main">
-            <div class="container-channel-video" id="channel-video"></div>
-            <div class="container-channel-chat">
-                <!-- Channel tree -->
-                <div class="container-channel-tree">
-                    <div class="hostbanner" id="hostbanner"></div>
-                    <div class="channel-tree" id="channelTree"></div>
-                </div>
-
-                <div class="container-seperator vertical" seperator-id="seperator-channel-chat"></div>
-                <!-- Chat window -->
-                <div class="container-chat" id="chat"></div>
-            </div>
-            <div class="container-seperator horizontal" seperator-id="seperator-main-log"></div>
-            <div class="container-bottom">
-                <div class="container-server-log" id="server-log"></div>
-                <div class="container-footer" id="container-footer">
-                </div>
-            </div> <!-- Selection info -->
-        </div>
-    </div>
-</div>
- */
-
 const VideoFrame = React.memo((props: { events: Registry<AppUiEvents> }) => {
     const refElement = React.useRef<HTMLDivElement>();
     const [ container, setContainer ] = useState<HTMLDivElement | undefined>(() => {

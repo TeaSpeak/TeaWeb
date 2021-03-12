@@ -354,7 +354,7 @@ class ChannelVideoController {
     private localVideoController: LocalVideoController;
     private clientVideos: {[key: number]: RemoteClientVideoController} = {};
 
-    private currentSpotlight: string;
+    private currentSpotlights: string[];
 
     constructor(events: Registry<ChannelVideoEvents>, connection: ConnectionHandler) {
         this.events = events;
@@ -366,6 +366,8 @@ class ChannelVideoController {
             this.localVideoController = new LocalVideoController(connection.getClient(), this.events);
             this.localVideoController.callbackBroadcastStateChanged = () => this.notifyVideoList();
         });
+
+        this.currentSpotlights = [];
         this.currentlyVisible = false;
         this.expended = false;
     }
@@ -395,8 +397,8 @@ class ChannelVideoController {
             this.events.fire_react("notify_expended", { expended: this.expended });
         });
 
-        this.events.on("action_set_spotlight", event => {
-            this.setSpotlight(event.videoId);
+        this.events.on("action_toggle_spotlight", event => {
+            this.toggleSpotlight(event.videoIds, event.enabled);
             if(!this.isExpended()) {
                 this.events.fire("action_toggle_expended", { expended: true });
             }
@@ -554,13 +556,13 @@ class ChannelVideoController {
         events.push(settings.globalChangeListener(Settings.KEY_VIDEO_FORCE_SHOW_OWN_VIDEO, () => this.notifyVideoList()));
     }
 
-    setSpotlight(videoId: string | undefined) {
-        if(this.currentSpotlight === videoId) { return; }
+    toggleSpotlight(videoId: string[], enabled: boolean) {
+        const updated = videoId.map(entry => this.currentSpotlights.toggle(entry, enabled)).find(updated => updated);
+        if(!updated) {
+            return;
+        }
 
-        /* TODO: test if the video event exists? */
-
-        this.currentSpotlight = videoId;
-        this.notifySpotlight()
+        this.notifySpotlight();
         this.notifyVideoList();
     }
 
@@ -597,7 +599,7 @@ class ChannelVideoController {
     }
 
     private resetClientVideos() {
-        this.currentSpotlight = undefined;
+        this.currentSpotlights = [];
         for(const clientId of Object.keys(this.clientVideos)) {
             this.destroyClientVideo(parseInt(clientId));
         }
@@ -614,10 +616,7 @@ class ChannelVideoController {
             video.destroy();
             delete this.clientVideos[clientId];
 
-            if(video.videoId === this.currentSpotlight) {
-                this.currentSpotlight = undefined;
-                this.notifySpotlight();
-            }
+            this.toggleSpotlight([ video.videoId ], false);
             return true;
         } else {
             return false;
@@ -635,7 +634,7 @@ class ChannelVideoController {
     }
 
     private notifySpotlight() {
-        this.events.fire_react("notify_spotlight", { videoId: this.currentSpotlight });
+        this.events.fire_react("notify_spotlight", { videoId: this.currentSpotlights });
     }
 
     private notifyVideoList() {
@@ -677,7 +676,7 @@ class ChannelVideoController {
 
         this.updateVisibility(videoStreamingCount !== 0);
         if(this.expended) {
-            videoIds.remove(this.currentSpotlight);
+            this.currentSpotlights.forEach(entry => videoIds.remove(entry));
         }
 
         this.events.fire_react("notify_videos", {

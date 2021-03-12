@@ -69,7 +69,11 @@ export type LocalVideoState = "muted" | "unset" | "empty";
 export interface ChannelVideoEvents {
     action_toggle_expended: { expended: boolean },
     action_video_scroll: { direction: "left" | "right" },
-    action_set_spotlight: { videoId: string | undefined, expend: boolean },
+    action_toggle_spotlight: {
+        videoIds: string[],
+        enabled: boolean,
+        expend: boolean
+    },
     action_focus_spotlight: {},
     action_set_fullscreen: { videoId: string | undefined },
     action_set_pip: { videoId: string | undefined, broadcastType: VideoBroadcastType },
@@ -108,7 +112,7 @@ export interface ChannelVideoEvents {
         right: boolean
     },
     notify_spotlight: {
-        videoId: string | undefined
+        videoId: string[]
     },
     notify_video_statistics: {
         videoId: string | undefined,

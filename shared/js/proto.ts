@@ -19,7 +19,19 @@ declare global {
         last?(): T;
 
         pop_front(): T | undefined;
+
+        /**
+         * @param entry The entry to toggle
+         * @returns `true` if the entry has been inserted and false if the entry has been deleted
+         */
         toggle(entry: T) : boolean;
+
+        /**
+         * @param entry The entry to toggle
+         * @param insert Whatever the entry should be in the array or not
+         * @returns `true` if the array has been modified
+         */
+        toggle(entry: T, insert: boolean);
     }
 
     interface JSON {
@@ -173,14 +185,16 @@ if (!Array.prototype.pop_front) {
 }
 
 if (!Array.prototype.toggle) {
-    Array.prototype.toggle = function<T>(element: T): boolean {
+    Array.prototype.toggle = function<T>(element: T, insert?: boolean): boolean {
         const index = this.findIndex(e => e === element);
-        if(index === -1) {
+        if((index !== -1) === insert) {
+            return false;
+        } else if(index === -1) {
             this.push(element);
             return true;
         } else {
             this.splice(index, 1);
-            return false;
+            return typeof insert === "boolean";
         }
     }
 }

@@ -11,24 +11,29 @@ import {
     makeVideoAutoplay,
     VideoStreamState,
     VideoSubscribeInfo
-} from "tc-shared/ui/frames/video/Definitions";
+} from "./Definitions";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {ClientTag} from "tc-shared/ui/tree/EntryTags";
 import ResizeObserver from "resize-observer-polyfill";
-import {LogCategory, logWarn} from "tc-shared/log";
+import {LogCategory, logTrace, logWarn} from "tc-shared/log";
 import {spawnContextMenu} from "tc-shared/ui/ContextMenu";
 import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
 import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
 import {useTr} from "tc-shared/ui/react-elements/Helper";
+import {Spotlight, SpotlightDimensions, SpotlightDimensionsContext} from "./RendererSpotlight";
+import * as _ from "lodash";
+
 
 const SubscribeContext = React.createContext<VideoSubscribeInfo>(undefined);
 const EventContext = React.createContext<Registry<ChannelVideoEvents>>(undefined);
 const HandlerIdContext = React.createContext<string>(undefined);
 
+export const RendererVideoEventContext = EventContext;
+
 const cssStyle = require("./Renderer.scss");
 
-const ExpendArrow = () => {
+const ExpendArrow = React.memo(() => {
     const events = useContext(EventContext);
 
     const [ expended, setExpended ] = useState(() => {
@@ -43,7 +48,7 @@ const ExpendArrow = () => {
             <ClientIconRenderer icon={ClientIcon.DoubleArrow} className={cssStyle.icon} />
         </div>
     )
-};
+});
 
 const VideoInfo = React.memo((props: { videoId: string }) => {
     const events = useContext(EventContext);
@@ -368,7 +373,7 @@ const VideoControlButtons = React.memo((props: {
                      if(props.isSpotlight) {
                          events.fire("action_set_fullscreen", { videoId: props.fullscreenMode === "set" ? undefined : props.videoId });
                      } else {
-                         events.fire("action_set_spotlight", { videoId: props.videoId, expend: true });
+                         events.fire("action_toggle_spotlight", { videoIds: [ props.videoId ], expend: true, enabled: true });
                          events.fire("action_focus_spotlight", { });
                      }
                  }}
@@ -380,7 +385,7 @@ const VideoControlButtons = React.memo((props: {
     );
 });
 
-const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolean }) => {
+export const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolean }) => {
     const events = useContext(EventContext);
     const refContainer = useRef<HTMLDivElement>();
     const fullscreenCapable = "requestFullscreen" in HTMLElement.prototype;
@@ -438,14 +443,14 @@ const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolea
 
     return (
         <div
-            className={cssStyle.videoContainer}
+            className={cssStyle.videoContainer + " " + cssStyle.outlined}
             onDoubleClick={() => {
                 if(isFullscreen) {
                     events.fire("action_set_fullscreen", { videoId: undefined });
                 } else if(props.isSpotlight) {
                     events.fire("action_set_fullscreen", { videoId: props.videoId });
                 } else {
-                    events.fire("action_set_spotlight", { videoId: props.videoId, expend: true });
+                    events.fire("action_toggle_spotlight", { videoIds: [ props.videoId ], expend: true, enabled: true });
                     events.fire("action_focus_spotlight", { });
                 }
             }}
@@ -479,7 +484,7 @@ const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolea
                         label: props.isSpotlight ? tr("Release spotlight") : tr("Put client in spotlight"),
                         icon: ClientIcon.Fullscreen,
                         click: () => {
-                            events.fire("action_set_spotlight", { videoId: props.isSpotlight ? undefined : props.videoId, expend: true });
+                            events.fire("action_toggle_spotlight", { videoIds: [ props.videoId ], expend: true, enabled: !props.isSpotlight });
                             events.fire("action_focus_spotlight", { });
                         }
                     }
@@ -514,7 +519,7 @@ const VideoBarArrow = React.memo((props: { direction: "left" | "right", containe
     );
 });
 
-const VideoBar = () => {
+const VideoBar = React.memo(() => {
     const events = useContext(EventContext);
     const refVideos = useRef<HTMLDivElement>();
     const refArrowRight = useRef<HTMLDivElement>();
@@ -594,51 +599,53 @@ const VideoBar = () => {
             <VideoBarArrow direction={"right"} containerRef={refArrowRight} />
         </div>
     )
-};
+});
 
-const Spotlight = () => {
-    const events = useContext(EventContext);
-    const refContainer = useRef<HTMLDivElement>();
 
-    const [ videoId, setVideoId ] = useState<string>(() => {
-        events.fire("query_spotlight");
-        return undefined;
-    });
-    events.reactUse("notify_spotlight", event => setVideoId(event.videoId), undefined, []);
-    events.reactUse("action_focus_spotlight", () => refContainer.current?.focus(), undefined, []);
+const PanelContainer = (props: { children }) => {
+    const refSpotlightContainer = useRef<HTMLDivElement>();
+    const [ spotlightDimensions, setSpotlightDimensions ] = useState<SpotlightDimensions>({ width: 1200, height: 900 });
 
-    let body;
-    if(videoId) {
-        body = <VideoContainer videoId={videoId} key={"video-" + videoId} isSpotlight={true} />;
-    } else {
-        body = (
-            <div className={cssStyle.videoContainer} key={"no-video"}>
-                <div className={cssStyle.text}><Translatable>No spotlight selected</Translatable></div>
-            </div>
-        );
-    }
+    useEffect(() => {
+        const resizeObserver = new ResizeObserver(entries => {
+            const entry = entries.last();
+            const newDimensions = { height: entry.contentRect.height, width: entry.contentRect.width };
+
+            if(newDimensions.width === 0) {
+                /* div most likely got removed or something idk... */
+                return;
+            }
+
+            if(_.isEqual(newDimensions, spotlightDimensions)) {
+                return;
+            }
+
+            setSpotlightDimensions(newDimensions);
+            logTrace(LogCategory.VIDEO, tr("New spotlight dimensions: %o"), entry.contentRect);
+        });
+
+        resizeObserver.observe(refSpotlightContainer.current);
+        return () => resizeObserver.disconnect();
+    }, []);
 
     return (
-        <div
-            className={cssStyle.spotlight}
-            onKeyDown={event => {
-                if(event.key === "Escape") {
-                    events.fire("action_set_spotlight", { videoId: undefined, expend: false });
-                }
-            }}
-            tabIndex={0}
-            ref={refContainer}
-        >
-            {body}
-        </div>
-    )
-};
+        <SpotlightDimensionsContext.Provider value={spotlightDimensions}>
+            <div className={cssStyle.panel}>
+                {props.children}
+            </div>
+            <div className={cssStyle.heightProvider}>
+                <div className={cssStyle.videoBar} />
+                <div className={cssStyle.spotlight} ref={refSpotlightContainer} />
+            </div>
+        </SpotlightDimensionsContext.Provider>
+    );
+}
 
 export const ChannelVideoRenderer = (props: { handlerId: string, events: Registry<ChannelVideoEvents> }) => {
     return (
         <EventContext.Provider value={props.events}>
             <HandlerIdContext.Provider value={props.handlerId}>
-                <div className={cssStyle.panel}>
+                <PanelContainer>
                     <VideoSubscribeContextProvider>
                         <VideoBar />
                         <ExpendArrow />
@@ -646,7 +653,7 @@ export const ChannelVideoRenderer = (props: { handlerId: string, events: Registr
                             <Spotlight />
                         </ErrorBoundary>
                     </VideoSubscribeContextProvider>
-                </div>
+                </PanelContainer>
             </HandlerIdContext.Provider>
         </EventContext.Provider>
     );
