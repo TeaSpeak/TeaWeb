@@ -80,19 +80,31 @@ function resolveKey<ValueType extends RegistryValueType, DefaultType>(
 ) : ValueType | DefaultType {
     let value = resolver(key.key);
 
-    if(typeof value === "string") {
-        return decodeValueFromString(value, key.valueType);
+    const keys = [key.key];
+    if(Array.isArray(key.fallbackKeys)) {
+        keys.push(...key.fallbackKeys);
     }
 
-    /* trying fallback values */
-    for(const fallback of key.fallbackKeys || []) {
-        value = resolver(fallback);
+    for(const resolveKey of keys) {
+        value = resolver(resolveKey);
         if(typeof value !== "string") {
             continue;
         }
 
+        switch (key.valueType) {
+            case "number":
+            case "boolean":
+                if(value.length === 0) {
+                    continue;
+                }
+                break;
+
+            default:
+                break;
+        }
+
         if(key.fallbackImports) {
-            const fallbackValueImporter = key.fallbackImports[fallback];
+            const fallbackValueImporter = key.fallbackImports[resolveKey];
             if(fallbackValueImporter) {
                 return fallbackValueImporter(value);
             }
