@@ -1,5 +1,7 @@
 import {useEffect, useState} from "react";
 import * as _ from "lodash";
+import {ReadonlyKeys, WritableKeys} from "tc-shared/proto";
+import {useDependentState} from "tc-shared/ui/react-elements/Helper";
 
 /*
  * To deliver optimized performance, we only promisify the values we need.
@@ -9,18 +11,6 @@ import * as _ from "lodash";
 
 export type UiVariable = Transferable | undefined | null | number | string | object;
 export type UiVariableMap = { [key: string]: any }; //UiVariable | Readonly<UiVariable>
-
-type IfEquals<X, Y, A=X, B=never> =
-    (<T>() => T extends X ? 1 : 2) extends
-        (<T>() => T extends Y ? 1 : 2) ? A : B;
-
-type WritableKeys<T> = {
-    [P in keyof T]-?: IfEquals<{ [Q in P]: T[P] }, { -readonly [Q in P]: T[P] }, P, never>
-}[keyof T];
-
-type ReadonlyKeys<T> = {
-    [P in keyof T]: IfEquals<{ [Q in P]: T[P] }, { -readonly [Q in P]: T[P] }, never, P>
-}[keyof T];
 
 export type ReadonlyVariables<Variables extends UiVariableMap> = Pick<Variables, ReadonlyKeys<Variables>>
 export type WriteableVariables<Variables extends UiVariableMap> = Pick<Variables, WritableKeys<Variables>>
@@ -247,7 +237,7 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
         const haveDefaultValue = arguments.length >= 3;
         const cacheEntry = this.getOrCreateVariable(variable as string, customData);
 
-        const [ localValue, setLocalValue ] = useState<LocalVariableValue>(() => {
+        const [ localValue, setLocalValue ] = useDependentState<LocalVariableValue>(() => {
             /* Variable constructor */
             cacheEntry.useCount++;
 
@@ -266,7 +256,7 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
                     status: "unset"
                 };
             }
-        });
+        }, [ variable, customData ]);
 
         const [, setRemoteVersion ] = useState(0);
 
@@ -274,7 +264,7 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
             /* Initial rendered */
             if(cacheEntry.status === "loaded" && localValue.status !== "set") {
                 /* Update the local value to the current state */
-                setLocalValue(cacheEntry.currentValue);
+                setLocalValue({ status: "set", value: cacheEntry.currentValue });
             }
 
             let listener;
@@ -291,7 +281,7 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
                 cacheEntry.updateListener.remove(listener);
                 this.derefVariable(cacheEntry);
             };
-        }, []);
+        }, [ variable, customData ]);
 
         if(cacheEntry.status === "loading") {
             return {
@@ -379,7 +369,7 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
                 cacheEntry.updateListener.remove(listener);
                 this.derefVariable(cacheEntry);
             };
-        }, []);
+        }, [ variable, customData ]);
 
         if(arguments.length >= 3) {
             return cacheEntry.status === "loaded" ? cacheEntry.currentValue : defaultValue;
