@@ -8,6 +8,7 @@ import {InviteUiEvents, InviteUiVariables} from "tc-shared/ui/modal/invite/Defin
 import {ReactElement} from "react";
 import * as React from "react";
 import {IpcVariableDescriptor} from "tc-shared/ui/utils/IpcVariable";
+import {ModalBookmarkEvents, ModalBookmarkVariables} from "tc-shared/ui/modal/bookmarks/Definitions";
 
 export type ModalType = "error" | "warning" | "info" | "none";
 export type ModalRenderType = "page" | "dialog";
@@ -132,5 +133,9 @@ export interface ModalConstructorArguments {
         /* events */ IpcRegistryDescription<InviteUiEvents>,
         /* variables */ IpcVariableDescriptor<InviteUiVariables>,
         /* serverName */ string
+    ],
+    "modal-bookmarks": [
+        /* events */ IpcRegistryDescription<ModalBookmarkEvents>,
+        /* variables */ IpcVariableDescriptor<ModalBookmarkVariables>,
     ]
 }

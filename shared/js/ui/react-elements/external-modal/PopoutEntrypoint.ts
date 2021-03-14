@@ -75,7 +75,7 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
                 throw "missing handler";
             }
 
-            modalClass = await registeredModal.classLoader();
+            modalClass = (await registeredModal.classLoader()).default;
         } catch(error) {
             loader.critical_error("Failed to load modal", "Lookup the console for more detail");
             console.error("Failed to load modal %s: %o", modalTarget, error);

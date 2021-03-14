@@ -50,8 +50,7 @@ export class InternalModalController implements ModalController {
         this.refModal = React.createRef();
         this.domElement = document.createElement("div");
 
-        this.modalInstance = new (await this.modalType.classLoader())(...this.constructorArguments);
-        console.error(this.modalInstance);
+        this.modalInstance = new (await this.modalType.classLoader()).default(...this.constructorArguments);
         const element = React.createElement(InternalModalRenderer, {
             ref: this.refModal,
             modal: this.modalInstance,

@@ -26,7 +26,7 @@ export const InternalModalContentRenderer = React.memo((props: {
         <div className={cssStyle.content + " " + props.containerClass} ref={props.refContent}>
             <div className={cssStyle.header + " " + props.headerClass}>
                 <div className={cssStyle.icon}>
-                    <img src="img/favicon/teacup.png"  alt={tr("Modal - Icon")} />
+                    <img src="img/favicon/teacup.png"  alt={tr("Modal - Icon")} draggable={false} />
                 </div>
                 <div className={cssStyle.title + " " + props.headerTitleClass}>
                     <ErrorBoundary>

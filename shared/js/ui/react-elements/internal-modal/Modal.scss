@@ -141,6 +141,7 @@ html:root {
         justify-content: stretch;
 
         padding: .25em;
+        @include user-select(none);
 
         .icon, .button {
             flex-grow: 0;
@@ -155,6 +156,7 @@ html:root {
             border-radius: .2em;
 
             cursor: pointer;
+            display: flex;
 
             -webkit-app-region: no-drag;
             pointer-events: all;

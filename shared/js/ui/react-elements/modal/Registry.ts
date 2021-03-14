@@ -3,7 +3,7 @@ import {ModalConstructorArguments} from "tc-shared/ui/react-elements/modal/Defin
 
 export interface RegisteredModal<T extends keyof ModalConstructorArguments> {
     modalId: T,
-    classLoader: () => Promise<new (...args: ModalConstructorArguments[T]) => AbstractModal>,
+    classLoader: () => Promise<{ default: new (...args: ModalConstructorArguments[T]) => AbstractModal }>,
     popoutSupported: boolean
 }
 
@@ -70,6 +70,12 @@ registerModal({
 registerModal({
     modalId: "modal-invite",
     classLoader: async () => await import("tc-shared/ui/modal/invite/Renderer"),
+    popoutSupported: true
+});
+
+registerModal({
+    modalId: "modal-bookmarks",
+    classLoader: async () => await import("tc-shared/ui/modal/bookmarks/Renderer"),
     popoutSupported: true
 });
 

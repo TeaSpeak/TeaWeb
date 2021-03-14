@@ -22,7 +22,7 @@ export function spawnReactModal<ModalClass extends InternalModal>(modalClass: ne
     return new InternalModalController({
         popoutSupported: false,
         modalId: "__internal__unregistered",
-        classLoader: async () => modalClass
+        classLoader: async () => ({ default: modalClass })
     }, args);
 }
 
