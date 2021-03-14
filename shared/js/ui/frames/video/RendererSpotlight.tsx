@@ -2,7 +2,7 @@ import * as React from "react";
 import {useContext, useMemo, useRef, useState} from "react";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {Layout} from "react-grid-layout";
-import * as GridLayout from "react-grid-layout";
+import GridLayout from "react-grid-layout";
 import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
 import * as _ from "lodash";
 import {FontSizeObserver} from "tc-shared/ui/react-elements/FontSize";

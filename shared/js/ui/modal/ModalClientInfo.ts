@@ -4,7 +4,7 @@ import {createInfoModal, createModal, Modal} from "../../ui/elements/Modal";
 import {copyToClipboard} from "../../utils/helpers";
 import * as i18nc from "../../i18n/country";
 import * as tooltip from "../../ui/elements/Tooltip";
-import * as moment from "moment";
+import moment from "moment";
 import {format_number, network} from "../../ui/frames/chat";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 import {tr} from "tc-shared/i18n/localize";

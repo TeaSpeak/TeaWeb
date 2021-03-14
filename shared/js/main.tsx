@@ -54,6 +54,9 @@ import {ActionResult} from "tc-services";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
+import "./Bookmarks";
+import {bookmarks} from "tc-shared/Bookmarks";
+
 assertMainApplication();
 
 let preventWelcomeUI = false;
@@ -487,6 +490,8 @@ const task_connect_handler: loader.Task = {
         }
 
         preventWelcomeUI = true;
+        preventExecuteAutoConnect = true;
+
         loader.register_task(loader.Stage.LOADED, {
             priority: 0,
             function: async () => {
@@ -494,6 +499,7 @@ const task_connect_handler: loader.Task = {
             },
             name: tr("default url connect")
         });
+
         loader.register_task(loader.Stage.LOADED, task_teaweb_starter);
     },
     priority: 10
@@ -549,6 +555,19 @@ loader.register_task(loader.Stage.LOADED, {
         }
     },
     priority: 2000
+});
+
+let preventExecuteAutoConnect = false;
+loader.register_task(loader.Stage.LOADED, {
+    priority: 0,
+    function: async () => {
+        if(preventExecuteAutoConnect) {
+            return;
+        }
+
+        bookmarks.executeAutoConnect();
+    },
+    name: tr("bookmark auto connect")
 });
 
 /* TODO: Remove this after the image preview has been rewritten into react */

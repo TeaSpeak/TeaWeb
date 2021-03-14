@@ -224,7 +224,11 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
                 options: {
                     esModule: false
                 }
-            }
+            },
+            {
+                test: /\.(png|jpg|jpeg|gif)?$/,
+                loader: 'file-loader',
+            },
         ]
     } as any,
     resolve: {

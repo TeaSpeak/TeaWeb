@@ -1,4 +1,12 @@
 # Changelog:
+* **14.03.21**
+    - Enchanted the bookmark system
+      - Added support for auto connect on startup
+      - Cleaned and simplified up the bookmark UI
+      - Added support for importing/exporting bookmarks
+      - Added support for duplicating bookmarks
+      - Adding support for default channels and passwords
+      
 * **12.03.21**
     - Added a new video spotlight mode which allows showing multiple videos at the same time as well as 
       dragging and resizing them
@@ -150,7 +158,7 @@
     - Fixed invalid channel tree unique id assignment for the initial server entry ([#F2986](https://forum.teaspeak.de/index.php?threads/2986))
     
 * **27.09.20**
-    - Middle clicking on bookmarks now directly connects in a new tab
+    - Middle clicking on bookmarksOld now directly connects in a new tab
     
 * **26.09.20**
     - Updating group prefix/suffixes when the group naming mode changes
@@ -320,7 +328,7 @@
     - Fixed channel tree deletions
     - Removed layout recalculate bottleneck on connection handler switching
     - Fixed empty channel tree on tab change, if the tree has some scroll offset
-    - Added the ability to duplicate bookmarks
+    - Added the ability to duplicate bookmarksOld
     - Fixed issue [#106](https://github.com/TeaSpeak/TeaWeb/issues/106)
     - Fixed issue [#90](https://github.com/TeaSpeak/TeaWeb/issues/90)
     
@@ -350,7 +358,7 @@
 * **21.04.20**
     - Clicking on the music bot does not longer results in the insufficient permission sound when the client has no permissions
     - Fixed permission editor overflow
-    - Fixed the bookmark edit window (bookmarks have failed to save)
+    - Fixed the bookmark edit window (bookmarksOld have failed to save)
     
 * **18.04.20**
     - Recoded the channel tree using React
@@ -447,7 +455,7 @@
     - Improved the server info modal experience (Correctly showing no permissions)
     - Improved "About" modal overflow behaviour
     - Allow the client to use the scroll bar without closing the modal within modals
-    - Improved bookmarks modal for smaller devices
+    - Improved bookmarksOld modal for smaller devices
     - Fixed invalid white space representation
     
 * **10.12.19**
@@ -637,7 +645,7 @@
     - Added query account management (since server 1.2.32b)
     
 * **18.12.18**
-    - Added bookmarks and bookmarks management
+    - Added bookmarksOld and bookmarksOld management
     - Added query user visibility button and creation (Query management will follow soon)
     - Fixed overflow within the group assignment dialog
     

@@ -51,4 +51,9 @@ html:root {
     display: flex;
     flex-direction: column;
     justify-content: center;
+
+    img {
+        max-height: 100%;
+        max-width: 100%;
+    }
 }

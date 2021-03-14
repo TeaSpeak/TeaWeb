@@ -12,7 +12,6 @@ import {NameIdentity} from "tc-shared/profiles/identities/NameIdentity";
 import {LogCategory, logDebug, logError, logTrace, logWarn} from "tc-shared/log";
 import * as i18n from "tc-shared/i18n/localize";
 import {RepositoryTranslation, TranslationRepository} from "tc-shared/i18n/localize";
-import * as events from "tc-shared/events";
 import {Registry} from "tc-shared/events";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import * as i18nc from "tc-shared/i18n/country";
@@ -1905,7 +1904,7 @@ export namespace modal_settings {
 
             event_registry.on("reload-profile", event => {
                 event_registry.fire("query-profile-list");
-                event_registry.fire("select-profile", event.profile_id || selected_profile);
+                event_registry.fire("select-profile", { profile_id: event.profile_id || selected_profile });
             });
         }
 

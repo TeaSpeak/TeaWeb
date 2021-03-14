@@ -6,10 +6,10 @@ import * as React from "react";
 import ReactRenderer from "vendor/xbbcode/renderer/react";
 import {Settings, settings} from "tc-shared/settings";
 
-import * as emojiRegex from "emoji-regex";
+import emojiRegex from "emoji-regex";
 import {getTwenmojiHashFromNativeEmoji} from "tc-shared/text/bbcode/EmojiUtil";
 
-const emojiRegexInstance = (emojiRegex as any)() as RegExp;
+const emojiRegexInstance = emojiRegex();
 
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     name: "XBBCode emoji init",

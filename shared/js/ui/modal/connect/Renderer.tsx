@@ -17,6 +17,7 @@ import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {UiVariableConsumer} from "tc-shared/ui/utils/Variable";
 import {createIpcUiVariableConsumer, IpcVariableDescriptor} from "tc-shared/ui/utils/IpcVariable";
 import {AbstractModal} from "tc-shared/ui/react-elements/ModalDefinitions";
+import {CountryIcon} from "tc-shared/ui/react-elements/CountryIcon";
 
 const EventContext = React.createContext<Registry<ConnectUiEvents>>(undefined);
 const VariablesContext = React.createContext<UiVariableConsumer<ConnectUiVariables>>(undefined);
@@ -240,15 +241,6 @@ const ButtonContainer = () => (
         <ButtonsConnect />
     </div>
 );
-
-const CountryIcon = (props: { country: string }) => {
-    return (
-        <div className={cssStyle.countryContainer}>
-            <div className={"country flag-" + props.country} />
-            {i18n.country_name(props.country, useTr("Global"))}
-        </div>
-    )
-}
 
 const HistoryTableEntryConnectCount = React.memo((props: { entry: ConnectHistoryEntry }) => {
     const targetType = props.entry.uniqueServerId === kUnknownHistoryServerUniqueId ? "address" : "server-unique-id";

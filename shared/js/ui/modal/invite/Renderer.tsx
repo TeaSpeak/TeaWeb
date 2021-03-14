@@ -14,7 +14,7 @@ import {copyToClipboard} from "tc-shared/utils/helpers";
 import {ControlledBoxedInputField, ControlledSelect} from "tc-shared/ui/react-elements/InputField";
 import {useTr} from "tc-shared/ui/react-elements/Helper";
 import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
-import * as moment from 'moment';
+import moment from 'moment';
 
 const cssStyle = require("./Renderer.scss");
 

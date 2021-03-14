@@ -50,7 +50,7 @@ export const ControlledBoxedInputField = (props: {
                 props.className
             }
             onFocus={props.onFocus}
-            onBlur={() => props.onBlur()}
+            onBlur={props.onBlur}
         >
             {props.leftIcon ? props.leftIcon() : ""}
             {props.prefix ? <a key={"prefix"} className={cssStyle.prefix}>{props.prefix}</a> : undefined}
@@ -462,7 +462,8 @@ export const ControlledSelect = (props: {
                 cssStyle["size-normal"],
                 props.invalid ? cssStyle.isInvalid : undefined,
                 props.className,
-                cssStyle.noLeftIcon, cssStyle.noRightIcon
+                cssStyle.noLeftIcon, cssStyle.noRightIcon,
+                props.disabled ? cssStyle.disabled : undefined
             )}
         >
             {!props.label ? undefined :

@@ -15,7 +15,7 @@ import {Settings, settings} from "tc-shared/settings";
 import {LogCategory, logWarn} from "tc-shared/log";
 
 const registerLanguage = (name, language: Promise<any>) => {
-    language.then(lan => hljs.registerLanguage(name, lan)).catch(error => {
+    language.then(lan => hljs.registerLanguage(name, lan.default)).catch(error => {
         logWarn(LogCategory.CHAT, tr("Failed to load language %s (%o)"), name, error);
     });
 };

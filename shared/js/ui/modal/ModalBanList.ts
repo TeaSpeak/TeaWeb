@@ -7,7 +7,7 @@ import {LogCategory, logError, logInfo} from "../../log";
 import * as tooltip from "../../ui/elements/Tooltip";
 import * as htmltags from "../../ui/htmltags";
 import {format_time, formatMessage} from "../../ui/frames/chat";
-import * as moment from "moment";
+import moment from "moment";
 import {ErrorCode} from "../../connection/ErrorCode";
 import {tr} from "tc-shared/i18n/localize";
 

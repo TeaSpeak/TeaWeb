@@ -26,10 +26,21 @@ type UiVariableEditorPromise<Variables extends UiVariableMap, T extends keyof Va
 export abstract class UiVariableProvider<Variables extends UiVariableMap> {
     private variableProvider: {[key: string]: (customData: any) => any | Promise<any>} = {};
     private variableEditor: {[key: string]: (newValue, customData: any) => any | Promise<any>} = {};
+    private artificialDelay: number;
 
-    protected constructor() { }
+    protected constructor() {
+        this.artificialDelay = 0;
+    }
 
     destroy() { }
+
+    getArtificialDelay() : number {
+        return this.artificialDelay;
+    }
+
+    setArtificialDelay(value: number) {
+        this.artificialDelay = value;
+    }
 
     setVariableProvider<T extends keyof Variables>(variable: T, provider: (customData: any) => Variables[T] | Promise<Variables[T]>) {
         this.variableProvider[variable as any] = provider;
@@ -60,14 +71,23 @@ export abstract class UiVariableProvider<Variables extends UiVariableMap> {
         }
 
         const result = providers(customData);
-        if(result instanceof Promise) {
-            return result
-                .then(result => this.doSendVariable(variable as any, customData, result))
-                .catch(error => {
-                    console.error(error);
-                });
+
+        const handleResult = result => {
+            if(result instanceof Promise) {
+                return result
+                    .then(result => this.doSendVariable(variable as any, customData, result))
+                    .catch(error => {
+                        console.error(error);
+                    });
+            } else {
+                this.doSendVariable(variable as any, customData, result);
+            }
+        };
+
+        if(this.artificialDelay > 0) {
+            return new Promise(resolve => setTimeout(resolve, this.artificialDelay)).then(() => handleResult(result));
         } else {
-            this.doSendVariable(variable as any, customData, result);
+            return handleResult(result);
         }
     }
 
@@ -227,6 +247,14 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
                 delete this.variableCache[variable.key];
             }
         }
+    }
+
+    setVariable<T extends keyof WriteableVariables<Variables>>(
+        variable: T,
+        customData: any,
+        newValue: Variables[T]
+    ) {
+        this.doEditVariable(variable as any, customData, newValue);
     }
 
     useVariable<T extends keyof WriteableVariables<Variables>>(

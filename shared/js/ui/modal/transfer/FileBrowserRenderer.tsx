@@ -9,7 +9,7 @@ import {network} from "tc-shared/ui/frames/chat";
 import {Table, TableColumn, TableRow, TableRowElement} from "tc-shared/ui/react-elements/Table";
 import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
-import * as Moment from "moment";
+import moment from "moment";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 import {BoxedInputField} from "tc-shared/ui/react-elements/InputField";
 import {LogCategory, logWarn} from "tc-shared/log";
@@ -1043,7 +1043,7 @@ export class FileBrowserRenderer extends ReactComponentBase<FileListTablePropert
                             "name": () => <FileName path={this.currentPath} file={directory}/>,
                             "type": () => <a key={"type"}><Translatable>Directory</Translatable></a>,
                             "change-date": () => directory.datetime ?
-                                <a>{Moment(directory.datetime).format("DD/MM/YYYY HH:mm")}</a> : undefined
+                                <a>{moment(directory.datetime).format("DD/MM/YYYY HH:mm")}</a> : undefined
                         },
                         className: cssStyle.directoryEntry,
                         userData: directory
@@ -1057,7 +1057,7 @@ export class FileBrowserRenderer extends ReactComponentBase<FileListTablePropert
                             "size": () => <FileSize path={this.currentPath} file={file}/>,
                             "type": () => <a key={"type"}><Translatable>File</Translatable></a>,
                             "change-date": () => file.datetime ?
-                                <a key={"date"}>{Moment(file.datetime).format("DD/MM/YYYY HH:mm")}</a> : undefined
+                                <a key={"date"}>{moment(file.datetime).format("DD/MM/YYYY HH:mm")}</a> : undefined
                         },
                         className: cssStyle.directoryEntry,
                         userData: file

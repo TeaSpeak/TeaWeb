@@ -2,9 +2,7 @@ import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {IdentitifyType} from "../profiles/Identity";
 import {AbstractServerConnection} from "../connection/ConnectionBase";
 import {DisconnectReason} from "../ConnectionHandler";
-import {tr} from "../i18n/localize";
 import {ConnectParameters} from "tc-shared/ui/modal/connect/Controller";
-import {LogCategory, logWarn} from "tc-shared/log";
 import {getBackend} from "tc-shared/backend";
 
 export interface HandshakeIdentityHandler {

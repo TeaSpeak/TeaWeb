@@ -11,17 +11,6 @@ import {server_connections} from "tc-shared/ConnectionManager";
 import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {Settings, settings} from "tc-shared/settings";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
-import {
-    add_server_to_bookmarks,
-    Bookmark as ServerBookmark,
-    bookmarkEvents,
-    bookmarks,
-    bookmarks_flat,
-    BookmarkType,
-    boorkmak_connect,
-    DirectoryBookmark
-} from "tc-shared/bookmarks";
-import {LogCategory, logWarn} from "tc-shared/log";
 import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import {VideoBroadcastType, VideoConnectionStatus} from "tc-shared/connection/VideoConnection";
 import {tr} from "tc-shared/i18n/localize";
@@ -29,6 +18,10 @@ import {getVideoDriver} from "tc-shared/video/VideoSource";
 import {kLocalBroadcastChannels} from "tc-shared/ui/frames/video/Definitions";
 import {getRecorderBackend, IDevice} from "tc-shared/audio/recorder";
 import {defaultRecorder, defaultRecorderEvents} from "tc-shared/voice/RecorderProfile";
+import {bookmarks} from "tc-shared/Bookmarks";
+import {connectionHistory} from "tc-shared/connectionlog/History";
+import {RemoteIconInfo} from "tc-shared/file/Icons";
+import {spawnModalAddCurrentServerToBookmarks} from "tc-shared/ui/modal/bookmarks-add-server/Controller";
 
 class InfoController {
     private readonly mode: ControlBarMode;
@@ -66,7 +59,7 @@ class InfoController {
             this.sendVideoState("screen");
             this.sendVideoState("camera");
         }));
-        events.push(bookmarkEvents.on("notify_bookmarks_updated", () => this.sendBookmarks()));
+        bookmarks.events.on(["notify_bookmark_edited", "notify_bookmark_created", "notify_bookmark_deleted", "notify_bookmarks_imported"], () => this.sendBookmarks());
         events.push(getVideoDriver().getEvents().on("notify_device_list_changed", () => this.sendCameraList()));
         events.push(getRecorderBackend().getDeviceList().getEvents().on("notify_list_updated", () => this.sendMicrophoneList()));
         events.push(defaultRecorderEvents.on("notify_default_recorder_changed", () => {
@@ -205,25 +198,54 @@ class InfoController {
         });
     }
 
-    public sendBookmarks() {
-        const buildInfo = (bookmark: DirectoryBookmark | ServerBookmark) => {
-            if(bookmark.type === BookmarkType.DIRECTORY) {
-                return {
-                    uniqueId: bookmark.unique_id,
-                    label: bookmark.display_name,
-                    children: bookmark.content.map(buildInfo)
-                } as Bookmark;
-            } else {
-                return {
-                    uniqueId: bookmark.unique_id,
-                    label: bookmark.display_name,
-                    icon: bookmark.last_icon_id ? { iconId: bookmark.last_icon_id, serverUniqueId: bookmark.last_icon_server_id } : undefined
-                } as Bookmark;
+    public async sendBookmarks() {
+        const bookmarkList = bookmarks.getOrderedRegisteredBookmarks();
+
+        const parent: Bookmark[] = [];
+        const parentStack: Bookmark[][] = [];
+
+        while(bookmarkList.length > 0) {
+            const bookmark = bookmarkList.pop_front();
+            const parentList = parentStack.pop() || parent;
+
+            if(bookmark.entry.type === "entry") {
+                let icon: RemoteIconInfo;
+
+                try {
+                    const connectInfo = await connectionHistory.lastConnectInfo(bookmark.entry.serverAddress, "address");
+                    if(connectInfo) {
+                        const info = await connectionHistory.queryServerInfo(connectInfo.serverUniqueId);
+                        if(info && info.iconId > 0) {
+                            icon = { iconId: info.iconId, serverUniqueId: connectInfo.serverUniqueId };
+                        }
+                    }
+                } catch (_) {
+                    /* no need for any error handling */
+                }
+
+                parentList.push({
+                    children: undefined,
+                    icon: icon,
+                    label: bookmark.entry.displayName,
+                    uniqueId: bookmark.entry.uniqueId
+                });
+            } else if(bookmark.entry.type === "directory") {
+                const children = [];
+                parentList.push({
+                    children: children,
+                    icon: undefined,
+                    label: bookmark.entry.displayName,
+                    uniqueId: bookmark.entry.uniqueId
+                });
+
+                for(let i = 0; i < bookmark.childCount; i++) {
+                    parentStack.push(children);
+                }
             }
-        };
+        }
 
         this.events.fire_react("notify_bookmarks", {
-            marks: bookmarks().content.map(buildInfo)
+            marks: parent
         });
     }
 
@@ -380,16 +402,8 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
     });
 
     events.on("action_bookmark_manage", () => global_client_actions.fire("action_open_window", { window: "bookmark-manage" }));
-    events.on("action_bookmark_add_current_server", () => add_server_to_bookmarks(infoHandler.getCurrentHandler()));
-    events.on("action_bookmark_connect", event => {
-        const bookmark = bookmarks_flat().find(mark => mark.unique_id === event.bookmarkUniqueId);
-        if(!bookmark) {
-            logWarn(LogCategory.BOOKMARKS, tr("Tried to connect to a non existing bookmark with id %s"), event.bookmarkUniqueId);
-            return;
-        }
-
-        boorkmak_connect(bookmark, event.newTab);
-    });
+    events.on("action_bookmark_add_current_server", () => spawnModalAddCurrentServerToBookmarks(infoHandler.getCurrentHandler()));
+    events.on("action_bookmark_connect", event => bookmarks.executeConnect(event.bookmarkUniqueId, event.newTab));
 
     events.on("action_toggle_away", event => {
         if(event.away) {

@@ -8,6 +8,7 @@
     "lib": ["ES7", "dom", "dom.iterable"],
     "removeComments": true, /* we dont really need them within the target files */
     "jsx": "react",
+    "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
       "tc-shared/*": ["shared/js/*"],

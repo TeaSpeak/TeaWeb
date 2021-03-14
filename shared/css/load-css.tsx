@@ -14,7 +14,6 @@ import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/m
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/modal-avatar.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/modal-banclient.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/modal-banlist.scss"
-import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/modal-bookmarks.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/modal-channelinfo.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/modal-clientinfo.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/modal-connect.scss"

@@ -19,6 +19,7 @@ import {spawnVideoSourceSelectModal} from "tc-shared/ui/modal/video-source/Contr
 import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {spawnEchoTestModal} from "tc-shared/ui/modal/echo-test/Controller";
 import {spawnConnectModalNew} from "tc-shared/ui/modal/connect/Controller";
+import {spawnBookmarkModal} from "tc-shared/ui/modal/bookmarks/Controller";
 
 /*
 function initialize_sounds(event_registry: Registry<ClientGlobalControlEvents>) {
@@ -62,12 +63,7 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
         const connection_handler = event.connection || current_connection_handler;
         switch (event.window) {
             case "bookmark-manage":
-                import("../ui/modal/ModalBookmarks").catch(error => {
-                    handle_import_error(error);
-                    return undefined;
-                }).then(window => {
-                    window?.spawnBookmarkModal();
-                });
+                spawnBookmarkModal();
                 break;
             case "query-manage":
                 if(!connection_handler || !connection_handler.connected) {

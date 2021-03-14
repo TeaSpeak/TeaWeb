@@ -1,5 +1,5 @@
 import * as loader from "tc-loader";
-import * as moment from "moment";
+import moment from "moment";
 import {LogCategory, logError, logTrace} from "../log";
 import {tr} from "tc-shared/i18n/localize";
 

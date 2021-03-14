@@ -8,7 +8,7 @@ import {Settings} from "tc-shared/settings";
 
 const cssStyle = require("./HostBannerRenderer.scss");
 
-const HostBannerRenderer = React.memo((props: { banner: HostBannerInfoSet, }) => {
+export const HostBannerRenderer = React.memo((props: { banner: HostBannerInfoSet, className?: string }) => {
     const [ revision, setRevision ] = useState(Date.now());
     useEffect(() => {
         if(!props.banner.updateInterval) {
@@ -35,7 +35,7 @@ const HostBannerRenderer = React.memo((props: { banner: HostBannerInfoSet, }) =>
         <div
             className={
                 cssStyle.containerImage + " " + cssStyle["mode-" + props.banner.mode] + " " + cssStyle["state-" + loadingState] + " " +
-                (withBackground ? cssStyle.withBackground : "")
+                (withBackground ? cssStyle.withBackground : "") + " " + props.className
             }
             onClick={() => {
                 if(props.banner.linkUrl) {

@@ -1,7 +1,7 @@
 import {ConnectionHandler} from "../../ConnectionHandler";
 import {createModal, Modal} from "../../ui/elements/Modal";
 import * as htmltags from "../../ui/htmltags";
-import * as moment from "moment";
+import moment from "moment";
 import {renderBBCodeAsJQuery} from "../../text/bbcode";
 import {tr} from "tc-shared/i18n/localize";
 

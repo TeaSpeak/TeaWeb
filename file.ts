@@ -40,7 +40,7 @@ const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
     },
     { /* javascript files as manifest.json */
         "type": "js",
-        "search-pattern": /.*\.(js|json|svg)$/,
+        "search-pattern": /.*\.(js|json|svg|png)$/,
         "build-target": "dev|rel",
 
         "path": "js/",

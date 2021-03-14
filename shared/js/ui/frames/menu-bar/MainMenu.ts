@@ -5,17 +5,12 @@ import {ClientIcon} from "svg-sprites/client-icons";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {
-    add_server_to_bookmarks,
-    Bookmark,
-    bookmarkEvents,
-    bookmarks,
-    BookmarkType,
-    boorkmak_connect,
-    DirectoryBookmark
-} from "tc-shared/bookmarks";
 import {getBackend} from "tc-shared/backend";
 import {tr} from "tc-shared/i18n/localize";
+import {bookmarks} from "tc-shared/Bookmarks";
+import {RemoteIconInfo} from "tc-shared/file/Icons";
+import {connectionHistory} from "tc-shared/connectionlog/History";
+import {spawnModalAddCurrentServerToBookmarks} from "tc-shared/ui/modal/bookmarks-add-server/Controller";
 
 function renderConnectionItems() {
     const items: MenuBarEntry[] = [];
@@ -57,27 +52,54 @@ function renderConnectionItems() {
     return items;
 }
 
-function renderBookmarkItems() {
-    const items: MenuBarEntry[] = [];
+async function renderBookmarkItems() {
+    const bookmarkList = bookmarks.getOrderedRegisteredBookmarks();
 
-    const renderBookmark = (bookmark: Bookmark | DirectoryBookmark): MenuBarEntry => {
-        if(bookmark.type === BookmarkType.ENTRY) {
-            return {
+    const bookmarkItems: MenuBarEntry[] = [];
+    const parentStack: MenuBarEntry[][] = [];
+
+    while(bookmarkList.length > 0) {
+        const bookmark = bookmarkList.pop_front();
+        const parentList = parentStack.pop() || bookmarkItems;
+
+        if(bookmark.entry.type === "entry") {
+            let icon: RemoteIconInfo;
+
+            try {
+                const connectInfo = await connectionHistory.lastConnectInfo(bookmark.entry.serverAddress, "address");
+                if(connectInfo) {
+                    const info = await connectionHistory.queryServerInfo(connectInfo.serverUniqueId);
+                    if(info && info.iconId > 0) {
+                        icon = { iconId: info.iconId, serverUniqueId: connectInfo.serverUniqueId };
+                    }
+                }
+            } catch (_) {
+                /* no need for any error handling */
+            }
+
+            parentList.push({
                 type: "normal",
-                label: bookmark.display_name,
-                click: () => boorkmak_connect(bookmark),
-                icon: bookmark.last_icon_id ? { serverUniqueId: bookmark.last_icon_server_id, iconId: bookmark.last_icon_id } : undefined
-            };
-        } else {
-            return {
+                label: bookmark.entry.displayName,
+                icon: icon,
+                click: () => bookmarks.executeConnect(bookmark.entry.uniqueId, false),
+            });
+        } else if(bookmark.entry.type === "directory") {
+            const children = [];
+
+            parentList.push({
                 type: "normal",
-                label: bookmark.display_name,
+                label: bookmark.entry.displayName,
+                children: children,
                 icon: ClientIcon.Folder,
-                children: bookmark.content.map(renderBookmark)
+            });
+
+            for(let i = 0; i < bookmark.childCount; i++) {
+                parentStack.push(children);
             }
         }
     }
 
+    const items: MenuBarEntry[] = [];
     items.push({
         type: "normal",
         icon: ClientIcon.BookmarkManager,
@@ -90,13 +112,12 @@ function renderBookmarkItems() {
         icon: ClientIcon.BookmarkAdd,
         label: tr("Add current server to bookmarks"),
         disabled: !server_connections.getActiveConnectionHandler()?.connected,
-        click: () => add_server_to_bookmarks(server_connections.getActiveConnectionHandler())
+        click: () => spawnModalAddCurrentServerToBookmarks(server_connections.getActiveConnectionHandler())
     });
 
-    const rootMarks = bookmarks().content;
-    if(rootMarks.length !== 0) {
+    if(bookmarkItems.length !== 0) {
         items.push({ type: "separator" });
-        items.push(...rootMarks.map(renderBookmark));
+        items.push(...bookmarkItems);
     }
 
     return items;
@@ -286,6 +307,11 @@ function renderHelpItems() : MenuBarEntry[] {
 }
 
 function updateMenuBar() {
+    /* TODO: Only run one update per time */
+    doUpdateMenuBar().then(undefined);
+}
+
+async function doUpdateMenuBar() {
     const items: MenuBarEntry[] = [];
 
     items.push({
@@ -297,7 +323,7 @@ function updateMenuBar() {
     items.push({
         type: "normal",
         label: tr("Favorites"),
-        children: renderBookmarkItems()
+        children: await renderBookmarkItems()
     });
 
     items.push({
@@ -335,12 +361,8 @@ class MenuBarUpdateListener {
             this.registeredHandlerEvents[event.handlerId]?.forEach(callback => callback());
             delete this.registeredHandlerEvents[event.handlerId];
         }));
-        this.generalHandlerEvents.push(server_connections.events().on("notify_active_handler_changed", () => {
-            updateMenuBar();
-        }));
-        this.generalHandlerEvents.push(bookmarkEvents.on("notify_bookmarks_updated", () => {
-            updateMenuBar();
-        }))
+        this.generalHandlerEvents.push(server_connections.events().on("notify_active_handler_changed", () => updateMenuBar()));
+        this.generalHandlerEvents.push(bookmarks.events.on(["notify_bookmark_deleted", "notify_bookmark_created", "notify_bookmark_edited", "notify_bookmarks_imported"], () => updateMenuBar()));
         server_connections.getAllConnectionHandlers().forEach(handler => this.registerHandlerEvents(handler));
     }
 
@@ -361,12 +383,14 @@ class MenuBarUpdateListener {
 }
 
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
-    name: "menu bar entries init",
+    name: "menu bar init",
     function: async () => {
         updateMenuBar();
 
         updateListener = new MenuBarUpdateListener();
         updateListener.initializeListeners();
     },
-    priority: 50
+
+    /* initialize after all other systems have been initialized */
+    priority: 0
 });

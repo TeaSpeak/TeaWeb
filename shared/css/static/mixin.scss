@@ -66,29 +66,29 @@
 	user-select: $mode;
 }
 
-@mixin chat-scrollbar() {
+@mixin chat-scrollbar($width: .5em) {
 	& {
 		/* for moz */
 		scrollbar-color: #353535 #555;
-		scrollbarWidth: .5em;
+		scrollbarWidth: $width;
 	}
 
 	&::-webkit-scrollbar-track {
-		border-radius: .25em;
+		border-radius: $width / 2;
 		background-color: transparent;
 		cursor: pointer;
 	}
 
 	&::-webkit-scrollbar {
-		width: .5em;
-		height: .5em;
+		width: $width;
+		height: $width;
 
 		background-color: transparent;
 		cursor: pointer;
 	}
 
 	&::-webkit-scrollbar-thumb {
-		border-radius: .25em;
+		border-radius: $width / 2;
 		background-color: #555;
 	}
 

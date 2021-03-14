@@ -151,8 +151,8 @@ export class Tooltip extends React.Component<TooltipProperties, TooltipState> {
 
 export const IconTooltip = (props: { children?: React.ReactElement | React.ReactElement[], className?: string }) => (
     <Tooltip tooltip={() => props.children}>
-        <div className={cssStyle.tooltip + " " + props.className}>
-            <img src="img/icon_tooltip.svg"/>
+        <div className={cssStyle.iconTooltip + " " + props.className}>
+            <img src="img/icon_tooltip.svg" alt={""} />
         </div>
     </Tooltip>
 );

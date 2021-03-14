@@ -1,7 +1,7 @@
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {KeyCode} from "../../PPTListener";
-import * as $ from "jquery";
+import $ from "jquery";
 import {LogCategory, logError} from "tc-shared/log";
 
 export enum ElementType {
@@ -304,6 +304,7 @@ export function createModal(data: ModalProperties | any) : Modal {
 
 export class InputModalProperties extends ModalProperties {
     maxLength?: number;
+    defaultValue?: string;
 
     field_title?: string;
     field_label?: string;
@@ -366,6 +367,11 @@ export function createInputModal(headMessage: BodyCreator, question: BodyCreator
         }
         modal.close();
     });
+
+    if(props.defaultValue) {
+        input.val(props.defaultValue);
+        setTimeout(() => input.trigger("change"), 0);
+    }
 
     modal.open_listener.push(() => input.focus());
     modal.close_listener.push(() => button_cancel.trigger('click'));

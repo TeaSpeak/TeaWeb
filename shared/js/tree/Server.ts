@@ -4,7 +4,6 @@ import * as contextmenu from "../ui/elements/ContextMenu";
 import * as log from "../log";
 import {LogCategory, logInfo, LogType} from "../log";
 import {Sound} from "../sound/Sounds";
-import * as bookmarks from "../bookmarks";
 import {openServerInfo} from "../ui/modal/ModalServerInfo";
 import {createServerModal} from "../ui/modal/ModalServerEdit";
 import {spawnIconSelect} from "../ui/modal/ModalIconSelect";
@@ -293,7 +292,6 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
         }
 
         let updatedProperties: Partial<ServerProperties> = {};
-        let update_bookmarks = false;
         for(let variable of variables) {
             if(!JSON.map_field_to(this.properties, variable.value, variable.key)) {
                 /* The value has not been updated */
@@ -303,7 +301,6 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
             updatedProperties[variable.key] = variable.value;
             if(variable.key == "virtualserver_icon_id") {
                 this.properties.virtualserver_icon_id = variable.value as any >>> 0;
-                update_bookmarks = true;
             }
         }
 
@@ -311,19 +308,6 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
             updated_properties: updatedProperties,
             server_properties: this.properties
         });
-
-        if(update_bookmarks) {
-            const bmarks = bookmarks.bookmarks_flat()
-                .filter(e => e.server_properties.server_address === this.remote_address.host && e.server_properties.server_port == this.remote_address.port)
-                .filter(e => e.last_icon_id !== this.properties.virtualserver_icon_id || e.last_icon_server_id !== this.properties.virtualserver_unique_identifier);
-            if(bmarks.length > 0) {
-                bmarks.forEach(e => {
-                    e.last_icon_id = this.properties.virtualserver_icon_id;
-                    e.last_icon_server_id = this.properties.virtualserver_unique_identifier;
-                });
-                bookmarks.save_bookmark();
-            }
-        }
 
         group.end();
         if(is_self_notify && this.info_request_promise_resolve) {
