@@ -90,7 +90,7 @@ export interface ModalController {
 export abstract class AbstractModal {
     protected constructor() {}
 
-    abstract renderBody() : ReactElement;
+    abstract renderBody(properties: { windowed: boolean }) : ReactElement;
     abstract renderTitle() : string | React.ReactElement;
 
     /* only valid for the "inline" modals */

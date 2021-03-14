@@ -48,7 +48,7 @@ class BodyRenderer {
 
         this.modalInstance = instance;
         if(this.modalInstance) {
-            ReactDOM.render(<>{this.modalInstance.renderBody()}</>, this.htmlContainer);
+            ReactDOM.render(<>{this.modalInstance.renderBody({ windowed: true })}</>, this.htmlContainer);
         }
     }
 }

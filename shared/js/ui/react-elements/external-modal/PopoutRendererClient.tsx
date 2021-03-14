@@ -57,6 +57,8 @@ export class ClientModalRenderer implements ModalRenderer {
                 headerClass={cssStyle.header}
                 headerTitleClass={cssStyle.title}
                 bodyClass={cssStyle.body}
+
+                windowed={true}
             />,
             this.container,
             () => {

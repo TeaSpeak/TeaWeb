@@ -17,9 +17,11 @@ export const InternalModalContentRenderer = React.memo((props: {
     headerTitleClass?: string,
     bodyClass?: string,
 
-    refContent?: React.Ref<HTMLDivElement>
+    refContent?: React.Ref<HTMLDivElement>,
+
+    windowed: boolean,
 }) => {
-    const body = useMemo(() => props.modal.renderBody(), [props.modal]);
+    const body = useMemo(() => props.modal.renderBody({ windowed: props.windowed }), [props.modal]);
     const title = useMemo(() => props.modal.renderTitle(), [props.modal]);
 
     return (
@@ -87,6 +89,8 @@ export class InternalModalRenderer extends React.PureComponent<{ modal: Abstract
 
                         containerClass={cssStyle.contentInternal}
                         bodyClass={cssStyle.body + " " + cssStyle["modal-" + this.props.modal.color()]}
+
+                        windowed={false}
                     />
                 </div>
             </div>

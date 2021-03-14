@@ -774,11 +774,11 @@ class ModalBookmarks extends AbstractModal {
         this.variables.destroy();
     }
 
-    renderBody(): React.ReactElement {
+    renderBody(renderBody): React.ReactElement {
         return (
             <EventContext.Provider value={this.events}>
                 <VariableContext.Provider value={this.variables}>
-                    <div className={cssStyle.container}>
+                    <div className={cssStyle.container + " " + (renderBody.windowed ? cssStyle.windowed : "")}>
                         <BookmarkListContainer />
                         <ContextDivider id={"separator-bookmarks"} direction={"horizontal"} defaultValue={25} />
                         <BookmarkInfoContainer />
