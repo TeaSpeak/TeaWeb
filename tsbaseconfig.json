@@ -5,7 +5,8 @@
     "module": "commonjs",
     "sourceMap": true,
     "lib": ["es6", "dom"],
-    "removeComments": false
+    "removeComments": false,
+    "esModuleInterop": true
   },
   "include": [
     "webpack.config.ts",

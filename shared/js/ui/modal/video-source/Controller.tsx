@@ -103,7 +103,7 @@ export async function spawnVideoSourceSelectModal(type: VideoBroadcastType, mode
             });
         }
 
-        modal.events.one(["destroy", "close"], resolve);
+        modal.getEvents().one(["destroy", "close"], resolve);
     });
 
     controller.destroy();

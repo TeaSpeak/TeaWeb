@@ -6,7 +6,9 @@
     "lib": ["es6"],
 
     "typeRoots": [],
-    "types": []
+    "types": [],
+
+    "esModuleInterop": true
   },
   "files": [
     "generator.ts",

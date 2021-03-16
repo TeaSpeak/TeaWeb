@@ -1,6 +1,6 @@
 import * as ts from "typescript";
 import {SyntaxKind} from "typescript";
-import * as sha256 from "sha256";
+import sha256 from "sha256";
 import {TranslationEntry} from "./generator";
 
 export function generate(file: ts.SourceFile, config: Configuration) : TranslationEntry[] {

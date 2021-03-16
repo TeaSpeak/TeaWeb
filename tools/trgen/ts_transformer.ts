@@ -41,8 +41,7 @@ export default function(program: ts.Program, config?: Config) : (context: ts.Tra
 
 let processed = [];
 const translations: TranslationEntry[] = [];
-const transformer = (context: ts.TransformationContext) =>
-(rootNode: ts.Node) => {
+const transformer = (context: ts.TransformationContext) => (rootNode: ts.Node) => {
     const handler = (rootNode: ts.Node) => {
         if(rootNode.kind == ts.SyntaxKind.Bundle) {
             const bundle = rootNode as ts.Bundle;

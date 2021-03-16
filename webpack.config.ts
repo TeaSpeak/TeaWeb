@@ -20,23 +20,28 @@ const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 
 export let isDevelopment = process.env.NODE_ENV === 'development';
 console.log("Webpacking for %s (%s)", isDevelopment ? "development" : "production", process.env.NODE_ENV || "NODE_ENV not specified");
+
 const generateDefinitions = async (target: string) => {
-    const git_rev = fs.readFileSync(path.join(__dirname, ".git", "HEAD")).toString();
+    const gitRevision = fs.readFileSync(path.join(__dirname, ".git", "HEAD")).toString();
     let version;
-    if(git_rev.indexOf("/") === -1)
-        version = (git_rev || "0000000").substr(0, 7);
-    else
-        version = fs.readFileSync(path.join(__dirname, ".git", git_rev.substr(5).trim())).toString().substr(0, 7);
+    if(gitRevision.indexOf("/") === -1) {
+        version = (gitRevision || "0000000").substr(0, 7);
+    } else {
+        version = fs.readFileSync(path.join(__dirname, ".git", gitRevision.substr(5).trim())).toString().substr(0, 7);
+    }
 
     let timestamp;
     try {
         const { stdout } = await util.promisify(exec)("git show -s --format=%ct");
         timestamp = parseInt(stdout.toString());
-        if(isNaN(timestamp)) throw "failed to parse timestamp '" + stdout.toString() + "'";
+        if(isNaN(timestamp)) {
+            throw "failed to parse timestamp '" + stdout.toString() + "'";
+        }
     } catch (error) {
         console.error("Failed to get commit timestamp: %o", error);
         throw "failed to get commit timestamp";
     }
+
     return {
         "__build": {
             target: JSON.stringify(target),
@@ -45,7 +50,7 @@ const generateDefinitions = async (target: string) => {
             timestamp: timestamp,
             entry_chunk_name: JSON.stringify(target === "web" ? "shared-app" : "client-app")
         } as BuildDefinitions
-    } as any;
+    };
 };
 
 const isLoaderFile = (file: string) => {
@@ -58,11 +63,11 @@ const isLoaderFile = (file: string) => {
     return false;
 };
 
-export const config = async (target: "web" | "client"): Promise<Configuration> => { return {
+export const config = async (target: "web" | "client"): Promise<Configuration> => ({
     entry: {
         "loader": "./loader/app/index.ts",
         "modal-external": "./shared/js/ui/react-elements/external-modal/PopoutEntrypoint.ts",
-        "devel-main": "./shared/js/devel_main.ts"
+        //"devel-main": "./shared/js/devel_main.ts"
     },
 
     devtool: isDevelopment ? "inline-source-map" : undefined,
@@ -133,14 +138,7 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
                 test: /\.(s[ac]|c)ss$/,
                 loader: [
                     'style-loader',
-                    /*
-                    {
-                        loader: MiniCssExtractPlugin.loader,
-                        options: {
-                            esModule: true,
-                        },
-                    },
-                    */
+                    //MiniCssExtractPlugin.loader,
                     {
                         loader: 'css-loader',
                         options: {
@@ -179,12 +177,6 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
                                 };
                             },
                             transpileOnly: isDevelopment
-                        }
-                    },
-                    {
-                        loader: "./webpack/DevelBlocks.js",
-                        options: {
-                            enabled: true
                         }
                     }
                 ]
@@ -258,4 +250,4 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
         minimize: !isDevelopment,
         minimizer: [new TerserPlugin()]
     }
-}};
+});

@@ -4,8 +4,6 @@ import "webcrypto-liner";
 import "./index.scss";
 import "./FileTransfer";
 
-import "./legacy/audio-lib";
-
 import "./hooks/ServerConnection";
 import "./hooks/ExternalModal";
 import "./hooks/AudioRecorder";
