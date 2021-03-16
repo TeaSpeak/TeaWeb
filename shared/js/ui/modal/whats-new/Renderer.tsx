@@ -22,8 +22,10 @@ mdRenderer.renderer.rules.link_open = function (tokens, idx, options /*, env */)
 
     let href = `<a href="${tokens[idx].href}" ${title} ${target} ></a>`;
     href = dompurify.sanitize(href);
-    if (href.substr(-4) !== "</a>")
+    if (href.substr(-4) !== "</a>") {
         return "<-- invalid link open... -->";
+    }
+
     return href.substr(0, href.length - 4);
 };
 
@@ -98,13 +100,25 @@ export const WhatsNew = (props: { changesUI?: ChangeLog, changesClient?: ChangeL
 
     let versionUIDate = props.changesUI?.currentVersion, versionNativeDate = props.changesClient?.currentVersion;
     if (__build.target === "web") {
-        subtitleLong = <Translatable key={"sub-web"}>We've successfully updated the web client for you.</Translatable>;
-        infoText = <VariadicTranslatable key={"info-web"}
-                                         text={"The web client has been updated to the version from {}."}>{versionUIDate}</VariadicTranslatable>;
+        subtitleLong = (
+            <Translatable key={"sub-web"}>We've successfully updated the web client for you.</Translatable>
+        );
+
+        infoText = (
+            <VariadicTranslatable key={"info-web"}
+                                  text={"The web client has been updated to the version from {}."}
+            >
+                {versionUIDate}
+            </VariadicTranslatable>
+        );
     } else if (props.changesUI && props.changesClient) {
-        subtitleLong =
-            <Translatable key={"sub-native-client-ui"}>We've successfully updated the native client and its UI for
-                you.</Translatable>;
+        subtitleLong = (
+            <Translatable
+                key={"sub-native-client-ui"}
+            >
+                We've successfully updated the native client and its UI for you.
+            </Translatable>
+        );
         infoText = (
             <React.Fragment key={"info-native-client-ui"}>
                 <VariadicTranslatable
@@ -114,15 +128,33 @@ export const WhatsNew = (props: { changesUI?: ChangeLog, changesClient?: ChangeL
             </React.Fragment>
         );
     } else if (props.changesClient) {
-        subtitleLong = <Translatable key={"sub-native-client"}>We've successfully updated the native client for
-            you.</Translatable>;
-        infoText = <VariadicTranslatable key={"info-native-client"}
-                                         text={"The native client has been updated to the version {}."}>{versionNativeDate}</VariadicTranslatable>;
+        subtitleLong = (
+            <Translatable key={"sub-native-client"}>
+                We've successfully updated the native client for you.
+            </Translatable>
+        );
+        infoText = (
+            <VariadicTranslatable
+                key={"info-native-client"}
+                text={"The native client has been updated to the version {}."}>
+                {versionNativeDate}
+            </VariadicTranslatable>
+        );
     } else if (props.changesUI) {
-        subtitleLong = <Translatable key={"sub-native-ui"}>We've successfully updated the native clients UI for
-            you.</Translatable>;
-        infoText = <VariadicTranslatable key={"info-native-ui"}
-                                         text={"The native clients UI has been updated to the version from 18.08.2020."}>{versionUIDate}</VariadicTranslatable>;
+        subtitleLong = (
+            <Translatable
+                key={"sub-native-ui"}
+            >
+                We've successfully updated the native clients UI for you.
+            </Translatable>
+        );
+        infoText = (
+            <VariadicTranslatable key={"info-native-ui"}
+                                  text={"The native clients UI has been updated to the version from 18.08.2020."}
+            >
+                {versionUIDate}
+            </VariadicTranslatable>
+        );
     }
 
     const changes = [changesClient, changesUI].filter(e => !!e);

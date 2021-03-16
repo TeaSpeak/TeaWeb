@@ -16,6 +16,7 @@ const ManifestGenerator = require("./webpack/ManifestPlugin");
 const WorkerPlugin = require('worker-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 
 export let isDevelopment = process.env.NODE_ENV === 'development';
 console.log("Webpacking for %s (%s)", isDevelopment ? "development" : "production", process.env.NODE_ENV || "NODE_ENV not specified");
@@ -119,7 +120,6 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
                 }
             }
         }),
-
         new LoaderIndexGenerator({
             buildTarget: target,
             output: path.join(__dirname, "dist/index.html"),

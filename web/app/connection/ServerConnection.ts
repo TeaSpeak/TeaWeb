@@ -19,12 +19,11 @@ import {parseCommand} from "tc-backend/web/connection/CommandParser";
 import {ServerAddress} from "tc-shared/tree/Server";
 import {RtpVoiceConnection} from "tc-backend/web/voice/Connection";
 import {VideoConnection} from "tc-shared/connection/VideoConnection";
-import {VoiceConnection} from "tc-backend/web/legacy/voice/VoiceHandler";
-import {LegacySupportVoiceBridge} from "tc-backend/web/connection/LegacySupportVoiceBridge";
 import {ServerFeature} from "tc-shared/connection/ServerFeatures";
 import {RTCConnection} from "tc-shared/connection/rtc/Connection";
 import {RtpVideoConnection} from "tc-shared/connection/rtc/video/Connection";
 import { tr } from "tc-shared/i18n/localize";
+import {createErrorModal} from "tc-shared/ui/elements/Modal";
 
 class ReturnListener<T> {
     resolve: (value?: T | PromiseLike<T>) => void;
@@ -50,10 +49,6 @@ export class ServerConnection extends AbstractServerConnection {
     private rtcConnection: RTCConnection;
     private voiceConnection: RtpVoiceConnection;
     private videoConnection: RtpVideoConnection;
-
-    /* legacy */
-    private oldVoiceConnection: VoiceConnection;
-    private legacyVoiceConnection: LegacySupportVoiceBridge;
 
     private pingStatistics = {
         thread_id: 0,
@@ -82,9 +77,6 @@ export class ServerConnection extends AbstractServerConnection {
         this.rtcConnection = new RTCConnection(this, true);
         this.voiceConnection = new RtpVoiceConnection(this, this.rtcConnection);
         this.videoConnection = new RtpVideoConnection(this.rtcConnection);
-
-        this.oldVoiceConnection = new VoiceConnection(this);
-        this.legacyVoiceConnection = new LegacySupportVoiceBridge(this, this.oldVoiceConnection, this.voiceConnection);
     }
 
     destroy() {
@@ -114,11 +106,6 @@ export class ServerConnection extends AbstractServerConnection {
 
             this.voiceConnection && this.voiceConnection.destroy();
             this.voiceConnection = undefined;
-
-            this.oldVoiceConnection?.destroy();
-            this.oldVoiceConnection = undefined;
-
-            this.legacyVoiceConnection = undefined;
 
             this.commandHandlerBoss && this.commandHandlerBoss.destroy();
             this.commandHandlerBoss = undefined;
@@ -379,8 +366,6 @@ export class ServerConnection extends AbstractServerConnection {
                     this.events.fire("notify_ping_updated", { newPing: this.ping() });
                     //logDebug(LogCategory.NETWORKING, tr("Received new pong. Updating ping to: JS: %o Native: %o"), this._ping.value.toFixed(3), this._ping.value_native.toFixed(3));
                 }
-            } else if(json["type"] === "WebRTC") {
-                this.oldVoiceConnection?.handleControlPacket(json);
             } else {
                 logWarn(LogCategory.NETWORKING, tr("Unknown command type %o"), json["type"]);
             }
@@ -409,22 +394,12 @@ export class ServerConnection extends AbstractServerConnection {
             }
 
             if(this.client.serverFeatures.supportsFeature(ServerFeature.VIDEO, 1)) {
-                this.legacyVoiceConnection.setVoiceBridge("new").then(() => {
-                    this.rtcConnection.doInitialSetup();
-                }).catch(error => {
-                    logError(LogCategory.VOICE, tr("Failed to setup the voice bridge: %o"), error);
-                    /* FIXME: Some kind of error modal? */
-                });
+                this.rtcConnection.doInitialSetup();
             } else{
                 /* old voice connection */
-                logDebug(LogCategory.NETWORKING, tr("Using legacy voice connection for TeaSpeak server bellow 1.4.5"));
-                this.legacyVoiceConnection.setVoiceBridge("old").then(() => {
-                    this.oldVoiceConnection.startVoiceBridge();
-                    this.rtcConnection.setNotSupported();
-                }).catch(error => {
-                    logError(LogCategory.VOICE, tr("Failed to setup the old voice bridge: %o"), error);
-                    /* FIXME: Some kind of error modal? */
-                });
+                logDebug(LogCategory.NETWORKING, tr("Using legacy voice connection for TeaSpeak server bellow 1.5"));
+                createErrorModal(tr("Server outdated"), tr("Please update your server in order to use the WebClient")).open();
+                this.rtcConnection.setNotSupported();
             }
         });
     }
@@ -487,7 +462,7 @@ export class ServerConnection extends AbstractServerConnection {
     }
 
     getVoiceConnection(): AbstractVoiceConnection {
-        return this.legacyVoiceConnection;
+        return this.voiceConnection;
     }
 
     getVideoConnection(): VideoConnection {
