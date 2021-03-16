@@ -731,19 +731,20 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
         let reorder_channel = false;
         let update_avatar = false;
 
-        /* devel-block(log-client-property-updates) */
-        let group = log.group(log.LogType.DEBUG, LogCategory.CLIENT, tr("Update properties (%i) of %s (%i)"), variables.length, this.clientNickName(), this.clientId());
-        {
-            const entries = [];
-            for(const variable of variables)
-                entries.push({
-                    key: variable.key,
-                    value: variable.value,
-                    type: typeof (this.properties[variable.key])
-                });
-            log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Client update properties", entries);
+        let group;
+        if(__build.mode === "debug") {
+            group = log.group(log.LogType.DEBUG, LogCategory.CLIENT, tr("Update properties (%i) of %s (%i)"), variables.length, this.clientNickName(), this.clientId());
+            {
+                const entries = [];
+                for(const variable of variables)
+                    entries.push({
+                        key: variable.key,
+                        value: variable.value,
+                        type: typeof (this.properties[variable.key])
+                    });
+                log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Client update properties", entries);
+            }
         }
-        /* devel-block-end */
 
         for(const variable of variables) {
             const old_value = this._properties[variable.key];
@@ -788,9 +789,7 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
             this.channelTree.client?.fileManager?.avatars.updateCache(this.avatarId(), this.properties.client_flag_avatar);
         }
 
-        /* devel-block(log-client-property-updates) */
-        group.end();
-        /* devel-block-end */
+        group?.end();
 
         {
             let properties = {};

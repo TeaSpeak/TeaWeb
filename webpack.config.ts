@@ -5,7 +5,7 @@ import {exec} from "child_process";
 import * as util from "util";
 import { Plugin as SvgSpriteGenerator } from "webpack-svg-sprite-generator";
 
-import LoaderIndexGenerator = require("./loader/IndexGenerator");
+import LoaderIndexGenerator from "./loader/IndexGenerator";
 import {Configuration} from "webpack";
 
 const path = require('path');
@@ -20,7 +20,7 @@ const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 
 export let isDevelopment = process.env.NODE_ENV === 'development';
 console.log("Webpacking for %s (%s)", isDevelopment ? "development" : "production", process.env.NODE_ENV || "NODE_ENV not specified");
-const generate_definitions = async (target: string) => {
+const generateDefinitions = async (target: string) => {
     const git_rev = fs.readFileSync(path.join(__dirname, ".git", "HEAD")).toString();
     let version;
     if(git_rev.indexOf("/") === -1)
@@ -83,7 +83,7 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
             minSize: 1024 * 8,
             maxSize: 1024 * 128
         }),
-        new webpack.DefinePlugin(await generate_definitions(target)),
+        new webpack.DefinePlugin(await generateDefinitions(target)),
         new SvgSpriteGenerator({
             dtsOutputFolder: path.join(__dirname, "shared", "svg-sprites"),
             configurations: {

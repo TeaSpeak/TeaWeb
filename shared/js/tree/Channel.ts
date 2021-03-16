@@ -620,20 +620,21 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     }
 
     updateVariables(...variables: {key: string, value: string}[]) {
-        /* devel-block(log-channel-property-updates) */
-        let group = log.group(log.LogType.DEBUG, LogCategory.CHANNEL_PROPERTIES, tr("Update properties (%i) of %s (%i)"), variables.length, this.channelName(), this.getChannelId());
+        let group;
+        if(__build.mode === "debug") {
+            group = log.group(log.LogType.DEBUG, LogCategory.CHANNEL_PROPERTIES, tr("Update properties (%i) of %s (%i)"), variables.length, this.channelName(), this.getChannelId());
 
-        {
-            const entries = [];
-            for(const variable of variables)
-                entries.push({
-                    key: variable.key,
-                    value: variable.value,
-                    type: typeof (this.properties[variable.key])
-                });
-            log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Clannel update properties", entries);
+            {
+                const entries = [];
+                for(const variable of variables)
+                    entries.push({
+                        key: variable.key,
+                        value: variable.value,
+                        type: typeof (this.properties[variable.key])
+                    });
+                log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Clannel update properties", entries);
+            }
         }
-        /* devel-block-end */
 
         /* TODO: Validate values. Example: channel_conversation_mode */
 
@@ -664,9 +665,9 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 }
             }
         }
-        /* devel-block(log-channel-property-updates) */
-        group.end();
-        /* devel-block-end */
+
+        group?.end();
+
         {
             let properties = {};
             for(const property of variables)
