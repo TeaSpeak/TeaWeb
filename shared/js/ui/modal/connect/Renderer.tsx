@@ -11,7 +11,6 @@ import {Button} from "tc-shared/ui/react-elements/Button";
 import {ControlledFlatInputField, ControlledSelect, FlatInputField} from "tc-shared/ui/react-elements/InputField";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
-import * as i18n from "../../../i18n/country";
 import {getIconManager} from "tc-shared/file/Icons";
 import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {UiVariableConsumer} from "tc-shared/ui/utils/Variable";
@@ -412,10 +411,6 @@ class ConnectModal extends AbstractModal {
 
     renderTitle(): string | React.ReactElement {
         return <Translatable>Connect to a server</Translatable>;
-    }
-
-    color(): "none" | "blue" {
-        return "blue";
     }
 
     verticalAlignment(): "top" | "center" | "bottom" {

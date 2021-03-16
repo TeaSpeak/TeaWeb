@@ -11,9 +11,9 @@ import PermissionType from "tc-shared/permission/PermissionType";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
-import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {LogCategory, logWarn} from "tc-shared/log";
+import {InternalModal} from "tc-shared/ui/react-elements/modal/Definitions";
 
 const cssStyle = require("./ModalGroupPermissionCopy.scss");
 

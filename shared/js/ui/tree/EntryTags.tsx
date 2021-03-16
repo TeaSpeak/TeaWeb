@@ -11,8 +11,42 @@ const cssStyle = require("./EntryTags.scss");
 
 let ipcChannel: IPCChannel;
 
-export const ClientTag = (props: { clientName: string, clientUniqueId: string, handlerId: string, clientId?: number, clientDatabaseId?: number, className?: string }) => (
-    <div className={cssStyle.client + (props.className ? ` ${props.className}` : ``)}
+export const ServerTag = React.memo((props: {
+    serverName: string,
+    handlerId: string,
+    serverUniqueId?: string,
+    className?: string
+}) => {
+    return (
+        <div
+            className={cssStyle.tag + (props.className ? ` ${props.className}` : ``)}
+            onContextMenu={event => {
+                event.preventDefault();
+
+                ipcChannel.sendMessage("contextmenu-server", {
+                    handlerId: props.handlerId,
+                    serverUniqueId: props.serverUniqueId,
+
+                    pageX: event.pageX,
+                    pageY: event.pageY
+                });
+            }}
+            draggable={false}
+        >
+            {props.serverName}
+        </div>
+    )
+});
+
+export const ClientTag = React.memo((props: {
+    clientName: string,
+    clientUniqueId: string,
+    handlerId: string,
+    clientId?: number,
+    clientDatabaseId?: number,
+    className?: string
+}) => (
+    <div className={cssStyle.tag + (props.className ? ` ${props.className}` : ``)}
          onContextMenu={event => {
              event.preventDefault();
 
@@ -45,11 +79,16 @@ export const ClientTag = (props: { clientName: string, clientUniqueId: string, h
     >
         {props.clientName}
     </div>
-);
+));
 
-export const ChannelTag = (props: { channelName: string, channelId: number, handlerId: string, className?: string }) => (
+export const ChannelTag = React.memo((props: {
+    channelName: string,
+    channelId: number,
+    handlerId: string,
+    className?: string
+}) => (
     <div
-        className={cssStyle.client + (props.className ? ` ${props.className}` : ``)}
+        className={cssStyle.tag + (props.className ? ` ${props.className}` : ``)}
         onContextMenu={event => {
             event.preventDefault();
 
@@ -77,8 +116,7 @@ export const ChannelTag = (props: { channelName: string, channelId: number, hand
     >
         {props.channelName}
     </div>
-);
-
+));
 
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     name: "entry tags",

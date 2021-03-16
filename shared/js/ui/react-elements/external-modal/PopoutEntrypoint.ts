@@ -2,16 +2,16 @@ import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import * as ipc from "../../../ipc/BrowserIPC";
 import * as i18n from "../../../i18n/localize";
-import {AbstractModal, ModalRenderer} from "../../../ui/react-elements/ModalDefinitions";
+import {AbstractModal} from "../../../ui/react-elements/ModalDefinitions";
 import {AppParameters} from "../../../settings";
 import {getPopoutController} from "./PopoutController";
-import {WebModalRenderer} from "../../../ui/react-elements/external-modal/PopoutRendererWeb";
-import {ClientModalRenderer} from "../../../ui/react-elements/external-modal/PopoutRendererClient";
 import {setupJSRender} from "../../../ui/jsrender";
 
 import "../../../file/RemoteAvatars";
 import "../../../file/RemoteIcons";
 import {findRegisteredModal} from "tc-shared/ui/react-elements/modal/Registry";
+import {ModalRenderer} from "tc-shared/ui/react-elements/external-modal/ModalRenderer";
+import {constructAbstractModalClass} from "tc-shared/ui/react-elements/modal/Definitions";
 
 if("__native_client_init_shared" in window) {
     (window as any).__native_client_init_shared(__webpack_require__);
@@ -47,18 +47,14 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     name: "modal renderer loader",
     priority: 10,
     function: async () => {
-        if(__build.target === "web") {
-            modalRenderer = new WebModalRenderer();
-        } else {
-            modalRenderer = new ClientModalRenderer({
-                close() {
-                    getPopoutController().doClose()
-                },
-                minimize() {
-                    getPopoutController().doMinimize()
-                }
-            });
-        }
+        modalRenderer = new ModalRenderer({
+            close() {
+                getPopoutController().doClose()
+            },
+            minimize() {
+                getPopoutController().doMinimize()
+            }
+        });
     }
 });
 
@@ -88,7 +84,7 @@ loader.register_task(Stage.LOADED, {
     priority: 100,
     function: async () => {
         try {
-            modalInstance = new modalClass(...getPopoutController().getConstructorArguments());
+            modalInstance = constructAbstractModalClass(modalClass, { windowed: true }, getPopoutController().getConstructorArguments());
             modalRenderer.renderModal(modalInstance);
         } catch(error) {
             loader.critical_error("Failed to invoker modal", "Lookup the console for more detail");

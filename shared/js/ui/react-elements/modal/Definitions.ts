@@ -4,11 +4,13 @@ import {ChannelEditEvents} from "tc-shared/ui/modal/channel-edit/Definitions";
 import {EchoTestEvents} from "tc-shared/ui/modal/echo-test/Definitions";
 import {ModalGlobalSettingsEditorEvents} from "tc-shared/ui/modal/global-settings-editor/Definitions";
 import {InviteUiEvents, InviteUiVariables} from "tc-shared/ui/modal/invite/Definitions";
-
-import {ReactElement} from "react";
-import * as React from "react";
+import React, {ReactElement} from "react";
 import {IpcVariableDescriptor} from "tc-shared/ui/utils/IpcVariable";
 import {ModalBookmarkEvents, ModalBookmarkVariables} from "tc-shared/ui/modal/bookmarks/Definitions";
+import {
+    ModalBookmarksAddServerEvents,
+    ModalBookmarksAddServerVariables
+} from "tc-shared/ui/modal/bookmarks-add-server/Definitions";
 
 export type ModalType = "error" | "warning" | "info" | "none";
 export type ModalRenderType = "page" | "dialog";
@@ -52,21 +54,10 @@ export interface ModalOptions {
     popedOut?: boolean
 }
 
-export interface ModalFunctionController {
-    minimize();
-    supportMinimize() : boolean;
-
-    maximize();
-    supportMaximize() : boolean;
-
-    close();
-}
-
 export interface ModalEvents {
     "open": {},
     "close": {},
 
-    /* create is implicitly at object creation */
     "destroy": {}
 }
 
@@ -74,6 +65,27 @@ export enum ModalState {
     SHOWN,
     HIDDEN,
     DESTROYED
+}
+
+export interface ModalInstanceEvents {
+    action_close: {},
+    action_minimize: {},
+    action_popout: {},
+
+    notify_open: {}
+    notify_minimize: {},
+    notify_close: {},
+    notify_destroy: {},
+}
+
+export interface ModalInstanceController {
+    getState() : ModalState;
+    getEvents() : Registry<ModalInstanceEvents>;
+
+    show() : Promise<void>;
+    hide() : Promise<void>;
+
+    destroy();
 }
 
 export interface ModalController {
@@ -87,10 +99,23 @@ export interface ModalController {
     destroy();
 }
 
-export abstract class AbstractModal {
-    protected constructor() {}
+export interface ModalInstanceProperties {
+    windowed: boolean
+}
 
-    abstract renderBody(properties: { windowed: boolean }) : ReactElement;
+let currentModalProperties: ModalInstanceProperties
+export abstract class AbstractModal {
+    protected readonly properties: ModalInstanceProperties;
+
+    protected constructor() {
+        if(typeof currentModalProperties === "undefined") {
+            throw "missing modal properties";
+        }
+        this.properties = currentModalProperties;
+        currentModalProperties = undefined;
+    }
+
+    abstract renderBody() : ReactElement;
     abstract renderTitle() : string | React.ReactElement;
 
     /* only valid for the "inline" modals */
@@ -104,13 +129,24 @@ export abstract class AbstractModal {
     protected onClose() {}
     protected onOpen() {}
 }
+export abstract class InternalModal extends AbstractModal {}
 
-
-export interface ModalRenderer {
-    renderModal(modal: AbstractModal | undefined);
+export function constructAbstractModalClass<T extends keyof ModalConstructorArguments>(
+    klass: new (...args: ModalConstructorArguments[T]) => AbstractModal,
+    properties: ModalInstanceProperties,
+    args: ModalConstructorArguments[T]) : AbstractModal {
+    currentModalProperties = properties;
+    try {
+        return new klass(...args);
+    } finally {
+        currentModalProperties = undefined;
+    }
 }
 
+
 export interface ModalConstructorArguments {
+    "__internal__modal__": any[],
+
     "video-viewer": [
         /* events */ IpcRegistryDescription<VideoViewerEvents>,
         /* handlerId */ string,
@@ -137,5 +173,9 @@ export interface ModalConstructorArguments {
     "modal-bookmarks": [
         /* events */ IpcRegistryDescription<ModalBookmarkEvents>,
         /* variables */ IpcVariableDescriptor<ModalBookmarkVariables>,
+    ],
+    "modal-bookmark-add-server": [
+        /* events */ IpcRegistryDescription<ModalBookmarksAddServerEvents>,
+        /* variables */ IpcVariableDescriptor<ModalBookmarksAddServerVariables>,
     ]
 }

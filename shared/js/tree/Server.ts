@@ -147,6 +147,18 @@ export function parseServerAddress(address: string) : ServerAddress | undefined 
     }
 }
 
+export function stringifyServerAddress(address: ServerAddress) : string {
+    let result = address.host;
+    if(address.port !== 9987) {
+        if(address.host.indexOf(":") === -1) {
+            result += ":" + address.port;
+        } else {
+            result = "[" + result + "]:" + address.port;
+        }
+    }
+    return result;
+}
+
 export interface ServerEvents extends ChannelTreeEntryEvents {
     notify_properties_updated: {
         updated_properties: Partial<ServerProperties>;

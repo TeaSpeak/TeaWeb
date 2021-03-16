@@ -1,5 +1,5 @@
 import {ConnectionHandler} from "../../../ConnectionHandler";
-import {Registry} from "../../../events";
+import {Registry} from "tc-events";
 import {
     FileTransfer,
     FileTransferDirection,

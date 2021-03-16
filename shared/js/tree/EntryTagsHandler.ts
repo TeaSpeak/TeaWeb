@@ -88,6 +88,31 @@ function handleIpcMessage(type: string, payload: any) {
             channel?.showContextMenu(pageX, pageY);
             break;
         }
+        case "contextmenu-server": {
+            const {
+                handlerId,
+                serverUniqueId,
+
+                pageX,
+                pageY
+            } = payload;
+
+            if(typeof pageX !== "number" || typeof pageY !== "number") {
+                logWarn(LogCategory.IPC, tr("Received server context menu action with an invalid page coordinated: %ox%o."), pageX, pageY);
+                return;
+            }
+
+            if(typeof handlerId !== "string") {
+                logWarn(LogCategory.IPC, tr("Received server context menu action with an invalid handler id: %o."), handlerId);
+                return;
+            }
+
+            const handler = server_connections.findConnection(handlerId);
+            if(!handler?.connected || (serverUniqueId && handler.getCurrentServerUniqueId() !== serverUniqueId)) {
+                return;
+            }
+            handler.channelTree.server.showContextMenu(pageX, pageY);
+        }
     }
 }
 

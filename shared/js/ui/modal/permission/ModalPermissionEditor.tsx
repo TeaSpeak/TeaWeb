@@ -30,11 +30,11 @@ import {
 } from "tc-shared/ui/modal/permission/SenselessPermissions";
 import {spawnGroupCreate} from "tc-shared/ui/modal/ModalGroupCreate";
 import {spawnModalGroupPermissionCopy} from "tc-shared/ui/modal/ModalGroupPermissionCopy";
-import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {PermissionEditorTab} from "tc-shared/events/GlobalEvents";
 import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {useTr} from "tc-shared/ui/react-elements/Helper";
+import {InternalModal} from "tc-shared/ui/react-elements/modal/Definitions";
 
 const cssStyle = require("./ModalPermissionEditor.scss");
 

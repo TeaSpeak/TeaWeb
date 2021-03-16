@@ -579,6 +579,7 @@ const BookmarkSettingChannelPassword = () => {
 }
 
 const BookmarkInfoRenderer = React.memo(() => {
+    const selectedBookmark = useContext(SelectedBookmarkIdContext);
     const bookmarkInfo = useContext(SelectedBookmarkInfoContext);
     let connectCount = bookmarkInfo ? Math.max(bookmarkInfo.connectCountUniqueId, bookmarkInfo.connectCountAddress) : -1;
 
@@ -633,6 +634,11 @@ const BookmarkInfoRenderer = React.memo(() => {
             <div className={cssStyle.overlay + " " + (connectCount === -1 ? cssStyle.shown : "")}>
                 <div className={cssStyle.text}>
                     <Translatable>You never connected to that server.</Translatable>
+                </div>
+            </div>
+            <div className={cssStyle.overlay + " " + (selectedBookmark.type !== "bookmark" ? cssStyle.shown : "")}>
+                <div className={cssStyle.text}>
+                    {/* bookmark is a directory */}
                 </div>
             </div>
         </div>
@@ -774,11 +780,11 @@ class ModalBookmarks extends AbstractModal {
         this.variables.destroy();
     }
 
-    renderBody(renderBody): React.ReactElement {
+    renderBody(): React.ReactElement {
         return (
             <EventContext.Provider value={this.events}>
                 <VariableContext.Provider value={this.variables}>
-                    <div className={cssStyle.container + " " + (renderBody.windowed ? cssStyle.windowed : "")}>
+                    <div className={cssStyle.container + " " + (this.properties.windowed ? cssStyle.windowed : "")}>
                         <BookmarkListContainer />
                         <ContextDivider id={"separator-bookmarks"} direction={"horizontal"} defaultValue={25} />
                         <BookmarkInfoContainer />

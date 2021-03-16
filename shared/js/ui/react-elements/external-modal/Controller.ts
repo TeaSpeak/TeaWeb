@@ -8,14 +8,15 @@ import {
     Popout2ControllerMessages,
     PopoutIPCMessage
 } from "../../../ui/react-elements/external-modal/IPCMessage";
-import {ModalController, ModalEvents, ModalOptions, ModalState} from "../../../ui/react-elements/ModalDefinitions";
+import {ModalEvents, ModalOptions, ModalState} from "../../../ui/react-elements/ModalDefinitions";
 import {guid} from "tc-shared/crypto/uid";
+import {ModalInstanceController, ModalInstanceEvents} from "tc-shared/ui/react-elements/modal/Definitions";
 
-export abstract class AbstractExternalModalController extends EventControllerBase<"controller"> implements ModalController {
+export abstract class AbstractExternalModalController extends EventControllerBase<"controller"> implements ModalInstanceController {
     public readonly modalType: string;
     public readonly constructorArguments: any[];
 
-    private readonly modalEvents: Registry<ModalEvents>;
+    private readonly modalEvents: Registry<ModalInstanceEvents>;
     private modalState: ModalState = ModalState.DESTROYED;
 
     private readonly documentUnloadListener: () => void;
@@ -26,7 +27,7 @@ export abstract class AbstractExternalModalController extends EventControllerBas
         this.modalType = modalType;
         this.constructorArguments = constructorArguments;
 
-        this.modalEvents = new Registry<ModalEvents>();
+        this.modalEvents = new Registry<ModalInstanceEvents>();
 
         this.ipcChannel = ipc.getIpcInstance().createChannel(kPopoutIPCChannelId);
         this.ipcChannel.messageHandler = this.handleIPCMessage.bind(this);
@@ -38,7 +39,7 @@ export abstract class AbstractExternalModalController extends EventControllerBas
         return {}; /* FIXME! */
     }
 
-    getEvents(): Registry<ModalEvents> {
+    getEvents(): Registry<ModalInstanceEvents> {
         return this.modalEvents;
     }
 
@@ -85,7 +86,7 @@ export abstract class AbstractExternalModalController extends EventControllerBas
         }
 
         window.addEventListener("unload", this.documentUnloadListener);
-        this.modalEvents.fire("open");
+        this.modalEvents.fire("notify_open");
     }
 
     private doDestroyWindow() {
@@ -99,12 +100,13 @@ export abstract class AbstractExternalModalController extends EventControllerBas
 
         this.doDestroyWindow();
         this.modalState = ModalState.HIDDEN;
-        this.modalEvents.fire("close");
+        this.modalEvents.fire("notify_close");
     }
 
     destroy() {
-        if(this.modalState === ModalState.DESTROYED)
+        if(this.modalState === ModalState.DESTROYED) {
             return;
+        }
 
         this.doDestroyWindow();
         if(this.ipcChannel) {
@@ -113,7 +115,7 @@ export abstract class AbstractExternalModalController extends EventControllerBas
 
         this.destroyIPC();
         this.modalState = ModalState.DESTROYED;
-        this.modalEvents.fire("destroy");
+        this.modalEvents.fire("notify_destroy");
     }
 
     protected handleWindowClosed() {

@@ -1,6 +1,6 @@
 import * as React from "react";
-import {ReactElement} from "react";
 import * as ReactDOM from "react-dom";
+import {ReactElement} from "react";
 import {guid} from "tc-shared/crypto/uid";
 
 const cssStyle = require("./Tooltip.scss");
@@ -73,6 +73,7 @@ export interface TooltipState {
 
 export interface TooltipProperties {
     tooltip: () => ReactElement | ReactElement[] | string;
+    className?: string;
 }
 
 export class Tooltip extends React.Component<TooltipProperties, TooltipState> {
@@ -103,6 +104,7 @@ export class Tooltip extends React.Component<TooltipProperties, TooltipState> {
                 onMouseLeave={() => this.setState({ hovered: false })}
                 onClick={() => this.setState({ hovered: !this.state.hovered })}
                 style={{ cursor: "pointer" }}
+                className={this.props.className}
             >
                 {this.props.children}
             </span>
@@ -124,8 +126,9 @@ export class Tooltip extends React.Component<TooltipProperties, TooltipState> {
 
     private onMouseEnter(event: React.MouseEvent) {
         /* check if may only the span has been hovered, should not be the case! */
-        if(event.target === this.refContainer.current)
+        if(event.target === this.refContainer.current) {
             return;
+        }
 
         this.setState({ hovered: true });
 
@@ -149,8 +152,8 @@ export class Tooltip extends React.Component<TooltipProperties, TooltipState> {
     }
 }
 
-export const IconTooltip = (props: { children?: React.ReactElement | React.ReactElement[], className?: string }) => (
-    <Tooltip tooltip={() => props.children}>
+export const IconTooltip = (props: { children?: React.ReactElement | React.ReactElement[], className?: string, outerClassName?: string }) => (
+    <Tooltip tooltip={() => props.children} className={props.outerClassName}>
         <div className={cssStyle.iconTooltip + " " + props.className}>
             <img src="img/icon_tooltip.svg" alt={""} />
         </div>

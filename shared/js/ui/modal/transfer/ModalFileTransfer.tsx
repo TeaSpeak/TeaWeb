@@ -6,10 +6,10 @@ import {FileTransferInfo} from "./FileTransferInfo";
 import {initializeRemoteFileBrowserController} from "./FileBrowserControllerRemote";
 import {initializeTransferInfoController} from "./FileTransferInfoController";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
-import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {channelPathPrefix, FileBrowserEvents} from "tc-shared/ui/modal/transfer/FileDefinitions";
 import {TransferInfoEvents} from "tc-shared/ui/modal/transfer/FileTransferInfoDefinitions";
+import {InternalModal} from "tc-shared/ui/react-elements/modal/Definitions";
 
 const cssStyle = require("./FileBrowserRenderer.scss");
 

@@ -79,3 +79,9 @@ registerModal({
     popoutSupported: true
 });
 
+registerModal({
+    modalId: "modal-bookmark-add-server",
+    classLoader: async () => await import("tc-shared/ui/modal/bookmarks-add-server/Renderer"),
+    popoutSupported: true
+});
+

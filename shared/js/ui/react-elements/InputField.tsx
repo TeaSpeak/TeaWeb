@@ -34,6 +34,7 @@ export const ControlledBoxedInputField = (props: {
     onBlur?: () => void,
 
     finishOnEnter?: boolean,
+    refInput?: React.RefObject<HTMLInputElement>
 }) => {
 
     return (
@@ -60,6 +61,8 @@ export const ControlledBoxedInputField = (props: {
                       onClick={props.onFocus}>{props.inputBox()}</span> :
 
                 <input key={"input"}
+
+                       ref={props.refInput}
 
                        value={props.value || ""}
                        placeholder={props.placeholder}

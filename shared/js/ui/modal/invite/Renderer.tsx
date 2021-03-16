@@ -405,12 +405,3 @@ class ModalInvite extends AbstractModal {
     }
 }
 export = ModalInvite;
-
-/*
-const modal = spawnModal("global-settings-editor", [ events.generateIpcDescription() ], { popoutable: true, popedOut: false });
-modal.show();
-modal.getEvents().on("destroy", () => {
-    events.fire("notify_destroy");
-    events.destroy();
-});
- */

@@ -1,5 +1,5 @@
 import {ConnectionHandler} from "../../../ConnectionHandler";
-import {Registry} from "../../../events";
+import {Registry} from "tc-events";
 import {FileType} from "../../../file/FileManager";
 import {CommandResult} from "../../../connection/ServerConnectionDeclaration";
 import PermissionType from "../../../permission/PermissionType";
