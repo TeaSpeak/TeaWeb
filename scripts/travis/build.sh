@@ -155,7 +155,7 @@ source ./scripts/install_dependencies.sh
 echo "----------   Web client    ----------"
 
 function move_target_file() {
-    file_name=$(ls -1t | grep -E "^TeaWeb-.*\.zip$" | head -n 1)
+    file_name=$(ls -1t dist-package | grep -E "^TeaWeb-.*\.zip$" | head -n 1)
     if [[ -z "$file_name" ]]; then
         handle_failure -1 "Failed to find target file"
     fi
@@ -166,7 +166,7 @@ function move_target_file() {
         echo "Removing old packed file located at $target_file"
         rm "${target_file}" && handle_failure -1 "Failed to remove target file"
     fi
-    mv "${file_name}" "${target_file}"
+    mv "dist-package/${file_name}" "${target_file}"
     echo "Moved target file to $target_file"
 }
 
