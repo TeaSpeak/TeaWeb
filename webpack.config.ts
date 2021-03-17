@@ -110,7 +110,8 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
             new MiniCssExtractPlugin({
                 filename: isDevelopment ? "[name].[contenthash].css" : "[contenthash].css",
                 chunkFilename: isDevelopment ? "[name].[contenthash].css" : "[contenthash].css",
-                ignoreOrder: true
+                ignoreOrder: true,
+
             }),
 
             new ManifestGenerator({
@@ -171,7 +172,7 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
                         {
                             loader: MiniCssExtractPlugin.loader,
                             options: {
-                                esModule: false
+                                esModule: false,
                             }
                         },
                         {
@@ -185,7 +186,10 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
                             }
                         },
                         {
-                            loader: 'sass-loader',
+                            loader: "postcss-loader"
+                        },
+                        {
+                            loader: "sass-loader",
                             options: {
                                 sourceMap: isDevelopment
                             }
