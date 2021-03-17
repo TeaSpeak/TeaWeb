@@ -149,7 +149,7 @@ export const config = async (env: any, target: "web" | "client"): Promise<Config
                         globOptions: {
                             ignore: [
                                 '**/client-icons/**',
-                                '**/style/**',
+                                //'**/style/**',
                             ]
                         }
                     },
