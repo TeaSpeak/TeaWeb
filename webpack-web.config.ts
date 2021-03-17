@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as config_base from "./webpack.config";
 
-export = () => config_base.config("web").then(config => {
+export = env => config_base.config(env, "web").then(config => {
     Object.assign(config.entry, {
         "shared-app": ["./web/app/index.ts"],
         "modal-external": ["./web/app/index-external.ts"]

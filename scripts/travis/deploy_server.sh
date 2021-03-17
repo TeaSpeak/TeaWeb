@@ -37,7 +37,7 @@ _exit_code=$?
     echo "Failed to delete the old .zip files ($_exit_code)"
 }
 
-filename="TeaWeb-Release-$(git rev-parse --short HEAD).zip"
+filename="TeaWeb-release-$(git rev-parse --short HEAD).zip"
 sftp -oStrictHostKeyChecking=no -oIdentitiesOnly=yes -i /tmp/sftp_key TeaSpeak-Travis-Web@web.teaspeak.dev << EOF
     put $file tmp-upload/$filename
 EOF

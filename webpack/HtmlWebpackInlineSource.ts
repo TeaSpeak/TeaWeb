@@ -135,4 +135,4 @@ function getAssetByName (assests, assetName) {
     }
 }
 
-module.exports = HtmlWebpackInlineSourcePlugin;
+export = HtmlWebpackInlineSourcePlugin;

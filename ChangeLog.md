@@ -1,4 +1,9 @@
 # Changelog:
+* **17.03.21**
+    - Updated from webpack 4 to webpack 5
+    - Reworked the client build process
+    - Using webpack dev server from now on
+  
 * **14.03.21**
     - Enchanted the bookmark system
       - Added support for auto connect on startup

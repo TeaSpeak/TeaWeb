@@ -86,10 +86,10 @@ for folder in "${folders[@]}"; do
 
         [[ $? -eq 0 ]] && {
             echo "    Uploaded.";
-            uploaded_files+="$file"
+            uploaded_files+=("$file")
         } || {
             echo "Failed to generate git release"
-            failed_files+="$file"
+            failed_files+=("$file")
         }
     done
 done

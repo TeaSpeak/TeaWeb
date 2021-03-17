@@ -3,18 +3,21 @@ import * as util from "util";
 import * as path from "path";
 import * as child_process from "child_process";
 
+import {GeneratedAssetPlugin} from "./webpack/GeneratedAssetPlugin";
+
 import { DefinePlugin, Configuration, } from "webpack";
 
 import { Plugin as SvgSpriteGenerator } from "webpack-svg-sprite-generator";
-const ManifestGenerator = require("./webpack/ManifestPlugin");
-const HtmlWebpackInlineSourcePlugin = require("./webpack/HtmlWebpackInlineSource");
+import ManifestGenerator from "./webpack/ManifestPlugin";
+import HtmlWebpackInlineSourcePlugin from "./webpack/HtmlWebpackInlineSource";
+import TranslateableWebpackPlugin from "./tools/trgen/WebpackPlugin";
 
+import ZipWebpackPlugin from "zip-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
-import {TranslateableWebpackPlugin} from "./tools/trgen/WebpackPlugin";
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
+import TerserPlugin from "terser-webpack-plugin";
+import CopyWebpackPlugin from "copy-webpack-plugin";
 
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
@@ -22,33 +25,57 @@ const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 export let isDevelopment = process.env.NODE_ENV === 'development';
 console.log("Webpacking for %s (%s)", isDevelopment ? "development" : "production", process.env.NODE_ENV || "NODE_ENV not specified");
 
-const generateDefinitions = async (target: string) => {
-    const gitRevision = fs.readFileSync(path.join(__dirname, ".git", "HEAD")).toString();
-    let version;
-    if(gitRevision.indexOf("/") === -1) {
-        version = (gitRevision || "0000000").substr(0, 7);
-    } else {
-        version = fs.readFileSync(path.join(__dirname, ".git", gitRevision.substr(5).trim())).toString().substr(0, 7);
-    }
+interface LocalBuildInfo {
+    target: "client" | "web",
+    mode: "debug" | "release",
 
-    let timestamp;
-    try {
-        const { stdout } = await util.promisify(child_process.exec)("git show -s --format=%ct");
-        timestamp = parseInt(stdout.toString());
-        if(isNaN(timestamp)) {
-            throw "failed to parse timestamp '" + stdout.toString() + "'";
+    gitVersion: string,
+    gitTimestamp: number,
+
+    unixTimestamp: number,
+    localTimestamp: string
+}
+
+let localBuildInfo: LocalBuildInfo;
+const generateLocalBuildInfo = async (target: string): Promise<LocalBuildInfo> => {
+    let info: LocalBuildInfo = {} as any;
+
+    info.target = target as any;
+    info.mode = isDevelopment ? "debug" : "release";
+
+    {
+        const gitRevision = fs.readFileSync(path.join(__dirname, ".git", "HEAD")).toString();
+        if(gitRevision.indexOf("/") === -1) {
+            info.gitVersion = (gitRevision || "0000000").substr(0, 7);
+        } else {
+            info.gitVersion = fs.readFileSync(path.join(__dirname, ".git", gitRevision.substr(5).trim())).toString().substr(0, 7);
         }
-    } catch (error) {
-        console.error("Failed to get commit timestamp: %o", error);
-        throw "failed to get commit timestamp";
+
+        try {
+            const { stdout } = await util.promisify(child_process.exec)("git show -s --format=%ct");
+            info.gitTimestamp = parseInt(stdout.toString());
+            if(isNaN(info.gitTimestamp)) {
+                throw "failed to parse timestamp '" + stdout.toString() + "'";
+            }
+        } catch (error) {
+            console.error("Failed to get commit timestamp: %o", error);
+            throw "failed to get commit timestamp";
+        }
     }
 
+    info.unixTimestamp = Date.now();
+    info.localTimestamp = new Date().toString();
+
+    return info;
+};
+
+const generateDefinitions = async (target: string) => {
     return {
         "__build": {
             target: JSON.stringify(target),
             mode: JSON.stringify(isDevelopment ? "debug" : "release"),
-            version: JSON.stringify(version),
-            timestamp: timestamp,
+            version: JSON.stringify(localBuildInfo.gitVersion),
+            timestamp: localBuildInfo.gitTimestamp,
             entry_chunk_name: JSON.stringify(target === "web" ? "shared-app" : "client-app")
         } as BuildDefinitions
     } as any;
@@ -83,7 +110,9 @@ const generateIndexPlugin = (target: "web" | "client"): HtmlWebpackPlugin => {
     return new HtmlWebpackPlugin(options);
 }
 
-export const config = async (target: "web" | "client"): Promise<Configuration & { devServer: any }> => {
+export const config = async (env: any, target: "web" | "client"): Promise<Configuration & { devServer: any }> => {
+    localBuildInfo = await generateLocalBuildInfo(target);
+
     const translateablePlugin = new TranslateableWebpackPlugin({ assetName: "translations.json" });
 
     return {
@@ -97,7 +126,20 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
         mode: isDevelopment ? "development" : "production",
         plugins: [
             new CleanWebpackPlugin(),
+
             new DefinePlugin(await generateDefinitions(target)),
+            new GeneratedAssetPlugin({
+                customFiles: [
+                    {
+                        assetName: "buildInfo.json",
+                        content: JSON.stringify(localBuildInfo)
+                    }
+                ]
+            }),
+            new ManifestGenerator({
+                outputFileName: "manifest.json",
+                context: __dirname
+            }),
 
             new CopyWebpackPlugin({
                 patterns: [
@@ -107,6 +149,7 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
                         globOptions: {
                             ignore: [
                                 '**/client-icons/**',
+                                '**/style/**',
                             ]
                         }
                     },
@@ -121,14 +164,9 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
                 ignoreOrder: true,
 
             }),
-
-            new ManifestGenerator({
-                outputFileName: "manifest.json",
-                context: __dirname
-            }),
             new SvgSpriteGenerator({
                 dtsOutputFolder: path.join(__dirname, "shared", "svg-sprites"),
-                publicPath: "/assets/",
+                publicPath: "/",
                 configurations: {
                     "client-icons": {
                         folder: path.join(__dirname, "shared", "img", "client-icons"),
@@ -169,6 +207,11 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
 
             translateablePlugin,
             //new BundleAnalyzerPlugin(),
+
+            env.package ? new ZipWebpackPlugin({
+                path: path.join(__dirname, "dist-package"),
+                filename: `TeaWeb-${isDevelopment ? "development" : "release"}-${localBuildInfo.gitVersion}.zip`,
+            }) : undefined
         ].filter(e => !!e),
 
         module: {

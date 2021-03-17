@@ -31,7 +31,7 @@ export async function loadManifest() : Promise<TeaManifest> {
     }
 
     try {
-        const response = await fetch(config.baseUrl + "js/manifest.json?_date=" + Date.now());
+        const response = await fetch(config.baseUrl + "/manifest.json?_date=" + Date.now());
         if(!response.ok) throw response.status + " " + response.statusText;
 
         manifest = await response.json();
@@ -56,7 +56,7 @@ export async function loadManifestTarget(chunkName: string, taskId: number) {
         modules: manifest.chunks[chunkName].modules
     });
 
-    loader.style.load_multiple(manifest.chunks[chunkName].css_files.map(e => "js/" + e.file), {
+    loader.style.load_multiple(manifest.chunks[chunkName].css_files.map(e => e.file), {
         cache_tag: undefined,
         max_parallel_requests: 4
     }, (entry, state) => {
@@ -67,7 +67,7 @@ export async function loadManifestTarget(chunkName: string, taskId: number) {
         loader.setCurrentTaskName(taskId, script_name(entry, false));
     });
 
-    await loader.scripts.load_multiple(manifest.chunks[chunkName].files.map(e => "js/" + e.file), {
+    await loader.scripts.load_multiple(manifest.chunks[chunkName].files.map(e => e.file), {
         cache_tag: undefined,
         max_parallel_requests: 4
     }, (script, state) => {

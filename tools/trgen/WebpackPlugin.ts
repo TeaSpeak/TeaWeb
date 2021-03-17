@@ -1,14 +1,13 @@
 import * as ts from "typescript";
-import {createTransformer, deltaTranslations, TransformerConfig} from "./TsTransformer";
+import {createTransformer, TransformerConfig} from "./TsTransformer";
 import * as webpack from "webpack";
-import {extractJsRendererTranslations} from "./JsRendererGenerator";
 import * as path from "path";
 
 export interface TranslateableWebpackPluginConfig {
     assetName: string,
 }
 
-export class TranslateableWebpackPlugin {
+export default class TranslateableWebpackPlugin {
     private readonly config: TranslateableWebpackPluginConfig;
     private readonly transformerConfig: TransformerConfig;
 

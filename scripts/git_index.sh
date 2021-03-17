@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-response=$(git diff-index HEAD -- . ':!asm/libraries/' ':!package-lock.json' ':!vendor/')
+response=$(git diff-index HEAD -- . ':!package-lock.json' ':!vendor/')
 if [[ "$response" != "" ]]; then
     if [[ "$1" == "sort-tag" ]]; then
         echo "0000000"

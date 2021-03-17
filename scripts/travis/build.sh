@@ -176,11 +176,6 @@ function execute_build_release() {
         "Failed to build release" \
         "./scripts/build.sh web release"
 
-    execute \
-        "Packaging release" \
-        "Failed to package release" \
-        "./scripts/web_package.sh release"
-
     move_target_file
 }
 function execute_build_debug() {
@@ -188,11 +183,6 @@ function execute_build_debug() {
         "Building debug package" \
         "Failed to build debug" \
         "./scripts/build.sh web dev"
-
-    execute \
-        "Packaging release" \
-        "Failed to package debug" \
-        "./scripts/web_package.sh dev"
 
     move_target_file
 }

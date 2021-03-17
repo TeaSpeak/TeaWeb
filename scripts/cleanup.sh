@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 BASEDIR=$(dirname "$0")
-cd "$BASEDIR/../"
+cd "$BASEDIR/../" || exit
 
 # This script cleanups all generated files
 function remove_if_exists() {

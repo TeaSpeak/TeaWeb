@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as config_base from "./webpack.config";
 
-export = () => config_base.config("client").then(config => {
+export = env => config_base.config(env, "client").then(config => {
     Object.assign(config.entry, {
         "client-app": ["./client/app/index.ts"]
     });
