@@ -66,7 +66,6 @@
     "node-sass": "^4.14.1",
     "potpack": "^1.0.1",
     "raw-loader": "^4.0.0",
-    "react-dev-utils": "^11.0.4",
     "sass": "1.22.10",
     "sass-loader": "^8.0.2",
     "sha256": "^0.2.0",

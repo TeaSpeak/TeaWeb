@@ -11,7 +11,7 @@ const webpack = require("webpack");
 
 import { Plugin as SvgSpriteGenerator } from "webpack-svg-sprite-generator";
 const ManifestGenerator = require("./webpack/ManifestPlugin");
-const InlineChunkHtmlPlugin = require("react-dev-utils/InlineChunkHtmlPlugin");
+const HtmlWebpackInlineSourcePlugin = require("./webpack/HtmlWebpackInlineSource");
 
 import HtmlWebpackPlugin from "html-webpack-plugin";
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -155,7 +155,7 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
             }
         }),
         generateIndexPlugin(target),
-        new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/.*/]),
+        new HtmlWebpackInlineSourcePlugin(HtmlWebpackPlugin),
     ].filter(e => !!e),
 
     module: {
