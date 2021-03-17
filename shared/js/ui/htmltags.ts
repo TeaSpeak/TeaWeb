@@ -24,13 +24,6 @@ export interface ClientProperties {
     client_database_id?: number; /* not yet used */
 }
 
-export interface ChannelProperties {
-    channel_id: number,
-    channel_name: string,
-    channel_display_name?: string,
-    add_braces?: boolean
-}
-
 const callback_object_id = guid();
 /* required for the bbcodes */
 function generate_client_open(properties: ClientProperties) : string {
@@ -88,48 +81,6 @@ export function generate_client_object(properties: ClientProperties) : JQuery {
     return $(this.generate_client(properties));
 }
 
-/* required for the bbcodes */
-function generate_channel_open(properties: ChannelProperties) : string {
-    let result = "";
-
-    /* build the opening tag: <div ...> */
-    result = result + "<div class='htmltag-channel' ";
-
-    if(properties.channel_id)
-        result = result + "channel-id='" + properties.channel_id + "' ";
-
-    if(properties.channel_name)
-        result = result + "channel-name='" + encodeURIComponent(properties.channel_name) + "' ";
-
-    /* add the click handler */
-    result += "oncontextmenu='return window[\"" + callback_object_id + "\"].callback_context_channel($(this));'";
-
-    result = result + ">";
-    return result;
-}
-
-export function generate_channel(properties: ChannelProperties) : string {
-    let result = generate_channel_open(properties);
-    /* content */
-    {
-        if(properties.add_braces)
-            result = result + "\"";
-        result = result + htmlEscape(properties.channel_display_name || properties.channel_name || "undefined").join(" ");
-        if(properties.add_braces)
-            result = result + "\"";
-    }
-
-    /* close tag */
-    {
-        result += "</div>";
-    }
-    return result;
-}
-
-export function generate_channel_object(properties: ChannelProperties) : JQuery {
-    return $(this.generate_channel(properties));
-}
-
 
 export namespace callbacks {
     export function callback_context_client(element: JQuery) {
@@ -169,22 +120,6 @@ export namespace callbacks {
         }
 
         client.showContextMenu(mouse_coordinates.x, mouse_coordinates.y);
-        return false;
-    }
-
-    export function callback_context_channel(element: JQuery) {
-        const channel_id = parseInt(element.attr("channel-id") || "0");
-
-        const current_connection = server_connections.getActiveConnectionHandler();
-        let channel: ChannelEntry;
-        if(current_connection && current_connection.channelTree) {
-            channel = current_connection.channelTree.findChannel(channel_id);
-        }
-
-        if(!channel)
-            return false;
-
-        channel.showContextMenu(mouse_coordinates.x, mouse_coordinates.y);
         return false;
     }
 }

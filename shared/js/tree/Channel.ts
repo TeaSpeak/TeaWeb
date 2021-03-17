@@ -680,14 +680,6 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         return "[url=channel://" + this.channelId + "/" + encodeURIComponent(this.properties.channel_name) + "]" + this.formattedChannelName() + "[/url]";
     }
 
-    generate_tag(braces: boolean = false) : JQuery {
-        return $(htmltags.generate_channel({
-            channel_name: this.properties.channel_name,
-            channel_id: this.channelId,
-            add_braces: braces
-        }));
-    }
-
     channelType() : ChannelType {
         if(this.properties.channel_flag_permanent == true) return ChannelType.PERMANENT;
         if(this.properties.channel_flag_semi_permanent == true) return ChannelType.SEMI_PERMANENT;
