@@ -3,11 +3,9 @@ import * as fs from "fs";
 import trtransformer from "./tools/trgen/ts_transformer";
 import {exec} from "child_process";
 import * as util from "util";
+import * as path from "path";
 
-import {Configuration} from "webpack";
-
-const path = require('path');
-const webpack = require("webpack");
+import { DefinePlugin, Configuration } from "webpack";
 
 import { Plugin as SvgSpriteGenerator } from "webpack-svg-sprite-generator";
 const ManifestGenerator = require("./webpack/ManifestPlugin");
@@ -53,17 +51,7 @@ const generateDefinitions = async (target: string) => {
             timestamp: timestamp,
             entry_chunk_name: JSON.stringify(target === "web" ? "shared-app" : "client-app")
         } as BuildDefinitions
-    };
-};
-
-const isLoaderFile = (file: string) => {
-    if(file.startsWith(__dirname)) {
-        const path = file.substr(__dirname.length).replace(/\\/g, "/");
-        if(path.startsWith("/loader/")) {
-            return true;
-        }
-    }
-    return false;
+    } as any;
 };
 
 const generateIndexPlugin = (target: "web" | "client"): HtmlWebpackPlugin => {
@@ -102,21 +90,23 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
         //"devel-main": "./shared/js/devel_main.ts"
     },
 
-    devtool: isDevelopment ? "inline-source-map" : undefined,
+    devtool: isDevelopment ? "inline-source-map" : "source-map",
     mode: isDevelopment ? "development" : "production",
     plugins: [
         new CleanWebpackPlugin(),
+        new DefinePlugin(await generateDefinitions(target)),
+
         new MiniCssExtractPlugin({
-            filename: isDevelopment ? '[name].css' : '[name].[contenthash].css',
-            chunkFilename: isDevelopment ? '[id].css' : '[id].[contenthash].css',
+            filename: isDevelopment ? "[name].[contenthash].css" : "[contenthash].css",
+            chunkFilename: isDevelopment ? "[name].[contenthash].css" : "[contenthash].css",
             ignoreOrder: true
         }),
+
         new ManifestGenerator({
             outputFileName: "manifest.json",
             context: __dirname
         }),
-        //new BundleAnalyzerPlugin(),
-        new webpack.DefinePlugin(await generateDefinitions(target)),
+
         new SvgSpriteGenerator({
             dtsOutputFolder: path.join(__dirname, "shared", "svg-sprites"),
             publicPath: "js/",
@@ -154,8 +144,11 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
                 }
             }
         }),
+
         generateIndexPlugin(target),
         new HtmlWebpackInlineSourcePlugin(HtmlWebpackPlugin),
+
+        //new BundleAnalyzerPlugin(),
     ].filter(e => !!e),
 
     module: {
@@ -189,12 +182,18 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
                 ]
             },
             {
-                test: (module: string) => module.match(/\.tsx?$/) && !isLoaderFile(module),
+                test: /\.tsx?$/,
                 exclude: /node_modules/,
 
                 use: [
                     {
-                        loader: 'ts-loader',
+                        loader: "babel-loader",
+                        options: {
+                            presets: ["@babel/preset-env"]
+                        }
+                    },
+                    {
+                        loader: "ts-loader",
                         options: {
                             context: __dirname,
                             colors: true,
@@ -213,51 +212,27 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
                 ]
             },
             {
-                test: (module: string) => module.match(/\.tsx?$/) && isLoaderFile(module),
-                exclude: /(node_modules|bower_components)/,
-
-                use: [
-                    {
-                        loader: "babel-loader",
-                        options: {
-                            presets: ["@babel/preset-env"]  //Preset used for env setup
-                        }
-                    },
-                    {
-                        loader: "ts-loader",
-                        options: {
-                            transpileOnly: true
-                        }
-                    }
-                ]
-            },
-            {
                 test: /\.was?t$/,
                 use: [
                     "./webpack/WatLoader.js"
                 ]
             },
             {
+                test: /ChangeLog\.md$|\.html$/i,
+                type: "asset/source",
+            },
+            {
                 test: /\.svg$/,
                 use: 'svg-inline-loader'
             },
             {
-                test: /ChangeLog\.md$|\.html$/i,
-                use: {
-                    loader: "raw-loader",
-                    options: {
-                        esModule: false
-                    }
-                },
-            },
-            {
                 test: /\.(png|jpg|jpeg|gif)?$/,
-                use: 'file-loader',
+                type: "asset/resource"
             },
         ]
     } as any,
     resolve: {
-        extensions: ['.tsx', '.ts', '.js', ".scss", ".css", ".wasm"],
+        extensions: ['.tsx', '.ts', '.js', ".scss"],
         alias: {
             "vendor/xbbcode": path.resolve(__dirname, "vendor/xbbcode/src"),
             "tc-events": path.resolve(__dirname, "vendor/TeaEventBus/src/index.ts"),

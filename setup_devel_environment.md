@@ -5,7 +5,6 @@ The following tools or applications are required to develop the web client:
 - [1.2 NodeJS](#12-nodejs)
 - [1.2.2 NPM](#122-npm)
 - [1.3 Git bash](#13-git-bash)
-- [1.4 Rust (Options)](#14-rust-optional-will-be-installed-automatically)
 
 ### 1.1 IDE
 It does not matter which IDE you use,  
@@ -27,10 +26,6 @@ IMPORTANT: NPM must be available within the PATH environment variable!
 For using the `.sh` build scripts you require Git Bash.  
 A minimum of 4.2 is recommend, but in general every modern version should work.  
 
-### 1.4 Rust (Optional, will be installed automatically)
-For building the web client audio library, you may want to install rust in advance.  
-Since it will be installed when executing the install libraries script, I'm not going into more detail here.  
-  
 ## 2.0 Project initialization
 
 ### 2.1 Cloning the WebClient
