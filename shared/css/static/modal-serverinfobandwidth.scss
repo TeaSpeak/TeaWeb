@@ -8,211 +8,215 @@ html:root {
 	--serverinfo-statistics-title: #244c78;
 }
 
-.modal-body.modal-server-info-bandwidth {
-	padding: 0!important;
-	width: 55em;
+:global {
+	.modal-body.modal-server-info-bandwidth {
+		padding: 0!important;
+		width: 55em;
 
-	display: flex!important;
-	flex-direction: column!important;
-	justify-content: flex-start!important;
+		display: flex!important;
+		flex-direction: column!important;
+		justify-content: flex-start!important;
 
-	background-color: #2f2f35;
+		background-color: #2f2f35;
 
-	.container-tooltip {
-		flex-shrink: 0;
-		flex-grow: 0;
-
-		position: relative;
-		width: 1.6em;
-		margin-left: .5em;
-		font-size: .9em;
-
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-
-		img {
-			height: 1em;
-			width: 1em;
-
-			align-self: center;
-			font-size: 1.2em;
-		}
-
-		.tooltip {
-			display: none;
-		}
-	}
-
-	.top {
-		flex-grow: 0;
-		flex-shrink: 0;
-
-		margin: 1em;
-		padding: .5em;
-
-		display: flex;
-		flex-direction: row;
-		justify-content: stretch;
-
-		height: 12em;
-		max-height: 12em;
-
-		.container-image {
-			flex-grow: 0;
+		.container-tooltip {
 			flex-shrink: 0;
+			flex-grow: 0;
 
-			max-width: 18em;
-			max-height: 11em; /* minus one padding */
+			position: relative;
+			width: 1.6em;
+			margin-left: .5em;
+			font-size: .9em;
 
 			display: flex;
 			flex-direction: column;
 			justify-content: center;
 
 			img {
-				object-fit: contain;
-				max-height: 100%;
-				max-width: 100%;
+				height: 1em;
+				width: 1em;
+
+				align-self: center;
+				font-size: 1.2em;
 			}
 
-			margin-right: 2em;
-			@include transition(.25s ease-in-out);
+			.tooltip {
+				display: none;
+			}
 		}
 
-		.container-stats {
-			flex-shrink: 1;
-			flex-grow: 1;
+		.top {
+			flex-grow: 0;
+			flex-shrink: 0;
 
-			min-width: 25em;
+			margin: 1em;
+			padding: .5em;
 
 			display: flex;
-			flex-direction: column;
-			justify-content: space-evenly;
+			flex-direction: row;
+			justify-content: stretch;
 
-			.statistic {
+			height: 12em;
+			max-height: 12em;
+
+			.container-image {
+				flex-grow: 0;
+				flex-shrink: 0;
+
+				max-width: 18em;
+				max-height: 11em; /* minus one padding */
+
 				display: flex;
 				flex-direction: column;
-				justify-content: flex-start;
+				justify-content: center;
 
-				> a {
-					font-size: 1.25em;
-					color: var(--serverinfo-title);
-					line-height: normal;
-
-					text-transform: uppercase;
+				img {
+					object-fit: contain;
+					max-height: 100%;
+					max-width: 100%;
 				}
 
-				.values {
+				margin-right: 2em;
+				@include transition(.25s ease-in-out);
+			}
+
+			.container-stats {
+				flex-shrink: 1;
+				flex-grow: 1;
+
+				min-width: 25em;
+
+				display: flex;
+				flex-direction: column;
+				justify-content: space-evenly;
+
+				.statistic {
 					display: flex;
-					flex-direction: row;
-					justify-content: space-between;
+					flex-direction: column;
+					justify-content: flex-start;
 
 					> a {
-						font-size: 1.2em;
+						font-size: 1.25em;
+						color: var(--serverinfo-title);
 						line-height: normal;
+
+						text-transform: uppercase;
 					}
 
-					.upload {
-						color: var(--serverinfo-bandwidth-upload);
+					.values {
+						display: flex;
+						flex-direction: row;
+						justify-content: space-between;
+
+						> a {
+							font-size: 1.2em;
+							line-height: normal;
+						}
+
+						.upload {
+							color: var(--serverinfo-bandwidth-upload);
+						}
+
+						.download {
+							color: var(--serverinfo-bandwidth-download);
+						}
 					}
 
-					.download {
-						color: var(--serverinfo-bandwidth-download);
+					&:not(:first-of-type) {
+						margin-top: 1em;
 					}
-				}
-
-				&:not(:first-of-type) {
-					margin-top: 1em;
 				}
 			}
 		}
-	}
 
-	.bottom {
-		flex-grow: 0;
-		flex-shrink: 0;
+		.bottom {
+			flex-grow: 0;
+			flex-shrink: 0;
 
-		margin: 1em;
-		padding: .5em;
+			margin: 1em;
+			padding: .5em;
 
-		border-radius: .2em;
-		border: 1px solid #1f2122;
+			border-radius: .2em;
+			border: 1px solid #1f2122;
 
-		background-color: #28292b;
+			background-color: #28292b;
 
-		display: flex;
-		flex-direction: column;
-		justify-content: stretch;
-
-		//height: 15em;
-		//max-height: 10em;
-
-		.statistic {
 			display: flex;
 			flex-direction: column;
 			justify-content: stretch;
 
-			.title {
-				flex-grow: 0;
-				flex-shrink: 0;
+			//height: 15em;
+			//max-height: 10em;
 
-				color: var(--serverinfo-statistics-title);
-				font-size: 1.25em;
-
-				text-transform: uppercase;
-			}
-
-			.body {
-				flex-grow: 0;
-				flex-shrink: 0;
-
+			.statistic {
 				display: flex;
-				flex-direction: row;
+				flex-direction: column;
 				justify-content: stretch;
 
-				height: 7em;
+				.title {
+					flex-grow: 0;
+					flex-shrink: 0;
 
-				.container-canvas {
-					flex-grow: 1;
-					flex-shrink: 1;
+					color: var(--serverinfo-statistics-title);
+					font-size: 1.25em;
 
-					min-width: 6em;
-					margin-right: 1em;
+					text-transform: uppercase;
 				}
 
-				.values {
+				.body {
 					flex-grow: 0;
 					flex-shrink: 0;
 
 					display: flex;
-					flex-direction: column;
-					justify-content: center;
+					flex-direction: row;
+					justify-content: stretch;
 
-					width: 8em;
-					text-align: right;
+					height: 7em;
 
-					.upload {
-						color: var(--serverinfo-bandwidth-upload);
+					.container-canvas {
+						flex-grow: 1;
+						flex-shrink: 1;
+
+						min-width: 6em;
+						margin-right: 1em;
 					}
 
-					.download {
-						color: var(--serverinfo-bandwidth-download);
+					.values {
+						flex-grow: 0;
+						flex-shrink: 0;
+
+						display: flex;
+						flex-direction: column;
+						justify-content: center;
+
+						width: 8em;
+						text-align: right;
+
+						.upload {
+							color: var(--serverinfo-bandwidth-upload);
+						}
+
+						.download {
+							color: var(--serverinfo-bandwidth-download);
+						}
 					}
 				}
-			}
 
-			&:not(:first-of-type) {
-				margin-top: 1.5em;
+				&:not(:first-of-type) {
+					margin-top: 1.5em;
+				}
 			}
 		}
 	}
 }
 
 @media all and (max-width: 50em) {
-	.modal-body.modal-server-info {
-		.container-image {
-			margin: 0!important;
-			max-width: 0!important;
+	:global {
+		.modal-body.modal-server-info {
+			.container-image {
+				margin: 0!important;
+				max-width: 0!important;
+			}
 		}
 	}
 }

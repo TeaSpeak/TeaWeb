@@ -1,5 +1,7 @@
-.htmltag-client, .htmltag-channel {
-	color: var(--text);
-	font-weight: bold;
-	cursor: pointer;
+:global {
+	.htmltag-client, .htmltag-channel {
+		color: var(--text);
+		font-weight: bold;
+		cursor: pointer;
+	}
 }

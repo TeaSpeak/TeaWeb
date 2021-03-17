@@ -1,73 +1,75 @@
 @import "mixin";
 @import "properties";
 
-.modal-invite {
-	padding: .5em!important;
-	@include user-select(none);
+:global {
+	.modal-invite {
+		padding: .5em!important;
+		@include user-select(none);
 
-	.general-properties {
-		flex: 0;
-
-		display: flex;
-		flex-direction: column;
-		justify-content: stretch;
-
-		.form-group {
+		.general-properties {
 			flex: 0;
+
+			display: flex;
+			flex-direction: column;
+			justify-content: stretch;
+
+			.form-group {
+				flex: 0;
+			}
+
+			.container-settings {
+				flex: 0;
+
+				margin-bottom: .5em;
+
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+
+				label {
+					display: flex;
+					flex-direction: row;
+					justify-content: flex-start;
+
+					> * {
+						align-self: center;
+					}
+
+					a {
+						margin-left: .5em;
+					}
+				}
+			}
 		}
 
-		.container-settings {
-			flex: 0;
+		.text-output {
+			background-color: $color_list_background;
+			border: 1px $color_list_border solid;
 
-			margin-bottom: .5em;
+			border-radius: $border_radius_large;
 
+			padding: .5em;
+			min-height: 5em;
+
+			width: 100%;
+			resize: none;
+
+			color: #999999;
+
+			@include user-select(text);
+		}
+
+		.buttons {
 			display: flex;
 			flex-direction: row;
 			justify-content: space-between;
 
-			label {
-				display: flex;
-				flex-direction: row;
-				justify-content: flex-start;
+			margin-top: 5px;
 
-				> * {
-					align-self: center;
-				}
-
-				a {
-					margin-left: .5em;
-				}
+			.icon {
+				vertical-align: middle;
+				margin-right: 5px;
 			}
-		}
-	}
-
-	.text-output {
-		background-color: $color_list_background;
-		border: 1px $color_list_border solid;
-
-		border-radius: $border_radius_large;
-
-		padding: .5em;
-		min-height: 5em;
-
-		width: 100%;
-		resize: none;
-
-		color: #999999;
-
-		@include user-select(text);
-	}
-
-	.buttons {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-
-		margin-top: 5px;
-
-		.icon {
-			vertical-align: middle;
-			margin-right: 5px;
 		}
 	}
 }
