@@ -30,8 +30,17 @@
         }
     }
 
+    #overlay-no-js {
+        display: block;
+        color: #999;
+
+        svg {
+            fill: #999;
+        }
+    }
+
     #critical-load {
-        img {
+        .img {
             height: 12em
         }
 
@@ -44,6 +53,11 @@
             color: #696363;
             margin-top: .5em
         }
+    }
+
+    svg {
+        max-height: 100%;
+        max-width: 100%;
     }
 }
 

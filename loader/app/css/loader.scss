@@ -81,7 +81,7 @@
 
 				width: 249px;
 				height: 125px;
-				background: url("../images/steam.png") 0 0;
+				background: url("../../images/steam.png") 0 0;
 
 				animation: sprite-steam 2.5s steps(50) forwards infinite;
 			}
@@ -160,19 +160,19 @@
 	}
 }
 
-@keyframes loader-initial-sequence {
+@keyframes :global(loader-initial-sequence) {
 	to {
 		display: none;
 	}
 }
 
-@keyframes sprite-steam {
+@keyframes :global(sprite-steam) {
 	to {
 		background-position: 0 -6250px;
 	}
 }
 
-@keyframes swipe-out-bowl {
+@keyframes :global(swipe-out-bowl) {
 	from {
 		transform: translate3d(0, 0, 0);
 	}
@@ -188,7 +188,7 @@
 	}
 }
 
-@keyframes swipe-out-text {
+@keyframes :global(swipe-out-text) {
 	from {
 		transform: translate3d(0, 0, 0);
 	}
@@ -204,19 +204,19 @@
 	}
 }
 
-@keyframes animation-nothing {
+@keyframes :global(animation-nothing) {
 	to {
 		background-position: 0 -6250px;
 	}
 }
 
-@keyframes overlay-fade {
+@keyframes :global(overlay-fade) {
 	to {
 		opacity: 0;
 	}
 }
 
-@keyframes loader-setup-timeout {
+@keyframes :global(loader-setup-timeout) {
 	to {
 		opacity: 1;
 	}

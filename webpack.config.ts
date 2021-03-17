@@ -3,7 +3,7 @@ import * as util from "util";
 import * as path from "path";
 import * as child_process from "child_process";
 
-import { DefinePlugin, Configuration } from "webpack";
+import { DefinePlugin, Configuration, } from "webpack";
 
 import { Plugin as SvgSpriteGenerator } from "webpack-svg-sprite-generator";
 const ManifestGenerator = require("./webpack/ManifestPlugin");
@@ -14,6 +14,7 @@ import {TranslateableWebpackPlugin} from "./tools/trgen/WebpackPlugin";
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
@@ -87,8 +88,8 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
 
     return {
         entry: {
-            "loader": ["./loader/app/index.ts"],
-            "modal-external": ["./shared/js/ui/react-elements/external-modal/PopoutEntrypoint.ts"],
+            "loader": "./loader/app/index.ts",
+            "modal-external": "./shared/js/ui/react-elements/external-modal/PopoutEntrypoint.ts",
             //"devel-main": "./shared/js/devel_main.ts"
         },
 
@@ -97,6 +98,14 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
         plugins: [
             new CleanWebpackPlugin(),
             new DefinePlugin(await generateDefinitions(target)),
+
+            new CopyWebpackPlugin({
+                patterns: [
+                    { from: path.join(__dirname, "shared", "img"), to: 'img' },
+                    { from: path.join(__dirname, "shared", "i18n"), to: 'i18n' },
+                    { from: path.join(__dirname, "shared", "audio"), to: 'audio' }
+                ]
+            }),
 
             new MiniCssExtractPlugin({
                 filename: isDevelopment ? "[name].[contenthash].css" : "[contenthash].css",
@@ -108,7 +117,6 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
                 outputFileName: "manifest.json",
                 context: __dirname
             }),
-
             new SvgSpriteGenerator({
                 dtsOutputFolder: path.join(__dirname, "shared", "svg-sprites"),
                 publicPath: "js/",
@@ -150,7 +158,7 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
             generateIndexPlugin(target),
             new HtmlWebpackInlineSourcePlugin(HtmlWebpackPlugin),
 
-            translateablePlugin
+            translateablePlugin,
             //new BundleAnalyzerPlugin(),
         ].filter(e => !!e),
 
@@ -200,7 +208,6 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
                             options: {
                                 context: __dirname,
                                 colors: true,
-
                                 getCustomTransformers: program => ({
                                     before: [translateablePlugin.createTypeScriptTransformer(program)]
                                 }),
@@ -249,7 +256,7 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
             filename: isDevelopment ? "[name].[contenthash].js" : "[contenthash].js",
             chunkFilename: isDevelopment ? "[name].[contenthash].js" : "[contenthash].js",
             path: path.resolve(__dirname, 'dist'),
-            publicPath: "js/"
+            publicPath: "/js/"
         },
         performance: {
             hints: false
@@ -266,10 +273,13 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
             ]
         },
         devServer: {
-            publicPath: "/",
+            publicPath: "/js/",
             contentBase: path.join(__dirname, 'dist'),
             writeToDisk: true,
-            compress: true
+            compress: true,
+            hot: false,
+            inline: false,
+            liveReload: false,
         },
     };
 };
