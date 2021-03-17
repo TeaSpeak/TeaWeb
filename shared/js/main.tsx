@@ -53,8 +53,6 @@ import {clientServiceInvite} from "tc-shared/clientservice";
 import {ActionResult} from "tc-services";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
-
-import "./Bookmarks";
 import {bookmarks} from "tc-shared/Bookmarks";
 
 assertMainApplication();
@@ -568,19 +566,4 @@ loader.register_task(loader.Stage.LOADED, {
         bookmarks.executeAutoConnect();
     },
     name: tr("bookmark auto connect")
-});
-
-/* TODO: Remove this after the image preview has been rewritten into react */
-loader.register_task(Stage.JAVASCRIPT_INITIALIZING,{
-    name: "app init",
-    function: async () => {
-        try {
-            $("body").append($("#tmpl_main").renderTag());
-        } catch(error) {
-            logError(LogCategory.GENERAL, error);
-            loader.critical_error(tr("Failed to setup main page!"));
-            return;
-        }
-    },
-    priority: 100
 });

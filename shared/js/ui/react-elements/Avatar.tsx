@@ -1,7 +1,7 @@
 import * as React from "react";
 import {useEffect, useState} from "react";
 import {ClientAvatar, kDefaultAvatarImage, kLoadingAvatarImage} from "tc-shared/file/Avatars";
-import * as image_preview from "tc-shared/ui/frames/image_preview";
+import * as image_preview from "tc-shared/ui/frames/ImagePreview";
 
 const ImageStyle = { height: "100%", width: "100%", cursor: "pointer" };
 export const AvatarRenderer = React.memo((props: { avatar: ClientAvatar | "loading" | "default", className?: string, alt?: string }) => {
@@ -28,7 +28,7 @@ export const AvatarRenderer = React.memo((props: { avatar: ClientAvatar | "loadi
                             return;
 
                         event.preventDefault();
-                        image_preview.preview_image(imageUrl, undefined);
+                        image_preview.showImagePreview(imageUrl, undefined);
                     }}
                     draggable={false}
                 />;
@@ -46,7 +46,7 @@ export const AvatarRenderer = React.memo((props: { avatar: ClientAvatar | "loadi
                             return;
 
                         event.preventDefault();
-                        image_preview.preview_image(imageUrl, undefined);
+                        image_preview.showImagePreview(imageUrl, undefined);
                     }}
                     draggable={false}
                 />;

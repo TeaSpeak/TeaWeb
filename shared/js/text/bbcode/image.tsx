@@ -5,7 +5,7 @@ import * as loader from "tc-loader";
 import {rendererReact, rendererText} from "tc-shared/text/bbcode/renderer";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {copyToClipboard} from "tc-shared/utils/helpers";
-import * as image_preview from "tc-shared/ui/frames/image_preview";
+import * as image_preview from "tc-shared/ui/frames/ImagePreview";
 
 export const regexImage = /^(?:https?):(?:\/{1,3}|\\)[-a-zA-Z0-9:;,@#%&()~_?+=\/\\.]*$/g;
 
@@ -49,7 +49,7 @@ function loadImageForElement(element: HTMLImageElement) {
             icon_class: "client-copy"
         })
     });
-    parent.css("cursor", "pointer").on('click', () => image_preview.preview_image(proxiedURL, url));
+    parent.css("cursor", "pointer").on('click', () => image_preview.showImagePreview(proxiedURL, url));
 }
 
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {

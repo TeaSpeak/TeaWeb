@@ -18,6 +18,7 @@ import {HostBannerUiEvents} from "tc-shared/ui/frames/HostBannerDefinitions";
 import {AppUiEvents} from "tc-shared/ui/AppDefinitions";
 import {ChannelTreeRenderer} from "tc-shared/ui/tree/Renderer";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
+import {ImagePreviewHook} from "tc-shared/ui/frames/ImagePreview";
 
 const cssStyle = require("./AppRenderer.scss");
 const VideoFrame = React.memo((props: { events: Registry<AppUiEvents> }) => {
@@ -100,8 +101,10 @@ export const TeaAppMainView = (props: {
                 </ErrorBoundary>
             </div>
             <FooterRenderer />
+
+            <ErrorBoundary>
+                <ImagePreviewHook />
+            </ErrorBoundary>
         </div>
     );
 }
-
-/* ConnectionHandlerList  */

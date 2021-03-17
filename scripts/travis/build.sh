@@ -188,7 +188,6 @@ function execute_build_debug() {
 }
 
 chmod +x ./scripts/build.sh
-chmod +x ./scripts/web_package.sh
 if [[ ${build_release} ]]; then
     execute_build_release
 fi
