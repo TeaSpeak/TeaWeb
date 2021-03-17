@@ -23,6 +23,7 @@ import {ErrorCode} from "../connection/ErrorCode";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {ChannelEntry} from "tc-shared/tree/Channel";
 import {EventClient} from "tc-shared/connectionlog/Definitions";
+import {spawnPokeModal} from "tc-shared/ui/modal/poke/Controller";
 
 export class ServerConnectionCommandBoss extends AbstractCommandHandlerBoss {
     constructor(connection: AbstractServerConnection) {
@@ -982,10 +983,11 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
     handleNotifyClientPoke(json) {
         json = json[0];
-        spawnPoke(this.connection_handler, {
-            id: parseInt(json["invokerid"]),
-            name: json["invokername"],
-            unique_id: json["invokeruid"]
+
+        spawnPokeModal(this.connection_handler, {
+            clientId: parseInt(json["invokerid"]),
+            clientName: json["invokername"],
+            clientUniqueId: json["invokeruid"]
         }, json["msg"]);
 
         this.connection_handler.log.log("client.poke.received", {

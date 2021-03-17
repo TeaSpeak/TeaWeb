@@ -11,6 +11,7 @@ import {
     ModalBookmarksAddServerEvents,
     ModalBookmarksAddServerVariables
 } from "tc-shared/ui/modal/bookmarks-add-server/Definitions";
+import {ModalPokeEvents, ModalPokeVariables} from "tc-shared/ui/modal/poke/Definitions";
 
 export type ModalType = "error" | "warning" | "info" | "none";
 export type ModalRenderType = "page" | "dialog";
@@ -177,5 +178,9 @@ export interface ModalConstructorArguments {
     "modal-bookmark-add-server": [
         /* events */ IpcRegistryDescription<ModalBookmarksAddServerEvents>,
         /* variables */ IpcVariableDescriptor<ModalBookmarksAddServerVariables>,
-    ]
+    ],
+    "modal-poked": [
+        /* events */ IpcRegistryDescription<ModalPokeEvents>,
+        /* variables */ IpcVariableDescriptor<ModalPokeVariables>,
+    ],
 }

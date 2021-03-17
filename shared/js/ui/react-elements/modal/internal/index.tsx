@@ -108,11 +108,12 @@ export class InternalModalInstance implements ModalInstanceController {
     }
 
     async show() : Promise<void> {
-        if(!this.modalInstance) {
-            this.modalInitializePromise = this.constructModal();
+        if(this.modalInitializePromise) {
+            await this.modalInitializePromise;
         }
 
-        if(this.modalInitializePromise) {
+        if(!this.modalInstance) {
+            this.modalInitializePromise = this.constructModal();
             await this.modalInitializePromise;
         }
 

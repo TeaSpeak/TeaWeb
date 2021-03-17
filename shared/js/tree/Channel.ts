@@ -676,7 +676,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         }
     }
 
-    generate_bbcode() {
+    generateBBCode() {
         return "[url=channel://" + this.channelId + "/" + encodeURIComponent(this.properties.channel_name) + "]" + this.formattedChannelName() + "[/url]";
     }
 
