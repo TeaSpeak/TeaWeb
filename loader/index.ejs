@@ -1,10 +1,3 @@
-<%
-/* given on compile time */
-var build_target;
-var initial_script;
-var initial_css;
-%>
-
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -16,20 +9,20 @@ var initial_css;
 
         <meta name="og:description" content="The TeaSpeak Web client is a in the browser running client for the VoIP communication software TeaSpeak." />
         <meta name="og:url" content="https://web.teaspeak.de/">
-        <%# TODO: Put in an appropirate image <meta name="og:image" content="https://www.whatsapp.com/img/whatsapp-promo.png"> %>
+        <% /* TODO: Put in an appropriate image <meta name="og:image" content="https://www.whatsapp.com/img/whatsapp-promo.png"> */ %>
 
-        <%# Using an absolute path here since the manifest.json works only with such. %>
+        <% /* Using an absolute path here since the manifest.json works only with such. */ %>
         <link rel="manifest" href="/manifest.json">
 
-    <% if(build_target === "client") { %>
+<% if(buildTarget === "client") { %>
         <title>TeaClient</title>
         <meta name='og:title' content='TeaClient'>
-    <% } else { %>
+<% } else { %>
         <title>TeaSpeak-Web</title>
         <meta name='og:title' content='TeaSpeak-Web'>
         <link rel='shortcut icon' href='img/favicon/teacup.png' type='image/x-icon' id="favicon">
-        <%# <link rel="apple-touch-icon" sizes="194x194" href="/apple-touch-icon.png" type="image/png"> %>
-    <% } %>
+        <% /* <link rel="apple-touch-icon" sizes="194x194" href="/apple-touch-icon.png" type="image/png"> */ %>
+<% } %>
 
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <meta name="format-detection" content="telephone=no">
@@ -49,10 +42,10 @@ var initial_css;
 
         <link rel="preload" as="image" href="img/loader/initial-sequence.gif">
         <link rel="preload" as="image" href="img/loader/bowl.png">
-        <%# We don't preload the bowl since it's only a div background %>
+        <% /* We don't preload the bowl since it's only a div background */ %>
         <link rel="preload" as="image" href="img/loader/text.png">
 
-        <%- initial_css %>
+        <%= htmlWebpackPlugin.tags.headTags %>
     </head>
     <body>
         <!-- No javascript error -->
@@ -101,6 +94,6 @@ var initial_css;
             </div>
         </div>
 
-        <%- initial_script %>
+        <%= htmlWebpackPlugin.tags.bodyTags %>
     </body>
 </html>

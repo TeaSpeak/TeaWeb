@@ -1,5 +1,5 @@
 import * as script_loader from "./script_loader";
-import * as template_loader from "./template_loader";
+import * as style_loader from "./style_loader";
 import * as Animation from "../animation";
 import {getUrlParameter} from "./utils";
 
@@ -110,8 +110,6 @@ export type ModuleMapping = {
 };
 const module_mapping_: ModuleMapping[] = [];
 export function module_mapping() : ModuleMapping[] { return module_mapping_; }
-
-export function get_cache_version() { return cache_tag; }
 
 export function finished() {
     return currentStage == Stage.DONE;
@@ -360,7 +358,7 @@ export type DependSource = {
 export type SourcePath = string | DependSource | string[];
 
 export const scripts = script_loader;
-export const templates = template_loader;
+export const style = style_loader;
 
 /* Hello World message */
 {

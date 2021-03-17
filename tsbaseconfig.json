@@ -14,12 +14,9 @@
     "webpack-web.config.ts",
 
     "webpack/build-definitions.d.ts",
-    "webpack/ManifestPlugin.ts",
-    "webpack/EJSGenerator.ts",
+    "webpack/HtmlWebpackInlineSource.ts",
     "webpack/WatLoader.ts",
-    "webpack/DevelBlocks.ts",
-
-    "loader/IndexGenerator.ts",
+    "webpack/ManifestPlugin.ts",
 
     "babel.config.ts",
     "file.ts"

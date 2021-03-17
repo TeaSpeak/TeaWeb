@@ -25,6 +25,7 @@ async function initializeFaviconRenderer() {
 
     iconImage = new Image();
     iconImage.src = kClientSpriteUrl;
+
     await new Promise((resolve, reject) => {
         iconImage.onload = resolve;
         iconImage.onerror = () => reject("failed to load client icon sprite");

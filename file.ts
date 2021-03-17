@@ -30,49 +30,26 @@ type ProjectResource = {
 }
 
 const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
+    { /* javascript files as manifest.json */
+        "type": "js",
+        "search-pattern": /.*\.(js|json|svg|png|css|html)$/,
+        "build-target": "dev|rel",
+
+        "path": "js/",
+        "local-path": "./dist/"
+    },
+
     { /* shared html files */
         "type": "html",
         "search-pattern": /^.*([a-zA-Z]+)\.(html|json)$/,
         "build-target": "dev|rel",
 
         "path": "./",
-        "local-path": "./shared/html/"
-    },
-    { /* javascript files as manifest.json */
-        "type": "js",
-        "search-pattern": /.*\.(js|json|svg|png)$/,
-        "build-target": "dev|rel",
-
-        "path": "js/",
         "local-path": "./dist/"
-    },
-    { /* javascript files as manifest.json */
-        "type": "html",
-        "search-pattern": /.*\.html$/,
-        "build-target": "dev|rel",
-
-        "path": "./",
-        "local-path": "./dist/"
-    },
-    { /* Loader css file (only required in dev mode. In release it gets inlined) */
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "dev",
-
-        "path": "css/",
-        "local-path": "./loader/css/"
     },
     { /* shared sound files */
         "type": "wav",
-        "search-pattern": /.*\.wav$/,
-        "build-target": "dev|rel",
-
-        "path": "audio/",
-        "local-path": "./shared/audio/"
-    },
-    { /* shared data sound files */
-        "type": "json",
-        "search-pattern": /.*\.json/,
+        "search-pattern": /.*\.(wav|json)$/,
         "build-target": "dev|rel",
 
         "path": "audio/",
@@ -87,15 +64,6 @@ const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
         "path": "img/",
         "local-path": "./shared/img/"
     },
-    { /* assembly files */
-        "web-only": true,
-        "type": "wasm",
-        "search-pattern": /.*\.(wasm)/,
-        "build-target": "dev|rel",
-
-        "path": "js/",
-        "local-path": "./dist/"
-    }
 ];
 
 const APP_FILE_LIST_SHARED_VENDORS: ProjectResource[] = [];

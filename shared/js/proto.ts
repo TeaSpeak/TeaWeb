@@ -228,21 +228,17 @@ if(typeof ($) !== "undefined") {
     if(!$.fn.renderTag) {
         $.fn.renderTag = function (this: JQuery, values?: any) : JQuery {
             let result;
-            if(this.render) {
-                result = $(this.render(values));
-            } else {
-                const template = jsrender.render[this.attr("id")];
-                if(!template) {
-                    console.error("Tried to render template %o, but template is not available!", this.attr("id"));
-                    throw "missing template " + this.attr("id");
-                }
-                /*
-                result = window.jsrender.templates("tmpl_permission_entry", $("#tmpl_permission_entry").html());
-                result = window.jsrender.templates("xxx", this.html());
-                */
-                result = template(values);
-                result = $(result);
+            const template = $.views.templates[this.attr("id")];
+            if(!template) {
+                console.error("Tried to render template %o, but template is not available!", this.attr("id"));
+                throw "missing template " + this.attr("id");
             }
+            /*
+            result = window.jsrender.templates("tmpl_permission_entry", $("#tmpl_permission_entry").html());
+            result = window.jsrender.templates("xxx", this.html());
+            */
+            result = template(values);
+            result = $(result);
             result.find("node").each((index, element) => {
                 $(element).replaceWith(values[$(element).attr("key")] || (values[0] || [])[$(element).attr("key")]);
             });

@@ -43,6 +43,8 @@ if [[ "$1" == "full" ]]; then
     echo "Full cleanup. Deleting generated javascript and css files"
     cleanup_files "shared/js" "*.js" "JavaScript"
     cleanup_files "shared/js" "*.js.map" "JavaScript-Mapping"
+    cleanup_files "shared/js" "*.css" "JavaScript - CSS"
+    cleanup_files "shared/js" "*.css.map" "JavaScript - CSS - Mapping"
     cleanup_files "shared/css/static/" "*.css" "CSS" # We only use SCSS, not CSS
     cleanup_files "shared/css/static/" "*.css.map" "CSS-Mapping"
 

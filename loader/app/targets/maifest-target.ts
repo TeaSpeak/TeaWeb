@@ -45,19 +45,6 @@ export default class implements ApplicationLoader {
             priority: 10
         });
 
-        loader.register_task(loader.Stage.TEMPLATES, {
-            name: "templates",
-            function: async () => {
-                await loader.templates.load_multiple([
-                    "templates.html"
-                ], {
-                    cache_tag: "?22",
-                    max_parallel_requests: -1
-                });
-            },
-            priority: 10
-        });
-
         loader.execute_managed(false);
     }
 }

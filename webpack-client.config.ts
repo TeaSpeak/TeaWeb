@@ -3,7 +3,7 @@ import * as config_base from "./webpack.config";
 
 export = () => config_base.config("client").then(config => {
     Object.assign(config.entry, {
-        "client-app": "./client/app/index.ts"
+        "client-app": ["./client/app/index.ts"]
     });
 
     Object.assign(config.resolve.alias, {
@@ -15,7 +15,7 @@ export = () => config_base.config("client").then(config => {
     if(!Array.isArray(config.externals))
         throw "invalid config";
 
-    config.externals.push((context, request, callback) => {
+    config.externals.push(({ context, request }, callback) => {
         if (request.startsWith("tc-backend/")) {
             return callback(null, `window["backend-loader"].require("${request}")`);
         }

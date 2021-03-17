@@ -1,10 +1,14 @@
 import "core-js/stable";
 import "./polifill";
+import "./css";
 
 import * as loader from "./loader/loader";
 import {ApplicationLoader} from "./loader/loader";
 import {getUrlParameter} from "./loader/utils";
 
+if(window["loader"]) {
+    throw "an loader instance has already been defined";
+}
 window["loader"] = loader;
 /* let the loader register himself at the window first */
 

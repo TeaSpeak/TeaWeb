@@ -11,6 +11,10 @@ export interface TeaManifest {
                 hash: string,
                 file: string
             }[],
+            css_files: {
+                hash: string,
+                file: string
+            }[],
             modules: {
                 id: string,
                 context: string,
@@ -52,12 +56,24 @@ export async function loadManifestTarget(chunkName: string, taskId: number) {
         modules: manifest.chunks[chunkName].modules
     });
 
+    loader.style.load_multiple(manifest.chunks[chunkName].css_files.map(e => "js/" + e.file), {
+        cache_tag: undefined,
+        max_parallel_requests: 4
+    }, (entry, state) => {
+        if(state !== "loading") {
+            return;
+        }
+
+        loader.setCurrentTaskName(taskId, script_name(entry, false));
+    });
+
     await loader.scripts.load_multiple(manifest.chunks[chunkName].files.map(e => "js/" + e.file), {
         cache_tag: undefined,
         max_parallel_requests: 4
     }, (script, state) => {
-        if(state !== "loading")
+        if(state !== "loading") {
             return;
+        }
 
         loader.setCurrentTaskName(taskId, script_name(script, false));
     });

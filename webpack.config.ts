@@ -3,20 +3,23 @@ import * as fs from "fs";
 import trtransformer from "./tools/trgen/ts_transformer";
 import {exec} from "child_process";
 import * as util from "util";
-import { Plugin as SvgSpriteGenerator } from "webpack-svg-sprite-generator";
 
-import LoaderIndexGenerator from "./loader/IndexGenerator";
 import {Configuration} from "webpack";
 
 const path = require('path');
 const webpack = require("webpack");
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+
+import { Plugin as SvgSpriteGenerator } from "webpack-svg-sprite-generator";
 const ManifestGenerator = require("./webpack/ManifestPlugin");
-const WorkerPlugin = require('worker-plugin');
+const InlineChunkHtmlPlugin = require("react-dev-utils/InlineChunkHtmlPlugin");
+
+import HtmlWebpackPlugin from "html-webpack-plugin";
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
+
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
 export let isDevelopment = process.env.NODE_ENV === 'development';
 console.log("Webpacking for %s (%s)", isDevelopment ? "development" : "production", process.env.NODE_ENV || "NODE_ENV not specified");
@@ -63,34 +66,60 @@ const isLoaderFile = (file: string) => {
     return false;
 };
 
-export const config = async (target: "web" | "client"): Promise<Configuration> => ({
+const generateIndexPlugin = (target: "web" | "client"): HtmlWebpackPlugin => {
+    const options: HtmlWebpackPlugin.Options & { inlineSource?: RegExp | string } = {};
+
+    options.cache = true;
+    options.chunks = ["loader"];
+    options.inject = false;
+    options.template = path.join(__dirname, "loader", "index.ejs");
+    options.templateParameters = { buildTarget: target };
+    options.scriptLoading = "defer";
+
+    if(!isDevelopment) {
+        options.minify = {
+            html5: true,
+
+            collapseWhitespace: true,
+            removeComments: true,
+            removeRedundantAttributes: true,
+            removeScriptTypeAttributes: true,
+            removeTagWhitespace: true,
+            minifyCSS: true,
+            minifyJS: true,
+            minifyURLs: true,
+        };
+
+        options.inlineSource = /\.(js|css)$/;
+    }
+    return new HtmlWebpackPlugin(options);
+}
+
+export const config = async (target: "web" | "client"): Promise<Configuration & { devServer: any }> => ({
     entry: {
-        "loader": "./loader/app/index.ts",
-        "modal-external": "./shared/js/ui/react-elements/external-modal/PopoutEntrypoint.ts",
+        "loader": ["./loader/app/index.ts"],
+        "modal-external": ["./shared/js/ui/react-elements/external-modal/PopoutEntrypoint.ts"],
         //"devel-main": "./shared/js/devel_main.ts"
     },
 
     devtool: isDevelopment ? "inline-source-map" : undefined,
     mode: isDevelopment ? "development" : "production",
     plugins: [
-        //new CleanWebpackPlugin(),
+        new CleanWebpackPlugin(),
         new MiniCssExtractPlugin({
-            filename: isDevelopment ? '[name].css' : '[name].[hash].css',
-            chunkFilename: isDevelopment ? '[id].css' : '[id].[hash].css'
+            filename: isDevelopment ? '[name].css' : '[name].[contenthash].css',
+            chunkFilename: isDevelopment ? '[id].css' : '[id].[contenthash].css',
+            ignoreOrder: true
         }),
         new ManifestGenerator({
-            file: path.join(__dirname, "dist/manifest.json"),
-            base: __dirname
+            outputFileName: "manifest.json",
+            context: __dirname
         }),
-        new WorkerPlugin(),
         //new BundleAnalyzerPlugin(),
-        isDevelopment ? undefined : new webpack.optimize.AggressiveSplittingPlugin({
-            minSize: 1024 * 8,
-            maxSize: 1024 * 128
-        }),
         new webpack.DefinePlugin(await generateDefinitions(target)),
         new SvgSpriteGenerator({
             dtsOutputFolder: path.join(__dirname, "shared", "svg-sprites"),
+            publicPath: "js/",
             configurations: {
                 "client-icons": {
                     folder: path.join(__dirname, "shared", "img", "client-icons"),
@@ -125,20 +154,22 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
                 }
             }
         }),
-        new LoaderIndexGenerator({
-            buildTarget: target,
-            output: path.join(__dirname, "dist/index.html"),
-            isDevelopment: isDevelopment
-        })
+        generateIndexPlugin(target),
+        new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/.*/]),
     ].filter(e => !!e),
 
     module: {
         rules: [
             {
                 test: /\.(s[ac]|c)ss$/,
-                loader: [
-                    'style-loader',
-                    //MiniCssExtractPlugin.loader,
+                use: [
+                    //'style-loader',
+                    {
+                        loader: MiniCssExtractPlugin.loader,
+                        options: {
+                            esModule: false
+                        }
+                    },
                     {
                         loader: 'css-loader',
                         options: {
@@ -161,7 +192,7 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
                 test: (module: string) => module.match(/\.tsx?$/) && !isLoaderFile(module),
                 exclude: /node_modules/,
 
-                loader: [
+                use: [
                     {
                         loader: 'ts-loader',
                         options: {
@@ -185,7 +216,7 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
                 test: (module: string) => module.match(/\.tsx?$/) && isLoaderFile(module),
                 exclude: /(node_modules|bower_components)/,
 
-                loader: [
+                use: [
                     {
                         loader: "babel-loader",
                         options: {
@@ -202,24 +233,26 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
             },
             {
                 test: /\.was?t$/,
-                loader: [
+                use: [
                     "./webpack/WatLoader.js"
                 ]
             },
             {
                 test: /\.svg$/,
-                loader: 'svg-inline-loader'
+                use: 'svg-inline-loader'
             },
             {
-                test: /ChangeLog\.md$/i,
-                loader: "raw-loader",
-                options: {
-                    esModule: false
-                }
+                test: /ChangeLog\.md$|\.html$/i,
+                use: {
+                    loader: "raw-loader",
+                    options: {
+                        esModule: false
+                    }
+                },
             },
             {
                 test: /\.(png|jpg|jpeg|gif)?$/,
-                loader: 'file-loader',
+                use: 'file-loader',
             },
         ]
     } as any,
@@ -245,9 +278,19 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
     },
     optimization: {
         splitChunks: {
-            chunks: "all"
+            chunks: "all",
+            maxSize: 512 * 1024
         },
         minimize: !isDevelopment,
-        minimizer: [new TerserPlugin()]
-    }
+        minimizer: [
+            new TerserPlugin(),
+            new CssMinimizerPlugin()
+        ]
+    },
+    devServer: {
+        publicPath: "/",
+        contentBase: path.join(__dirname, 'dist'),
+        writeToDisk: true,
+        compress: true
+    },
 });

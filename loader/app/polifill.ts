@@ -1,5 +1,5 @@
 /* IE11 and safari */
-if(Element.prototype.remove === undefined)
+if(Element.prototype.remove === undefined) {
     Object.defineProperty(Element.prototype, "remove", {
         enumerable: false,
         configurable: false,
@@ -8,6 +8,7 @@ if(Element.prototype.remove === undefined)
             this.parentElement.removeChild(this);
         }
     });
+}
 
 /* IE11 */
 function ReplaceWithPolyfill() {
@@ -28,14 +29,17 @@ function ReplaceWithPolyfill() {
             parent.insertBefore(currentNode, this.nextSibling);
     }
 }
-if (!Element.prototype.replaceWith)
+if (!Element.prototype.replaceWith) {
     Element.prototype.replaceWith = ReplaceWithPolyfill;
+}
 
-if (!CharacterData.prototype.replaceWith)
+if (!CharacterData.prototype.replaceWith) {
     CharacterData.prototype.replaceWith = ReplaceWithPolyfill;
+}
 
-if (!DocumentType.prototype.replaceWith)
+if (!DocumentType.prototype.replaceWith) {
     DocumentType.prototype.replaceWith = ReplaceWithPolyfill;
+}
 
 // Source: https://github.com/jserz/js_piece/blob/master/DOM/ParentNode/append()/append().md
 (function (arr) {

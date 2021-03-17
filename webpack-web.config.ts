@@ -3,8 +3,8 @@ import * as config_base from "./webpack.config";
 
 export = () => config_base.config("web").then(config => {
     Object.assign(config.entry, {
-        "shared-app": "./web/app/index.ts",
-        "modal-external": "./web/app/index-external.ts"
+        "shared-app": ["./web/app/index.ts"],
+        "modal-external": ["./web/app/index-external.ts"]
     });
 
     Object.assign(config.resolve.alias, {
@@ -13,7 +13,5 @@ export = () => config_base.config("web").then(config => {
         "tc-backend": path.resolve(__dirname, "web/app"),
     });
 
-    config.node = config.node || {};
-    config.node["fs"] = "empty";
     return Promise.resolve(config);
 });

@@ -294,7 +294,8 @@ class IdentityPOWWorker {
     private _initialized = false;
 
     async initialize(key: string) {
-        this._worker = new Worker("tc-shared/workers/pow", { type: "module" });
+        // @ts-ignore
+        this._worker = new Worker(new URL("tc-shared/workers/pow", import.meta.url));
 
         /* initialize */
         await new Promise<void>((resolve, reject) => {

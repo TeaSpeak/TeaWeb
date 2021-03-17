@@ -20,7 +20,6 @@ import {ChannelTreeRenderer} from "tc-shared/ui/tree/Renderer";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 
 const cssStyle = require("./AppRenderer.scss");
-
 const VideoFrame = React.memo((props: { events: Registry<AppUiEvents> }) => {
     const refElement = React.useRef<HTMLDivElement>();
     const [ container, setContainer ] = useState<HTMLDivElement | undefined>(() => {
