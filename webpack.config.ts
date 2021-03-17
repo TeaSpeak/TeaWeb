@@ -101,15 +101,23 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
 
             new CopyWebpackPlugin({
                 patterns: [
-                    { from: path.join(__dirname, "shared", "img"), to: 'img' },
-                    { from: path.join(__dirname, "shared", "i18n"), to: 'i18n' },
+                    {
+                        from: path.join(__dirname, "shared", "img"),
+                        to: 'img',
+                        globOptions: {
+                            ignore: [
+                                '**/client-icons/**',
+                            ]
+                        }
+                    },
+                    target === "web" ? { from: path.join(__dirname, "shared", "i18n"), to: 'i18n' } : undefined,
                     { from: path.join(__dirname, "shared", "audio"), to: 'audio' }
-                ]
+                ].filter(e => !!e)
             }),
 
             new MiniCssExtractPlugin({
-                filename: isDevelopment ? "[name].[contenthash].css" : "[contenthash].css",
-                chunkFilename: isDevelopment ? "[name].[contenthash].css" : "[contenthash].css",
+                filename: isDevelopment ? "css/[name].[contenthash].css" : "css/[contenthash].css",
+                chunkFilename: isDevelopment ? "css/[name].[contenthash].css" : "css/[contenthash].css",
                 ignoreOrder: true,
 
             }),
@@ -120,7 +128,7 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
             }),
             new SvgSpriteGenerator({
                 dtsOutputFolder: path.join(__dirname, "shared", "svg-sprites"),
-                publicPath: "js/",
+                publicPath: "/assets/",
                 configurations: {
                     "client-icons": {
                         folder: path.join(__dirname, "shared", "img", "client-icons"),
@@ -241,7 +249,10 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
                 },
                 {
                     test: /\.(png|jpg|jpeg|gif)?$/,
-                    type: "asset/resource"
+                    type: "asset/resource",
+                    generator: {
+                        filename: 'img/[hash][ext][query]'
+                    }
                 },
             ]
         } as any,
@@ -257,10 +268,10 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
             {"tc-loader": "window loader"}
         ],
         output: {
-            filename: isDevelopment ? "[name].[contenthash].js" : "[contenthash].js",
-            chunkFilename: isDevelopment ? "[name].[contenthash].js" : "[contenthash].js",
-            path: path.resolve(__dirname, 'dist'),
-            publicPath: "/js/"
+            filename: isDevelopment ? "js/[name].[contenthash].js" : "js/[contenthash].js",
+            chunkFilename: isDevelopment ? "js/[name].[contenthash].js" : "js/[contenthash].js",
+            path: path.resolve(__dirname, "dist"),
+            publicPath: "/"
         },
         performance: {
             hints: false
@@ -277,7 +288,7 @@ export const config = async (target: "web" | "client"): Promise<Configuration & 
             ]
         },
         devServer: {
-            publicPath: "/js/",
+            publicPath: "/",
             contentBase: path.join(__dirname, 'dist'),
             writeToDisk: true,
             compress: true,

@@ -19,6 +19,7 @@
     "webpack/ManifestPlugin.ts",
 
     "babel.config.ts",
+    "postcss.config.ts",
     "file.ts"
   ],
   "exclude": [
