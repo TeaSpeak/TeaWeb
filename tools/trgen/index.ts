@@ -1,6 +1,6 @@
 import * as ts from "typescript";
-import * as ts_generator from "./ts_generator";
-import * as jsrender_generator from "./jsrender_generator";
+import * as ts_generator from "./TsGenerator";
+import * as jsrender_generator from "./JsRendererGenerator";
 import {readFileSync, writeFileSync} from "fs";
 import * as path from "path";
 import * as glob from "glob";
@@ -119,10 +119,11 @@ config.source_files.forEach(file => {
             );
             console.log("Compile " + _file);
 
-            const messages = ts_generator.generate(source, {});
-            translations.push(...messages);
+            throw "not supported";
+            //const messages = ts_generator.generate(source, {});
+            //translations.push(...messages);
         } else if(file_type == ".html") {
-            const messages = jsrender_generator.generate({}, {
+            const messages = jsrender_generator.extractJsRendererTranslations({
                 content: readFileSync(_file).toString(),
                 name: _file
             });

@@ -14,7 +14,8 @@
     "generator.ts",
     "index.ts",
     "compiler.ts",
-    "jsrender_generator.ts",
-    "ts_generator.ts"
+    "JsRendererGenerator.ts",
+    "TsGenerator.ts",
+    "JsRendererTranslationLoader.ts"
   ]
 }

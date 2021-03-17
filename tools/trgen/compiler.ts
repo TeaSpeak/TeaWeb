@@ -1,5 +1,5 @@
 import * as ts from "typescript";
-import * as generator from "./ts_generator";
+import * as generator from "./TsGenerator";
 
 import {readFileSync} from "fs";
 import * as glob from "glob";
@@ -7,8 +7,8 @@ import * as path from "path";
 
 const transformer = <T extends ts.Node>(context: ts.TransformationContext) => (rootNode: T) => {
     return generator.transform({
-        use_window: false,
-        replace_cache: true,
+        useWindow: false,
+        cacheTranslations: true,
         verbose: true
     }, context, rootNode as any).node;
 };

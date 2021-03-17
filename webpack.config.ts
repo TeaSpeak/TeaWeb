@@ -1,9 +1,7 @@
-import * as ts from "typescript";
 import * as fs from "fs";
-import trtransformer from "./tools/trgen/ts_transformer";
-import {exec} from "child_process";
 import * as util from "util";
 import * as path from "path";
+import * as child_process from "child_process";
 
 import { DefinePlugin, Configuration } from "webpack";
 
@@ -12,6 +10,7 @@ const ManifestGenerator = require("./webpack/ManifestPlugin");
 const HtmlWebpackInlineSourcePlugin = require("./webpack/HtmlWebpackInlineSource");
 
 import HtmlWebpackPlugin from "html-webpack-plugin";
+import {TranslateableWebpackPlugin} from "./tools/trgen/WebpackPlugin";
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
@@ -33,7 +32,7 @@ const generateDefinitions = async (target: string) => {
 
     let timestamp;
     try {
-        const { stdout } = await util.promisify(exec)("git show -s --format=%ct");
+        const { stdout } = await util.promisify(child_process.exec)("git show -s --format=%ct");
         timestamp = parseInt(stdout.toString());
         if(isNaN(timestamp)) {
             throw "failed to parse timestamp '" + stdout.toString() + "'";
@@ -83,189 +82,194 @@ const generateIndexPlugin = (target: "web" | "client"): HtmlWebpackPlugin => {
     return new HtmlWebpackPlugin(options);
 }
 
-export const config = async (target: "web" | "client"): Promise<Configuration & { devServer: any }> => ({
-    entry: {
-        "loader": ["./loader/app/index.ts"],
-        "modal-external": ["./shared/js/ui/react-elements/external-modal/PopoutEntrypoint.ts"],
-        //"devel-main": "./shared/js/devel_main.ts"
-    },
+export const config = async (target: "web" | "client"): Promise<Configuration & { devServer: any }> => {
+    const translateablePlugin = new TranslateableWebpackPlugin({ assetName: "translations.json" });
 
-    devtool: isDevelopment ? "inline-source-map" : "source-map",
-    mode: isDevelopment ? "development" : "production",
-    plugins: [
-        new CleanWebpackPlugin(),
-        new DefinePlugin(await generateDefinitions(target)),
+    return {
+        entry: {
+            "loader": ["./loader/app/index.ts"],
+            "modal-external": ["./shared/js/ui/react-elements/external-modal/PopoutEntrypoint.ts"],
+            //"devel-main": "./shared/js/devel_main.ts"
+        },
 
-        new MiniCssExtractPlugin({
-            filename: isDevelopment ? "[name].[contenthash].css" : "[contenthash].css",
-            chunkFilename: isDevelopment ? "[name].[contenthash].css" : "[contenthash].css",
-            ignoreOrder: true
-        }),
+        devtool: isDevelopment ? "inline-source-map" : "source-map",
+        mode: isDevelopment ? "development" : "production",
+        plugins: [
+            new CleanWebpackPlugin(),
+            new DefinePlugin(await generateDefinitions(target)),
 
-        new ManifestGenerator({
-            outputFileName: "manifest.json",
-            context: __dirname
-        }),
+            new MiniCssExtractPlugin({
+                filename: isDevelopment ? "[name].[contenthash].css" : "[contenthash].css",
+                chunkFilename: isDevelopment ? "[name].[contenthash].css" : "[contenthash].css",
+                ignoreOrder: true
+            }),
 
-        new SvgSpriteGenerator({
-            dtsOutputFolder: path.join(__dirname, "shared", "svg-sprites"),
-            publicPath: "js/",
-            configurations: {
-                "client-icons": {
-                    folder: path.join(__dirname, "shared", "img", "client-icons"),
-                    cssClassPrefix: "client-",
-                    cssOptions: [
-                        {
-                            scale: 1,
-                            selector: ".icon",
-                            unit: "px"
-                        },
-                        {
-                            scale: 1.5,
-                            selector: ".icon_x24",
-                            unit: "px"
-                        },
-                        {
-                            scale: 2,
-                            selector: ".icon_x32",
-                            unit: "px"
-                        },
-                        {
-                            scale: 1,
-                            selector: ".icon_em",
-                            unit: "em"
+            new ManifestGenerator({
+                outputFileName: "manifest.json",
+                context: __dirname
+            }),
+
+            new SvgSpriteGenerator({
+                dtsOutputFolder: path.join(__dirname, "shared", "svg-sprites"),
+                publicPath: "js/",
+                configurations: {
+                    "client-icons": {
+                        folder: path.join(__dirname, "shared", "img", "client-icons"),
+                        cssClassPrefix: "client-",
+                        cssOptions: [
+                            {
+                                scale: 1,
+                                selector: ".icon",
+                                unit: "px"
+                            },
+                            {
+                                scale: 1.5,
+                                selector: ".icon_x24",
+                                unit: "px"
+                            },
+                            {
+                                scale: 2,
+                                selector: ".icon_x32",
+                                unit: "px"
+                            },
+                            {
+                                scale: 1,
+                                selector: ".icon_em",
+                                unit: "em"
+                            }
+                        ],
+                        dtsOptions: {
+                            enumName: "ClientIcon",
+                            classUnionName: "ClientIconClass",
+                            module: false
                         }
-                    ],
-                    dtsOptions: {
-                        enumName: "ClientIcon",
-                        classUnionName: "ClientIconClass",
-                        module: false
                     }
                 }
-            }
-        }),
+            }),
 
-        generateIndexPlugin(target),
-        new HtmlWebpackInlineSourcePlugin(HtmlWebpackPlugin),
+            generateIndexPlugin(target),
+            new HtmlWebpackInlineSourcePlugin(HtmlWebpackPlugin),
 
-        //new BundleAnalyzerPlugin(),
-    ].filter(e => !!e),
+            translateablePlugin
+            //new BundleAnalyzerPlugin(),
+        ].filter(e => !!e),
 
-    module: {
-        rules: [
-            {
-                test: /\.(s[ac]|c)ss$/,
-                use: [
-                    //'style-loader',
-                    {
-                        loader: MiniCssExtractPlugin.loader,
-                        options: {
-                            esModule: false
+        module: {
+            rules: [
+                {
+                    test: /\.(s[ac]|c)ss$/,
+                    use: [
+                        //'style-loader',
+                        {
+                            loader: MiniCssExtractPlugin.loader,
+                            options: {
+                                esModule: false
+                            }
+                        },
+                        {
+                            loader: 'css-loader',
+                            options: {
+                                modules: {
+                                    mode: "local",
+                                    localIdentName: isDevelopment ? "[path][name]__[local]--[hash:base64:5]" : "[hash:base64]",
+                                },
+                                sourceMap: isDevelopment
+                            }
+                        },
+                        {
+                            loader: 'sass-loader',
+                            options: {
+                                sourceMap: isDevelopment
+                            }
                         }
-                    },
-                    {
-                        loader: 'css-loader',
-                        options: {
-                            modules: {
-                                mode: "local",
-                                localIdentName: isDevelopment ? "[path][name]__[local]--[hash:base64:5]" : "[hash:base64]",
-                            },
-                            sourceMap: isDevelopment
-                        }
-                    },
-                    {
-                        loader: 'sass-loader',
-                        options: {
-                            sourceMap: isDevelopment
-                        }
-                    }
-                ]
-            },
-            {
-                test: /\.tsx?$/,
-                exclude: /node_modules/,
+                    ]
+                },
+                {
+                    test: /\.tsx?$/,
+                    exclude: /node_modules/,
 
-                use: [
-                    {
-                        loader: "babel-loader",
-                        options: {
-                            presets: ["@babel/preset-env"]
+                    use: [
+                        {
+                            loader: "babel-loader",
+                            options: {
+                                presets: ["@babel/preset-env"]
+                            }
+                        },
+                        {
+                            loader: "ts-loader",
+                            options: {
+                                context: __dirname,
+                                colors: true,
+
+                                getCustomTransformers: program => ({
+                                    before: [translateablePlugin.createTypeScriptTransformer(program)]
+                                }),
+                                transpileOnly: isDevelopment
+                            }
                         }
-                    },
-                    {
-                        loader: "ts-loader",
-                        options: {
-                            context: __dirname,
-                            colors: true,
-                            getCustomTransformers: (prog: ts.Program) => {
-                                return {
-                                    before: [trtransformer(prog, {
-                                        optimized: false,
-                                        verbose: true,
-                                        target_file: path.join(__dirname, "dist", "translations.json")
-                                    })]
-                                };
-                            },
-                            transpileOnly: isDevelopment
-                        }
-                    }
-                ]
+                    ]
+                },
+                {
+                    test: /\.was?t$/,
+                    use: [
+                        "./webpack/WatLoader.js"
+                    ]
+                },
+                {
+                    test: /\.html$/i,
+                    use: [translateablePlugin.createTemplateLoader()],
+                    type: "asset/source",
+                },
+                {
+                    test: /ChangeLog\.md$/i,
+                    type: "asset/source",
+                },
+                {
+                    test: /\.svg$/,
+                    use: 'svg-inline-loader'
+                },
+                {
+                    test: /\.(png|jpg|jpeg|gif)?$/,
+                    type: "asset/resource"
+                },
+            ]
+        } as any,
+        resolve: {
+            extensions: ['.tsx', '.ts', '.js', ".scss"],
+            alias: {
+                "vendor/xbbcode": path.resolve(__dirname, "vendor/xbbcode/src"),
+                "tc-events": path.resolve(__dirname, "vendor/TeaEventBus/src/index.ts"),
+                "tc-services": path.resolve(__dirname, "vendor/TeaClientServices/src/index.ts"),
             },
-            {
-                test: /\.was?t$/,
-                use: [
-                    "./webpack/WatLoader.js"
-                ]
-            },
-            {
-                test: /ChangeLog\.md$|\.html$/i,
-                type: "asset/source",
-            },
-            {
-                test: /\.svg$/,
-                use: 'svg-inline-loader'
-            },
-            {
-                test: /\.(png|jpg|jpeg|gif)?$/,
-                type: "asset/resource"
-            },
-        ]
-    } as any,
-    resolve: {
-        extensions: ['.tsx', '.ts', '.js', ".scss"],
-        alias: {
-            "vendor/xbbcode": path.resolve(__dirname, "vendor/xbbcode/src"),
-            "tc-events": path.resolve(__dirname, "vendor/TeaEventBus/src/index.ts"),
-            "tc-services": path.resolve(__dirname, "vendor/TeaClientServices/src/index.ts"),
         },
-    },
-    externals: [
-        {"tc-loader": "window loader"}
-    ],
-    output: {
-        filename: isDevelopment ? "[name].[contenthash].js" : "[contenthash].js",
-        chunkFilename: isDevelopment ? "[name].[contenthash].js" : "[contenthash].js",
-        path: path.resolve(__dirname, 'dist'),
-        publicPath: "js/"
-    },
-    performance: {
-        hints: false
-    },
-    optimization: {
-        splitChunks: {
-            chunks: "all",
-            maxSize: 512 * 1024
+        externals: [
+            {"tc-loader": "window loader"}
+        ],
+        output: {
+            filename: isDevelopment ? "[name].[contenthash].js" : "[contenthash].js",
+            chunkFilename: isDevelopment ? "[name].[contenthash].js" : "[contenthash].js",
+            path: path.resolve(__dirname, 'dist'),
+            publicPath: "js/"
         },
-        minimize: !isDevelopment,
-        minimizer: [
-            new TerserPlugin(),
-            new CssMinimizerPlugin()
-        ]
-    },
-    devServer: {
-        publicPath: "/",
-        contentBase: path.join(__dirname, 'dist'),
-        writeToDisk: true,
-        compress: true
-    },
-});
+        performance: {
+            hints: false
+        },
+        optimization: {
+            splitChunks: {
+                chunks: "all",
+                maxSize: 512 * 1024
+            },
+            minimize: !isDevelopment,
+            minimizer: [
+                new TerserPlugin(),
+                new CssMinimizerPlugin()
+            ]
+        },
+        devServer: {
+            publicPath: "/",
+            contentBase: path.join(__dirname, 'dist'),
+            writeToDisk: true,
+            compress: true
+        },
+    };
+};

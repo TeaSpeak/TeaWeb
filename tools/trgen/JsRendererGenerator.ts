@@ -1,8 +1,5 @@
 import {TranslationEntry} from "./generator";
 
-export interface Configuration {
-
-}
 export interface File {
     content: string;
     name: string;
@@ -11,15 +8,15 @@ export interface File {
 /* Well my IDE hates me and does not support groups. By default with ES6 groups are supported... nvm */
 //const regex = /{{ *tr *(?<message_expression>(("([^"]|\\")*")|('([^']|\\')*')|(`([^`]|\\`)+`)|( *\+ *)?)+) *\/ *}}/;
 const regex = /{{ *tr *((("([^"]|\\")*")|('([^']|\\')*')|(`([^`]|\\`)+`)|([\n ]*\+[\n ]*)?)+) *\/ *}}/;
-export function generate(config: Configuration, file: File) : TranslationEntry[] {
+export function extractJsRendererTranslations(file: File) : TranslationEntry[] {
     let result: TranslationEntry[] = [];
 
     const lines = file.content.split('\n');
     let match: RegExpExecArray;
-    let base_index = 0;
+    let baseIndex = 0;
 
-    while(match = regex.exec(file.content.substr(base_index))) {
-        let expression = ((<any>match).groups || {})["message_expression"] || match[1];
+    while(match = regex.exec(file.content.substr(baseIndex))) {
+        let expression = (match.groups || {})["message_expression"] || match[1];
         //expression = expression.replace(/\n/g, "\\n");
 
         let message;
@@ -27,16 +24,18 @@ export function generate(config: Configuration, file: File) : TranslationEntry[]
             message = eval(expression);
         } catch (error) {
             console.error("Failed to evaluate expression:\n%s", expression);
-            base_index += match.index + match[0].length;
+            baseIndex += match.index + match[0].length;
             continue;
         }
 
-        let character = base_index + match.index;
+        let character = baseIndex + match.index;
         let line;
 
         for(line = 0; line < lines.length; line++) {
             const length = lines[line].length + 1;
-            if(length > character) break;
+            if(length > character) {
+                break;
+            }
             character -= length;
         }
 
@@ -48,7 +47,7 @@ export function generate(config: Configuration, file: File) : TranslationEntry[]
             type: "js-template"
         });
 
-        base_index += match.index + match[0].length;
+        baseIndex += match.index + match[0].length;
     }
     return result;
 }

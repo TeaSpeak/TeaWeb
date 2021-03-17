@@ -14,7 +14,7 @@ class ManifestGenerator {
     }
 
     apply(compiler: webpack.Compiler) {
-        compiler.hooks.emit.tap(this.constructor.name,  compilation => {
+        compiler.hooks.emit.tap("ManifestGenerator", compilation => {
             const chunkData = {};
             for(const chunkGroup of compilation.chunkGroups) {
                 const fileJs = [];
