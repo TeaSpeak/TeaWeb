@@ -2,7 +2,6 @@ import * as React from "react";
 import {IpcInviteInfo, IpcInviteInfoLoaded} from "tc-shared/text/bbcode/InviteDefinitions";
 import {ChannelMessage, getIpcInstance, IPCChannel} from "tc-shared/ipc/BrowserIPC";
 import * as loader from "tc-loader";
-import {AppParameters} from "tc-shared/settings";
 import {useEffect, useState} from "react";
 import _ = require("lodash");
 import {Translatable} from "tc-shared/ui/react-elements/i18n";

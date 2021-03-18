@@ -9,10 +9,10 @@ import * as DOMPurify from "dompurify";
 import {copyToClipboard} from "tc-shared/utils/helpers";
 import {rendererReact, rendererText} from "tc-shared/text/bbcode/renderer";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
-
-import '!style-loader!css-loader!highlight.js/styles/darcula.css';
 import {Settings, settings} from "tc-shared/settings";
 import {LogCategory, logWarn} from "tc-shared/log";
+
+import '!style-loader!css-loader!highlight.js/styles/darcula.css';
 
 const registerLanguage = (name, language: Promise<any>) => {
     language.then(lan => hljs.registerLanguage(name, lan.default)).catch(error => {

@@ -1,8 +1,8 @@
 import * as loader from "tc-loader";
+import * as React from "react";
 import { rendererReact } from "tc-shared/text/bbcode/renderer";
 import {ElementRenderer} from "vendor/xbbcode/renderer/base";
 import {TextElement} from "vendor/xbbcode/elements";
-import * as React from "react";
 import ReactRenderer from "vendor/xbbcode/renderer/react";
 import {Settings, settings} from "tc-shared/settings";
 

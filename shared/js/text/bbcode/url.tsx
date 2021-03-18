@@ -7,7 +7,7 @@ import * as React from "react";
 import ReactRenderer from "vendor/xbbcode/renderer/react";
 import {rendererReact, rendererText, BBCodeHandlerContext} from "tc-shared/text/bbcode/renderer";
 import {ClientTag} from "tc-shared/ui/tree/EntryTags";
-import {isYoutubeLink, YoutubeRenderer} from "tc-shared/text/bbcode/youtube";
+import {isYoutubeLink, YoutubeRenderer} from "tc-shared/text/bbcode/YoutubeRenderer";
 import {InviteLinkRenderer, isInviteLink} from "tc-shared/text/bbcode/InviteRenderer";
 
 function spawnUrlContextMenu(pageX: number, pageY: number, target: string) {

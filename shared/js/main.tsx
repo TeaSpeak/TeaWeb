@@ -27,6 +27,11 @@ import {server_connections} from "tc-shared/ConnectionManager";
 import {spawnConnectModalNew} from "tc-shared/ui/modal/connect/Controller";
 import {initializeKeyControl} from "./KeyControl";
 import {assertMainApplication} from "tc-shared/ui/utils";
+import {clientServiceInvite} from "tc-shared/clientservice";
+import {ActionResult} from "tc-services";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {bookmarks} from "tc-shared/Bookmarks";
 
 /* required import for init */
 import "svg-sprites/client-icons";
@@ -49,11 +54,7 @@ import "./ui/elements/ContextDivider";
 import "./ui/elements/Tab";
 import "./clientservice";
 import "./text/bbcode/InviteController";
-import {clientServiceInvite} from "tc-shared/clientservice";
-import {ActionResult} from "tc-services";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
-import {bookmarks} from "tc-shared/Bookmarks";
+import "./text/bbcode/YoutubeController";
 
 assertMainApplication();
 

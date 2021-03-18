@@ -19,7 +19,7 @@ const PokeRenderer = React.memo((props: { poke: PokeRecord }) => (
         <div className={cssStyle.date}>{moment(props.poke.timestamp).format("HH:mm:ss")}</div>&nbsp;-&nbsp;
         <ClientTag clientName={props.poke.clientName} clientUniqueId={props.poke.clientUniqueId} handlerId={props.poke.handlerId} className={cssStyle.user} />
         <div className={cssStyle.text}><Translatable>pokes you</Translatable></div>:
-        <div><BBCodeRenderer message={props.poke.message} settings={{ convertSingleUrls: true }} /></div>
+        <div><BBCodeRenderer message={props.poke.message} settings={{ convertSingleUrls: true }} handlerId={props.poke.handlerId} /></div>
     </div>
 ))
 
@@ -69,7 +69,7 @@ class PokeModal extends AbstractModal {
     renderBody(): React.ReactElement {
         return (
             <VariablesContext.Provider value={this.variables}>
-                <div className={cssStyle.container}>
+                <div className={cssStyle.container + " " + (this.properties.windowed ? cssStyle.window : "")}>
                     <PokeListRenderer />
                     <div className={cssStyle.buttons}>
                         <div className={cssStyle.spacer} />

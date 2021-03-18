@@ -88,7 +88,6 @@ registerModal({
 registerModal({
     modalId: "modal-poked",
     classLoader: async () => await import("tc-shared/ui/modal/poke/Renderer"),
-    /* FIXME: Make popoutable after the bbcode renderer part has been made popoutable (currently not because of the youtube renderer) */
-    popoutSupported: false
+    popoutSupported: true
 });
 

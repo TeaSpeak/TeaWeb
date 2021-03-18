@@ -5,6 +5,9 @@ import {IpcInviteInfo} from "tc-shared/text/bbcode/InviteDefinitions";
 import {LogCategory, logError} from "tc-shared/log";
 import {clientServiceInvite, clientServices} from "tc-shared/clientservice";
 import {handleConnectRequest} from "tc-shared/main";
+import {assertMainApplication} from "tc-shared/ui/utils";
+
+assertMainApplication();
 
 let ipcChannel: IPCChannel;
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {

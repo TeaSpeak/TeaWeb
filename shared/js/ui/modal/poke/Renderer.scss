@@ -32,6 +32,10 @@ html:root {
             }
         }
     }
+
+    &.window {
+        height: 100%;
+    }
 }
 
 .pokeList {
@@ -73,7 +77,8 @@ html:root {
     flex-direction: row;
     justify-content: stretch;
 
-    margin-top: 1em;
+    margin-top: auto;
+    padding-top: 1em;
 
     flex-shrink: 0;
     flex-grow: 0;
