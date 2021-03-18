@@ -1,21 +1,16 @@
 import * as loader from "tc-loader";
-import {Stage} from "tc-loader";
 import * as ipc from "../../../ipc/BrowserIPC";
 import * as i18n from "../../../i18n/localize";
+import {Stage} from "tc-loader";
 import {AbstractModal} from "../../../ui/react-elements/ModalDefinitions";
 import {AppParameters} from "../../../settings";
 import {getPopoutController} from "./PopoutController";
 import {setupJSRender} from "../../../ui/jsrender";
-
-import "../../../file/RemoteAvatars";
-import "../../../file/RemoteIcons";
 import {findRegisteredModal} from "tc-shared/ui/react-elements/modal/Registry";
 import {ModalRenderer} from "tc-shared/ui/react-elements/external-modal/ModalRenderer";
 import {constructAbstractModalClass} from "tc-shared/ui/react-elements/modal/Definitions";
-
-if("__native_client_init_shared" in window) {
-    (window as any).__native_client_init_shared(__webpack_require__);
-}
+import "../../../file/RemoteAvatars";
+import "../../../file/RemoteIcons";
 
 let modalRenderer: ModalRenderer;
 let modalInstance: AbstractModal;

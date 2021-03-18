@@ -15,7 +15,6 @@ import {defaultRecorder, RecorderProfile} from "./voice/RecorderProfile";
 import {Regex} from "./ui/modal/ModalConnect";
 import {formatMessage} from "./ui/frames/chat";
 import {spawnAvatarUpload} from "./ui/modal/ModalAvatar";
-import * as dns from "tc-backend/dns";
 import {EventHandler, Registry} from "./events";
 import {FileManager} from "./file/FileManager";
 import {FileTransferState, TransferProvider} from "./file/Transfer";
@@ -42,6 +41,7 @@ import {PlaylistManager} from "tc-shared/music/PlaylistManager";
 import {connectionHistory} from "tc-shared/connectionlog/History";
 import {ConnectParameters} from "tc-shared/ui/modal/connect/Controller";
 import {assertMainApplication} from "tc-shared/ui/utils";
+import {getDNSProvider} from "tc-shared/dns";
 
 assertMainApplication();
 
@@ -318,20 +318,25 @@ export class ConnectionHandler {
 
         if(resolvedAddress.host.match(Regex.IP_V4) || resolvedAddress.host.match(Regex.IP_V6)) {
             /* We don't have to resolve the target host */
-        } else if(dns.supported()) {
+        } else {
             this.log.log("connection.hostname.resolve", {});
             try {
-                const resolved = await dns.resolve_address(parsedAddress, { timeout: 5000 });
+                const resolved = await getDNSProvider().resolveAddress({ hostname: parsedAddress.host, port: parsedAddress.port }, { timeout: 5000 });
                 if(this.connectAttemptId !== localConnectionAttemptId) {
                     /* Our attempt has been aborted */
                     return;
                 }
 
-                if(resolved?.target_ip) {
-                    resolvedAddress.host = resolved.target_ip;
-                    resolvedAddress.port = typeof resolved.target_port === "number" ? resolved.target_port : resolvedAddress.port;
-                } else {
-                    throw tr("address resolve result id empty");
+                if(resolved.status === "empty-result") {
+                    throw tr("address resolve result empty");
+                } else if(resolved.status === "error") {
+                    throw resolved.message;
+                }
+
+                resolvedAddress.host = resolved.resolvedAddress.hostname;
+                resolvedAddress.port = resolved.resolvedAddress.port;
+                if(typeof resolvedAddress.port !== "number") {
+                    resolvedAddress.port = parsedAddress.port;
                 }
 
                 this.log.log("connection.hostname.resolved", {
@@ -349,8 +354,6 @@ export class ConnectionHandler {
                 this.handleDisconnect(DisconnectReason.DNS_FAILED, error);
                 return;
             }
-        } else {
-            this.handleDisconnect(DisconnectReason.DNS_FAILED, tr("Unable to resolve hostname"));
         }
 
         if(this.autoReconnectAttempt) {
@@ -495,7 +498,7 @@ export class ConnectionHandler {
         return this.serverConnection && this.serverConnection.connected();
     }
 
-    private generate_ssl_certificate_accept() : JQuery {
+    private generate_ssl_certificate_accept() : HTMLAnchorElement {
         const properties = {
             connect_default: true,
             connect_profile: this.serverConnection.handshake_handler().parameters.profile.id,
@@ -504,26 +507,29 @@ export class ConnectionHandler {
 
         const build_url = (base: string, search: string, props: any) => {
             const parameters: string[] = [];
-            for(const key of Object.keys(props))
+            for(const key of Object.keys(props)) {
                 parameters.push(key + "=" + encodeURIComponent(props[key]));
+            }
 
             let callback = base + search; /* don't use document.URL because it may contains a #! */
-            if(!search)
+            if(!search) {
                 callback += "?" + parameters.join("&");
-            else
+            } else {
                 callback += "&" + parameters.join("&");
+            }
 
             return "https://" + this.serverConnection.remote_address().host + ":" + this.serverConnection.remote_address().port + "/?forward_url=" + encodeURIComponent(callback);
         };
 
         /* generate the tag */
-        const tag = $.spawn("a").text(tr("here"));
+        const tag = document.createElement("a");
+        tag.text = tr("here");
 
         let pathname = document.location.pathname;
         if(pathname.endsWith(".php"))
             pathname = pathname.substring(0, pathname.lastIndexOf("/"));
 
-        tag.attr('href', build_url(document.location.origin + pathname, document.location.search, properties));
+        tag.href = build_url(document.location.origin + pathname, document.location.search, properties);
         return tag;
     }
 
@@ -561,7 +567,7 @@ export class ConnectionHandler {
                     logError(LogCategory.CLIENT, tr("Could not connect to remote host!"), data);
                 }
 
-                if(__build.target === "client" || !dns.resolve_address_ipv4) {
+                if(__build.target === "client") {
                     createErrorModal(
                         tr("Could not connect"),
                         tr("Could not connect to remote host (Connection refused)")
@@ -569,9 +575,19 @@ export class ConnectionHandler {
                 } else {
                     const generateAddressPart = () => Math.floor(Math.random() * 256);
                     const addressParts = [generateAddressPart(), generateAddressPart(), generateAddressPart(), generateAddressPart()];
-                    dns.resolve_address_ipv4(addressParts.join("-") + ".con-gate.work").then(async result => {
-                        if(result !== addressParts.join("."))
+                    getDNSProvider().resolveAddressIPv4({
+                        hostname: addressParts.join("-") + ".con-gate.work",
+                        port: 9987
+                    }, { timeout: 5000 }).then(async result => {
+                        if(result.status === "empty-result") {
+                            throw tr("empty result");
+                        } else if(result.status === "error") {
+                            throw result.message;
+                        }
+
+                        if(result.resolvedAddress.hostname !== addressParts.join(".")) {
                             throw "miss matching address";
+                        }
 
                         createErrorModal(
                             tr("Could not connect"),

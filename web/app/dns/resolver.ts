@@ -1,15 +1,11 @@
-import * as log from "tc-shared/log";
-import {LogCategory, logTrace, logWarn} from "tc-shared/log";
+import {LogCategory, logError, logTrace, logWarn} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
-import {ServerAddress} from "tc-shared/tree/Server";
-import {AddressTarget, default_options, ResolveOptions} from "tc-shared/dns";
-import {executeDnsRequest, RRType} from "tc-backend/web/dns/api";
-
-type Address = { host: string, port: number };
+import {default_options, DNSAddress, DNSResolveResult, ResolveOptions} from "tc-shared/dns";
+import {executeDnsRequest, RRType} from "./api";
 
 interface DNSResolveMethod {
     name() : string;
-    resolve(address: Address) : Promise<Address | undefined>;
+    resolve(address: DNSAddress) : Promise<DNSAddress | undefined>;
 }
 
 class LocalhostResolver implements DNSResolveMethod {
@@ -17,10 +13,10 @@ class LocalhostResolver implements DNSResolveMethod {
         return "localhost";
     }
 
-    async resolve(address: Address): Promise<Address | undefined> {
-        if(address.host === "localhost") {
+    async resolve(address: DNSAddress): Promise<DNSAddress | undefined> {
+        if(address.hostname === "localhost") {
             return {
-                host: "127.0.0.1",
+                hostname: "127.0.0.1",
                 port: address.port
             }
         }
@@ -42,14 +38,14 @@ class IPResolveMethod implements DNSResolveMethod {
         return "ip v" + (this.v6 ? "6" : "4") + " resolver";
     }
 
-    async resolve(address: Address): Promise<Address | undefined> {
-        const answer = await executeDnsRequest(address.host, this.v6 ? RRType.AAAA : RRType.A);
+    async resolve(address: DNSAddress): Promise<DNSAddress | undefined> {
+        const answer = await executeDnsRequest(address.hostname, this.v6 ? RRType.AAAA : RRType.A);
         if(!answer.length) {
             return undefined;
         }
 
         return {
-            host: answer[0].data,
+            hostname: answer[0].data,
             port: address.port
         }
     }
@@ -73,8 +69,8 @@ class SRVResolveMethod implements DNSResolveMethod {
         return "srv resolve [" + this.application + "]";
     }
 
-    async resolve(address: Address): Promise<Address | undefined> {
-        const answer = await executeDnsRequest((this.application ? this.application + "." : "") + address.host, RRType.SRV);
+    async resolve(address: DNSAddress): Promise<DNSAddress | undefined> {
+        const answer = await executeDnsRequest((this.application ? this.application + "." : "") + address.hostname, RRType.SRV);
 
         const records: {[key: number]: ParsedSVRRecord[]} = {};
         for(const record of answer) {
@@ -146,7 +142,7 @@ class SRVResolveMethod implements DNSResolveMethod {
         }
 
         return {
-            host: record.target,
+            hostname: record.target,
             port: record.port == 0 ? address.port : record.port
         };
     }
@@ -167,7 +163,7 @@ class SRV_IPResolveMethod implements DNSResolveMethod {
         return "srv ip resolver [" + this.srvResolver.name() + "; " + this.ipv4Resolver.name() + "; " + this.ipv6Resolver.name() + "]";
     }
 
-    async resolve(address: Address): Promise<Address | undefined> {
+    async resolve(address: DNSAddress): Promise<DNSAddress | undefined> {
         const srvAddress = await this.srvResolver.resolve(address);
         if(!srvAddress) {
             return undefined;
@@ -192,21 +188,21 @@ class DomainRootResolveMethod implements DNSResolveMethod {
         return "domain-root [" + this.resolver.name() + "]";
     }
 
-    async resolve(address: Address): Promise<Address | undefined> {
-        const parts = address.host.split(".");
+    async resolve(address: DNSAddress): Promise<DNSAddress | undefined> {
+        const parts = address.hostname.split(".");
         if(parts.length < 3) {
             return undefined;
         }
 
         return await this.resolver.resolve({
-            host: parts.slice(-2).join("."),
+            hostname: parts.slice(1).join("."),
             port: address.port
         });
     }
 }
 
 class TeaSpeakDNSResolve {
-    readonly address: Address;
+    readonly address: DNSAddress;
     private resolvers: {[key: string]:{ resolver: DNSResolveMethod, after: string[] }} = {};
     private resolving = false;
     private timeout;
@@ -217,7 +213,7 @@ class TeaSpeakDNSResolve {
     private finished_resolvers: string[];
     private resolving_resolvers: string[];
 
-    constructor(addr: Address) {
+    constructor(addr: DNSAddress) {
         this.address = addr;
     }
 
@@ -229,7 +225,7 @@ class TeaSpeakDNSResolve {
         this.resolvers[resolver.name()] = { resolver: resolver, after: after.map(e => typeof e === "string" ? e : e.name()) };
     }
 
-    resolve(timeout: number) : Promise<Address> {
+    resolve(timeout: number) : Promise<DNSAddress> {
         if(this.resolving) {
             throw tr("already resolving");
         }
@@ -246,9 +242,9 @@ class TeaSpeakDNSResolve {
         this.timeout = setTimeout(() => {
             this.callback_fail(tr("timeout"));
         }, timeout);
-        logTrace(LogCategory.DNS, tr("Start resolving %s:%d"), this.address.host, this.address.port);
+        logTrace(LogCategory.DNS, tr("Start resolving %s:%d"), this.address.hostname, this.address.port);
 
-        return new Promise<Address>((resolve, reject) => {
+        return new Promise<DNSAddress>((resolve, reject) => {
             this.callback_success = data => {
                 cleanup();
                 resolve(data);
@@ -290,8 +286,8 @@ class TeaSpeakDNSResolve {
                     }
 
                     logTrace(LogCategory.DNS, tr(" Successfully resolved address %s:%d to %s:%d via resolver %s"),
-                        this.address.host, this.address.port,
-                        result.host, result.port,
+                        this.address.hostname, this.address.port,
+                        result.hostname, result.port,
                         resolver_name);
                     this.callback_success(result);
                 }).catch(error => {
@@ -324,29 +320,48 @@ const resolverSrvTS3 = new SRV_IPResolveMethod(new SRVResolveMethod("_ts3._udp")
 const resolverDrSrvTS = new DomainRootResolveMethod(resolverSrvTS);
 const resolverDrSrvTS3 = new DomainRootResolveMethod(resolverSrvTS3);
 
-export async function resolveTeaSpeakServerAddress(address: ServerAddress, _options?: ResolveOptions) : Promise<AddressTarget> {
-    const options = Object.assign({}, default_options);
-    Object.assign(options, _options);
+export async function resolveTeaSpeakServerAddress(address: DNSAddress, _options?: ResolveOptions) : Promise<DNSResolveResult> {
+    try {
+        const options = Object.assign({}, default_options);
+        Object.assign(options, _options);
 
-    const resolver = new TeaSpeakDNSResolve(address);
+        const resolver = new TeaSpeakDNSResolve(address);
 
-    resolver.registerResolver(kResolverLocalhost);
+        resolver.registerResolver(kResolverLocalhost);
 
-    resolver.registerResolver(resolverSrvTS, kResolverLocalhost);
-    resolver.registerResolver(resolverSrvTS3, kResolverLocalhost);
-    //TODO: TSDNS somehow?
+        resolver.registerResolver(resolverSrvTS, kResolverLocalhost);
+        resolver.registerResolver(resolverSrvTS3, kResolverLocalhost);
+        //TODO: TSDNS somehow?
 
-    resolver.registerResolver(resolverDrSrvTS, resolverSrvTS);
-    resolver.registerResolver(resolverDrSrvTS3, resolverSrvTS3);
+        resolver.registerResolver(resolverDrSrvTS, resolverSrvTS);
+        resolver.registerResolver(resolverDrSrvTS3, resolverSrvTS3);
 
-    resolver.registerResolver(kResolverIpV4, resolverSrvTS, resolverSrvTS3);
-    resolver.registerResolver(kResolverIpV6, kResolverIpV4);
+        resolver.registerResolver(kResolverIpV4, resolverSrvTS, resolverSrvTS3);
+        resolver.registerResolver(kResolverIpV6, kResolverIpV4);
 
-    const response = await resolver.resolve(options.timeout || 5000);
-    return {
-        target_ip: response.host,
-        target_port: response.port
-    };
+        const response = await resolver.resolve(options.timeout || 5000);
+        if(!response) {
+            return {
+                status: "empty-result"
+            };
+        }
+
+        return {
+            status: "success",
+            originalAddress: address,
+            resolvedAddress: response
+        };
+    } catch (error) {
+        if(typeof error !== "string") {
+            logError(LogCategory.DNS, tr("Failed to resolve %o: %o"), address, error);
+            error = tr("lookup the console");
+        }
+
+        return {
+            status: "error",
+            message: error
+        };
+    }
 }
 
 export async function resolveAddressIpV4(address: string) : Promise<string> {

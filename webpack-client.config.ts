@@ -3,7 +3,8 @@ import * as config_base from "./webpack.config";
 
 export = env => config_base.config(env, "client").then(config => {
     Object.assign(config.entry, {
-        "client-app": ["./client/app/index.ts"]
+        "client-app": ["./client/app/index.ts"],
+        "modal-external": ["./client/app/EntryPointPopoutModal.ts"]
     });
 
     Object.assign(config.resolve.alias, {
