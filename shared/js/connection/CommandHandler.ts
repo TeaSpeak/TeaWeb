@@ -13,7 +13,6 @@ import {
 } from "../tree/Client";
 import {ConnectionHandler, ConnectionState, DisconnectReason, ViewReasonId} from "../ConnectionHandler";
 import {formatMessage} from "../ui/frames/chat";
-import {spawnPoke} from "../ui/modal/ModalPoke";
 import {AbstractCommandHandler, AbstractCommandHandlerBoss} from "../connection/AbstractCommandHandler";
 import {batch_updates, BatchUpdateType, flush_batched_updates} from "../ui/react-elements/ReactComponentBase";
 import {OutOfViewClient} from "../ui/frames/side/PrivateConversationController";
