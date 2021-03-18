@@ -1,7 +1,5 @@
-import * as ppt from "tc-backend/ppt";
-import * as log from "./log";
 import {LogCategory, logError, logWarn} from "./log";
-import {KeyDescriptor, KeyHook} from "./PPTListener";
+import {getKeyBoard, KeyDescriptor, KeyHook} from "./PPTListener";
 import {Settings, settings} from "./settings";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {tr} from "./i18n/localize";
@@ -181,18 +179,18 @@ function bindKey(action: string, key: KeyDescriptor) {
 
     keyBindings[action] = {
         hook: Object.assign({
-            callback_press: () => control.handler(),
-            callback_release: () => {},
+            callbackPress: () => control.handler(),
+            callbackRelease: () => {},
             cancel: false
         }, key),
         binding: key
     };
-    ppt.register_key_hook(keyBindings[action].hook);
+    getKeyBoard().registerHook(keyBindings[action].hook);
 }
 
 export function setKey(action: string, key?: KeyDescriptor) {
     if(typeof keyBindings[action] !== "undefined") {
-        ppt.unregister_key_hook(keyBindings[action].hook);
+        getKeyBoard().unregisterHook(keyBindings[action].hook);
         delete keyBindings[action];
     }
 

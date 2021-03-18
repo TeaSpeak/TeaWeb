@@ -1,4 +1,7 @@
 # Changelog:
+* **18.03.21**
+    - Finally got fully rid of the initial backend glue and changes all systems to provider
+  
 * **17.03.21**
     - Updated from webpack 4 to webpack 5
     - Reworked the client build process

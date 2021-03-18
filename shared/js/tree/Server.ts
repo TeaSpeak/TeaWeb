@@ -3,7 +3,7 @@ import {Settings, settings} from "../settings";
 import * as contextmenu from "../ui/elements/ContextMenu";
 import * as log from "../log";
 import {LogCategory, logInfo, LogType} from "../log";
-import {Sound} from "../sound/Sounds";
+import {Sound} from "../audio/Sounds";
 import {openServerInfo} from "../ui/modal/ModalServerInfo";
 import {createServerModal} from "../ui/modal/ModalServerEdit";
 import {spawnIconSelect} from "../ui/modal/ModalIconSelect";

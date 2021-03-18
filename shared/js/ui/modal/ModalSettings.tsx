@@ -1,8 +1,8 @@
 import {createErrorModal, createInfoModal, createInputModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {sliderfy} from "tc-shared/ui/elements/Slider";
 import {settings, Settings} from "tc-shared/settings";
-import * as sound from "tc-shared/sound/Sounds";
-import {manager, set_master_volume, Sound} from "tc-shared/sound/Sounds";
+import * as sound from "tc-shared/audio/Sounds";
+import {manager, set_master_volume, Sound} from "tc-shared/audio/Sounds";
 import * as profiles from "tc-shared/profiles/ConnectionProfile";
 import {ConnectionProfile} from "tc-shared/profiles/ConnectionProfile";
 import {IdentitifyType} from "tc-shared/profiles/Identity";
@@ -18,8 +18,7 @@ import * as i18nc from "tc-shared/i18n/country";
 import * as forum from "tc-shared/profiles/identities/teaspeak-forum";
 import {formatMessage, set_icon_size} from "tc-shared/ui/frames/chat";
 import {spawnTeamSpeakIdentityImport, spawnTeamSpeakIdentityImprove} from "tc-shared/ui/modal/ModalIdentity";
-import {Device} from "tc-shared/audio/player";
-import * as aplayer from "tc-backend/audio/player";
+import {getAudioBackend, OutputDevice} from "tc-shared/audio/Player";
 import {KeyMapSettings} from "tc-shared/ui/modal/settings/Keymap";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -628,8 +627,8 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
         const update_devices = () => {
             container_devices.children().remove();
 
-            const current_selected = aplayer.current_device();
-            const generate_device = (device: Device | undefined) => {
+            const current_selected = getAudioBackend().getCurrentDevice();
+            const generate_device = (device: OutputDevice | undefined) => {
                 const selected = device === current_selected || (typeof (current_selected) !== "undefined" && typeof (device) !== "undefined" && current_selected.device_id == device.device_id);
 
                 const tag = $.spawn("div").addClass("device").toggleClass("selected", selected).append(
@@ -654,7 +653,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
                     _old.removeClass("selected");
                     tag.addClass("selected");
 
-                    aplayer.set_device(device ? device.device_id : null).then(() => {
+                    getAudioBackend().setCurrentDevice(device?.device_id).then(() => {
                         logDebug(LogCategory.AUDIO, tr("Changed default speaker device"));
                     }).catch((error) => {
                         _old.addClass("selected");
@@ -669,7 +668,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
             };
 
             generate_device(undefined).appendTo(container_devices);
-            aplayer.available_devices().then(result => {
+            getAudioBackend().getAvailableDevices().then(result => {
                 contianer_error.text("").hide();
                 result.forEach(e => generate_device(e).appendTo(container_devices));
             }).catch(error => {
@@ -710,8 +709,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
             slider.on('change', event => {
                 const volume = parseInt(slider.attr('value'));
 
-                if (aplayer.set_master_volume)
-                    aplayer.set_master_volume(volume / 100);
+                getAudioBackend().setMasterVolume(volume / 100);
                 settings.setValue(Settings.KEY_SOUND_MASTER, volume);
             });
         }

@@ -1,4 +1,3 @@
-import * as aplayer from "../audio/player";
 import {
     AbstractVoiceConnection,
     VoiceConnectionStatus,
@@ -17,9 +16,10 @@ import {AbstractServerConnection, ConnectionStatistics} from "tc-shared/connecti
 import {VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 import {LogCategory, logDebug, logError, logInfo, logTrace, logWarn} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
-import {RtpVoiceClient} from "tc-backend/web/voice/VoiceClient";
 import {InputConsumerType} from "tc-shared/voice/RecorderBase";
-import {RtpWhisperSession} from "tc-backend/web/voice/WhisperClient";
+import {getAudioBackend} from "tc-shared/audio/Player";
+import {RtpVoiceClient} from "./VoiceClient";
+import {RtpWhisperSession} from "./WhisperClient";
 
 type CancelableWhisperTarget = WhisperTarget & { canceled: boolean };
 export class RtpVoiceConnection extends AbstractVoiceConnection {
@@ -86,8 +86,8 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
         this.speakerMuted = connection.client.isSpeakerMuted() || connection.client.isSpeakerDisabled();
 
         this.setConnectionState(VoiceConnectionStatus.Disconnected);
-        aplayer.on_ready(() => {
-            this.localAudioDestination = aplayer.context().createMediaStreamDestination();
+        getAudioBackend().executeWhenInitialized(() => {
+            this.localAudioDestination = getAudioBackend().getAudioContext().createMediaStreamDestination();
             if(this.currentAudioSourceNode) {
                 this.currentAudioSourceNode.connect(this.localAudioDestination);
             }

@@ -1,6 +1,6 @@
 import {VoicePlayerEvents, VoicePlayerLatencySettings, VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 import {Registry} from "tc-shared/events";
-import {LogCategory, logTrace, logWarn} from "tc-shared/log";
+import {LogCategory, logWarn} from "tc-shared/log";
 import {RemoteRTPAudioTrack, RemoteRTPTrackState} from "tc-shared/connection/rtc/RemoteTrack";
 import {tr} from "tc-shared/i18n/localize";
 

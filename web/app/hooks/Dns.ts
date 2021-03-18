@@ -1,7 +1,7 @@
 import {DNSAddress, DNSProvider, DNSResolveOptions, DNSResolveResult, setDNSProvider} from "tc-shared/dns";
-import {resolveAddressIpV4, resolveTeaSpeakServerAddress} from "tc-backend/web/dns/resolver";
 import {LogCategory, logError} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
+import {resolveAddressIpV4, resolveTeaSpeakServerAddress} from "../dns/resolver";
 
 setDNSProvider(new class implements DNSProvider {
     resolveAddress(address: DNSAddress, options: DNSResolveOptions): Promise<DNSResolveResult> {

@@ -16,7 +16,7 @@ import {VideoBroadcastType, VideoConnectionStatus} from "tc-shared/connection/Vi
 import {tr} from "tc-shared/i18n/localize";
 import {getVideoDriver} from "tc-shared/video/VideoSource";
 import {kLocalBroadcastChannels} from "tc-shared/ui/frames/video/Definitions";
-import {getRecorderBackend, IDevice} from "tc-shared/audio/recorder";
+import {getRecorderBackend, InputDevice} from "tc-shared/audio/Recorder";
 import {defaultRecorder, defaultRecorderEvents} from "tc-shared/voice/RecorderProfile";
 import {bookmarks} from "tc-shared/Bookmarks";
 import {connectionHistory} from "tc-shared/connectionlog/History";
@@ -276,7 +276,7 @@ class InfoController {
         this.events.fire_react("notify_microphone_list", {
             devices: devices.map(device => {
                 let selected = false;
-                if(selectedDevice === IDevice.DefaultDeviceId && device.deviceId === defaultDevice) {
+                if(selectedDevice === InputDevice.DefaultDeviceId && device.deviceId === defaultDevice) {
                     selected = true;
                 } else if(selectedDevice === device.deviceId) {
                     selected = true;

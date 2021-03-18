@@ -1,8 +1,7 @@
 import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import {useContext, useEffect, useRef, useState} from "react";
 import {FileType} from "tc-shared/file/FileManager";
-import * as ppt from "tc-backend/ppt";
-import {SpecialKey} from "tc-shared/PPTListener";
+import {getKeyBoard, SpecialKey} from "tc-shared/PPTListener";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
 import {network} from "tc-shared/ui/frames/chat";
@@ -422,7 +421,7 @@ const FileName = (props: { path: string, file: ListedFileInfo }) => {
             if (props.file.virtual || props.file.mode === "creating" || props.file.mode === "uploading")
                 return;
 
-            if (!ppt.key_pressed(SpecialKey.SHIFT))
+            if (!getKeyBoard().isKeyPressed(SpecialKey.SHIFT))
                 return;
 
             event.stopPropagation();
@@ -656,7 +655,7 @@ const FileListEntry = (props: { row: TableRow<ListedFileInfo>, columns: TableCol
 
             onClick={() => props.events.fire("action_select_files", {
                 files: [{name: file.name, type: file.type}],
-                mode: ppt.key_pressed(SpecialKey.SHIFT) ? "toggle" : "exclusive"
+                mode: getKeyBoard().isKeyPressed(SpecialKey.SHIFT) ? "toggle" : "exclusive"
             })}
             onContextMenu={e => {
                 if (!selected) {
@@ -664,7 +663,7 @@ const FileListEntry = (props: { row: TableRow<ListedFileInfo>, columns: TableCol
                         /* explicitly clicked on one file */
                         props.events.fire("action_select_files", {
                             files: [{name: file.name, type: file.type}],
-                            mode: ppt.key_pressed(SpecialKey.SHIFT) ? "toggle" : "exclusive"
+                            mode: getKeyBoard().isKeyPressed(SpecialKey.SHIFT) ? "toggle" : "exclusive"
                         });
                     } else {
                         props.events.fire("action_select_files", {files: [], mode: "exclusive"});

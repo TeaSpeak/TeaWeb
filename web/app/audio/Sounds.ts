@@ -1,7 +1,7 @@
 import {LogCategory, logError, logWarn} from "tc-shared/log";
-import {SoundFile} from "tc-shared/sound/Sounds";
-import * as aplayer from "./player";
 import { tr } from "tc-shared/i18n/localize";
+import {getAudioBackend} from "tc-shared/audio/Player";
+import {SoundBackend, SoundFile} from "tc-shared/audio/Sounds";
 
 interface SoundEntry {
     cached?: AudioBuffer;
@@ -13,7 +13,7 @@ const error_already_handled = "---- error handled ---";
 const file_cache: {[key: string]: Promise<SoundEntry> & { timestamp: number }} = {};
 let warned = false;
 
-function get_song_entry(file: SoundFile) : Promise<SoundEntry> {
+function getSongEntry(file: SoundFile) : Promise<SoundEntry> {
     if(typeof file_cache[file.path] === "object") {
         return new Promise<SoundEntry>((resolve, reject) => {
             if(file_cache[file.path].timestamp + 60 * 1000 > Date.now()) {
@@ -26,12 +26,12 @@ function get_song_entry(file: SoundFile) : Promise<SoundEntry> {
                 if(file_cache[file.path].timestamp + 60 * 1000 > original_timestamp)
                     return Promise.reject(error);
                 delete file_cache[file.path];
-                return get_song_entry(file);
+                return getSongEntry(file);
             });
         });
     }
 
-    const context = aplayer.context();
+    const context = getAudioBackend().getAudioContext();
     if(!context) throw tr("audio context not initialized");
 
     return (file_cache[file.path] = Object.assign((async () => {
@@ -78,8 +78,8 @@ function get_song_entry(file: SoundFile) : Promise<SoundEntry> {
     })(), { timestamp: Date.now() }));
 }
 
-export async function play_sound(file: SoundFile) : Promise<void> {
-    const entry = get_song_entry(file);
+async function replaySound(file: SoundFile) : Promise<void> {
+    const entry = getSongEntry(file);
     if(!entry) {
         logWarn(LogCategory.AUDIO, tr("Failed to replay sound %s because it could not be resolved."), file.path);
         return;
@@ -89,7 +89,7 @@ export async function play_sound(file: SoundFile) : Promise<void> {
         const sound = await entry;
 
         if(sound.cached) {
-            const context = aplayer.context();
+            const context = getAudioBackend().getAudioContext();
             if(!context) throw tr("audio context not initialized (this error should never show up!)");
 
             const player = context.createBufferSource();
@@ -126,4 +126,11 @@ export async function play_sound(file: SoundFile) : Promise<void> {
         logWarn(LogCategory.AUDIO, tr("Failed to replay sound %s: %o"), file.path, error);
         return;
     }
+}
+
+export class WebSoundBackend implements SoundBackend {
+    playSound(sound: SoundFile): Promise<void> {
+        return replaySound(sound);
+    }
+
 }

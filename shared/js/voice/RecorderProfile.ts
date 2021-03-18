@@ -1,15 +1,13 @@
-import * as log from "../log";
 import {LogCategory, logDebug, logError, logWarn} from "../log";
 import {AbstractInput, FilterMode} from "../voice/RecorderBase";
-import {KeyDescriptor, KeyHook} from "../PPTListener";
+import {getKeyBoard, KeyDescriptor, KeyHook} from "../PPTListener";
 import {Settings, settings} from "../settings";
 import {ConnectionHandler} from "../ConnectionHandler";
-import * as aplayer from "tc-backend/audio/player";
-import * as ppt from "tc-backend/ppt";
-import {getRecorderBackend, IDevice} from "../audio/recorder";
+import {getRecorderBackend, InputDevice} from "../audio/Recorder";
 import {FilterType, StateFilter, ThresholdFilter} from "../voice/Filter";
 import { tr } from "tc-shared/i18n/localize";
 import {Registry} from "tc-shared/events";
+import {getAudioBackend} from "tc-shared/audio/Player";
 
 export type VadType = "threshold" | "push_to_talk" | "active";
 export interface RecorderProfileConfig {
@@ -85,7 +83,7 @@ export class RecorderProfile {
         this.volatile = typeof(volatile) === "boolean" ? volatile : false;
 
         this.pptHook = {
-            callback_release: () => {
+            callbackRelease: () => {
                 if(this.pptTimeout)
                     clearTimeout(this.pptTimeout);
 
@@ -94,14 +92,12 @@ export class RecorderProfile {
                 }, Math.max(this.config.vad_push_to_talk.delay, 0));
             },
 
-            callback_press: () => {
+            callbackPress: () => {
                 if(this.pptTimeout)
                     clearTimeout(this.pptTimeout);
 
                 this.registeredFilter["ppt-gate"]?.setState(false);
             },
-
-            cancel: false
         } as KeyHook;
         this.pptHookRegistered = false;
     }
@@ -125,7 +121,7 @@ export class RecorderProfile {
             /* default values */
             this.config = {
                 version: 1,
-                device_id: IDevice.DefaultDeviceId,
+                device_id: InputDevice.DefaultDeviceId,
                 volume: 100,
 
                 vad_threshold: {
@@ -145,7 +141,7 @@ export class RecorderProfile {
             Object.assign(this.config, config || {});
         }
 
-        aplayer.on_ready(async () => {
+        getAudioBackend().executeWhenInitialized(async () => {
             await getRecorderBackend().getDeviceList().awaitInitialized();
 
             await this.initializeInput();
@@ -185,7 +181,7 @@ export class RecorderProfile {
         if(this.config.device_id) {
             await this.input.setDeviceId(this.config.device_id);
         } else {
-            await this.input.setDeviceId(IDevice.DefaultDeviceId);
+            await this.input.setDeviceId(InputDevice.DefaultDeviceId);
         }
     }
 
@@ -201,15 +197,12 @@ export class RecorderProfile {
         }
 
         if(this.pptHookRegistered) {
-            ppt.unregister_key_hook(this.pptHook);
+            getKeyBoard().unregisterHook(this.pptHook);
             this.pptHookRegistered = false;
         }
 
-        for(const key of ["key_alt", "key_ctrl", "key_shift", "key_windows", "key_code"]) {
-            this.pptHook[key] = this.config.vad_push_to_talk[key];
-        }
-
-        ppt.register_key_hook(this.pptHook);
+        Object.assign(this.pptHook, this.getPushToTalkKey());
+        getKeyBoard().registerHook(this.pptHook);
         this.pptHookRegistered = true;
 
         this.registeredFilter["ppt-gate"]?.setState(true);
@@ -227,7 +220,7 @@ export class RecorderProfile {
         this.registeredFilter["ppt-gate"].setEnabled(false);
 
         if(this.pptHookRegistered) {
-            ppt.unregister_key_hook(this.pptHook);
+            getKeyBoard().unregisterHook(this.pptHook);
             this.pptHookRegistered = false;
         }
 
@@ -251,10 +244,8 @@ export class RecorderProfile {
             filter.setEnabled(true);
             filter.setState(true); /* by default set filtered */
 
-            for(const key of ["key_alt", "key_ctrl", "key_shift", "key_windows", "key_code"])
-                this.pptHook[key] = this.config.vad_push_to_talk[key];
-
-            ppt.register_key_hook(this.pptHook);
+            Object.assign(this.pptHook, this.getPushToTalkKey());
+            getKeyBoard().registerHook(this.pptHook);
             this.pptHookRegistered = true;
         } else if(this.config.vad_type === "active") {
             /* we don't have to initialize any filters */
@@ -311,10 +302,27 @@ export class RecorderProfile {
         this.save();
     }
 
-    getPushToTalkKey() : KeyDescriptor { return this.config.vad_push_to_talk; }
+    getPushToTalkKey() : KeyDescriptor {
+        return {
+            keyCode: this.config.vad_push_to_talk.key_code,
+
+            keyAlt: this.config.vad_push_to_talk.key_alt,
+            keyCtrl: this.config.vad_push_to_talk.key_ctrl,
+            keyShift: this.config.vad_push_to_talk.key_shift,
+            keyWindows: this.config.vad_push_to_talk.key_windows,
+        }
+    }
+
     setPushToTalkKey(key: KeyDescriptor) {
-        for(const _key of ["key_alt", "key_ctrl", "key_shift", "key_windows", "key_code"])
-            this.config.vad_push_to_talk[_key] = key[_key];
+        this.config.vad_push_to_talk = {
+            delay: this.config.vad_push_to_talk.delay,
+            key_code: key.keyCode,
+
+            key_alt: key.keyAlt,
+            key_ctrl: key.keyCtrl,
+            key_shift: key.keyShift,
+            key_windows: key.keyWindows
+        };
 
         this.reinitializePPTHook();
         this.save();
@@ -329,8 +337,8 @@ export class RecorderProfile {
         this.save();
     }
 
-    getDeviceId() : string | typeof IDevice.DefaultDeviceId | typeof IDevice.NoDeviceId { return this.config.device_id; }
-    setDevice(device: IDevice | typeof IDevice.DefaultDeviceId | typeof IDevice.NoDeviceId) : Promise<void> {
+    getDeviceId() : string | typeof InputDevice.DefaultDeviceId | typeof InputDevice.NoDeviceId { return this.config.device_id; }
+    setDevice(device: InputDevice | typeof InputDevice.DefaultDeviceId | typeof InputDevice.NoDeviceId) : Promise<void> {
         let deviceId;
         if(typeof device === "object") {
             deviceId = device.deviceId;

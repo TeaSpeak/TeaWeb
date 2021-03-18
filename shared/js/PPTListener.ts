@@ -1,4 +1,5 @@
 import { tr } from "./i18n/localize";
+import {LogCategory, logTrace} from "tc-shared/log";
 
 export enum KeyCode {
     KEY_CANCEL = 3,
@@ -134,57 +135,199 @@ export enum SpecialKey {
 }
 
 export interface KeyDescriptor {
-    key_code: string;
+    keyCode: string;
 
-    key_ctrl: boolean;
-    key_windows: boolean;
-    key_shift: boolean;
-    key_alt: boolean;
+    keyCtrl: boolean;
+    keyWindows: boolean;
+    keyShift: boolean;
+    keyAlt: boolean;
 }
 
 export interface KeyEvent extends KeyDescriptor {
     readonly type: EventType;
-
     readonly key: string;
 }
 
 export interface KeyHook extends KeyDescriptor {
-    cancel: boolean;
-
-    callback_press: () => any;
-    callback_release: () => any;
+    callbackPress: () => any;
+    callbackRelease: () => any;
 }
 
-export function key_description(key: KeyDescriptor) {
+export interface KeyBoardBackend {
+    registerListener(listener: (event: KeyEvent) => void);
+    unregisterListener(listener: (event: KeyEvent) => void);
+
+    registerHook(hook: KeyHook);
+    unregisterHook(hook: KeyHook);
+
+    isKeyPressed(key: string | SpecialKey) : boolean;
+}
+
+export class AbstractKeyBoard implements KeyBoardBackend {
+    protected readonly registeredListener: ((event: KeyEvent) => void)[];
+    protected readonly activeSpecialKeys: { [key: number] : boolean };
+    protected readonly activeKeys;
+
+    protected registeredKeyHooks: KeyHook[] = [];
+    protected activeKeyHooks: KeyHook[] = [];
+
+    constructor() {
+        this.activeSpecialKeys = {};
+        this.activeKeys = {};
+        this.registeredListener = [];
+    }
+
+    protected destroy() {}
+
+    isKeyPressed(key: string | SpecialKey): boolean {
+        if(typeof(key) === 'string') {
+            return typeof this.activeKeys[key] !== "undefined";
+        }
+
+        return this.activeSpecialKeys[key];
+    }
+
+    registerHook(hook: KeyHook) {
+        this.registeredKeyHooks.push(hook);
+    }
+
+    unregisterHook(hook: KeyHook) {
+        this.registeredKeyHooks.remove(hook);
+        this.activeKeyHooks.remove(hook);
+    }
+
+    registerListener(listener: (event: KeyEvent) => void) {
+        this.registeredListener.push(listener);
+    }
+
+    unregisterListener(listener: (event: KeyEvent) => void) {
+        this.registeredListener.remove(listener);
+    }
+
+    protected fireKeyEvent(event: KeyEvent) {
+        //console.debug("Trigger key event %o", key_event);
+        for(const listener of this.registeredListener) {
+            listener(event);
+        }
+
+        if(event.type == EventType.KEY_TYPED) {
+            return;
+        }
+
+        let oldHooks = [...this.activeKeyHooks];
+        let newHooks = [];
+
+        this.activeSpecialKeys[SpecialKey.ALT] = event.keyAlt;
+        this.activeSpecialKeys[SpecialKey.CTRL] = event.keyCtrl;
+        this.activeSpecialKeys[SpecialKey.SHIFT] = event.keyShift;
+        this.activeSpecialKeys[SpecialKey.WINDOWS] = event.keyWindows;
+
+        delete this.activeKeys[event.keyCode];
+        if(event.type == EventType.KEY_PRESS) {
+            this.activeKeys[event.keyCode] = event;
+
+            for(const hook of this.registeredKeyHooks) {
+                if(hook.keyCode !== event.keyCode) {
+                    continue;
+                }
+
+                if(hook.keyAlt != event.keyAlt) {
+                    continue;
+                }
+
+                if(hook.keyCtrl != event.keyCtrl) {
+                    continue;
+                }
+
+                if(hook.keyShift != event.keyShift) {
+                    continue;
+                }
+
+                if(hook.keyWindows != event.keyWindows) {
+                    continue;
+                }
+
+                newHooks.push(hook);
+                if(!oldHooks.remove(hook) && hook.callbackPress) {
+                    hook.callbackPress();
+                    logTrace(LogCategory.GENERAL, tr("Trigger key press for %o!"), hook);
+                }
+            }
+        }
+
+        //We have a new situation
+        for(const hook of oldHooks) {
+            //Do not test for meta key states because they could differ in a key release event
+            if(hook.keyCode === event.keyCode) {
+                if(hook.callbackRelease) {
+                    hook.callbackRelease();
+                    logTrace(LogCategory.GENERAL, tr("Trigger key release for %o!"), hook);
+                }
+            } else {
+                newHooks.push(hook);
+            }
+        }
+
+        this.activeKeyHooks = newHooks;
+    }
+
+    protected resetKeyboardState() {
+        this.activeSpecialKeys[SpecialKey.ALT] = false;
+        this.activeSpecialKeys[SpecialKey.CTRL] = false;
+        this.activeSpecialKeys[SpecialKey.SHIFT] = false;
+        this.activeSpecialKeys[SpecialKey.WINDOWS] = false;
+
+        for(const code of Object.keys(this.activeKeys)) {
+            delete this.activeKeys[code];
+        }
+
+        for(const hook of this.activeKeyHooks) {
+            hook.callbackRelease();
+        }
+
+        this.activeKeyHooks = [];
+    }
+}
+
+let keyBoardBackend: KeyBoardBackend;
+export function getKeyBoard() : KeyBoardBackend {
+    return keyBoardBackend;
+}
+
+export function setKeyBoardBackend(newBackend: KeyBoardBackend) {
+    keyBoardBackend = newBackend;
+}
+
+export function getKeyDescription(key: KeyDescriptor) {
     let result = "";
-    if(key.key_shift) {
+    if(key.keyShift) {
         result += " + " + tr("Shift");
     }
 
-    if(key.key_alt) {
+    if(key.keyAlt) {
         result += " + " + tr("Alt");
     }
 
-    if(key.key_ctrl) {
+    if(key.keyCtrl) {
         result += " + " + tr("CTRL");
     }
 
-    if(key.key_windows) {
+    if(key.keyWindows) {
         result += " + " + tr("Win");
     }
 
-    if(key.key_code) {
-        let key_name;
-        if(key.key_code.startsWith("Key")) {
-            key_name = key.key_code.substr(3);
-        } else if(key.key_code.startsWith("Digit")) {
-            key_name = key.key_code.substr(5);
-        } else if(key.key_code.startsWith("Numpad")) {
-            key_name = "Numpad " + key.key_code.substr(6);
+    if(key.keyCode) {
+        let keyName;
+        if(key.keyCode.startsWith("Key")) {
+            keyName = key.keyCode.substr(3);
+        } else if(key.keyCode.startsWith("Digit")) {
+            keyName = key.keyCode.substr(5);
+        } else if(key.keyCode.startsWith("Numpad")) {
+            keyName = "Numpad " + key.keyCode.substr(6);
         } else {
-            key_name = key.key_code;
+            keyName = key.keyCode;
         }
-        result += " + " + key_name;
+        result += " + " + keyName;
     }
     return result ? result.substr(3) : tr("unset");
 }

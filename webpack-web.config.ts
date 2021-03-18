@@ -9,8 +9,6 @@ export = env => config_base.config(env, "web").then(config => {
 
     Object.assign(config.resolve.alias, {
         "tc-shared": path.resolve(__dirname, "shared/js"),
-        "tc-backend/web": path.resolve(__dirname, "web/app"),
-        "tc-backend": path.resolve(__dirname, "web/app"),
     });
 
     return Promise.resolve(config);

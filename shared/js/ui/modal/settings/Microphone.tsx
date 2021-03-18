@@ -1,13 +1,13 @@
-import * as aplayer from "tc-backend/audio/player";
 import * as React from "react";
 import {Registry} from "tc-shared/events";
 import {LevelMeter} from "tc-shared/voice/RecorderBase";
 import {LogCategory, logTrace, logWarn} from "tc-shared/log";
 import {defaultRecorder} from "tc-shared/voice/RecorderProfile";
-import {DeviceListState, getRecorderBackend, IDevice} from "tc-shared/audio/recorder";
+import {DeviceListState, getRecorderBackend, InputDevice} from "tc-shared/audio/Recorder";
 import {Settings, settings} from "tc-shared/settings";
 import {getBackend} from "tc-shared/backend";
 import * as _ from "lodash";
+import {getAudioBackend} from "tc-shared/audio/Player";
 
 export type MicrophoneSetting =
     "volume"
@@ -223,9 +223,9 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
     {
         const currentSelectedDevice = (): SelectedMicrophone => {
             let deviceId = defaultRecorder.getDeviceId();
-            if(deviceId === IDevice.DefaultDeviceId) {
+            if(deviceId === InputDevice.DefaultDeviceId) {
                 return { type: "default" };
-            } else if(deviceId === IDevice.NoDeviceId) {
+            } else if(deviceId === InputDevice.NoDeviceId) {
                 return { type: "none" };
             } else {
                 return { type: "device", deviceId: deviceId };
@@ -233,7 +233,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
         };
 
         events.on("query_devices", event => {
-            if (!aplayer.initialized()) {
+            if (!getAudioBackend().isInitialized()) {
                 events.fire_react("notify_devices", {
                     status: "audio-not-initialized"
                 });
@@ -452,10 +452,8 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
         events.fire("query_devices");
     }));
 
-    if (!aplayer.initialized()) {
-        aplayer.on_ready(() => {
-            events.fire_react("query_devices");
-        });
+    if(!getAudioBackend().isInitialized()) {
+        getAudioBackend().executeWhenInitialized(() => events.fire_react("query_devices"));
     }
 }
 

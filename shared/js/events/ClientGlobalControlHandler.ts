@@ -1,6 +1,5 @@
 import {Registry} from "../events";
 import {ClientGlobalControlEvents} from "../events/GlobalEvents";
-import {Sound} from "../sound/Sounds";
 import {ConnectionHandler} from "../ConnectionHandler";
 import {createErrorModal, createInfoModal, createInputModal} from "../ui/elements/Modal";
 import PermissionType from "../permission/PermissionType";
@@ -20,6 +19,7 @@ import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {spawnEchoTestModal} from "tc-shared/ui/modal/echo-test/Controller";
 import {spawnConnectModalNew} from "tc-shared/ui/modal/connect/Controller";
 import {spawnBookmarkModal} from "tc-shared/ui/modal/bookmarks/Controller";
+import {Sound} from "tc-shared/audio/Sounds";
 
 /*
 function initialize_sounds(event_registry: Registry<ClientGlobalControlEvents>) {

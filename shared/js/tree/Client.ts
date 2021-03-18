@@ -4,7 +4,7 @@ import {ChannelTree} from "./ChannelTree";
 import * as log from "../log";
 import {LogCategory, logDebug, logError, logInfo, LogType} from "../log";
 import {Settings, settings} from "../settings";
-import {Sound} from "../sound/Sounds";
+import {Sound} from "../audio/Sounds";
 import {Group, GroupManager, GroupTarget, GroupType} from "../permission/GroupManager";
 import PermissionType from "../permission/PermissionType";
 import {createErrorModal, createInputModal} from "../ui/elements/Modal";

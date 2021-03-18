@@ -4,11 +4,9 @@ import {AbstractInput, LevelMeter} from "../voice/RecorderBase";
 import {Registry} from "../events";
 import {Settings, settings} from "tc-shared/settings";
 
-export type DeviceQueryResult = {}
-
 export interface AudioRecorderBacked {
     createInput() : AbstractInput;
-    createLevelMeter(device: IDevice) : Promise<LevelMeter>;
+    createLevelMeter(device: InputDevice) : Promise<LevelMeter>;
 
     getDeviceList() : DeviceList;
 
@@ -35,14 +33,14 @@ export interface DeviceListEvents {
 
 export type DeviceListState = "healthy" | "uninitialized" | "no-permissions" | "error";
 
-export interface IDevice {
+export interface InputDevice {
     deviceId: string;
 
     driver: string;
     name: string;
 }
 
-export namespace IDevice {
+export namespace InputDevice {
     export const NoDeviceId = "none";
     export const DefaultDeviceId = "default";
 }
@@ -60,7 +58,7 @@ export interface DeviceList {
     getPermissionState() : PermissionState;
 
     getStatus() : DeviceListState;
-    getDevices() : IDevice[];
+    getDevices() : InputDevice[];
 
     getDefaultDeviceId() : string;
 
@@ -144,7 +142,7 @@ export abstract class AbstractDeviceList implements DeviceList {
     }
 
     abstract getDefaultDeviceId(): string;
-    abstract getDevices(): IDevice[];
+    abstract getDevices(): InputDevice[];
     abstract getEvents(): Registry<DeviceListEvents>;
     abstract isRefreshAvailable(): boolean;
     abstract refresh(): Promise<void>;

@@ -1,8 +1,6 @@
-import * as log from "../log";
 import {LogCategory, logError, logInfo, logWarn} from "../log";
 import {Settings, settings} from "../settings";
 import {ConnectionHandler} from "../ConnectionHandler";
-import * as sbackend from "tc-backend/audio/sounds";
 import { tr } from "tc-shared/i18n/localize";
 
 export enum Sound {
@@ -226,7 +224,6 @@ export async function resolve_sound(sound: Sound) : Promise<SoundHandle> {
 }
 
 export let manager: SoundManager;
-
 export class SoundManager {
     private readonly _handle: ConnectionHandler;
     private _playing_sounds: {[key: string]:number} = {};
@@ -256,7 +253,7 @@ export class SoundManager {
             }
 
             this._playing_sounds[handle.filename] = (this._playing_sounds[handle.filename] || 0) + 1;
-            sbackend.play_sound({
+            getSoundBackend().playSound({
                 path: "audio/" + handle.filename,
                 volume: volume * master_volume
             }).then(() => {
@@ -275,4 +272,17 @@ export class SoundManager {
                 options.callback(false);
         });
     }
+}
+
+export interface SoundBackend {
+    playSound(sound: SoundFile) : Promise<void>;
+}
+let soundBackend: SoundBackend;
+
+export function getSoundBackend() {
+    return soundBackend;
+}
+
+export function setSoundBackend(newSoundBackend: SoundBackend) {
+    soundBackend = newSoundBackend;
 }

@@ -9,9 +9,9 @@ import {RemoteRTPAudioTrack, RemoteRTPTrackState, RemoteRTPVideoTrack, TrackClie
 import {SdpCompressor, SdpProcessor} from "./SdpUtils";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {WhisperTarget} from "tc-shared/voice/VoiceWhisper";
-import {globalAudioContext} from "tc-backend/audio/player";
 import {VideoBroadcastConfig, VideoBroadcastType} from "tc-shared/connection/VideoConnection";
 import {Settings, settings} from "tc-shared/settings";
+import {getAudioBackend} from "tc-shared/audio/Player";
 
 const kSdpCompressionMode = 1;
 
@@ -144,7 +144,7 @@ function getIdleTrack(kind: "video" | "audio") : MediaStreamTrack | null {
             return dummyVideoTrack;
         } else if(kind === "audio") {
             if(!dummyAudioTrack) {
-                const dest = globalAudioContext().createMediaStreamDestination();
+                const dest = getAudioBackend().getAudioContext().createMediaStreamDestination();
                 dummyAudioTrack = dest.stream.getAudioTracks()[0];
             }
 

@@ -2,7 +2,7 @@ import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {MenuEntryType} from "tc-shared/ui/elements/ContextMenu";
 import {LogCategory, logDebug, logError, logWarn} from "tc-shared/log";
 import {PermissionType} from "tc-shared/permission/PermissionType";
-import {Sound} from "tc-shared/sound/Sounds";
+import {Sound} from "tc-shared/audio/Sounds";
 import {Group} from "tc-shared/permission/GroupManager";
 import {ServerAddress, ServerEntry} from "./Server";
 import {ChannelEntry, ChannelProperties, ChannelSubscribeMode} from "./Channel";

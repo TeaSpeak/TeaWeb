@@ -1,7 +1,7 @@
 import {Registry} from "tc-shared/events";
 import {LogCategory, logTrace, logWarn} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
-import {globalAudioContext, on_ready} from "tc-backend/audio/player";
+import {getAudioBackend} from "tc-shared/audio/Player";
 
 export interface TrackClientInfo {
     media?: number,
@@ -170,13 +170,13 @@ export class RemoteRTPAudioTrack extends RemoteRTPTrack {
         }
         */
 
-        on_ready(() => {
+        getAudioBackend().executeWhenInitialized(() => {
             if(!this.mediaStream) {
                 /* we've already been destroyed */
                 return;
             }
 
-            const audioContext = globalAudioContext();
+            const audioContext = getAudioBackend().getAudioContext();
             this.audioNode = audioContext.createMediaStreamSource(this.mediaStream);
             this.gainNode = audioContext.createGain();
             this.updateGainNode();

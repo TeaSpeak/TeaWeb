@@ -2,13 +2,12 @@ import {
     AbstractDeviceList,
     DeviceListEvents,
     DeviceListState,
-    IDevice,
+    InputDevice,
     PermissionState
-} from "tc-shared/audio/recorder";
-import * as log from "tc-shared/log";
+} from "tc-shared/audio/Recorder";
 import {LogCategory, logDebug, logError} from "tc-shared/log";
 import {Registry} from "tc-shared/events";
-import {WebIDevice} from "tc-backend/web/audio/Recorder";
+import {WebIDevice} from "./Recorder";
 import * as loader from "tc-loader";
 import {queryMediaPermissions} from "tc-shared/media/Stream";
 import { tr } from "tc-shared/i18n/localize";
@@ -49,7 +48,7 @@ class WebInputDeviceList extends AbstractDeviceList {
         return "default";
     }
 
-    getDevices(): IDevice[] {
+    getDevices(): InputDevice[] {
         return this.devices;
     }
 

@@ -1,12 +1,9 @@
 import * as loader from "tc-loader";
-import {Stage} from "tc-loader";
 import * as bipc from "./ipc/BrowserIPC";
-import * as sound from "./sound/Sounds";
+import * as sound from "./audio/Sounds";
 import * as i18n from "./i18n/localize";
 import {tra} from "./i18n/localize";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
-import * as aplayer from "tc-backend/audio/player";
-import * as ppt from "tc-backend/ppt";
 import * as global_ev_handler from "./events/ClientGlobalControlHandler";
 import {AppParameters, settings, Settings, UrlParameterBuilder, UrlParameterParser} from "tc-shared/settings";
 import {LogCategory, logDebug, logError, logInfo, logWarn} from "tc-shared/log";
@@ -55,6 +52,7 @@ import "./ui/elements/Tab";
 import "./clientservice";
 import "./text/bbcode/InviteController";
 import "./text/bbcode/YoutubeController";
+import {getAudioBackend} from "tc-shared/audio/Player";
 
 assertMainApplication();
 
@@ -73,12 +71,7 @@ async function initialize() {
 
 async function initializeApp() {
     global_ev_handler.initialize(global_client_actions);
-
-    if(!aplayer.initialize()) {
-        console.warn(tr("Failed to initialize audio controller!"));
-    }
-
-    aplayer.on_ready(() => aplayer.set_master_volume(settings.getValue(Settings.KEY_SOUND_MASTER) / 100));
+    getAudioBackend().setMasterVolume(settings.getValue(Settings.KEY_SOUND_MASTER) / 100);
 
     const recorder = new RecorderProfile("default");
     try {
@@ -93,14 +86,6 @@ async function initializeApp() {
         logInfo(LogCategory.AUDIO, tr("Sounds initialized"));
     });
     sound.set_master_volume(settings.getValue(Settings.KEY_SOUND_MASTER_SOUNDS) / 100);
-
-    try {
-        await ppt.initialize();
-    } catch(error) {
-        logError(LogCategory.GENERAL, tr("Failed to initialize ppt!\nError: %o"), error);
-        loader.critical_error(tr("Failed to initialize ppt!"));
-        return;
-    }
 }
 
 /* The native client has received a connect request. */
@@ -200,7 +185,7 @@ async function doHandleConnectRequest(serverAddress: string, serverUniqueId: str
         return { status: "profile-invalid" };
     }
 
-    if(!aplayer.initialized()) {
+    if(!getAudioBackend().isInitialized()) {
         /* Trick the client into clicking somewhere on the site to initialize audio */
         const resultPromise = new Promise<boolean>(resolve => {
             spawnYesNo(tra("Connect to {}", serverAddress), tra("Would you like to connect to {}?", serverAddress), resolve).open();
@@ -211,7 +196,7 @@ async function doHandleConnectRequest(serverAddress: string, serverUniqueId: str
             return { status: "client-aborted" };
         }
 
-        await new Promise(resolve => aplayer.on_ready(resolve));
+        await new Promise(resolve => getAudioBackend().executeWhenInitialized(resolve));
     }
 
     const clientNickname = parameters.getValue(AppParameters.KEY_CONNECT_NICKNAME, undefined);
@@ -403,15 +388,6 @@ const task_teaweb_starter: loader.Task = {
         try {
             await initializeApp();
             main();
-            if(!aplayer.initialized()) {
-                logInfo(LogCategory.VOICE, tr("Initialize audio controller later!"));
-                if(!aplayer.initializeFromGesture) {
-                    console.error(tr("Missing aplayer.initializeFromGesture"));
-                } else {
-                    $(document).one('click', () => aplayer.initializeFromGesture());
-                }
-            }
-
             loader.config.abortAnimationOnFinish = settings.getValue(Settings.KEY_LOADER_ANIMATION_ABORT);
         } catch (ex) {
             console.error(ex.stack);

@@ -5,8 +5,7 @@ import {CommandResult} from "../../../connection/ServerConnectionDeclaration";
 import PermissionType from "../../../permission/PermissionType";
 import {LogCategory, logError, logTrace} from "../../../log";
 import {Entry, MenuEntry, MenuEntryType, spawn_context_menu} from "../../../ui/elements/ContextMenu";
-import * as ppt from "tc-backend/ppt";
-import {SpecialKey} from "../../../PPTListener";
+import {getKeyBoard, SpecialKey} from "../../../PPTListener";
 import {spawnYesNo} from "../../../ui/modal/ModalYesNo";
 import {tr, tra, traj} from "../../../i18n/localize";
 import {
@@ -427,7 +426,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 icon_class: "client-file_refresh"
             });
         } else {
-            const forceDelete = ppt.key_pressed(SpecialKey.SHIFT);
+            const forceDelete = getKeyBoard().isKeyPressed(SpecialKey.SHIFT);
             if (selection.length === 0) {
                 entries.push({
                     type: MenuEntryType.ENTRY,

@@ -1,6 +1,5 @@
 import {createModal} from "../../ui/elements/Modal";
-import {EventType, key_description, KeyEvent} from "../../PPTListener";
-import * as ppt from "tc-backend/ppt";
+import {EventType, getKeyBoard, getKeyDescription, KeyEvent} from "../../PPTListener";
 import {tr} from "tc-shared/i18n/localize";
 
 export function spawnKeySelect(callback: (key?: KeyEvent) => void) {
@@ -27,7 +26,7 @@ export function spawnKeySelect(callback: (key?: KeyEvent) => void) {
             current_key = event;
             current_key_age = Date.now();
 
-            container_key.text(key_description(event));
+            container_key.text(getKeyDescription(event));
             button_save.prop("disabled", false);
         }
     };
@@ -36,7 +35,7 @@ export function spawnKeySelect(callback: (key?: KeyEvent) => void) {
     button_save.on('click', () => {
         if (__build.version !== "web") {
             /* Because pressing the close button is also a mouse action */
-            if (current_key_age + 1000 > Date.now() && current_key.key_code == "MOUSE1")
+            if (current_key_age + 1000 > Date.now() && current_key.keyCode == "MOUSE1")
                 current_key = last_key;
         }
 
@@ -45,8 +44,9 @@ export function spawnKeySelect(callback: (key?: KeyEvent) => void) {
     }).prop("disabled", true);
     button_cancel.on('click', () => modal.close());
 
-    ppt.register_key_listener(listener);
-    modal.close_listener.push(() => ppt.unregister_key_listener(listener));
+    const keyboard = getKeyBoard();
+    keyboard.registerListener(listener);
+    modal.close_listener.push(() => keyboard.unregisterListener(listener));
 
     modal.htmlTag.find(".modal-body").addClass("modal-keyselect modal-green");
     modal.open();

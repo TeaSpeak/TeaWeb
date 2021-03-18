@@ -86,7 +86,7 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
         } else if (this.state.state === "loaded") {
             rightItem = null;
             if (this.state.assignedKey)
-                rightItem = <div className={cssStyle.key}>{ppt.key_description(this.state.assignedKey)}</div>;
+                rightItem = <div className={cssStyle.key}>{ppt.getKeyDescription(this.state.assignedKey)}</div>;
         } else {
             rightItem =
                 <div key={"status-error"} className={this.classList(cssStyle.status, cssStyle.error)}><Translatable

@@ -1,7 +1,7 @@
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {setExternalModalControllerFactory} from "tc-shared/ui/react-elements/external-modal";
-import {ExternalModalController} from "tc-backend/web/ExternalModalFactory";
+import {ExternalModalController} from "../ExternalModalFactory";
 
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     priority: 50,

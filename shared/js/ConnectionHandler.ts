@@ -2,7 +2,7 @@ import {AbstractServerConnection} from "./connection/ConnectionBase";
 import {PermissionManager} from "./permission/PermissionManager";
 import {GroupManager} from "./permission/GroupManager";
 import {ServerSettings, Settings, settings, StaticSettings} from "./settings";
-import {Sound, SoundManager} from "./sound/Sounds";
+import {Sound, SoundManager} from "./audio/Sounds";
 import {ConnectionProfile} from "./profiles/ConnectionProfile";
 import {LogCategory, logError, logInfo, logTrace, logWarn} from "./log";
 import {createErrorModal, createInfoModal, createInputModal, Modal} from "./ui/elements/Modal";

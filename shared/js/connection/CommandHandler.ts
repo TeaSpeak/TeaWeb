@@ -1,6 +1,6 @@
 import {LogCategory, logError, logInfo, logWarn} from "../log";
 import {AbstractServerConnection, CommandOptions, ServerCommand} from "../connection/ConnectionBase";
-import {Sound} from "../sound/Sounds";
+import {Sound} from "../audio/Sounds";
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {createErrorModal, createInfoModal, createInputModal, createModal} from "../ui/elements/Modal";
 import {

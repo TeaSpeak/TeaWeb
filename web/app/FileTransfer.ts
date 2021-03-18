@@ -12,7 +12,6 @@ import {
     TransferSourceType,
     TransferTargetType
 } from "tc-shared/file/Transfer";
-import * as log from "tc-shared/log";
 import {LogCategory, logError} from "tc-shared/log";
 import { tr } from "tc-shared/i18n/localize";
 

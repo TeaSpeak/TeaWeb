@@ -11,12 +11,12 @@ import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {Slider} from "tc-shared/ui/react-elements/Slider";
 import {RadioButton} from "tc-shared/ui/react-elements/RadioButton";
 import {VadType} from "tc-shared/voice/RecorderProfile";
-import {key_description, KeyDescriptor} from "tc-shared/PPTListener";
+import {getKeyDescription, KeyDescriptor} from "tc-shared/PPTListener";
 import {spawnKeySelect} from "tc-shared/ui/modal/ModalKeySelect";
 import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
 import {BoxedInputField} from "tc-shared/ui/react-elements/InputField";
-import {IDevice} from "tc-shared/audio/recorder";
 import {HighlightContainer, HighlightRegion, HighlightText} from "./Heighlight";
+import {InputDevice} from "tc-shared/audio/Recorder";
 
 const cssStyle = require("./Microphone.scss");
 
@@ -128,7 +128,7 @@ const Microphone = (props: { events: Registry<MicrophoneSettingsEvents>, device:
                 <div className={cssStyle.name}>{props.device.name}</div>
             </div>
             <div className={cssStyle.containerActivity}>
-                {props.device.id === IDevice.NoDeviceId ? undefined :
+                {props.device.id === InputDevice.NoDeviceId ? undefined :
                     <ActivityBar key={"a"} events={props.events} deviceId={props.device.id}/>
                 }
             </div>
@@ -401,7 +401,7 @@ const PPTKeyButton = React.memo((props: { events: Registry<MicrophoneSettingsEve
                     props.events.fire("action_set_setting", {setting: "ppt-key", value: key});
                 });
             }}
-        >{key_description(key)}</Button>;
+        >{getKeyDescription(key)}</Button>;
     }
 });
 

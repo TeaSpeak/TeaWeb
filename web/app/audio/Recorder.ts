@@ -1,4 +1,4 @@
-import {AudioRecorderBacked, DeviceList, IDevice,} from "tc-shared/audio/recorder";
+import {AudioRecorderBacked, DeviceList, InputDevice,} from "tc-shared/audio/Recorder";
 import {Registry} from "tc-shared/events";
 import {
     AbstractInput,
@@ -12,12 +12,12 @@ import {
     NodeInputConsumer
 } from "tc-shared/voice/RecorderBase";
 import {LogCategory, logDebug, logWarn} from "tc-shared/log";
-import * as aplayer from "./player";
 import {JAbstractFilter, JStateFilter, JThresholdFilter} from "./RecorderFilter";
 import {Filter, FilterType, FilterTypeClass} from "tc-shared/voice/Filter";
-import {inputDeviceList} from "tc-backend/web/audio/RecorderDeviceList";
+import {inputDeviceList} from "./RecorderDeviceList";
 import {requestMediaStream, stopMediaStream} from "tc-shared/media/Stream";
 import {tr} from "tc-shared/i18n/localize";
+import {getAudioBackend} from "tc-shared/audio/Player";
 
 declare global {
     interface MediaStream {
@@ -25,7 +25,7 @@ declare global {
     }
 }
 
-export interface WebIDevice extends IDevice {
+export interface WebIDevice extends InputDevice {
     groupId: string;
 }
 
@@ -34,7 +34,7 @@ export class WebAudioRecorder implements AudioRecorderBacked {
         return new JavascriptInput();
     }
 
-    async createLevelMeter(device: IDevice): Promise<LevelMeter> {
+    async createLevelMeter(device: InputDevice): Promise<LevelMeter> {
         const meter = new JavascriptLevelMeter(device as any);
         await meter.initialize();
         return meter;
@@ -81,14 +81,14 @@ class JavascriptInput implements AbstractInput {
     constructor() {
         this.events = new Registry<InputEvents>();
 
-        aplayer.on_ready(() => this.handleAudioInitialized());
+        getAudioBackend().executeWhenInitialized(() => this.handleAudioInitialized());
         this.audioScriptProcessorCallback = this.handleAudio.bind(this);
     }
 
     destroy() { }
 
     private handleAudioInitialized() {
-        this.audioContext = aplayer.context();
+        this.audioContext = getAudioBackend().getAudioContext();
         this.audioNodeMute = this.audioContext.createGain();
         this.audioNodeMute.gain.value = 0;
         this.audioNodeMute.connect(this.audioContext.destination);
@@ -179,7 +179,7 @@ class JavascriptInput implements AbstractInput {
 
     private async doStart() : Promise<InputStartError | true> {
         try {
-            if(!aplayer.initialized() || !this.audioContext) {
+            if(!getAudioBackend().isInitialized() || !this.audioContext) {
                 return InputStartError.ESYSTEMUNINITIALIZED;
             }
 
@@ -189,9 +189,9 @@ class JavascriptInput implements AbstractInput {
             this.setState(InputState.INITIALIZING);
 
             let deviceId;
-            if(this.deviceId === IDevice.NoDeviceId) {
+            if(this.deviceId === InputDevice.NoDeviceId) {
                 throw tr("no device selected");
-            } else if(this.deviceId === IDevice.DefaultDeviceId) {
+            } else if(this.deviceId === InputDevice.DefaultDeviceId) {
                 deviceId = undefined;
             } else {
                 deviceId = this.deviceId;
@@ -511,7 +511,7 @@ class JavascriptLevelMeter implements LevelMeter {
         try {
             await new Promise((resolve, reject) => {
                 const timeout = setTimeout(reject, 5000);
-                aplayer.on_ready(() => {
+                getAudioBackend().executeWhenInitialized(() => {
                     clearTimeout(timeout);
                     resolve();
                 });
@@ -519,7 +519,7 @@ class JavascriptLevelMeter implements LevelMeter {
         } catch(error) {
             throw tr("audio context timeout");
         }
-        this._context = aplayer.context();
+        this._context = getAudioBackend().getAudioContext();
         if(!this._context) throw tr("invalid context");
 
         this._gain_node = this._context.createGain();
@@ -591,7 +591,7 @@ class JavascriptLevelMeter implements LevelMeter {
         }
     }
 
-    getDevice(): IDevice {
+    getDevice(): InputDevice {
         return this._device;
     }
 

@@ -1,4 +1,4 @@
-import {IDevice} from "../audio/recorder";
+import {InputDevice} from "../audio/Recorder";
 import {Registry} from "../events";
 import {Filter, FilterType, FilterTypeClass} from "../voice/Filter";
 
@@ -119,7 +119,7 @@ export interface AbstractInput {
 }
 
 export interface LevelMeter {
-    getDevice() : IDevice;
+    getDevice() : InputDevice;
 
     setObserver(callback: (value: number) => any);
 

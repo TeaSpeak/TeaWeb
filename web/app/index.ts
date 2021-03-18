@@ -4,12 +4,7 @@ import "webcrypto-liner";
 import "./index.scss";
 import "./FileTransfer";
 
-import "./hooks/ServerConnection";
-import "./hooks/ExternalModal";
-import "./hooks/AudioRecorder";
-import "./hooks/MenuBar";
-import "./hooks/Video";
-import "./hooks/Dns";
+import "./hooks"
 
 import "./UnloadHandler";
 

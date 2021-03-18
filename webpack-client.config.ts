@@ -9,8 +9,6 @@ export = env => config_base.config(env, "client").then(config => {
 
     Object.assign(config.resolve.alias, {
         "tc-shared": path.resolve(__dirname, "shared/js"),
-        /* backend hasn't declared but its available via "require()" */
-        "tc-backend": path.resolve(__dirname, "shared/backend.d"),
     });
 
     if(!Array.isArray(config.externals))
