@@ -1,80 +1,57 @@
-import {config, critical_error, SourcePath} from "./loader";
+import {config, critical_error, loaderPerformance, SourcePath} from "./loader";
 import {executeParallelLoad, LoadCallback, LoadSyntaxError, ParallelOptions} from "./Utils";
 
-let _script_promises: {[key: string]: Promise<void>} = {};
+export function loadScript(url: SourcePath) : Promise<void> {
+    const givenTimeout = 120 * 1000;
 
-function load_script_url(url: string) : Promise<void> {
-    if(typeof _script_promises[url] === "object") {
-        return _script_promises[url];
-    }
+    const resourceRequest = loaderPerformance.logResourceRequest("script", url);
+    resourceRequest.markEnqueue();
 
-    return (_script_promises[url] = new Promise((resolve, reject) => {
-        const script_tag: HTMLScriptElement = document.createElement("script");
-
-        let error = false;
-        const error_handler = (event: ErrorEvent) => {
-            if(event.filename == script_tag.src && event.message.indexOf("Illegal constructor") == -1) { //Our tag throw an uncaught error
-                if(config.verbose) console.log("msg: %o, url: %o, line: %o, col: %o, error: %o", event.message, event.filename, event.lineno, event.colno, event.error);
-                window.removeEventListener('error', error_handler as any);
-
-                reject(new LoadSyntaxError(event.error));
-                event.preventDefault();
-                error = true;
-            }
-        };
-        window.addEventListener('error', error_handler as any);
+    return new Promise((resolve, reject) => {
+        const scriptTag = document.createElement("script");
+        scriptTag.type = "application/javascript";
+        scriptTag.async = true;
+        scriptTag.defer = true;
 
         const cleanup = () => {
-            script_tag.onerror = undefined;
-            script_tag.onload = undefined;
+            scriptTag.onerror = undefined;
+            scriptTag.onload = undefined;
 
-            clearTimeout(timeout_handle);
-            window.removeEventListener('error', error_handler as any);
+            clearTimeout(timeoutHandle);
         };
-        const timeout_handle = setTimeout(() => {
+
+        const timeoutHandle = setTimeout(() => {
+            resourceRequest.markExecuted({ status: "timeout", givenTimeout: givenTimeout });
             cleanup();
             reject("timeout");
-        }, 120 * 1000);
-        script_tag.type = "application/javascript";
-        script_tag.async = true;
-        script_tag.defer = true;
-        script_tag.onerror = error => {
-            cleanup();
-            script_tag.remove();
-            reject(error);
-        };
-        script_tag.onload = () => {
-            cleanup();
+        }, givenTimeout);
 
-            if(config.verbose) console.debug("Script %o loaded", url);
-            setTimeout(resolve, 100);
+        /* TODO: Test if on syntax error the parameters contain extra info */
+        scriptTag.onerror = () => {
+            resourceRequest.markExecuted({ status: "error-event" });
+            scriptTag.remove();
+            cleanup();
+            reject();
         };
 
-        document.getElementById("scripts").appendChild(script_tag);
+        scriptTag.onload = () => {
+            resourceRequest.markExecuted({ status: "success" });
+            cleanup();
+            resolve();
+        };
 
-        script_tag.src = config.baseUrl + url;
-    })).then(() => {
-        /* cleanup memory */
-        _script_promises[url] = Promise.resolve(); /* this promise does not holds the whole script tag and other memory */
-        return _script_promises[url];
-    }).catch(error => {
-        /* cleanup memory */
-        _script_promises[url] = Promise.reject(error); /* this promise does not holds the whole script tag and other memory */
-        return _script_promises[url];
+        scriptTag.onloadstart = () => {
+        }
+
+        scriptTag.src = config.baseUrl + url;
+        document.getElementById("scripts").appendChild(scriptTag);
+        resourceRequest.markExecuting();
     });
 }
 
-export interface Options {
-    cache_tag?: string;
-}
-
-export async function loadScript(path: SourcePath, options: Options) : Promise<void> {
-    await load_script_url(path + (options.cache_tag || ""));
-}
-
-type MultipleOptions = Options | ParallelOptions;
+type MultipleOptions = ParallelOptions;
 export async function loadScripts(paths: SourcePath[], options: MultipleOptions, callback?: LoadCallback<SourcePath>) : Promise<void> {
-    const result = await executeParallelLoad<SourcePath>(paths, e => loadScript(e, options), e => e, options, callback);
+    const result = await executeParallelLoad<SourcePath>(paths, e => loadScript(e), e => e, options, callback);
     if(result.failed.length > 0) {
         if(config.error) {
             console.error("Failed to load the following scripts:");

@@ -1,5 +1,3 @@
-import {Options} from "./ScriptLoader";
-
 export const getUrlParameter = key => {
     const match = location.search.match(new RegExp("(.*[?&]|^)" + key + "=([^&]+)($|&.*)"));
     if(!match) {
@@ -16,7 +14,7 @@ export class LoadSyntaxError {
     }
 }
 
-export interface ParallelOptions extends Options {
+export interface ParallelOptions {
     maxParallelRequests?: number
 }
 

@@ -1,5 +1,6 @@
 import * as Animation from "../animation";
 import {getUrlParameter} from "./Utils";
+import {LoaderPerformanceLogger} from "./Performance";
 
 export interface ApplicationLoader {
     execute();
@@ -330,3 +331,5 @@ export function critical_error_handler(handler?: ErrorHandler, override?: boolea
 
 /* loaders */
 export type SourcePath = string;
+
+export let loaderPerformance = new LoaderPerformanceLogger();
