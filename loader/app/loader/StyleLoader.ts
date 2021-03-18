@@ -1,18 +1,22 @@
 import {config, critical_error, SourcePath} from "./loader";
-import {load_parallel, LoadCallback, LoadSyntaxError, ParallelOptions, script_name} from "./utils";
+import {executeParallelLoad, LoadCallback, LoadSyntaxError, ParallelOptions} from "./Utils";
 
-let _style_promises: {[key: string]: Promise<void>} = {};
+let loadedStyles: {[key: string]: Promise<void>} = {};
 
 function load_style_url(url: string) : Promise<void> {
-    if(typeof _style_promises[url] === "object")
-        return _style_promises[url];
+    if(typeof loadedStyles[url] === "object") {
+        return loadedStyles[url];
+    }
 
-    return (_style_promises[url] = new Promise((resolve, reject) => {
+    return (loadedStyles[url] = new Promise((resolve, reject) => {
         const tag: HTMLLinkElement = document.createElement("link");
 
         let error = false;
         const error_handler = (event: ErrorEvent) => {
-            if(config.verbose) console.log("msg: %o, url: %o, line: %o, col: %o, error: %o", event.message, event.filename, event.lineno, event.colno, event.error);
+            if(config.verbose) {
+                console.log("msg: %o, url: %o, line: %o, col: %o, error: %o", event.message, event.filename, event.lineno, event.colno, event.error);
+            }
+
             if(event.filename == tag.href) { //FIXME!
                 window.removeEventListener('error', error_handler as any);
 
@@ -42,8 +46,9 @@ function load_style_url(url: string) : Promise<void> {
         tag.onerror = error => {
             cleanup();
             tag.remove();
-            if(config.error)
+            if(config.error) {
                 console.error("File load error for file %s: %o", url, error);
+            }
             reject("failed to load file " + url);
         };
         tag.onload = () => {
@@ -80,14 +85,14 @@ function load_style_url(url: string) : Promise<void> {
 
         document.getElementById("style").appendChild(tag);
         tag.href = config.baseUrl + url;
-    })).then(result => {
+    })).then(() => {
         /* cleanup memory */
-        _style_promises[url] = Promise.resolve(); /* this promise does not holds the whole script tag and other memory */
-        return _style_promises[url];
+        loadedStyles[url] = Promise.resolve(); /* this promise does not holds the whole script tag and other memory */
+        return loadedStyles[url];
     }).catch(error => {
         /* cleanup memory */
-        _style_promises[url] = Promise.reject(error); /* this promise does not holds the whole script tag and other memory */
-        return _style_promises[url];
+        loadedStyles[url] = Promise.reject(error); /* this promise does not holds the whole script tag and other memory */
+        return loadedStyles[url];
     });
 }
 
@@ -95,39 +100,18 @@ export interface Options {
     cache_tag?: string;
 }
 
-export async function load(path: SourcePath, options: Options) : Promise<void> {
-    if(Array.isArray(path)) { //We have fallback scripts
-        return load(path[0], options).catch(error => {
-            if(error instanceof LoadSyntaxError)
-                return Promise.reject(error);
-
-            if(path.length > 1)
-                return load(path.slice(1), options);
-
-            return Promise.reject(error);
-        });
-    } else {
-        const source = typeof(path) === "string" ? {url: path, depends: []} : path;
-        if(source.url.length == 0) return Promise.resolve();
-
-        /* await depends */
-        for(const depend of source.depends) {
-            if(!_style_promises[depend])
-                throw "Missing dependency " + depend;
-            await _style_promises[depend];
-        }
-        await load_style_url(source.url + (options.cache_tag || ""));
-    }
+export async function loadStyle(path: SourcePath, options: Options) : Promise<void> {
+    await load_style_url(path + (options.cache_tag || ""));
 }
 
 export type MultipleOptions = Options | ParallelOptions;
-export async function load_multiple(paths: SourcePath[], options: MultipleOptions, callback?: LoadCallback<SourcePath>) : Promise<void> {
-    const result = await load_parallel<SourcePath>(paths, e => load(e, options), e => script_name(e, false), options, callback);
+export async function loadStyles(paths: SourcePath[], options: MultipleOptions, callback?: LoadCallback<SourcePath>) : Promise<void> {
+    const result = await executeParallelLoad<SourcePath>(paths, e => loadStyle(e, options), e => e, options, callback);
     if(result.failed.length > 0) {
         if(config.error) {
             console.error("Failed to load the following style sheets:");
             for(const style of result.failed) {
-                const sname = script_name(style.request, false);
+                const sname = style.request;
                 if(style.error instanceof LoadSyntaxError) {
                     console.log(" - %s: %o", sname, style.error.source);
                 } else {
@@ -136,7 +120,7 @@ export async function load_multiple(paths: SourcePath[], options: MultipleOption
             }
         }
 
-        critical_error("Failed to load style " + script_name(result.failed[0].request, true) + " <br>" + "View the browser console for more information!");
-        throw "failed to load style " + script_name(result.failed[0].request, false);
+        critical_error("Failed to load style <code>" + result.failed[0].request + "</code><br>" + "View the browser console for more information!");
+        throw "failed to load style " + result.failed[0].request;
     }
 }

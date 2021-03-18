@@ -1,6 +1,6 @@
 import * as loader from "../loader/loader";
 import {Stage} from "../loader/loader";
-import {BrowserInfo, detect as detectBrowser,} from "detect-browser";
+import {detect as detectBrowser} from "detect-browser";
 
 loader.register_task(Stage.SETUP, {
     name: "app init",

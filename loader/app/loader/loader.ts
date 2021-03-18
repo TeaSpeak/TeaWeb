@@ -1,7 +1,5 @@
-import * as script_loader from "./script_loader";
-import * as style_loader from "./style_loader";
 import * as Animation from "../animation";
-import {getUrlParameter} from "./utils";
+import {getUrlParameter} from "./Utils";
 
 export interface ApplicationLoader {
     execute();
@@ -76,29 +74,8 @@ export enum Stage {
     DONE
 }
 
-let cache_tag: string | undefined;
 let currentStage: Stage = undefined;
 const tasks: {[key:number]: InternalTask[]} = {};
-
-/* test if all files shall be load from cache or fetch again */
-function loader_cache_tag() {
-    if(__build.mode === "debug") {
-        cache_tag = "?_ts=" + Date.now();
-        return;
-    }
-
-    const cached_version = localStorage.getItem("cached_version");
-    if(!cached_version || cached_version !== __build.version) {
-        register_task(Stage.LOADED, {
-            priority: 0,
-            name: "cached version updater",
-            function: async () => {
-                localStorage.setItem("cached_version", __build.version);
-            }
-        });
-    }
-    cache_tag = "?_version=" + __build.version;
-}
 
 export type ModuleMapping = {
     application: string,
@@ -174,22 +151,23 @@ export function setCurrentTaskName(taskId: number, name: string) {
 }
 
 export async function execute(customLoadingAnimations: boolean) {
-    if(!await Animation.initialize(customLoadingAnimations))
+    if(!await Animation.initialize(customLoadingAnimations)) {
         return;
+    }
 
-    loader_cache_tag();
-
-    const load_begin = Date.now();
+    const timestampBegin = Date.now();
 
     let begin: number = 0;
     let end: number = Date.now();
-    while(currentStage <= Stage.LOADED || typeof(currentStage) === "undefined") {
+    while(currentStage <= Stage.LOADED || typeof currentStage === "undefined") {
 
         let pendingTasks: InternalTask[] = [];
         while((tasks[currentStage] || []).length > 0) {
             if(pendingTasks.length == 0 || pendingTasks[0].priority == tasks[currentStage][0].priority) {
                 pendingTasks.push(tasks[currentStage].pop());
-            } else break;
+            } else {
+                break;
+            }
         }
 
         const errors: {
@@ -282,7 +260,7 @@ export async function execute(customLoadingAnimations: boolean) {
     }
 
     if(config.verbose)
-        console.debug("[loader] finished loader. (Total time: %dms)", Date.now() - load_begin);
+        console.debug("[loader] finished loader. (Total time: %dms)", Date.now() - timestampBegin);
 
     Animation.finalize(config.abortAnimationOnFinish);
 }
@@ -351,79 +329,4 @@ export function critical_error_handler(handler?: ErrorHandler, override?: boolea
 }
 
 /* loaders */
-export type DependSource = {
-    url: string;
-    depends: string[];
-}
-export type SourcePath = string | DependSource | string[];
-
-export const scripts = script_loader;
-export const style = style_loader;
-
-/* Hello World message */
-{
-    const clog = console.log;
-    const print_security = () => {
-        {
-            const css = [
-                "display: block",
-                "text-align: center",
-                "font-size: 42px",
-                "font-weight: bold",
-                "-webkit-text-stroke: 2px black",
-                "color: red"
-            ].join(";");
-            clog("%c ", "font-size: 100px;");
-            clog("%cSecurity warning:", css);
-        }
-        {
-            const css = [
-                "display: block",
-                "text-align: center",
-                "font-size: 18px",
-                "font-weight: bold"
-            ].join(";");
-
-            clog("%cPasting anything in here could give attackers access to your data.", css);
-            clog("%cUnless you understand exactly what you are doing, close this window and stay safe.", css);
-            clog("%c ", "font-size: 100px;");
-        }
-    };
-
-    /* print the hello world */
-    {
-        const css = [
-            "display: block",
-            "text-align: center",
-            "font-size: 72px",
-            "font-weight: bold",
-            "-webkit-text-stroke: 2px black",
-            "color: #18BC9C"
-        ].join(";");
-        clog("%cHey, hold on!", css);
-    }
-    {
-        const css = [
-            "display: block",
-            "text-align: center",
-            "font-size: 26px",
-            "font-weight: bold"
-        ].join(";");
-
-        const css_2 = [
-            "display: block",
-            "text-align: center",
-            "font-size: 26px",
-            "font-weight: bold",
-            "color: blue"
-        ].join(";");
-
-        const display_detect = /./;
-        display_detect.toString = function() { print_security(); return ""; };
-
-        clog("%cLovely to see you using and debugging the TeaSpeak-Web client.", css);
-        clog("%cIf you have some good ideas or already done some incredible changes,", css);
-        clog("%cyou'll be may interested to share them here: %chttps://github.com/TeaSpeak/TeaWeb", css, css_2);
-        clog("%c ", display_detect);
-    }
-}
+export type SourcePath = string;

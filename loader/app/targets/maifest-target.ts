@@ -2,7 +2,7 @@ import "./shared";
 import * as loader from "../loader/loader";
 import {ApplicationLoader, Stage} from "../loader/loader";
 import {loadManifest, loadManifestTarget} from "../maifest";
-import {getUrlParameter} from "../loader/utils";
+import {getUrlParameter} from "../loader/Utils";
 
 export default class implements ApplicationLoader {
     execute() {

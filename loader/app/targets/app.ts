@@ -3,21 +3,13 @@ import * as loader from "../loader/loader";
 import {ApplicationLoader} from "../loader/loader";
 import {loadManifest, loadManifestTarget} from "../maifest";
 
-/* all javascript loaders */
-const loader_javascript = {
-    load_scripts: async taskId => {
-        loader.setCurrentTaskName(taskId, "manifest");
-        await loadManifest();
-        await loadManifestTarget(__build.entry_chunk_name, taskId);
-    }
-};
-
 loader.register_task(loader.Stage.INITIALIZING, {
     name: "secure tester",
     function: async () => {
         /* we need https or localhost to use some things like the storage API */
-        if(typeof isSecureContext === "undefined")
+        if(typeof isSecureContext === "undefined") {
             (window as any)["isSecureContext"] = location.protocol !== 'https:' || location.hostname === 'localhost';
+        }
 
         if(!isSecureContext) {
             loader.critical_error("TeaWeb cant run on unsecured sides.", "App requires to be loaded via HTTPS!");
@@ -28,8 +20,12 @@ loader.register_task(loader.Stage.INITIALIZING, {
 });
 
 loader.register_task(loader.Stage.JAVASCRIPT, {
-    name: "scripts",
-    function: loader_javascript.load_scripts,
+    name: "manifest",
+    function: async taskId => {
+        loader.setCurrentTaskName(taskId, "manifest");
+        await loadManifest();
+        await loadManifestTarget(__build.entry_chunk_name, taskId);
+    },
     priority: 10
 });
 

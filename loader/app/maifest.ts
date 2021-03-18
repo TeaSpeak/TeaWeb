@@ -1,8 +1,9 @@
 import * as loader from "./loader/loader";
 import {config} from "./loader/loader";
-import {script_name} from "./loader/utils";
+import {loadStyles} from "./loader/StyleLoader";
+import {loadScripts} from "./loader/ScriptLoader";
 
-export interface TeaManifest {
+export interface ApplicationManifest {
     version: number;
 
     chunks: {
@@ -24,15 +25,17 @@ export interface TeaManifest {
     };
 }
 
-let manifest: TeaManifest;
-export async function loadManifest() : Promise<TeaManifest> {
+let manifest: ApplicationManifest;
+export async function loadManifest() : Promise<ApplicationManifest> {
     if(manifest) {
         return manifest;
     }
 
     try {
         const response = await fetch(config.baseUrl + "/manifest.json?_date=" + Date.now());
-        if(!response.ok) throw response.status + " " + response.statusText;
+        if(!response.ok) {
+            throw response.status + " " + response.statusText;
+        }
 
         manifest = await response.json();
     } catch(error) {
@@ -40,8 +43,10 @@ export async function loadManifest() : Promise<TeaManifest> {
         loader.critical_error("Failed to load manifest.json", error);
         throw "failed to load manifest.json";
     }
-    if(manifest.version !== 2)
+
+    if(manifest.version !== 2) {
         throw "invalid manifest version";
+    }
 
     return manifest;
 }
@@ -51,30 +56,31 @@ export async function loadManifestTarget(chunkName: string, taskId: number) {
         loader.critical_error("Missing entry chunk in manifest.json", "Chunk " + chunkName + " is missing.");
         throw "missing entry chunk";
     }
+
     loader.module_mapping().push({
         application: chunkName,
         modules: manifest.chunks[chunkName].modules
     });
 
-    loader.style.load_multiple(manifest.chunks[chunkName].css_files.map(e => e.file), {
+    await loadStyles(manifest.chunks[chunkName].css_files.map(e => e.file), {
         cache_tag: undefined,
-        max_parallel_requests: 4
+        maxParallelRequests: 4
     }, (entry, state) => {
-        if(state !== "loading") {
+        if (state !== "loading") {
             return;
         }
 
-        loader.setCurrentTaskName(taskId, script_name(entry, false));
+        loader.setCurrentTaskName(taskId, entry);
     });
 
-    await loader.scripts.load_multiple(manifest.chunks[chunkName].files.map(e => e.file), {
+    await loadScripts(manifest.chunks[chunkName].files.map(e => e.file), {
         cache_tag: undefined,
-        max_parallel_requests: 4
+        maxParallelRequests: 4
     }, (script, state) => {
         if(state !== "loading") {
             return;
         }
 
-        loader.setCurrentTaskName(taskId, script_name(script, false));
+        loader.setCurrentTaskName(taskId, script);
     });
 }
