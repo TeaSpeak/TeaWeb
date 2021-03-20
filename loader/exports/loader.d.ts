@@ -24,7 +24,7 @@ export let config: Config;
 export type Task = {
     name: string,
     priority: number, /* tasks with the same priority will be executed in sync */
-    function: () => Promise<void>
+    function: (taskId: number) => Promise<void>
 };
 export enum Stage {
     /*
@@ -87,3 +87,4 @@ export type ErrorHandler = (message: string, detail: string) => void;
 export function critical_error(message: string, detail?: string);
 export function critical_error_handler(handler?: ErrorHandler, override?: boolean);
 export function hide_overlay();
+export function setCurrentTaskName(taskId: number, name: string);

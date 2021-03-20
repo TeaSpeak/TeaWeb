@@ -66,7 +66,7 @@ export class InternalModalInstance implements ModalInstanceController {
         await new Promise(resolve => {
             ReactDOM.render(
                 <PageModalRenderer modalInstance={this.modalInstance} onBackdropClicked={this.getCloseCallback()} ref={this.rendererInstance}>
-                    <ModalFrameRenderer>
+                    <ModalFrameRenderer windowed={false}>
                         <ModalFrameTopRenderer
                             replacePageTitle={false}
                             modalInstance={this.modalInstance}

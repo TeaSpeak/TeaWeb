@@ -316,7 +316,7 @@ export function select_translation(repository: TranslationRepository, entry: Rep
 }
 
 /* ATTENTION: This method is called before most other library initialisations! */
-export async function initialize() {
+export async function initializeI18N() {
     const rcfg = config.repository_config(); /* initialize */
     const cfg = config.translation_config();
 

@@ -10,9 +10,11 @@ import {
 } from "tc-shared/ui/react-elements/modal/Definitions";
 import {Registry} from "tc-events";
 import {findRegisteredModal, RegisteredModal} from "tc-shared/ui/react-elements/modal/Registry";
-import {spawnExternalModal} from "tc-shared/ui/react-elements/external-modal";
-import {InternalModalInstance} from "tc-shared/ui/react-elements/modal/internal";
+import {assertMainApplication} from "tc-shared/ui/utils";
+import {InternalModalInstance} from "./internal";
+import {ExternalModalController} from "./external/Controller";
 
+assertMainApplication();
 export class GenericModalController<T extends keyof ModalConstructorArguments> implements ModalController {
     private readonly events: Registry<ModalEvents>;
 
@@ -66,7 +68,7 @@ export class GenericModalController<T extends keyof ModalConstructorArguments> i
 
     private createModalInstance() {
         if(this.popedOut) {
-            this.instance = spawnExternalModal(this.modalType, this.modalConstructorArguments, this.modalOptions);
+            this.instance = new ExternalModalController(this.modalType, this.modalConstructorArguments, this.modalOptions);
         } else {
             this.instance = new InternalModalInstance(this.getModalClass(), this.modalConstructorArguments, this.modalOptions);
         }
@@ -74,6 +76,11 @@ export class GenericModalController<T extends keyof ModalConstructorArguments> i
         const events = this.instance.getEvents();
         events.on("notify_destroy", events.on("notify_open", () => this.events.fire("open")));
         events.on("notify_destroy", events.on("notify_close", () => this.events.fire("close")));
+        events.on("notify_destroy", () => {
+            if(this.instance) {
+                this.destroy();
+            }
+        });
 
         events.on("action_close", () => this.destroy());
         events.on("action_popout", () => {
@@ -99,8 +106,9 @@ export class GenericModalController<T extends keyof ModalConstructorArguments> i
     }
 
     private destroyModalInstance() {
-        this.instance?.destroy();
+        const instance = this.instance;
         this.instance = undefined;
+        instance?.destroy();
     }
 
     destroy() {

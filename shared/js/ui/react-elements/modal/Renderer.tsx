@@ -123,11 +123,12 @@ export class ModalBodyRenderer extends React.PureComponent<{
 }
 
 export class ModalFrameRenderer extends React.PureComponent<{
+    windowed: boolean,
     children: [React.ReactElement<ModalFrameTopRenderer>, React.ReactElement<ModalBodyRenderer>]
 }> {
     render() {
         return (
-            <div className={cssStyle.modalFrame}>
+            <div className={cssStyle.modalFrame + " " + (this.props.windowed ? cssStyle.windowed : "")}>
                 {this.props.children[0]}
                 {this.props.children[1]}
             </div>

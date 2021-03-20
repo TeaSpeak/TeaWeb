@@ -62,21 +62,22 @@ class ManifestGenerator {
                 }
 
                 for(const module of compilation.chunkGraph.getChunkModules(chunk)) {
+                    const moduleId = compilation.chunkGraph.getModuleId(module);
+                    if(typeof moduleId === "string" && moduleId.startsWith("svg-sprites/")) {
+                        /* custom svg sprite handler */
+                        modules.push({
+                            id: module.id,
+                            context: "svg-sprites",
+                            resource: moduleId.substring("svg-sprites/".length)
+                        });
+                        continue;
+                    }
+
                     if(!module.type.startsWith("javascript/")) {
                         continue;
                     }
 
                     if(!module.context) {
-                        continue;
-                    }
-
-                    if(module.context.startsWith("svg-sprites/")) {
-                        /* custom svg sprite handler */
-                        modules.push({
-                            id: module.id,
-                            context: "svg-sprites",
-                            resource: module.context.substring("svg-sprites/".length)
-                        });
                         continue;
                     }
 
@@ -94,7 +95,7 @@ class ManifestGenerator {
                     }
 
                     modules.push({
-                        id: compilation.chunkGraph.getModuleId(module),
+                        id: moduleId,
                         context: path.relative(this.options.context, module.context).replace(/\\/g, "/"),
                         resource: path.basename(module.resource)
                     });

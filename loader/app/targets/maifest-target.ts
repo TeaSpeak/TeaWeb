@@ -10,7 +10,7 @@ export default class implements ApplicationLoader {
             function: async taskId => {
                 await loadManifest();
 
-                const entryChunk = getUrlParameter("chunk");
+                const entryChunk = getUrlParameter("loader-chunk");
                 if(!entryChunk) {
                     loader.critical_error("Missing entry chunk parameter");
                     throw "Missing entry chunk parameter";

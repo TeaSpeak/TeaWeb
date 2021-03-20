@@ -69,10 +69,12 @@ export enum ModalState {
 }
 
 export interface ModalInstanceEvents {
+    /* Actions which must be implemented by our modal owner */
     action_close: {},
     action_minimize: {},
     action_popout: {},
 
+    /* State changes we encountered */
     notify_open: {}
     notify_minimize: {},
     notify_close: {},

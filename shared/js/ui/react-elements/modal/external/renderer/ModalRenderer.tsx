@@ -33,7 +33,7 @@ export class ModalRenderer {
 
         if(__build.target === "client") {
             ReactDOM.render(
-                <ModalFrameRenderer>
+                <ModalFrameRenderer windowed={true}>
                     <ModalFrameTopRenderer
                         replacePageTitle={true}
                         modalInstance={modal}

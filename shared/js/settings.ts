@@ -275,16 +275,10 @@ export namespace AppParameters {
         description: "Peer address of the apps core",
     };
 
-    export const KEY_MODAL_IDENTITY_CODE: RegistryKey<string> = {
-        key: "modal-identify",
+    export const KEY_MODAL_IPC_CHANNEL: RegistryKey<string> = {
+        key: "modal-channel",
         valueType: "string",
-        description: "An authentication code used to register the new process as the modal"
-    };
-
-    export const KEY_MODAL_TARGET: RegistryKey<string> = {
-        key: "modal-target",
-        valueType: "string",
-        description: "Target modal unique id which should be loaded"
+        description: "The modal IPC channel id for communication with the controller"
     };
 
     export const KEY_LOAD_DUMMY_ERROR: ValuedRegistryKey<boolean> = {

@@ -59,7 +59,7 @@ assertMainApplication();
 let preventWelcomeUI = false;
 async function initialize() {
     try {
-        await i18n.initialize();
+        await i18n.initializeI18N();
     } catch(error) {
         console.error(tr("Failed to initialized the translation system!\nError: %o"), error);
         loader.critical_error("Failed to setup the translation system");

@@ -118,8 +118,7 @@ export const config = async (env: any, target: "web" | "client"): Promise<Config
     return {
         entry: {
             "loader": "./loader/app/index.ts",
-            "modal-external": "./shared/js/ui/react-elements/external-modal/PopoutEntrypoint.ts",
-            //"devel-main": "./shared/js/devel_main.ts"
+            "modal-external": "./shared/js/entry-points/ModalWindow.ts",
         },
 
         devtool: isDevelopment ? "inline-source-map" : "source-map",

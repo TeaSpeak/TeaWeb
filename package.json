@@ -13,7 +13,8 @@
     "webpack-web": "webpack --config webpack-web.config.js",
     "webpack-client": "webpack --config webpack-client.config.js",
     "generate-i18n-gtranslate": "node shared/generate_i18n_gtranslate.js",
-    "dev-server": "npm run compile-project-base && webpack serve --config webpack-web.config.js"
+    "dev-server": "npm run compile-project-base && webpack serve --config webpack-web.config.js",
+    "dev-server-client": "npm run compile-project-base && webpack serve --config webpack-client.config.js"
   },
   "author": "TeaSpeak (WolverinDEV)",
   "license": "ISC",
@@ -85,7 +86,7 @@
     "webpack-bundle-analyzer": "^3.6.1",
     "webpack-cli": "^4.5.0",
     "webpack-dev-server": "^3.11.2",
-    "webpack-svg-sprite-generator": "^5.0.2",
+    "webpack-svg-sprite-generator": "^5.0.4",
     "zip-webpack-plugin": "^4.0.1"
   },
   "repository": {
