@@ -479,9 +479,9 @@ const TitleRenderer = (props: { events: Registry<VideoViewerEvents> }) => {
     });
 
     if(followId && followingName) {
-        return <React.Fragment key={"following"}><Translatable enforceTextOnly={true}>W2G - Following</Translatable> {followingName}</React.Fragment>;
+        return <React.Fragment key={"following"}><Translatable>W2G - Following</Translatable> {followingName}</React.Fragment>;
     } else {
-        return <Translatable key={"watcher"} enforceTextOnly={true}>W2G - Watcher</Translatable>;
+        return <Translatable key={"watcher"}>W2G - Watcher</Translatable>;
     }
 };
 

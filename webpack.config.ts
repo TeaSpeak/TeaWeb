@@ -76,7 +76,7 @@ const generateDefinitions = async (target: string) => {
             mode: JSON.stringify(isDevelopment ? "debug" : "release"),
             version: JSON.stringify(localBuildInfo.gitVersion),
             timestamp: localBuildInfo.gitTimestamp,
-            entry_chunk_name: JSON.stringify(target === "web" ? "shared-app" : "client-app")
+            entry_chunk_name: JSON.stringify("main-app")
         } as BuildDefinitions
     } as any;
 };

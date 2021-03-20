@@ -3,7 +3,7 @@ import * as config_base from "./webpack.config";
 
 export = env => config_base.config(env, "client").then(config => {
     Object.assign(config.entry, {
-        "shared-app": ["./client/app/entry-points/AppMain.ts"],
+        "main-app": ["./client/app/entry-points/AppMain.ts"],
         "modal-external": ["./client/app/entry-points/ModalWindow.ts"]
     });
 

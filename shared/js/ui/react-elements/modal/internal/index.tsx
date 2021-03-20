@@ -145,6 +145,9 @@ export class InternalModalInstance implements ModalInstanceController {
         this.events.fire("notify_close");
     }
 
+    async minimize(): Promise<void> { }
+    async maximize(): Promise<void> { }
+
     destroy() {
         this.destructModal();
         this.events.destroy();

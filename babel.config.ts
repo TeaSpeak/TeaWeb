@@ -1,4 +1,4 @@
-export = api => {
+export default api => {
     api.cache(false);
     const presets = [
         [

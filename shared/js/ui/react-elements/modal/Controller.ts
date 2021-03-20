@@ -83,6 +83,8 @@ export class GenericModalController<T extends keyof ModalConstructorArguments> i
         });
 
         events.on("action_close", () => this.destroy());
+        events.on("action_minimize", () => this.instance.minimize());
+
         events.on("action_popout", () => {
             if(!this.popedOut) {
                 if(!this.getModalClass().popoutSupported) {

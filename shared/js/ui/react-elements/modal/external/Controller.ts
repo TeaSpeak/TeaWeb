@@ -172,6 +172,26 @@ export class ExternalModalController implements ModalInstanceController {
         });
     }
 
+    async minimize(): Promise<void> {
+        await this.mutateWindow(async () => {
+            if (typeof this.windowId !== "string") {
+                return;
+            }
+
+            await getWindowManager().executeAction(this.windowId, "minimize");
+        });
+    }
+
+    async maximize(): Promise<void> {
+        await this.mutateWindow(async () => {
+            if (typeof this.windowId !== "string") {
+                return;
+            }
+
+            await getWindowManager().executeAction(this.windowId, "maximize");
+        });
+    }
+
     private async mutateWindow<T>(callback: () => Promise<T>) : Promise<T> {
         while(this.windowMutatePromise) {
             await this.windowMutatePromise;

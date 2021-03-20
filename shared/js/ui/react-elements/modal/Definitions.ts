@@ -88,6 +88,9 @@ export interface ModalInstanceController {
     show() : Promise<void>;
     hide() : Promise<void>;
 
+    minimize() : Promise<void>;
+    maximize() : Promise<void>;
+
     destroy();
 }
 
