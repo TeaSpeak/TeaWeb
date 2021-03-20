@@ -10,7 +10,7 @@ import HTMLRenderer from "vendor/xbbcode/renderer/html";
 
 import "./emoji";
 import "./highlight";
-import "./YoutubeRenderer";
+import "./YoutubeController";
 import "./url";
 import "./image";
 

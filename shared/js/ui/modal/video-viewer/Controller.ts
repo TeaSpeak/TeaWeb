@@ -1,15 +1,15 @@
-import {LogCategory, logError, logWarn} from "../log";
-import {EventHandler, Registry} from "../events";
+import {LogCategory, logError, logWarn} from "../../../log";
+import {EventHandler, Registry} from "tc-events";
 import {VideoViewerEvents} from "./Definitions";
-import {ConnectionHandler} from "../ConnectionHandler";
-import {W2GPluginCmdHandler, W2GWatcher, W2GWatcherFollower} from "../video-viewer/W2GPlugin";
-import {settings, Settings} from "../settings";
-import {global_client_actions} from "../events/GlobalEvents";
-import {createErrorModal} from "../ui/elements/Modal";
-import {ModalController} from "../ui/react-elements/ModalDefinitions";
+import {ConnectionHandler} from "../../../ConnectionHandler";
+import {settings, Settings} from "../../../settings";
+import {global_client_actions} from "../../../events/GlobalEvents";
+import {createErrorModal} from "../../../ui/elements/Modal";
+import {ModalController} from "../../../ui/react-elements/ModalDefinitions";
 import {server_connections} from "tc-shared/ConnectionManager";
 import { tr, tra } from "tc-shared/i18n/localize";
 import {spawnModal} from "tc-shared/ui/react-elements/modal";
+import {W2GPluginCmdHandler, W2GWatcher, W2GWatcherFollower} from "tc-shared/ui/modal/video-viewer/W2GPlugin";
 
 const parseWatcherId = (id: string): { clientId: number, clientUniqueId: string} => {
     const [ clientIdString, clientUniqueId ] = id.split(" - ");

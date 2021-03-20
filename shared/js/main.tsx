@@ -34,7 +34,6 @@ import {bookmarks} from "tc-shared/Bookmarks";
 import "svg-sprites/client-icons";
 import "../css/load-css"
 import "./proto";
-import "./video-viewer/Controller";
 import "./profiles/ConnectionProfile";
 import "./update/UpdaterWeb";
 import "./file/LocalIcons";
@@ -47,6 +46,7 @@ import "./media/Video";
 import "./ui/AppController";
 import "./ui/frames/menu-bar/MainMenu";
 import "./ui/modal/connect/Controller";
+import "./ui/modal/video-viewer/Controller";
 import "./ui/elements/ContextDivider";
 import "./ui/elements/Tab";
 import "./clientservice";

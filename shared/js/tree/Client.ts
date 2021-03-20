@@ -22,7 +22,6 @@ import * as hex from "../crypto/hex";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 import {spawnClientVolumeChange, spawnMusicBotVolumeChange} from "../ui/modal/ModalChangeVolumeNew";
 import {spawnPermissionEditorModal} from "../ui/modal/permission/ModalPermissionEditor";
-import {W2GPluginCmdHandler} from "../video-viewer/W2GPlugin";
 import {global_client_actions} from "../events/GlobalEvents";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {VoiceClient} from "../voice/VoiceClient";
@@ -31,6 +30,7 @@ import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 import {VideoClient} from "tc-shared/connection/VideoConnection";
 import { tr } from "tc-shared/i18n/localize";
 import {EventClient} from "tc-shared/connectionlog/Definitions";
+import {W2GPluginCmdHandler} from "tc-shared/ui/modal/video-viewer/W2GPlugin";
 
 export enum ClientType {
     CLIENT_VOICE,

@@ -21,7 +21,7 @@ function registerModal<T extends keyof ModalConstructorArguments>(modal: Registe
 
 registerModal({
     modalId: "video-viewer",
-    classLoader: async () => await import("tc-shared/video-viewer/Renderer"),
+    classLoader: async () => await import("tc-shared/ui/modal/video-viewer/Renderer"),
     popoutSupported: true
 });
 

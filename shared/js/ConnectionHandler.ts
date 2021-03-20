@@ -22,7 +22,6 @@ import {tr, traj} from "./i18n/localize";
 import {md5} from "./crypto/md5";
 import {guid} from "./crypto/uid";
 import {PluginCmdRegistry} from "./connection/PluginCmdHandler";
-import {W2GPluginCmdHandler} from "./video-viewer/W2GPlugin";
 import {VoiceConnectionStatus, WhisperSessionInitializeData} from "./connection/VoiceConnection";
 import {getServerConnectionFactory} from "./connection/ConnectionFactory";
 import {WhisperSession} from "./voice/VoiceWhisper";
@@ -42,6 +41,7 @@ import {connectionHistory} from "tc-shared/connectionlog/History";
 import {ConnectParameters} from "tc-shared/ui/modal/connect/Controller";
 import {assertMainApplication} from "tc-shared/ui/utils";
 import {getDNSProvider} from "tc-shared/dns";
+import {W2GPluginCmdHandler} from "tc-shared/ui/modal/video-viewer/W2GPlugin";
 
 assertMainApplication();
 

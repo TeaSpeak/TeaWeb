@@ -17,7 +17,7 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
 
 
 function handleIpcMessage(remoteId: string, broadcast: boolean, message: ChannelMessage) {
-    if(message.type === "bbcode-youtube") {
+    if(message.type === "w2g") {
         global_client_actions.fire("action_w2g", {
             videoUrl: message.data.videoUrl,
             handlerId: message.data.handlerId
