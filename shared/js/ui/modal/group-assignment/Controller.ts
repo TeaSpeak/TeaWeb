@@ -158,7 +158,6 @@ class Controller {
             try {
                 await this.handler.serverConnection.send_command(command, { sgid: groupId, cldbid: this.clientDatabaseId });
                 assignedGroups.groups.toggle(groupId, newValue);
-                this.variables.sendVariable("assignedGroupStatus");
             } catch (error) {
                 if(error instanceof CommandResult) {
                     if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
@@ -191,8 +190,8 @@ class Controller {
             }
 
             return true;
-        }));
-
+        }).then(() => this.variables.sendVariable("assignedGroupStatus")));
+        let updateMode: "none" | "status" | "refresh" = "none";
         this.events.on("action_remove_all", () => {
             this.assignedGroups.execute(async value => {
                 let args = [];
@@ -230,25 +229,26 @@ class Controller {
                         return;
                     } else {
                         /* Server does not send a bulked response. We've to do a full refresh */
-                        this.events.fire("action_refresh", { slowMode: false });
+                        updateMode = "refresh";
                     }
                 } else {
-                    let statusUpdated = false;
                     for(let index = 0; index < args.length; index++) {
                         if(!bulks[index].success) {
                             continue;
                         }
 
-                        statusUpdated = true;
+                        updateMode = "status";
                         value.groups.remove(args[index].sgid);
                     }
-
-                    if(statusUpdated) {
-                        this.variables.sendVariable("assignedGroupStatus");
-                        this.sendAllGroupStatus();
-                    }
                 }
-            }).then(undefined);
+            }).then(() => {
+                if(updateMode === "status") {
+                    this.variables.sendVariable("assignedGroupStatus");
+                    this.sendAllGroupStatus();
+                } else if(updateMode === "refresh") {
+                    this.events.fire("action_refresh", { slowMode: false });
+                }
+            });
         });
 
         this.events.on("action_refresh", event => {
