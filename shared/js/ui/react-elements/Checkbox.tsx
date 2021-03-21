@@ -11,6 +11,7 @@ export interface CheckboxProperties {
     value?: boolean;
     initialValue?: boolean;
 
+    className?: string;
     children?: never;
 }
 
@@ -32,7 +33,7 @@ export class Checkbox extends React.Component<CheckboxProperties, CheckboxState>
         const disabledClass = disabled ? cssStyle.disabled : "";
 
         return (
-            <label className={cssStyle.labelCheckbox + " " + disabledClass}>
+            <label className={cssStyle.labelCheckbox + " " + disabledClass + " " + this.props.className}>
                 <div className={cssStyle.checkbox + " " + disabledClass}>
                     <input type={"checkbox"} checked={checked} disabled={disabled} onChange={event => this.onStateChange(event)} />
                     <div className={cssStyle.mark} />

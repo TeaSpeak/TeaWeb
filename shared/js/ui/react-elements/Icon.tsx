@@ -1,8 +1,10 @@
 import * as React from "react";
 import {useState} from "react";
-import {RemoteIcon} from "tc-shared/file/Icons";
+import {getIconManager, RemoteIcon, RemoteIconInfo} from "tc-shared/file/Icons";
 
 const cssStyle = require("./Icon.scss");
+
+const EmptyIcon = (props: { className?: string, title?: string }) => <div className={cssStyle.container + " icon-container icon-empty " + props.className} title={props.title} />;
 
 export const IconRenderer = (props: {
     icon: string;
@@ -18,7 +20,7 @@ export const IconRenderer = (props: {
     }
 }
 
-export const RemoteIconRenderer = (props: { icon: RemoteIcon, className?: string, title?: string }) => {
+export const RemoteIconRenderer = (props: { icon: RemoteIcon | undefined, className?: string, title?: string }) => {
     const [ revision, setRevision ] = useState(0);
 
     props.icon.events.reactUse("notify_state_changed", () => setRevision(revision + 1));
@@ -52,3 +54,11 @@ export const RemoteIconRenderer = (props: { icon: RemoteIcon, className?: string
             throw "invalid icon state";
     }
 };
+
+export const RemoteIconInfoRenderer = React.memo((props: { icon: RemoteIconInfo | undefined, className?: string, title?: string }) => {
+    if(!props.icon || props.icon.iconId === 0) {
+        return <EmptyIcon title={props.title} className={props.className} key={"empty-icon"} />;
+    } else {
+        return <RemoteIconRenderer icon={getIconManager().resolveIconInfo(props.icon)} className={props.className} title={props.title} key={"icon"} />;
+    }
+});

@@ -91,3 +91,10 @@ registerModal({
     popoutSupported: true
 });
 
+registerModal({
+    modalId: "modal-assign-server-groups",
+    classLoader: async () => await import("tc-shared/ui/modal/group-assignment/Renderer"),
+    popoutSupported: true
+});
+
+

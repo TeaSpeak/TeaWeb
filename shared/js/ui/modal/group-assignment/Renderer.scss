@@ -1,0 +1,172 @@
+@import "../../../../css/static/mixin";
+@import "../../../../css/static/properties";
+
+.container {
+    user-select: none;
+
+    min-width: 20em;
+    width: 30em;
+
+    min-height: 10em;
+    max-height: calc(100vh - 10rem);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    background-color: #2f2f35;
+    padding: .5em;
+
+
+    .title {
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        .clientInfo {
+            flex-grow: 1;
+            flex-shrink: 1;
+
+            min-width: 4em;
+
+            margin-bottom: .25em;
+
+            .textError {
+                color: #cc0000;
+            }
+        }
+
+        .refreshButton {
+            flex-grow: 0;
+            flex-shrink: 0;
+        }
+    }
+
+    .containerButtons {
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        padding-top: 1em;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    &.windowed {
+        width: 100%;
+        height: 100%;
+
+        max-height: 100%;
+    }
+}
+
+
+.assignmentList {
+    flex-shrink: 1;
+    flex-grow: 1;
+
+    min-height: 4em;
+    height: 20em;
+
+    padding: 3px;
+    overflow-y: auto;
+
+    border: 1px #161616 solid;
+    border-radius: $border_radius_middle;
+    background-color: #28292b;
+
+    position: relative;
+
+    @include chat-scrollbar-vertical();
+
+    .entry {
+        flex-shrink: 0;
+        flex-grow: 0;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        height: 1.75em;
+
+        > * {
+            flex-shrink: 0;
+            flex-grow: 0;
+            align-self: center;
+        }
+
+        .checkbox {
+            margin-right: .5em;
+        }
+
+        .icon {
+            margin-right: .25em;
+        }
+
+        .name {
+            flex-shrink: 1;
+            flex-grow: 1;
+
+            min-width: 6em;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .overlay {
+        position: absolute;
+
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        .text {
+            align-self: center;
+            text-align: center;
+
+            color: #666;
+            font-size: 1.2em;
+
+            &.error {
+                color: #a32929;
+            }
+        }
+    }
+
+    .iconContainer {
+        align-self: center;
+        margin-right: 4px;
+        margin-left: 2px;
+        margin-top: -2px;
+    }
+
+    a {
+        align-self: center;
+    }
+}
+
+.button {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    align-self: center;
+    cursor: pointer;
+
+    padding: .2em;
+    border-radius: .2em;
+
+    transition: all ease-in-out $button_hover_animation_time;
+
+    &:hover {
+        background-color: #0000004f;
+    }
+}

@@ -1,5 +1,4 @@
 import {IpcRegistryDescription, Registry} from "tc-shared/events";
-import {VideoViewerEvents} from "tc-shared/video-viewer/Definitions";
 import {ChannelEditEvents} from "tc-shared/ui/modal/channel-edit/Definitions";
 import {EchoTestEvents} from "tc-shared/ui/modal/echo-test/Definitions";
 import {ModalGlobalSettingsEditorEvents} from "tc-shared/ui/modal/global-settings-editor/Definitions";
@@ -12,6 +11,11 @@ import {
     ModalBookmarksAddServerVariables
 } from "tc-shared/ui/modal/bookmarks-add-server/Definitions";
 import {ModalPokeEvents, ModalPokeVariables} from "tc-shared/ui/modal/poke/Definitions";
+import {
+    ModalClientGroupAssignmentEvents,
+    ModalClientGroupAssignmentVariables
+} from "tc-shared/ui/modal/group-assignment/Definitions";
+import {VideoViewerEvents} from "tc-shared/ui/modal/video-viewer/Definitions";
 
 export type ModalType = "error" | "warning" | "info" | "none";
 export type ModalRenderType = "page" | "dialog";
@@ -187,5 +191,9 @@ export interface ModalConstructorArguments {
     "modal-poked": [
         /* events */ IpcRegistryDescription<ModalPokeEvents>,
         /* variables */ IpcVariableDescriptor<ModalPokeVariables>,
+    ],
+    "modal-assign-server-groups": [
+        /* events */ IpcRegistryDescription<ModalClientGroupAssignmentEvents>,
+        /* variables */ IpcVariableDescriptor<ModalClientGroupAssignmentVariables>,
     ],
 }

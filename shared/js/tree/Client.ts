@@ -12,7 +12,6 @@ import * as htmltags from "../ui/htmltags";
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {ChannelEntry} from "./Channel";
 import {ConnectionHandler, ViewReasonId} from "../ConnectionHandler";
-import {createServerGroupAssignmentModal} from "../ui/modal/ModalGroupAssignment";
 import {openClientInfo} from "../ui/modal/ModalClientInfo";
 import {spawnBanClient} from "../ui/modal/ModalBanClient";
 import {spawnChangeLatency} from "../ui/modal/ModalChangeLatency";
@@ -31,6 +30,7 @@ import {VideoClient} from "tc-shared/connection/VideoConnection";
 import { tr } from "tc-shared/i18n/localize";
 import {EventClient} from "tc-shared/connectionlog/Definitions";
 import {W2GPluginCmdHandler} from "tc-shared/ui/modal/video-viewer/W2GPlugin";
+import {spawnServerGroupAssignments} from "tc-shared/ui/modal/group-assignment/Controller";
 
 export enum ClientType {
     CLIENT_VOICE,
@@ -472,30 +472,7 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
     }
 
     open_assignment_modal() {
-        createServerGroupAssignmentModal(this as any, (groups, flag) => {
-            if(groups.length == 0) return Promise.resolve(true);
-
-            if(groups.length == 1) {
-                if(flag) {
-                    return this.channelTree.client.serverConnection.send_command("servergroupaddclient", {
-                        sgid: groups[0],
-                        cldbid: this.properties.client_database_id
-                    }).then(() => true);
-                } else
-                    return this.channelTree.client.serverConnection.send_command("servergroupdelclient", {
-                        sgid: groups[0],
-                        cldbid: this.properties.client_database_id
-                    }).then(() => true);
-            } else {
-                const data = groups.map(e => { return {sgid: e}; });
-                data[0]["cldbid"] = this.properties.client_database_id;
-
-                if(flag) {
-                    return this.channelTree.client.serverConnection.send_command("clientaddservergroup", data, {flagset: ["continueonerror"]}).then(() => true);
-                } else
-                    return this.channelTree.client.serverConnection.send_command("clientdelservergroup", data, {flagset: ["continueonerror"]}).then(() => true);
-            }
-        });
+        spawnServerGroupAssignments(this.channelTree.client, this.properties.client_database_id);
     }
 
     open_text_chat() {

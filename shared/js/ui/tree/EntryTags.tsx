@@ -2,7 +2,6 @@ import * as React from "react";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {getIpcInstance, IPCChannel} from "tc-shared/ipc/BrowserIPC";
-import {AppParameters} from "tc-shared/settings";
 import {generateDragElement, setupDragData} from "tc-shared/ui/tree/DragHelper";
 import {ClientIcon} from "svg-sprites/client-icons";
 
@@ -11,6 +10,7 @@ const cssStyle = require("./EntryTags.scss");
 
 let ipcChannel: IPCChannel;
 
+type EntryTagStyle = "text-only" | "normal";
 export const ServerTag = React.memo((props: {
     serverName: string,
     handlerId: string,
@@ -44,42 +44,56 @@ export const ClientTag = React.memo((props: {
     handlerId: string,
     clientId?: number,
     clientDatabaseId?: number,
-    className?: string
-}) => (
-    <div className={cssStyle.tag + (props.className ? ` ${props.className}` : ``)}
-         onContextMenu={event => {
-             event.preventDefault();
+    className?: string,
 
-             ipcChannel.sendMessage("contextmenu-client", {
-                 clientUniqueId: props.clientUniqueId,
-                 handlerId: props.handlerId,
-                 clientId: props.clientId,
-                 clientDatabaseId: props.clientDatabaseId,
+    style?: EntryTagStyle
+}) => {
+    let style = props.style || "normal";
+    if(style === "text-only") {
+        return <React.Fragment key={"text-only"}>{props.clientName}</React.Fragment>;
+    }
 
-                 pageX: event.pageX,
-                 pageY: event.pageY
-             });
-         }}
-         draggable={true}
-         onDragStart={event => {
-             /* clients only => move */
-             event.dataTransfer.effectAllowed = "move"; /* prohibit copying */
-             event.dataTransfer.dropEffect = "move";
-             event.dataTransfer.setDragImage(generateDragElement([{ icon: ClientIcon.PlayerOn, name: props.clientName }]), 0, 6);
-             setupDragData(event.dataTransfer, props.handlerId, [
-                 {
-                     type: "client",
-                     clientUniqueId: props.clientUniqueId,
-                     clientId: props.clientId,
-                     clientDatabaseId: props.clientDatabaseId
-                 }
-             ], "client");
-             event.dataTransfer.setData("text/plain", props.clientName);
-         }}
-    >
-        {props.clientName}
-    </div>
-));
+    return (
+        <div
+            key={"normal"}
+            className={cssStyle.tag + (props.className ? ` ${props.className}` : ``)}
+            onContextMenu={event => {
+                event.preventDefault();
+
+                ipcChannel.sendMessage("contextmenu-client", {
+                    clientUniqueId: props.clientUniqueId,
+                    handlerId: props.handlerId,
+                    clientId: props.clientId,
+                    clientDatabaseId: props.clientDatabaseId,
+
+                    pageX: event.pageX,
+                    pageY: event.pageY
+                });
+            }}
+            draggable={true}
+            onDragStart={event => {
+                /* clients only => move */
+                event.dataTransfer.effectAllowed = "move"; /* prohibit copying */
+                event.dataTransfer.dropEffect = "move";
+                event.dataTransfer.setDragImage(generateDragElement([{
+                    icon: ClientIcon.PlayerOn,
+                    name: props.clientName
+                }]), 0, 6);
+                setupDragData(event.dataTransfer, props.handlerId, [
+                    {
+                        type: "client",
+                        clientUniqueId: props.clientUniqueId,
+                        clientId: props.clientId,
+                        clientDatabaseId: props.clientDatabaseId
+                    }
+                ], "client");
+                event.dataTransfer.setData("text/plain", props.clientName);
+            }}
+        >
+            {props.clientName}
+        </div>
+    );
+});
 
 export const ChannelTag = React.memo((props: {
     channelName: string,

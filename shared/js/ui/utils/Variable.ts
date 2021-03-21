@@ -46,6 +46,10 @@ export abstract class UiVariableProvider<Variables extends UiVariableMap> {
         this.variableProvider[variable as any] = provider;
     }
 
+    setVariableProviderAsync<T extends keyof Variables>(variable: T, provider: (customData: any) => Promise<Variables[T]>) {
+        this.variableProvider[variable as any] = provider;
+    }
+
     /**
      * @param variable
      * @param editor If the editor returns `false` or a new variable, such variable will be used

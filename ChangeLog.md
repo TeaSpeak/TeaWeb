@@ -1,6 +1,9 @@
 # Changelog:
+* **21.03.21**
+    - Reworked the server group assignment modal. It now better reacts to the user input as well is now popoutable
+  
 * **18.03.21**
-    - Finally got fully rid of the initial backend glue and changes all systems to provider
+    - Finally, got fully rid of the initial backend glue and changes all systems to provider
   
 * **17.03.21**
     - Updated from webpack 4 to webpack 5
