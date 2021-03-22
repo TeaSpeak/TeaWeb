@@ -1,9 +1,13 @@
-import {LogCategory, logError, logInfo, logWarn} from "tc-shared/log";
+import {LogCategory, logError, logInfo, logTrace, logWarn} from "tc-shared/log";
 import {getIpcInstance, IPCChannel} from "tc-shared/ipc/BrowserIPC";
 import {Registry} from "tc-events";
-import {ModalOptions} from "tc-shared/ui/react-elements/modal/Definitions";
+import {
+    ModalInstanceController,
+    ModalInstanceEvents,
+    ModalOptions,
+    ModalState
+} from "tc-shared/ui/react-elements/modal/Definitions";
 import {guid} from "tc-shared/crypto/uid";
-import {ModalInstanceController, ModalInstanceEvents, ModalState} from "tc-shared/ui/react-elements/modal/Definitions";
 import {getWindowManager} from "tc-shared/ui/windows/WindowManager";
 import {assertMainApplication} from "tc-shared/ui/utils";
 import {
@@ -23,6 +27,7 @@ export class ExternalModalController implements ModalInstanceController {
     private ipcChannel: IPCChannel;
 
     private readonly modalEvents: Registry<ModalInstanceEvents>;
+    private modalInitialized: boolean;
     private modalInitializeCallback: () => void;
 
     private windowId: string | undefined;
@@ -69,6 +74,7 @@ export class ExternalModalController implements ModalInstanceController {
             if(this.modalInitializeCallback) {
                 this.modalInitializeCallback();
             }
+            this.modalInitialized = true;
 
             this.sendIpcMessage("hello-controller", {
                 accepted: true,
@@ -120,6 +126,8 @@ export class ExternalModalController implements ModalInstanceController {
                 return;
             }
 
+            this.modalInitialized = false;
+            this.modalInitializeCallback = undefined;
             const result = await windowManager.createWindow({
                 uniqueId: this.modalOptions.uniqueId || this.modalType,
                 loaderTarget: "modal-external",
@@ -149,16 +157,24 @@ export class ExternalModalController implements ModalInstanceController {
 
             this.windowId = result.windowId;
             try {
-                await new Promise((resolve, reject) => {
-                    this.modalInitializeCallback = resolve;
-                    setTimeout(reject, 15000);
-                });
+                if(!this.modalInitialized) {
+                    await new Promise((resolve, reject) => {
+                        const timeoutId = setTimeout(reject, 15000);
+                        this.modalInitializeCallback = () => {
+                            clearTimeout(timeoutId);
+                            resolve();
+                        };
+                    });
+                }
             } catch (_) {
                 logError(LogCategory.IPC, tr("Opened modal failed to call back within 15 seconds."));
                 getWindowManager().destroyWindow(this.windowId);
             } finally {
+                this.modalInitialized = false;
                 this.modalInitializeCallback = undefined;
             }
+
+            logTrace(LogCategory.GENERAL, tr("Successfully showed external modal"));
         });
     }
 
