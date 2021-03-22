@@ -22,6 +22,23 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
+# We require a .tar.gz file and not a zip file.
+# So we're extracting the contents and tar.gz ing them
+temp_dir=$(mktemp -d)
+unzip "$package_file" -d "$temp_dir/raw/"
+if [[ $? -ne 0 ]]; then
+    rm -r "$temp_dir" &>/dev/null
+    echo "Failed to unpack package."
+fi
+
+echo "Generating .tar.gz file from $package_file"
+package_file="$temp_dir/$(basename -s ".zip" "$package_file").tar.gz"
+tar chvzf "$package_file" "$temp_dir"/raw/*;
+if [[ $? -ne 0 ]]; then
+    rm -r "$temp_dir"
+    echo "Failed to package package."
+fi
+
 git_hash=$(git_version "short-tag")
 application_version=$(project_version)
 echo "Deploying $package_file."
@@ -40,6 +57,7 @@ upload_result=$(curl \
    "$1"
 )
 
+rm -r "$temp_dir"
 echo "Server upload result: $upload_result"
 success=$(echo "${upload_result}" | python -c "import sys, json; print(json.load(sys.stdin)['success'])")
 
