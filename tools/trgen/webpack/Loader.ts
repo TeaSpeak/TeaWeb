@@ -1,5 +1,5 @@
-import {extractJsRendererTranslations} from "./JsRendererGenerator";
-import {deltaTranslations} from "./TsTransformer";
+import {extractJsRendererTranslations} from "../generator/JsRenderer";
+import {deltaTranslations} from "./Utils";
 
 export default function (source) {
     const options = this.getOptions({

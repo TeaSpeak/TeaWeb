@@ -1,7 +1,7 @@
 import * as ts from "typescript";
 import sha256 from "sha256";
 import {SyntaxKind} from "typescript";
-import {TranslationEntry} from "./generator";
+import {TranslationEntry} from "../Definitions";
 
 const getSourceLocation = (node: ts.Node) => {
     const sf = node.getSourceFile();
@@ -384,6 +384,7 @@ export function visitNode(config: Configuration, cache: VolatileTransformConfig,
 
     return node;
 }
+
 export interface Configuration {
     useWindow?: boolean;
     cacheTranslations?: boolean;

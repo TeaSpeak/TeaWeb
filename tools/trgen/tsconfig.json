@@ -11,11 +11,11 @@
     "esModuleInterop": true
   },
   "files": [
-    "generator.ts",
-    "index.ts",
-    "compiler.ts",
-    "JsRendererGenerator.ts",
-    "TsGenerator.ts",
-    "JsRendererTranslationLoader.ts"
+    "./Definitions.ts",
+    "./generator/JsRenderer.ts",
+    "./generator/TypeScript.ts",
+    "./webpack/Loader.ts",
+    "./webpack/Plugin.ts",
+    "./webpack/Utils.ts"
   ]
 }

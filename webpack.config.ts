@@ -10,7 +10,7 @@ import { DefinePlugin, Configuration, } from "webpack";
 import { Plugin as SvgSpriteGenerator } from "webpack-svg-sprite-generator";
 import ManifestGenerator from "./webpack/ManifestPlugin";
 import HtmlWebpackInlineSourcePlugin from "./webpack/HtmlWebpackInlineSource";
-import TranslateableWebpackPlugin from "./tools/trgen/WebpackPlugin";
+import TranslateableWebpackPlugin from "./tools/trgen/webpack/Plugin";
 
 import ZipWebpackPlugin from "zip-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
@@ -209,7 +209,7 @@ export const config = async (env: any, target: "web" | "client"): Promise<Config
 
             env.package ? new ZipWebpackPlugin({
                 path: path.join(__dirname, "dist-package"),
-                filename: `TeaWeb-${isDevelopment ? "development" : "release"}-${localBuildInfo.gitVersion}.zip`,
+                filename: `${target === "web" ? "TeaWeb" : "TeaClient"}-${isDevelopment ? "development" : "release"}-${localBuildInfo.gitVersion}.zip`,
             }) : undefined
         ].filter(e => !!e),
 
@@ -263,7 +263,7 @@ export const config = async (env: any, target: "web" | "client"): Promise<Config
                                 context: __dirname,
                                 colors: true,
                                 getCustomTransformers: program => ({
-                                    before: [translateablePlugin.createTypeScriptTransformer(program)]
+                                    before: [ translateablePlugin.createTypeScriptTransformer(program) ]
                                 }),
                                 transpileOnly: isDevelopment
                             }
@@ -278,7 +278,7 @@ export const config = async (env: any, target: "web" | "client"): Promise<Config
                 },
                 {
                     test: /\.html$/i,
-                    use: [translateablePlugin.createTemplateLoader()],
+                    use: [ translateablePlugin.createTemplateLoader() ],
                     type: "asset/source",
                 },
                 {

@@ -1,4 +1,4 @@
-import {TranslationEntry} from "./generator";
+import {TranslationEntry} from "../Definitions";
 
 export interface File {
     content: string;
@@ -17,7 +17,6 @@ export function extractJsRendererTranslations(file: File) : TranslationEntry[] {
 
     while(match = regex.exec(file.content.substr(baseIndex))) {
         let expression = (match.groups || {})["message_expression"] || match[1];
-        //expression = expression.replace(/\n/g, "\\n");
 
         let message;
         try {
