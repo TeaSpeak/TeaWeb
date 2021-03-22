@@ -29,14 +29,16 @@ unzip "$package_file" -d "$temp_dir/raw/"
 if [[ $? -ne 0 ]]; then
     rm -r "$temp_dir" &>/dev/null
     echo "Failed to unpack package."
+    exit 1
 fi
 
 echo "Generating .tar.gz file from $package_file"
 package_file="$temp_dir/$(basename -s ".zip" "$package_file").tar.gz"
-tar chvzf "$package_file" "$temp_dir"/raw/*;
+tar --use-compress-program="gzip -9" -C "$temp_dir/raw/" -c . -cf "$package_file";
 if [[ $? -ne 0 ]]; then
     rm -r "$temp_dir"
     echo "Failed to package package."
+    exit 1
 fi
 
 git_hash=$(git_version "short-tag")
