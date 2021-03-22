@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
 BASEDIR=$(dirname "$0")
-# shellcheck disable=SC1090
-source "${BASEDIR}/resolve_commands.sh"
 cd "$BASEDIR/../" || { echo "Failed to enter parent directory!"; exit 1; }
 
 #Shared

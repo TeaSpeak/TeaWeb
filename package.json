@@ -4,6 +4,7 @@
   "description": "Welcome here! This repository is created with two reasons:\n 1. People can bring their own ideas and follow their implementation\n 2. People can see TeaSpeak Web client progress and avoid creating repetitive issues all the time.",
   "scripts": {
     "compile-project-base": "tsc -p tsbaseconfig.json",
+    "compile-tr-gen": "tsc -p tools/trgen/tsconfig.json",
     "trgen": "node tools/trgen/index.js",
     "tsc": "tsc",
     "compile-scss": "sass loader/css/index.scss:loader/css/index.css",

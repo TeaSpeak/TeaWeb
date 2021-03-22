@@ -1,4 +1,4 @@
-import {TranslationEntry} from "./Definitions";
+import {TranslationEntry} from "../Definitions";
 
 export const deltaTranslations = (result: TranslationEntry[], fileName: string, processSpeed: number, newTranslations: TranslationEntry[]) => {
     let deletedTranslations = 0;

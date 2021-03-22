@@ -35,7 +35,7 @@ function cleanup_files() {
     for file in "${files[@]}"
     do :
         echo " - $file"
-        rm ${file}
+        rm "${file}"
     done
 }
 

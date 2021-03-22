@@ -60,11 +60,11 @@ function parse_arguments() {
 function execute() {
     time_begin=$(date +%s%N)
 
-    echo "> Executing step: $1" >> ${LOG_FILE}
+    echo "> Executing step: $1" >> "${LOG_FILE}"
     echo -e "\e[32m> Executing step: $1\e[0m"
     #Execute the command
     for command in "${@:3}"; do
-        echo "$> $command" >> ${LOG_FILE}
+        echo "$> $command" >> "${LOG_FILE}"
         if [[ ${build_verbose} -gt 0 ]]; then
             echo "$> $command"
         fi
@@ -72,18 +72,18 @@ function execute() {
         error=""
         if [[ ${build_verbose} -gt 0 ]]; then
             if [[ -f ${LOG_FILE}.tmp ]]; then
-                rm ${LOG_FILE}.tmp
+                rm "${LOG_FILE}.tmp"
             fi
-            ${command} |& tee ${LOG_FILE}.tmp | grep -E '^[^(/\S*/libstdc++.so\S*: no version information available)].*'
+            ${command} |& tee "${LOG_FILE}.tmp" | grep -E '^[^(/\S*/libstdc++.so\S*: no version information available)].*'
 
             error_code=${PIPESTATUS[0]}
-            error=$(cat ${LOG_FILE}.tmp)
-            cat ${LOG_FILE}.tmp >> ${LOG_FILE}
-            rm ${LOG_FILE}.tmp
+            error=$(cat "${LOG_FILE}.tmp")
+            cat "${LOG_FILE}.tmp" >> "${LOG_FILE}"
+            rm "${LOG_FILE}.tmp"
         else
             error=$(${command} 2>&1)
             error_code=$?
-            echo "$error" >> ${LOG_FILE}
+            echo "$error" >> "${LOG_FILE}"
         fi
 
 

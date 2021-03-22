@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
 # shellcheck disable=SC1090
-source "$(dirname "$0")/resolve_commands.sh"
 cd "$(dirname "$0")/../" || { echo "Failed to enter the base directory"; exit 1; }
-
 
 if [[ $# -lt 2 ]]; then
     echo "Invalid argument count!"
@@ -41,7 +39,7 @@ if [[ $_exit_code -ne 0 ]]; then
     exit 1
 fi
 
-echo "Generating required build tooks"
+echo "Generating required build hooks"
 chmod +x ./tools/build_trgen.sh
 ./tools/build_trgen.sh; _exit_code=$?
 if [[ $_exit_code -ne 0 ]]; then

@@ -2,7 +2,6 @@
 
 BASEDIR=$(dirname "$0")
 cd "$BASEDIR" || { echo "Failed to enter script base dir"; exit 1; }
-source ../scripts/resolve_commands.sh
 
 function generate_declaration() {
     echo "Generating declarations for project $1 ($2)"

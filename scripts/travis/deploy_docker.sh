@@ -2,13 +2,9 @@
 
 cd "$(dirname "$0")/../../" || { echo "Failed to enter base dir"; exit 1; }
 source ./scripts/travis/properties.sh
+source ./scripts/helper.sh
 
-git_rev=$(git rev-parse --short HEAD)
-[[ ! "$git_rev" =~ [a-z0-9]{6} ]] && {
-    echo "Failed to parse git rev. Received: '$git_rev'."
-    exit 1
-}
-
+git_rev=$(git_version "short-tag")
 if [[ "$1" == "release" ]]; then
     echo "Releasing $git_rev as release"
     rolling_tag="latest"
@@ -20,6 +16,7 @@ else
     exit 1
 fi
 
+# FIXME: This dosn't work anymore
 zip_file=$(find "$PACKAGES_DIRECTORY" -maxdepth 1 -name "TeaWeb-release*.zip" -print)
 [[ $(echo "$zip_file" | wc -l) -ne 1 ]] && {
     echo "Invalid .zip file count (Expected 1 but got $(echo "$zip_file" | wc -l)): ${zip_file[*]}"
