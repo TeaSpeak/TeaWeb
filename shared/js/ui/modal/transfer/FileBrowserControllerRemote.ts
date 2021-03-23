@@ -73,9 +73,18 @@ function parsePath(path: string, connection: ConnectionHandler): PathInfo {
 }
 
 export function initializeRemoteFileBrowserController(connection: ConnectionHandler, events: Registry<FileBrowserEvents>) {
+    /* currently selected files */
+    let currentPath = "/";
+    let currentPathInfo: PathInfo;
+    let selection: { name: string, type: FileType }[] = [];
+
     events.on("action_navigate_to", event => {
         try {
             const info = parsePath(event.path, connection);
+
+            currentPathInfo = info;
+            currentPath = event.path;
+            selection = [];
 
             events.fire_react("notify_current_path", {
                 path: event.path || "/",
@@ -368,20 +377,6 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 error: message
             });
         });
-    });
-
-    /* currently selected files */
-    let currentPath = "/";
-    let currentPathInfo: PathInfo;
-    let selection: { name: string, type: FileType }[] = [];
-    events.on("notify_current_path", result => {
-        if (result.status !== "success") {
-            return;
-        }
-
-        currentPathInfo = result.pathInfo;
-        currentPath = result.path;
-        selection = [];
     });
 
     events.on("query_current_path", () => events.fire_react("notify_current_path", {

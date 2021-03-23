@@ -148,15 +148,20 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
     protected defaultState(): NavigationBarState {
         return {
             currentPath: this.props.initialPath,
-            state: "normal",
+            state: "navigating",
         }
+    }
+
+    componentDidMount() {
+        this.props.events.fire("query_current_path");
     }
 
     render() {
         let input;
         let path = this.state.currentPath;
-        if (!path.endsWith("/"))
+        if (!path.endsWith("/")) {
             path += "/";
+        }
 
         if (this.state.state === "editing") {
             input = (
@@ -239,17 +244,19 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
 
     componentDidUpdate(prevProps: Readonly<NavigationBarProperties>, prevState: Readonly<NavigationBarState>, snapshot?: any): void {
         setTimeout(() => {
-            if (this.refRendered.current)
+            if (this.refRendered.current) {
                 this.refRendered.current.scrollLeft = 999999;
+            }
         }, 10);
     }
 
     private onPathClicked(event: React.MouseEvent, index: number) {
         let path;
-        if (index === -1)
+        if (index === -1) {
             path = "/";
-        else
+        } else {
             path = "/" + this.state.currentPath.split("/").filter(e => !!e).slice(0, index + 1).join("/") + "/";
+        }
         this.props.events.fire("action_navigate_to", {path: path});
 
         event.stopPropagation();
@@ -266,8 +273,9 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
     }
 
     private onInputPathBluer() {
-        if (this.state.state !== "editing" || this.ignoreBlur)
+        if (this.state.state !== "editing" || this.ignoreBlur) {
             return;
+        }
 
         this.setState({
             state: "normal"
@@ -1144,9 +1152,6 @@ export class FileBrowserRenderer extends ReactComponentBase<FileListTablePropert
         this.currentPath = this.props.initialPath;
 
         this.props.events.fire("query_current_path", {});
-        this.props.events.fire("query_files", {
-            path: this.currentPath
-        });
     }
 
     private onDrop(event: React.DragEvent) {

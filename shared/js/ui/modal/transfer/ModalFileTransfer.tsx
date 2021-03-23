@@ -27,18 +27,17 @@ class FileTransferModal extends InternalModal {
         this.remoteBrowseEvents.enableDebug("remote-file-browser");
         this.transferInfoEvents.enableDebug("transfer-info");
 
+        const path = this.defaultChannelId ? "/" + channelPathPrefix + this.defaultChannelId + "/" : "/";
         initializeRemoteFileBrowserController(server_connections.getActiveConnectionHandler(), this.remoteBrowseEvents);
         initializeTransferInfoController(server_connections.getActiveConnectionHandler(), this.transferInfoEvents);
-    }
-
-    protected onInitialize() {
-        const path = this.defaultChannelId ? "/" + channelPathPrefix + this.defaultChannelId + "/" : "/";
         this.remoteBrowseEvents.fire("action_navigate_to", { path: path });
     }
 
     protected onDestroy() {
         this.remoteBrowseEvents.fire("notify_destroy");
         this.transferInfoEvents.fire("notify_destroy");
+        this.remoteBrowseEvents.destroy();
+        this.transferInfoEvents.destroy();
     }
 
     renderTitle() {

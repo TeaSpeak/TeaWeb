@@ -3,6 +3,8 @@
     - Made the permission editor popoutable
     - Now using SVG flags for higher quality.
     - Fixed issue [#74](https://github.com/TeaSpeak/TeaWeb/issues/74) (Swiss flag box has black background)
+    - Fixed issue that middle clicking on the channel does not shows the channel file browser instead it shows the global one
+  
 * **21.03.21**
     - Reworked the server group assignment modal. It now better reacts to the user input as well is now popoutable
   
