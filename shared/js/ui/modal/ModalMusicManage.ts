@@ -799,7 +799,7 @@ function build_settings_container(event_registry: Registry<music_manage>, tag: J
                             e.classList.remove(klass);
                 });
                 flag.addClass("flag-" + input.toLowerCase());
-                flag.attr("title", i18nc.country_name(input, tr("Unknown country")));
+                flag.attr("title", i18nc.getCountryName(input, tr("Unknown country")));
             };
 
             event_registry.on("query_bot_status", event => {

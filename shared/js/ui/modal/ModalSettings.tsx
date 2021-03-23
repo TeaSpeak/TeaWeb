@@ -365,7 +365,7 @@ function settings_general_language(container: JQuery, modal: Modal) {
             container_current.empty();
 
             const language = current_translation ? current_translation.country_code : "gb";
-            $.spawn("div").addClass("country flag-" + language.toLowerCase()).attr('title', i18nc.country_name(language, tr("Unknown language"))).appendTo(container_current);
+            $.spawn("div").addClass("country flag-" + language.toLowerCase()).attr('title', i18nc.getCountryName(language, tr("Unknown language"))).appendTo(container_current);
             $.spawn("a").text(current_translation ? current_translation.name : tr("English (Default)")).appendTo(container_current);
         }).catch(error => {
             /* This shall never happen */
@@ -382,7 +382,7 @@ function settings_general_language(container: JQuery, modal: Modal) {
             const tag = template.renderTag({
                 type: "default",
                 selected: !currently_selected || currently_selected == "default",
-                fallback_country_name: i18nc.country_name('gb'),
+                fallback_country_name: i18nc.getCountryName('gb'),
             });
             tag.on('click', () => {
                 i18n.select_translation(undefined, undefined);
@@ -431,8 +431,8 @@ function settings_general_language(container: JQuery, modal: Modal) {
                         id: repo.unique_id,
                         country_code: translation.country_code,
                         selected: i18n.config.translation_config().current_translation_path == translation.path,
-                        fallback_country_name: i18nc.country_name('gb'),
-                        country_name: i18nc.country_name((translation.country_code || "XX").toLowerCase()),
+                        fallback_country_name: i18nc.getCountryName('gb'),
+                        country_name: i18nc.getCountryName((translation.country_code || "XX").toLowerCase()),
                     });
                     tag.find(".button-info").on('click', e => {
                         e.preventDefault();

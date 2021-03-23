@@ -16,7 +16,7 @@ import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {UiVariableConsumer} from "tc-shared/ui/utils/Variable";
 import {createIpcUiVariableConsumer, IpcVariableDescriptor} from "tc-shared/ui/utils/IpcVariable";
 import {AbstractModal} from "tc-shared/ui/react-elements/ModalDefinitions";
-import {CountryIcon} from "tc-shared/ui/react-elements/CountryIcon";
+import {CountryCode} from "tc-shared/ui/react-elements/CountryCode";
 
 const EventContext = React.createContext<Registry<ConnectUiEvents>>(undefined);
 const VariablesContext = React.createContext<UiVariableConsumer<ConnectUiVariables>>(undefined);
@@ -304,7 +304,7 @@ const HistoryTableEntry = React.memo((props: { entry: ConnectHistoryEntry, selec
                 {info ? info.password ? tr("Yes") : tr("No") : ""}
             </div>
             <div className={cssStyle.column + " " + cssStyle.country}>
-                {info ? <CountryIcon country={info.country || "xx"} key={"country"} /> : null}
+                {info ? <CountryCode alphaCode={info.country || "xx"} key={"country"} /> : null}
             </div>
             <div className={cssStyle.column + " " + cssStyle.clients}>
                 {info && info.maxClients !== -1 ? `${info.clients}/${info.maxClients}` : ""}

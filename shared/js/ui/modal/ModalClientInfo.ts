@@ -205,7 +205,7 @@ function apply_basic_info(client: ClientEntry, tag: JQuery, modal: Modal, callba
         const container = tag.find(".property-country");
         container.find(".value").empty().append(
             $.spawn("div").addClass("country flag-" + client.properties.client_country.toLowerCase()),
-            $.spawn("a").text(i18nc.country_name(client.properties.client_country, tr("Unknown")))
+            $.spawn("a").text(i18nc.getCountryName(client.properties.client_country, tr("Unknown")))
         );
     }
 

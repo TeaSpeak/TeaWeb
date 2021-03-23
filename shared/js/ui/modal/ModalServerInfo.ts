@@ -115,7 +115,7 @@ function apply_category_1(server: ServerEntry, tag: JQuery, update_callbacks: Se
         const container = tag.find(".server-region").empty();
         container.append(
             $.spawn("div").addClass("country flag-" + server.properties.virtualserver_country_code.toLowerCase()),
-            $.spawn("a").text(i18nc.country_name(server.properties.virtualserver_country_code, tr("Global")))
+            $.spawn("a").text(i18nc.getCountryName(server.properties.virtualserver_country_code, tr("Global")))
         );
     }
 

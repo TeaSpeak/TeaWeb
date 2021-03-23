@@ -30,7 +30,7 @@ import * as React from "react";
 import DefaultHeaderImage from "./header_background.png";
 import ServerInfoImage from "./serverinfo.png";
 import {IconTooltip} from "tc-shared/ui/react-elements/Tooltip";
-import {CountryIcon} from "tc-shared/ui/react-elements/CountryIcon";
+import {CountryCode} from "tc-shared/ui/react-elements/CountryCode";
 import {downloadTextAsFile, requestFileAsText} from "tc-shared/file/Utils";
 
 const EventContext = React.createContext<Registry<ModalBookmarkEvents>>(undefined);
@@ -598,7 +598,7 @@ const BookmarkInfoRenderer = React.memo(() => {
                 <div className={cssStyle.row}>
                     <div className={cssStyle.key}>{useTr("Server region")}</div>
                     <div className={cssStyle.value}>
-                        <CountryIcon country={bookmarkInfo?.serverRegion} />
+                        <CountryCode alphaCode={bookmarkInfo?.serverRegion} />
                     </div>
                 </div>
                 <div className={cssStyle.row}>

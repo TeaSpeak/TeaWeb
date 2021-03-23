@@ -24,6 +24,7 @@ import {ClientIcon} from "svg-sprites/client-icons";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {getIconManager} from "tc-shared/file/Icons";
 import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
+import {CountryCode} from "tc-shared/ui/react-elements/CountryCode";
 
 const cssStyle = require("./ClientInfoRenderer.scss");
 
@@ -176,10 +177,7 @@ const ClientCountry = React.memo(() => {
     return (
         <InfoBlock imageUrl={"img/icon_client_country.svg"}>
             <Translatable>Country</Translatable>
-            <>
-                <div className={cssStyle.country + " country flag-" + country?.flag.toLocaleLowerCase()} />
-                <a>{country?.name || tr("Unknown")}</a>
-            </>
+            <CountryCode alphaCode={country?.flag} className={cssStyle.country} />
         </InfoBlock>
     );
 });

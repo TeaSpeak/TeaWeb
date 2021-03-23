@@ -1,3 +1,12 @@
+/*
+Still is use by (grep -rne "flag-" -w shared/js/):
+shared/js/ui/modal/ModalClientInfo.ts
+shared/js/ui/modal/ModalMusicManage.ts
+shared/js/ui/modal/ModalServerInfo.ts
+shared/js/ui/modal/ModalSettings.tsx
+
+TODO: Remove when these modals have been reworked
+*/
 :global {
     .country {
         width: 16px;

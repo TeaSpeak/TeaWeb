@@ -197,6 +197,22 @@ export const config = async (env: any, target: "web" | "client"): Promise<Config
                             classUnionName: "ClientIconClass",
                             module: false
                         }
+                    },
+                    "country-flags": {
+                        folder: path.join(__dirname, "shared", "img", "country-flags"),
+                        cssClassPrefix: "flag-",
+                        cssOptions: [
+                            {
+                                scale: 1,
+                                selector: ".flag_em",
+                                unit: "em"
+                            }
+                        ],
+                        dtsOptions: {
+                            enumName: "CountryFlag",
+                            classUnionName: "CountryFlagClass",
+                            module: false
+                        }
                     }
                 }
             }),

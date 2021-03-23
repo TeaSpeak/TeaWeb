@@ -195,7 +195,7 @@ export class SelectedClientInfo {
     private updateCachedCountry(client: ClientEntry) {
         this.currentClientStatus.country = {
             flag: client.properties.client_country,
-            name: i18nc.country_name(client.properties.client_country.toUpperCase()),
+            name: i18nc.getCountryName(client.properties.client_country.toUpperCase()),
         };
     }
 
