@@ -6,7 +6,7 @@ node_js:
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get -y install coreutils
+  - sudo apt-get -y install realpath
   - chmod +x ./scripts/travis/build.sh
   - chmod +x ./scripts/travis/deploy_server.sh
   - chmod +x ./scripts/travis/deploy_github.sh
