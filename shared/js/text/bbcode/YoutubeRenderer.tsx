@@ -4,12 +4,11 @@ import {BBCodeHandlerContext, rendererReact, rendererText} from "tc-shared/text/
 import {ElementRenderer} from "vendor/xbbcode/renderer/base";
 import {TagElement} from "vendor/xbbcode/elements";
 import {BBCodeRenderer} from "tc-shared/text/bbcode";
-import {HTMLRenderer} from "tc-shared/ui/react-elements/HTMLRenderer";
-import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 import {copyToClipboard} from "tc-shared/utils/helpers";
 import {getIpcInstance, IPCChannel} from "tc-shared/ipc/BrowserIPC";
 import {useContext} from "react";
+import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 
 import IconPlay from "./YoutubePlayButton.svg";
 const cssStyle = require("./YoutubeRenderer.scss");

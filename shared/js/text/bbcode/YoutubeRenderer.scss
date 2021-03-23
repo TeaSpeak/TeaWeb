@@ -42,21 +42,15 @@
             position: absolute;
             top: 0;
             width: 100%;
-        }
 
-        :global {
-            .ytp-large-play-button-bg {
-                fill: #212121;
-                fill-opacity: .8;
+            fill: #212121;
+            fill-opacity: .8;
 
-                -moz-transition: fill .1s cubic-bezier(0.0,0.0,0.2,1),fill-opacity .1s cubic-bezier(0.0,0.0,0.2,1);
-                -webkit-transition: fill .1s cubic-bezier(0.0,0.0,0.2,1),fill-opacity .1s cubic-bezier(0.0,0.0,0.2,1);
-                transition: fill .1s cubic-bezier(0.0,0.0,0.2,1),fill-opacity .1s cubic-bezier(0.0,0.0,0.2,1);
-            }
+            transition: fill .1s cubic-bezier(0.0,0.0,0.2,1),fill-opacity .1s cubic-bezier(0.0,0.0,0.2,1);
         }
 
         &:hover {
-            :global(.ytp-large-play-button-bg) {
+            svg {
                 fill: #f00;
                 fill-opacity: 1;
             }
