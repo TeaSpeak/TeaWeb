@@ -559,13 +559,13 @@ class ServerClientList extends React.Component<{ events: Registry<PermissionModa
             </div>,
             <div key={"buttons"} className={cssStyle.buttons}>
                 <GroupsButton
-                    image={"img/icon_group_add.svg"}
+                    clientIcon={ClientIcon.GroupAdd}
                     alt={tr("Add client")}
                     disabled={this.state.disableClientAdd}
                     onClick={() => this.onClientAdd()}
                 />
                 <GroupsButton
-                    image={"img/icon_group_delete.svg"}
+                    clientIcon={ClientIcon.GroupDelete}
                     alt={tr("Remove client")}
                     disabled={this.state.disableClientRemove}
                     onClick={() => this.onClientRemove()}
