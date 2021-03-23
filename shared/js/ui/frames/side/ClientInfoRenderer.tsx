@@ -48,7 +48,7 @@ const Avatar = React.memo(() => {
                 <AvatarRenderer avatar={avatar} className={cssStyle.avatarImage + " " + (avatar === "loading" ? cssStyle.loading : "")} />
             </div>
             <div className={cssStyle.edit} onClick={() => events.fire("action_edit_avatar")}>
-                <img src="img/photo-camera.svg" alt={tr("Upload avatar")} />
+                <ClientIconRenderer icon={ClientIcon.AvatarUpload} className={cssStyle.icon} />
             </div>
         </div>
     )
@@ -154,7 +154,7 @@ const ClientOnlineSince = React.memo(() => {
     });
 
     return (
-        <InfoBlock imageUrl={"img/icon_client_online_time.svg"}>
+        <InfoBlock clientIcon={ClientIcon.ClientInfoOnlineTime}>
             <Translatable>Online since</Translatable>
             {onlineBody}
         </InfoBlock>
@@ -175,7 +175,7 @@ const ClientCountry = React.memo(() => {
     events.reactUse("notify_country", event => setCountry(event.country), undefined, []);
 
     return (
-        <InfoBlock imageUrl={"img/icon_client_country.svg"}>
+        <InfoBlock clientIcon={ClientIcon.ClientInfoCountry}>
             <Translatable>Country</Translatable>
             <CountryCode alphaCode={country?.flag} className={cssStyle.country} />
         </InfoBlock>
@@ -211,7 +211,7 @@ const ClientVolume = React.memo(() => {
     }
 
     return (
-        <InfoBlock imageUrl={"img/icon_client_volume.svg"} key={"volume"}>
+        <InfoBlock clientIcon={ClientIcon.ClientInfoVolume} key={"volume"}>
             <Translatable>Volume</Translatable>
             {body}
         </InfoBlock>
@@ -250,7 +250,7 @@ const ClientForumAccount = React.memo(() => {
 
 
     return (
-        <InfoBlock imageUrl={"img/icon_client_forum_account.svg"} valueClass={cssStyle.clientTeaforoAccount}>
+        <InfoBlock clientIcon={ClientIcon.ClientInfoForumAccount} valueClass={cssStyle.clientTeaforoAccount}>
             <Translatable>TeaSpeak Forum account</Translatable>
             <a href={"https://forum.teaspeak.de/index.php?members/" + forum.userId} target={"_blank"}>{text}</a>
         </InfoBlock>
@@ -283,7 +283,7 @@ const ClientVersion = React.memo(() => {
     }
 
     return (
-        <InfoBlock imageUrl={"img/icon_client_version.svg"}>
+        <InfoBlock clientIcon={ClientIcon.ClientInfoVersion}>
             <Translatable>Version</Translatable>
             {body}
         </InfoBlock>
@@ -339,7 +339,7 @@ const ClientStatus = React.memo(() => {
     }
 
     return (
-        <InfoBlock imageUrl={"img/icon_client_status.svg"} key={"status"} valueClass={cssStyle.status}>
+        <InfoBlock clientIcon={ClientIcon.ClientInfoStatus} key={"status"} valueClass={cssStyle.status}>
             <Translatable>Status</Translatable>
             <>{elements}</>
         </InfoBlock>

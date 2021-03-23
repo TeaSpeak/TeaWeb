@@ -303,7 +303,16 @@ export const config = async (env: any, target: "web" | "client"): Promise<Config
                 },
                 {
                     test: /\.svg$/,
-                    use: 'svg-inline-loader'
+                    use: [{
+                        loader: '@svgr/webpack',
+                        options: {
+                            svgoConfig: {
+                                plugins: {
+                                    removeViewBox: false
+                                }
+                            }
+                        }
+                    }],
                 },
                 {
                     test: /\.(png|jpg|jpeg|gif)?$/,
@@ -350,9 +359,13 @@ export const config = async (env: any, target: "web" | "client"): Promise<Config
             contentBase: path.join(__dirname, 'dist'),
             writeToDisk: true,
             compress: true,
+
+            /* hot dosn't work because of our loader */
             hot: false,
-            inline: false,
+            hotOnly: false,
+
             liveReload: false,
+            inline: false
         },
     };
 };

@@ -24,6 +24,7 @@
     "@babel/plugin-transform-runtime": "^7.10.4",
     "@babel/preset-env": "^7.10.4",
     "@google-cloud/translate": "^5.3.0",
+    "@svgr/webpack": "^5.5.0",
     "@types/dompurify": "^2.0.1",
     "@types/ejs": "^3.0.2",
     "@types/emoji-mart": "^3.0.2",

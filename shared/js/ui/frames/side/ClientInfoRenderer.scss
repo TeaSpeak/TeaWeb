@@ -177,6 +177,7 @@ $bot_thumbnail_height: 9em;
         position: absolute;
 
         display: none;
+        pointer-events: none;
 
         left: 0;
         right: 0;
@@ -186,32 +187,31 @@ $bot_thumbnail_height: 9em;
         z-index: 2;
 
         text-align: center;
+        overflow: hidden;
 
-        > img {
-            cursor: pointer;
+        border-radius: inherit;
+        cursor: pointer;
 
-            width: $client_info_avatar_size;
-            height: $client_info_avatar_size;
+        flex-direction: column;
+        justify-content: center;
+        opacity: 0;
 
-            padding: calc(#{$client_info_avatar_size} / 6);
+        transition: opacity $button_hover_animation_time ease-in-out;
 
-            overflow: hidden;
-            opacity: 0;
+        .icon {
+            font-size: $client_info_avatar_size * 0.7;
+            align-self: center;
+        }
 
-            &:hover {
-                opacity: 1;
-            }
-            @include transition(opacity $button_hover_animation_time ease-in-out);
+        &:hover {
+            opacity: .75;
         }
     }
 
     &.editable {
         .edit {
-            display: inline-block;
-        }
-
-        .edit:hover + .avatar {
-            opacity: .5;
+            display: flex;
+            pointer-events: all;
         }
     }
 }

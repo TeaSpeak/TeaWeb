@@ -13,7 +13,7 @@ import {getGlobalAvatarManagerFactory} from "tc-shared/file/Avatars";
 import {Settings, settings} from "tc-shared/settings";
 import {AbstractModal} from "tc-shared/ui/react-elements/ModalDefinitions";
 
-const iconNavbar = require("./icon-navbar.svg");
+import IconNavbar from "./icon-navbar.svg";
 const cssStyle = require("./Renderer.scss");
 
 const kLogPlayerEvents = true;
@@ -248,7 +248,7 @@ const ToggleSidebarButton = (props: { events: Registry<VideoViewerEvents> }) => 
 
     return (
         <div className={cssStyle.sidebarButton + " " + (visible ? "" : cssStyle.hidden)} onClick={() => props.events.fire("action_toggle_side_bar", { shown: true })}>
-            <HTMLRenderer purify={false}>{iconNavbar}</HTMLRenderer>
+            <IconNavbar />
         </div>
     );
 };

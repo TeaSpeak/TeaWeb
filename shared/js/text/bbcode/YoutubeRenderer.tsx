@@ -11,7 +11,7 @@ import {copyToClipboard} from "tc-shared/utils/helpers";
 import {getIpcInstance, IPCChannel} from "tc-shared/ipc/BrowserIPC";
 import {useContext} from "react";
 
-const playIcon = require("./yt-play-button.svg");
+import IconPlay from "./YoutubePlayButton.svg";
 const cssStyle = require("./YoutubeRenderer.scss");
 
 const patternYtVideoId = /^(?:http(?:s)?:\/\/)?(?:www\.)?(?:m\.)?(?:youtu\.be\/|youtube\.com\/(?:(?:watch)?\?(?:.*&)?v(?:i)?=|(?:embed|v|vi|user)\/))([^?&"'>]{10,11})$/;
@@ -67,7 +67,7 @@ export const YoutubeRenderer = (props: { children?: React.ReactElement | React.R
         >
             <img draggable={false} src={"https://img.youtube.com/vi/" + result[1] + "/hqdefault.jpg"} alt={"Video thumbnail"} title={tra("Youtube video {}", result[1])} />
             <button className={cssStyle.playButton} onClick={() => ipcChannel.sendMessage("w2g", { videoUrl: props.url, handlerId: handlerId })}>
-                <HTMLRenderer purify={false}>{playIcon}</HTMLRenderer>
+                <IconPlay />
             </button>
         </div>
     );
