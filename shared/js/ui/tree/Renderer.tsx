@@ -25,7 +25,9 @@ const ContainerView = (props: { tree: RDPChannelTree, events: Registry<ChannelTr
             let target = event.target as HTMLElement;
             while(target !== refContainer.current && target) { target = target.parentElement; }
 
-            focusWithin.current = !!target;
+            if(focusWithin.current) {
+                refContainer.current?.focus();
+            }
         });
 
         let keyListener;
@@ -55,7 +57,13 @@ const ContainerView = (props: { tree: RDPChannelTree, events: Registry<ChannelTr
     });
 
     return (
-        <div className={viewStyle.treeContainer} ref={refContainer}>
+        <div
+            className={viewStyle.treeContainer}
+            ref={refContainer}
+            onBlur={() => focusWithin.current = false}
+            onFocus={() => focusWithin.current = true}
+            tabIndex={1}
+        >
             <ChannelTreeView events={props.events} dataProvider={props.tree} ref={props.tree.refTree} />
             <PopoutButton tree={props.tree} ref={props.tree.refPopoutButton} />
         </div>
