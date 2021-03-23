@@ -322,10 +322,8 @@ html:root {
 
             @include transition(background-color .25s ease-in-out);
 
-            img {
-                width: 2.2em;
-                height: 2.2em;
-
+            .icon {
+                font-size: 2.2em;
                 align-self: center;
             }
         }

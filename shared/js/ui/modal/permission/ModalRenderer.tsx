@@ -25,6 +25,7 @@ import {ContextDivider} from "tc-shared/ui/react-elements/ContextDivider";
 import {EditorRenderer} from "tc-shared/ui/modal/permission/EditorRenderer";
 import {spawnContextMenu} from "tc-shared/ui/ContextMenu";
 import {ClientIcon} from "svg-sprites/client-icons";
+import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 
 const cssStyle = require("./ModalRenderer.scss");
 
@@ -33,11 +34,13 @@ const ModalEventContext = React.createContext<Registry<PermissionModalEvents>>(u
 const EditorEventContext = React.createContext<Registry<PermissionEditorEvents>>(undefined);
 const ServerInfoContext = React.createContext<PermissionEditorServerInfo>(undefined);
 
-const GroupsButton = (props: { image: string, alt: string, onClick?: () => void, disabled: boolean }) => {
+const GroupsButton = (props: { clientIcon: ClientIcon, alt: string, onClick?: () => void, disabled: boolean }) => {
     return (
-        <div className={cssStyle.button + " " + (props.disabled ? cssStyle.disabled : "")}
-             onClick={() => !props.disabled && props.onClick()}>
-            <img src={props.image} alt={props.alt}/>
+        <div
+            className={cssStyle.button + " " + (props.disabled ? cssStyle.disabled : "")}
+            onClick={() => !props.disabled && props.onClick()}
+        >
+            <ClientIconRenderer icon={props.clientIcon} className={cssStyle.icon} />
         </div>
     );
 };
@@ -177,7 +180,7 @@ class GroupsList extends React.PureComponent<{ events: Registry<PermissionModalE
             </div>,
             <div key={"buttons"} className={cssStyle.buttons}>
                 <GroupsButton
-                    image={"img/icon_group_add.svg"}
+                    clientIcon={ClientIcon.GroupAdd}
                     alt={this.props.target === "server" ? tr("Add server group") : tr("Add channel group")}
                     disabled={this.state.disableGroupAdd}
                     onClick={() => this.props.events.fire("action_create_group", {
@@ -186,13 +189,13 @@ class GroupsList extends React.PureComponent<{ events: Registry<PermissionModalE
                     })}
                 />
                 <GroupsButton
-                    image={"img/icon_group_rename.svg"}
+                    clientIcon={ClientIcon.GroupRename}
                     alt={this.props.target === "server" ? tr("Rename server group") : tr("Rename channel group")}
                     onClick={() => this.onGroupRename()}
                     disabled={this.state.disableGroupRename}
                 />
                 <GroupsButton
-                    image={"img/icon_group_permission_copy.svg"}
+                    clientIcon={ClientIcon.GroupPermissionCopy}
                     alt={this.props.target === "server" ? tr("Copy server group permissions") : tr("Copy channel group permissions")}
                     disabled={this.state.disablePermissionCopy}
                     onClick={() => this.props.events.fire("action_group_copy_permissions", {
@@ -201,7 +204,7 @@ class GroupsList extends React.PureComponent<{ events: Registry<PermissionModalE
                     })}
                 />
                 <GroupsButton
-                    image={"img/icon_group_delete.svg"}
+                    clientIcon={ClientIcon.GroupDelete}
                     alt={this.props.target === "server" ? tr("Delete server group") : tr("Delete channel group")}
                     disabled={this.state.disableDelete}
                     onClick={() => this.onGroupDelete()}
