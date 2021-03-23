@@ -62,22 +62,22 @@ class ManifestGenerator {
                 }
 
                 for(const module of compilation.chunkGraph.getChunkModules(chunk)) {
-                    const moduleId = compilation.chunkGraph.getModuleId(module);
-                    if(typeof moduleId === "string" && moduleId.startsWith("svg-sprites/")) {
+                    const identifier = module.identifier();
+                    if(typeof identifier === "string" && identifier.startsWith("svg-sprites/")) {
                         /* custom svg sprite handler */
                         modules.push({
                             id: module.id,
                             context: "svg-sprites",
-                            resource: moduleId.substring("svg-sprites/".length)
+                            resource: identifier.substring("svg-sprites/".length)
                         });
                         continue;
                     }
 
-                    if(!module.type.startsWith("javascript/")) {
+                    if(!module.context) {
                         continue;
                     }
 
-                    if(!module.context) {
+                    if(!module.type.startsWith("javascript/")) {
                         continue;
                     }
 
@@ -94,6 +94,7 @@ class ManifestGenerator {
                         throw "invalid context/resource relation (" + module.context + " <-> " + path.dirname(module.resource) + ")";
                     }
 
+                    const moduleId = compilation.chunkGraph.getModuleId(module);
                     modules.push({
                         id: moduleId,
                         context: path.relative(this.options.context, module.context).replace(/\\/g, "/"),

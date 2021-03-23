@@ -97,4 +97,10 @@ registerModal({
     popoutSupported: true
 });
 
+registerModal({
+    modalId: "modal-permission-edit",
+    classLoader: async () => await import("tc-shared/ui/modal/permission/ModalRenderer"),
+    popoutSupported: true
+});
+
 

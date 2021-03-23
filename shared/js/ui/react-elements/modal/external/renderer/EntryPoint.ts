@@ -85,7 +85,9 @@ async function initializeModalRenderer(taskId) {
     loader.setCurrentTaskName(taskId, tr("initializing modal class"));
     try {
         mainModalInstance = constructAbstractModalClass(modalClass, { windowed: true }, result.constructorArguments);
+        mainModalInstance["onInitialize"]();
         mainModalRenderer.renderModal(mainModalInstance);
+        mainModalInstance["onOpen"]();
     } catch(error) {
         loader.critical_error("Failed to invoker modal", "Lookup the console for more detail");
         logError(LogCategory.GENERAL,tr("Failed to load modal: %o"), error);

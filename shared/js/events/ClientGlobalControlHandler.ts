@@ -8,7 +8,7 @@ import {openBanList} from "../ui/modal/ModalBanList";
 import {formatMessage} from "../ui/frames/chat";
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {spawnSettingsModal} from "../ui/modal/ModalSettings";
-import {spawnPermissionEditorModal} from "../ui/modal/permission/ModalPermissionEditor";
+import {spawnPermissionEditorModal} from "../ui/modal/permission/ModalController";
 import {tr, tra} from "../i18n/localize";
 import {spawnGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-editor/Controller";
 import {spawnModalCssVariableEditor} from "tc-shared/ui/modal/css-editor/Controller";

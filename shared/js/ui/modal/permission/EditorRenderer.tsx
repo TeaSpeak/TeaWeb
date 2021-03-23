@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useEffect, useRef, useState} from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import {FlatInputField} from "tc-shared/ui/react-elements/InputField";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
@@ -11,125 +11,32 @@ import ResizeObserver from "resize-observer-polyfill";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {IconRenderer, RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {copyToClipboard} from "tc-shared/utils/helpers";
 import {createInfoModal} from "tc-shared/ui/elements/Modal";
 import {getIconManager} from "tc-shared/file/Icons";
+import {
+    EditorGroupedPermissions,
+    PermissionEditorEvents,
+    PermissionEditorMode
+} from "tc-shared/ui/modal/permission/EditorDefinitions";
+import {ContextMenuEntry, spawnContextMenu} from "tc-shared/ui/ContextMenu";
+import {Arrow} from "tc-shared/ui/react-elements/Arrow";
 
-const cssStyle = require("./PermissionEditor.scss");
+const cssStyle = require("./EditorRenderer.scss");
 
-export interface EditorGroupedPermissions {
-    groupId: string,
-    groupName: string,
-    permissions: {
-        id: number,
-        name: string;
-        description: string;
-    }[],
-    children: EditorGroupedPermissions[]
-}
+const EventContext = React.createContext<Registry<PermissionEditorEvents>>(undefined);
+const ServerInfoContext = React.createContext<{ handlerId: string, serverUniqueId: string }>(undefined);
 
-type PermissionEditorMode = "unset" | "no-permissions" | "normal";
+const ButtonIconPreview = React.memo(() => {
+    const serverInfo = useContext(ServerInfoContext);
+    const events = useContext(EventContext);
 
-export interface PermissionEditorEvents {
-    action_set_mode: { mode: PermissionEditorMode, failedPermission?: string }
-    action_toggle_client_button: { visible: boolean },
-    action_toggle_client_list: { visible: boolean },
-
-    action_set_filter: { filter?: string }
-    action_set_assigned_only: { value: boolean }
-
-    action_set_default_value: { value: number },
-
-    action_open_icon_select: { iconId?: number }
-    action_set_senseless_permissions: { permissions: string[] }
-
-    action_remove_permissions: {
-        permissions: {
-            name: string;
-            mode: "value" | "grant";
-        }[]
-    }
-    action_remove_permissions_result: {
-        permissions: {
-            name: string;
-            mode: "value" | "grant";
-            success: boolean;
-        }[]
-    }
-
-    action_set_permissions: {
-        permissions: {
-            name: string;
-
-            mode: "value" | "grant";
-
-            value?: number;
-            flagNegate?: boolean;
-            flagSkip?: boolean;
-        }[]
-    }
-    action_set_permissions_result: {
-        permissions: {
-            name: string;
-
-            mode: "value" | "grant";
-
-            newValue?: number; /* undefined if it didnt worked */
-            flagNegate?: boolean;
-            flagSkip?: boolean;
-        }[]
-    }
-
-    action_toggle_group: {
-        groupId: string | null; /* if null, all groups are affected */
-        collapsed: boolean;
-    }
-
-    action_start_permission_edit: {
-        target: "value" | "grant";
-        permission: string;
-        defaultValue: number;
-    },
-
-    action_add_permission_group: {
-        groupId: string,
-        mode: "value" | "grant";
-    },
-    action_remove_permission_group: {
-        groupId: string
-        mode: "value" | "grant";
-    }
-
-    query_permission_list: {},
-    query_permission_list_result: {
-        hideSenselessPermissions: boolean;
-        permissions: EditorGroupedPermissions[]
-    },
-
-    query_permission_values: {},
-    query_permission_values_result: {
-        status: "error" | "success"; /* no perms will cause a action_set_mode event with no permissions */
-
-        error?: string;
-        permissions?: {
-            name: string;
-            value?: number;
-            flagNegate?: boolean;
-            flagSkip?: boolean;
-            granted?: number;
-        }[]
-    }
-}
-
-const ButtonIconPreview = (props: { events: Registry<PermissionEditorEvents>, connection: ConnectionHandler }) => {
     const [iconId, setIconId] = useState(0);
     const [unset, setUnset] = useState(true);
 
-    props.events.reactUse("action_set_mode", event => setUnset(event.mode !== "normal"));
+    events.reactUse("action_set_mode", event => setUnset(event.mode !== "normal"));
 
-    props.events.reactUse("action_remove_permissions_result", event => {
+    events.reactUse("action_remove_permissions_result", event => {
         const iconPermission = event.permissions.find(e => e.name === PermissionType.I_ICON_ID);
         if (!iconPermission || !iconPermission.success) return;
 
@@ -137,7 +44,7 @@ const ButtonIconPreview = (props: { events: Registry<PermissionEditorEvents>, co
             setIconId(0);
     });
 
-    props.events.reactUse("action_set_permissions_result", event => {
+    events.reactUse("action_set_permissions_result", event => {
         const iconPermission = event.permissions.find(e => e.name === PermissionType.I_ICON_ID);
         if (!iconPermission) return;
 
@@ -145,7 +52,7 @@ const ButtonIconPreview = (props: { events: Registry<PermissionEditorEvents>, co
             setIconId(iconPermission.newValue);
     });
 
-    props.events.reactUse("query_permission_values_result", event => {
+    events.reactUse("query_permission_values_result", event => {
         if (event.status !== "success") {
             setIconId(0);
             return;
@@ -166,80 +73,94 @@ const ButtonIconPreview = (props: { events: Registry<PermissionEditorEvents>, co
 
     let icon;
     if (!unset && iconId > 0) {
-        icon = <RemoteIconRenderer key={"icon-" + iconId} icon={getIconManager().resolveIcon(iconId, props.connection.getCurrentServerUniqueId(), props.connection.handlerId)} />;
+        icon = <RemoteIconRenderer key={"icon-" + iconId} icon={getIconManager().resolveIcon(iconId, serverInfo.serverUniqueId, serverInfo.handlerId)} />;
     }
 
     return (
         <div className={cssStyle.containerIconSelect}>
             <div className={cssStyle.preview}
-                 onClick={() => props.events.fire("action_open_icon_select", {iconId: iconId})}>
+                 onClick={() => events.fire("action_open_icon_select", {iconId: iconId})}>
                 {icon}
             </div>
             <div className={cssStyle.containerDropdown}>
                 <div className={cssStyle.button}>
-                    <div className="arrow down"/>
+                    <Arrow direction={"down"} className={cssStyle.arrow} />
                 </div>
                 <div className={cssStyle.dropdown}>
-                    {iconId ? <div className={cssStyle.entry} key={"edit-icon"}
-                                   onClick={() => props.events.fire("action_open_icon_select", {iconId: iconId})}>
-                        <Translatable>Edit icon</Translatable>
-                    </div> : undefined}
-                    {iconId ? <div className={cssStyle.entry} key={"remove-icon"}
-                                   onClick={() => props.events.fire("action_remove_permissions", {
-                                       permissions: [{
-                                           name: PermissionType.I_ICON_ID,
-                                           mode: "value"
-                                       }]
-                                   })}>
-                        <Translatable>Remove icon</Translatable>
-                    </div> : undefined}
-                    {!iconId ? <div className={cssStyle.entry} key={"add-icon"}
-                                    onClick={() => props.events.fire("action_open_icon_select", {iconId: 0})}>
-                        <Translatable>Add icon</Translatable>
-                    </div> : undefined}
+                    {iconId ? (
+                        <div className={cssStyle.entry} key={"edit-icon"}
+                             onClick={() => events.fire("action_open_icon_select", {iconId: iconId})}>
+                            <Translatable>Edit icon</Translatable>
+                        </div>
+                    ) : undefined}
+                    {iconId ? (
+                        <div className={cssStyle.entry} key={"remove-icon"}
+                             onClick={() => events.fire("action_remove_permissions", {
+                                 permissions: [{
+                                     name: PermissionType.I_ICON_ID,
+                                     mode: "value"
+                                 }]
+                             })}>
+                            <Translatable>Remove icon</Translatable>
+                        </div>
+                    ) : undefined}
+                    {!iconId ? (
+                        <div className={cssStyle.entry} key={"add-icon"}
+                             onClick={() => events.fire("action_open_icon_select", {iconId: 0})}>
+                            <Translatable>Add icon</Translatable>
+                        </div>
+                    ) : undefined}
                 </div>
             </div>
         </div>
     );
-};
+});
 
-const ClientListButton = (props: { events: Registry<PermissionEditorEvents> }) => {
+const ClientListButton = () => {
+    const events = useContext(EventContext);
     const [visible, setVisible] = useState(true);
     const [toggled, setToggled] = useState(false);
 
-    props.events.reactUse("action_toggle_client_button", event => setVisible(event.visible));
-    props.events.reactUse("action_toggle_client_list", event => setToggled(event.visible));
+    events.reactUse("action_toggle_client_button", event => setVisible(event.visible));
+    events.reactUse("action_toggle_client_list", event => setToggled(event.visible));
 
     return <Button
         key={"button-clients"}
         className={cssStyle.clients + " " + (visible ? "" : cssStyle.hidden)}
         color={"green"}
-        onClick={() => props.events.fire("action_toggle_client_list", {visible: !toggled})}>
+        onClick={() => events.fire("action_toggle_client_list", {visible: !toggled})}>
         {toggled ? <Translatable key={"hide"}>Hide clients in group</Translatable> :
             <Translatable key={"show"}>Show clients in group</Translatable>}
     </Button>
 };
 
-const MenuBar = (props: { events: Registry<PermissionEditorEvents>, connection: ConnectionHandler }) => {
-    return <div className={cssStyle.containerMenuBar}>
-        <ClientListButton events={props.events}/>
-        <FlatInputField
-            className={cssStyle.filter}
+const MenuBar = React.memo(() => {
+    const events = useContext(EventContext);
 
-            label={<Translatable>Filter permissions</Translatable>}
-            labelType={"floating"}
-            labelClassName={cssStyle.label}
-            labelFloatingClassName={cssStyle.labelFloating}
-            onInput={text => props.events.fire("action_set_filter", {filter: text})}
-        />
-        <div className={cssStyle.options}>
-            <Switch initialState={false} label={<Translatable>Assigned only</Translatable>}
-                    onChange={state => props.events.fire("action_set_assigned_only", {value: state})}/>
-            { /* <Switch initialState={true} label={<Translatable>Editable only</Translatable>} /> */}
+    return (
+        <div className={cssStyle.containerMenuBar}>
+            <ClientListButton />
+            <FlatInputField
+                className={cssStyle.filter}
+
+                label={<Translatable>Filter permissions</Translatable>}
+                labelType={"floating"}
+                labelClassName={cssStyle.label}
+                labelFloatingClassName={cssStyle.labelFloating}
+                onInput={text => events.fire("action_set_filter", {filter: text})}
+            />
+            <div className={cssStyle.options}>
+                <Switch
+                    initialState={false}
+                    label={<Translatable>Assigned only</Translatable>}
+                    onChange={state => events.fire("action_set_assigned_only", {value: state})}
+                />
+                { /* <Switch initialState={true} label={<Translatable>Editable only</Translatable>} /> */}
+            </div>
+            <ButtonIconPreview />
         </div>
-        <ButtonIconPreview events={props.events} connection={props.connection}/>
-    </div>;
-};
+    );
+});
 
 interface LinkedGroupedPermissions {
     groupId: string;
@@ -266,8 +187,7 @@ interface LinkedGroupedPermissions {
     elementVisible: boolean;
 }
 
-const PermissionEntryRow = (props: {
-    events: Registry<PermissionEditorEvents>,
+const PermissionEntryRow = React.memo((props: {
     groupId: string,
     permission: string,
     value: PermissionValue,
@@ -277,6 +197,8 @@ const PermissionEntryRow = (props: {
     defaultValue: number,
     description: string
 }) => {
+    const events = useContext(EventContext);
+
     const [defaultValue, setDefaultValue] = useState(props.defaultValue);
     const [value, setValue] = useState<number>(props.value.value);
     const [forceValueUpdate, setForceValueUpdate] = useState(false);
@@ -306,7 +228,7 @@ const PermissionEntryRow = (props: {
         if (isBoolPermission) {
             valueElement = <Switch ref={refValueB} key={"value-b"} initialState={value >= 1} disabled={valueApplying}
                                    onChange={flag => {
-                                       props.events.fire("action_set_permissions", {
+                                       events.fire("action_set_permissions", {
                                            permissions: [{
                                                name: props.permission,
                                                mode: "value",
@@ -337,7 +259,7 @@ const PermissionEntryRow = (props: {
                                }
 
                                setForceValueUpdate(false);
-                               props.events.fire("action_remove_permissions", {
+                               events.fire("action_remove_permissions", {
                                    permissions: [{
                                        name: props.permission,
                                        mode: "value"
@@ -352,7 +274,7 @@ const PermissionEntryRow = (props: {
                                }
 
                                setForceValueUpdate(false);
-                               props.events.fire("action_set_permissions", {
+                               events.fire("action_set_permissions", {
                                    permissions: [{
                                        name: props.permission,
                                        mode: "value",
@@ -367,7 +289,7 @@ const PermissionEntryRow = (props: {
         }
 
         skipElement = <Switch key={"skip"} initialState={flagSkip} disabled={valueApplying} onChange={flag => {
-            props.events.fire("action_set_permissions", {
+            events.fire("action_set_permissions", {
                 permissions: [{
                     name: props.permission,
                     mode: "value",
@@ -378,7 +300,7 @@ const PermissionEntryRow = (props: {
             });
         }}/>;
         negateElement = <Switch key={"negate"} initialState={flagNegated} disabled={valueApplying} onChange={flag => {
-            props.events.fire("action_set_permissions", {
+            events.fire("action_set_permissions", {
                 permissions: [{
                     name: props.permission,
                     mode: "value",
@@ -392,51 +314,67 @@ const PermissionEntryRow = (props: {
 
     if (typeof granted === "number") {
         if (grantedApplying) {
-            grantedElement =
-                <input key={"grant-applying"} className={cssStyle.applying} type="number" placeholder={tr("applying")}
-                       readOnly={true} onChange={() => {
-                }}/>;
+            grantedElement = (
+                <input
+                    key={"grant-applying"}
+                    className={cssStyle.applying}
+                    type="number"
+                    placeholder={tr("applying")}
+                    readOnly={true}
+                    onChange={() => {}}
+                />
+            );
         } else {
-            grantedElement = <input ref={refGranted} key={"grant"} type="number" defaultValue={granted} onBlur={() => {
-                setGrantedEditing(false);
-                if (!refGranted.current)
-                    return;
+            grantedElement = (
+                <input
+                    ref={refGranted}
+                    key={"grant"}
+                    type="number"
+                    defaultValue={granted}
+                    onBlur={() => {
+                        setGrantedEditing(false);
+                        if (!refGranted.current)
+                            return;
 
-                const newValue = refGranted.current.value;
-                if (newValue === "") {
-                    if (typeof granted === "undefined")
-                        return;
+                        const newValue = refGranted.current.value;
+                        if (newValue === "") {
+                            if (typeof granted === "undefined")
+                                return;
 
-                    setForceGrantedUpdate(true);
-                    props.events.fire("action_remove_permissions", {
-                        permissions: [{
-                            name: props.permission,
-                            mode: "grant"
-                        }]
-                    });
-                } else {
-                    const numberValue = parseInt(newValue);
-                    if (isNaN(numberValue)) return;
-                    if (numberValue === granted && !forceGrantedUpdate) {
-                        /* no change */
-                        return;
-                    }
+                            setForceGrantedUpdate(true);
+                            events.fire("action_remove_permissions", {
+                                permissions: [{
+                                    name: props.permission,
+                                    mode: "grant"
+                                }]
+                            });
+                        } else {
+                            const numberValue = parseInt(newValue);
+                            if (isNaN(numberValue)) return;
+                            if (numberValue === granted && !forceGrantedUpdate) {
+                                /* no change */
+                                return;
+                            }
 
-                    setForceGrantedUpdate(true);
-                    props.events.fire("action_set_permissions", {
-                        permissions: [{
-                            name: props.permission,
-                            mode: "grant",
-                            value: numberValue
-                        }]
-                    });
-                }
-            }} onChange={() => {
-            }} onKeyPress={e => e.key === "Enter" && e.currentTarget.blur()}/>;
+                            setForceGrantedUpdate(true);
+                            events.fire("action_set_permissions", {
+                                permissions: [{
+                                    name: props.permission,
+                                    mode: "grant",
+                                    value: numberValue
+                                }]
+                            });
+                        }
+                    }}
+                    onChange={() => {
+                    }}
+                    onKeyPress={e => e.key === "Enter" && e.currentTarget.blur()}
+                />
+            );
         }
     }
 
-    props.events.reactUse("action_start_permission_edit", event => {
+    events.reactUse("action_start_permission_edit", event => {
         if (event.permission !== props.permission)
             return;
 
@@ -447,7 +385,7 @@ const PermissionEntryRow = (props: {
         } else {
             if (isBoolPermission && typeof value === "undefined") {
                 setValue(event.defaultValue >= 1 ? 1 : 0);
-                props.events.fire("action_set_permissions", {
+                events.fire("action_set_permissions", {
                     permissions: [{
                         name: props.permission,
                         mode: "value",
@@ -464,7 +402,7 @@ const PermissionEntryRow = (props: {
         }
     });
 
-    props.events.reactUse("action_set_permissions", event => {
+    events.reactUse("action_set_permissions", event => {
         const values = event.permissions.find(e => e.name === props.permission);
         if (!values) return;
 
@@ -477,7 +415,7 @@ const PermissionEntryRow = (props: {
         }
     });
 
-    props.events.reactUse("action_set_permissions_result", event => {
+    events.reactUse("action_set_permissions_result", event => {
         const result = event.permissions.find(e => e.name === props.permission);
         if (!result) return;
 
@@ -518,7 +456,7 @@ const PermissionEntryRow = (props: {
         }
     });
 
-    props.events.reactUse("action_remove_permissions", event => {
+    events.reactUse("action_remove_permissions", event => {
         const modes = event.permissions.find(e => e.name === props.permission);
         if (!modes) return;
 
@@ -533,7 +471,7 @@ const PermissionEntryRow = (props: {
             setGrantedApplying(true);
     });
 
-    props.events.reactUse("action_remove_permissions_result", event => {
+    events.reactUse("action_remove_permissions_result", event => {
         const modes = event.permissions.find(e => e.name === props.permission);
         if (!modes) return;
 
@@ -553,7 +491,7 @@ const PermissionEntryRow = (props: {
         }
     });
 
-    props.events.reactUse("action_set_default_value", event => setDefaultValue(event.value));
+    events.reactUse("action_set_default_value", event => setDefaultValue(event.value));
 
     useEffect(() => {
         if (grantedEditing)
@@ -573,7 +511,7 @@ const PermissionEntryRow = (props: {
                 if (e.isDefaultPrevented())
                     return;
 
-                props.events.fire("action_start_permission_edit", {
+                events.fire("action_start_permission_edit", {
                     permission: props.permission,
                     target: "value",
                     defaultValue: defaultValue
@@ -583,12 +521,12 @@ const PermissionEntryRow = (props: {
             onContextMenu={e => {
                 e.preventDefault();
 
-                let entries: contextmenu.MenuEntry[] = [];
+                let entries: ContextMenuEntry[] = [];
                 if (typeof value === "undefined") {
                     entries.push({
-                        type: contextmenu.MenuEntryType.ENTRY,
-                        name: tr("Add permission"),
-                        callback: () => props.events.fire("action_start_permission_edit", {
+                        type: "normal",
+                        label: tr("Add permission"),
+                        click: () => events.fire("action_start_permission_edit", {
                             permission: props.permission,
                             target: "value",
                             defaultValue: defaultValue
@@ -596,9 +534,9 @@ const PermissionEntryRow = (props: {
                     });
                 } else {
                     entries.push({
-                        type: contextmenu.MenuEntryType.ENTRY,
-                        name: tr("Remove permission"),
-                        callback: () => props.events.fire("action_remove_permissions", {
+                        type: "normal",
+                        label: tr("Remove permission"),
+                        click: () => events.fire("action_remove_permissions", {
                             permissions: [{
                                 name: props.permission,
                                 mode: "value"
@@ -609,9 +547,9 @@ const PermissionEntryRow = (props: {
 
                 if (typeof granted === "undefined") {
                     entries.push({
-                        type: contextmenu.MenuEntryType.ENTRY,
-                        name: tr("Add grant permission"),
-                        callback: () => props.events.fire("action_start_permission_edit", {
+                        type: "normal",
+                        label: tr("Add grant permission"),
+                        click: () => events.fire("action_start_permission_edit", {
                             permission: props.permission,
                             target: "grant",
                             defaultValue: defaultValue
@@ -619,9 +557,9 @@ const PermissionEntryRow = (props: {
                     });
                 } else {
                     entries.push({
-                        type: contextmenu.MenuEntryType.ENTRY,
-                        name: tr("Remove grant permission"),
-                        callback: () => props.events.fire("action_remove_permissions", {
+                        type: "normal",
+                        label: tr("Remove grant permission"),
+                        click: () => events.fire("action_remove_permissions", {
                             permissions: [{
                                 name: props.permission,
                                 mode: "grant"
@@ -629,28 +567,27 @@ const PermissionEntryRow = (props: {
                         })
                     });
                 }
-
-                entries.push(contextmenu.Entry.HR());
+                entries.push({ type: "separator" });
                 entries.push({
-                    type: contextmenu.MenuEntryType.ENTRY,
-                    name: tr("Collapse group"),
-                    callback: () => props.events.fire("action_toggle_group", {groupId: props.groupId, collapsed: true})
+                    type: "normal",
+                    label: tr("Collapse group"),
+                    click: () => events.fire("action_toggle_group", {groupId: props.groupId, collapsed: true})
                 });
                 entries.push({
-                    type: contextmenu.MenuEntryType.ENTRY,
-                    name: tr("Expend all"),
-                    callback: () => props.events.fire("action_toggle_group", {groupId: null, collapsed: false})
+                    type: "normal",
+                    label: tr("Expend all"),
+                    click: () => events.fire("action_toggle_group", {groupId: null, collapsed: false})
                 });
                 entries.push({
-                    type: contextmenu.MenuEntryType.ENTRY,
-                    name: tr("Collapse all"),
-                    callback: () => props.events.fire("action_toggle_group", {groupId: null, collapsed: true})
+                    type: "normal",
+                    label: tr("Collapse all"),
+                    click: () => events.fire("action_toggle_group", {groupId: null, collapsed: true})
                 });
-                entries.push(contextmenu.Entry.HR());
+                entries.push({ type: "separator" });
                 entries.push({
-                    type: contextmenu.MenuEntryType.ENTRY,
-                    name: tr("Show permission description"),
-                    callback: () => {
+                    type: "normal",
+                    label: tr("Show permission description"),
+                    click: () => {
                         createInfoModal(
                             tr("Permission description"),
                             tr("Permission description for permission ") + props.permission + ": <br>" + props.description
@@ -658,12 +595,12 @@ const PermissionEntryRow = (props: {
                     }
                 });
                 entries.push({
-                    type: contextmenu.MenuEntryType.ENTRY,
-                    name: tr("Copy permission name"),
-                    callback: () => copyToClipboard(props.permission)
+                    type: "normal",
+                    label: tr("Copy permission name"),
+                    click: () => copyToClipboard(props.permission)
                 });
 
-                contextmenu.spawn_context_menu(e.pageX, e.pageY, ...entries);
+                spawnContextMenu({ pageX: e.pageX, pageY: e.pageY }, entries);
             }}
         >
             <div className={cssStyle.columnName}>
@@ -673,7 +610,7 @@ const PermissionEntryRow = (props: {
             <div className={cssStyle.columnSkip}>{skipElement}</div>
             <div className={cssStyle.columnNegate}>{negateElement}</div>
             <div className={cssStyle.columnGranted} onDoubleClick={e => {
-                props.events.fire("action_start_permission_edit", {
+                events.fire("action_start_permission_edit", {
                     permission: props.permission,
                     target: "grant",
                     defaultValue: defaultValue
@@ -682,12 +619,13 @@ const PermissionEntryRow = (props: {
             }}>{grantedElement}</div>
         </div>
     );
-};
+});
 
-const PermissionGroupRow = (props: { events: Registry<PermissionEditorEvents>, group: LinkedGroupedPermissions, isOdd: boolean, offsetTop: number }) => {
+const PermissionGroupRow = React.memo((props: { group: LinkedGroupedPermissions, isOdd: boolean, offsetTop: number }) => {
+    const events = useContext(EventContext);
     const [collapsed, setCollapsed] = useState(props.group.collapsed);
 
-    props.events.reactUse("action_toggle_group", event => {
+    events.reactUse("action_toggle_group", event => {
         if (event.groupId !== null && event.groupId !== props.group.groupId)
             return;
 
@@ -699,82 +637,86 @@ const PermissionGroupRow = (props: { events: Registry<PermissionEditorEvents>, g
              style={{paddingLeft: props.group.depth + "em", top: props.offsetTop}} onContextMenu={e => {
             e.preventDefault();
 
-            let entries = [];
+            let entries: ContextMenuEntry[] = [];
             entries.push({
-                type: contextmenu.MenuEntryType.ENTRY,
-                name: tr("Add permissions to this group"),
-                callback: () => props.events.fire("action_add_permission_group", {
+                type: "normal",
+                label: tr("Add permissions to this group"),
+                click: () => events.fire("action_add_permission_group", {
                     groupId: props.group.groupId,
                     mode: "value"
                 })
             });
             entries.push({
-                type: contextmenu.MenuEntryType.ENTRY,
-                name: tr("Remove permissions from this group"),
-                callback: () => props.events.fire("action_remove_permission_group", {
+                type: "normal",
+                label: tr("Remove permissions from this group"),
+                click: () => events.fire("action_remove_permission_group", {
                     groupId: props.group.groupId,
                     mode: "value"
                 })
             });
             entries.push({
-                type: contextmenu.MenuEntryType.ENTRY,
-                name: tr("Add granted permissions to this group"),
-                callback: () => props.events.fire("action_add_permission_group", {
+                type: "normal",
+                label: tr("Add granted permissions to this group"),
+                click: () => events.fire("action_add_permission_group", {
                     groupId: props.group.groupId,
                     mode: "grant"
                 })
             });
             entries.push({
-                type: contextmenu.MenuEntryType.ENTRY,
-                name: tr("Remove granted permissions from this group"),
-                callback: () => props.events.fire("action_remove_permission_group", {
+                type: "normal",
+                label: tr("Remove granted permissions from this group"),
+                click: () => events.fire("action_remove_permission_group", {
                     groupId: props.group.groupId,
                     mode: "grant"
                 })
             });
-            entries.push(contextmenu.Entry.HR());
+            entries.push({ type: "separator" });
             if (collapsed) {
                 entries.push({
-                    type: contextmenu.MenuEntryType.ENTRY,
-                    name: tr("Expend group"),
-                    callback: () => props.events.fire("action_toggle_group", {
+                    type: "normal",
+                    label: tr("Expend group"),
+                    click: () => events.fire("action_toggle_group", {
                         groupId: props.group.groupId,
                         collapsed: false
                     })
                 });
             } else {
                 entries.push({
-                    type: contextmenu.MenuEntryType.ENTRY,
-                    name: tr("Collapse group"),
-                    callback: () => props.events.fire("action_toggle_group", {
+                    type: "normal",
+                    label: tr("Collapse group"),
+                    click: () => events.fire("action_toggle_group", {
                         groupId: props.group.groupId,
                         collapsed: true
                     })
                 });
             }
             entries.push({
-                type: contextmenu.MenuEntryType.ENTRY,
-                name: tr("Expend all"),
-                callback: () => props.events.fire("action_toggle_group", {groupId: null, collapsed: false})
+                type: "normal",
+                label: tr("Expend all"),
+                click: () => events.fire("action_toggle_group", {groupId: null, collapsed: false})
             });
             entries.push({
-                type: contextmenu.MenuEntryType.ENTRY,
-                name: tr("Collapse all"),
-                callback: () => props.events.fire("action_toggle_group", {groupId: null, collapsed: true})
+                type: "normal",
+                label: tr("Collapse all"),
+                click: () => events.fire("action_toggle_group", {groupId: null, collapsed: true})
             });
-            contextmenu.spawn_context_menu(e.pageX, e.pageY, ...entries);
+
+            spawnContextMenu({ pageX: e.pageX, pageY: e.pageY }, entries);
         }}
-             onDoubleClick={() => props.events.fire("action_toggle_group", {
+             onDoubleClick={() => events.fire("action_toggle_group", {
                  collapsed: !collapsed,
                  groupId: props.group.groupId
              })}
         >
             <div className={cssStyle.columnName}>
-                <div className={"arrow " + (collapsed ? "right" : "down")}
-                     onClick={() => props.events.fire("action_toggle_group", {
-                         collapsed: !collapsed,
-                         groupId: props.group.groupId
-                     })}/>
+                <Arrow
+                    className={cssStyle.arrow}
+                    direction={collapsed ? "right" : "down"}
+                    onClick={() => events.fire("action_toggle_group", {
+                        collapsed: !collapsed,
+                        groupId: props.group.groupId
+                    })}
+                />
                 <div className={cssStyle.groupName} title={/* @tr-ignore */ tr(props.group.groupName)}>
                     <Translatable trIgnore={true}>{props.group.groupName}</Translatable>
                 </div>
@@ -785,7 +727,7 @@ const PermissionGroupRow = (props: { events: Registry<PermissionEditorEvents>, g
             <div className={cssStyle.columnGranted}/>
         </div>
     );
-};
+});
 
 type PermissionValue = { value?: number, flagNegate?: boolean, flagSkip?: boolean, granted?: number };
 
@@ -835,18 +777,20 @@ class PermissionList extends React.Component<{ events: Registry<PermissionEditor
                          return;
 
                      e.preventDefault();
-                     contextmenu.spawn_context_menu(e.pageX, e.pageY, {
-                         type: contextmenu.MenuEntryType.ENTRY,
-                         name: tr("Expend all"),
-                         callback: () => this.props.events.fire("action_toggle_group", {
-                             groupId: null,
-                             collapsed: false
-                         })
-                     }, {
-                         type: contextmenu.MenuEntryType.ENTRY,
-                         name: tr("Collapse all"),
-                         callback: () => this.props.events.fire("action_toggle_group", {groupId: null, collapsed: true})
-                     });
+                     spawnContextMenu({ pageX: e.pageX, pageY: e.pageY }, [
+                         {
+                             type: "normal",
+                             label: tr("Expend all"),
+                             click: () => this.props.events.fire("action_toggle_group", {
+                                 groupId: null,
+                                 collapsed: false
+                             })
+                         }, {
+                             type: "normal",
+                             label: tr("Collapse all"),
+                             click: () => this.props.events.fire("action_toggle_group", {groupId: null, collapsed: true})
+                         }
+                     ]);
                  }}>
                 {elements}
                 <div key={"space"} className={cssStyle.spaceAllocator}
@@ -1225,7 +1169,7 @@ class PermissionList extends React.Component<{ events: Registry<PermissionEditor
         while (currentGroup) {
             if (currentGroup.elementVisible) {
                 this.currentListElements.push(<PermissionGroupRow key={"group-" + currentGroup.groupId}
-                                                                  events={this.props.events} group={currentGroup}
+                                                                  group={currentGroup}
                                                                   isOdd={index % 2 === 1}
                                                                   offsetTop={this.heightPerElement * index}/>);
                 index++;
@@ -1245,7 +1189,6 @@ class PermissionList extends React.Component<{ events: Registry<PermissionEditor
 
                 this.currentListElements.push(<PermissionEntryRow
                     key={"permission-" + e.name + " - " + Math.random()} /* force a update of this */
-                    events={this.props.events}
                     permission={e.name}
                     groupId={currentGroup.groupId}
                     isOdd={index % 2 === 1}
@@ -1265,11 +1208,12 @@ class PermissionList extends React.Component<{ events: Registry<PermissionEditor
     }
 }
 
-const PermissionTable = (props: { events: Registry<PermissionEditorEvents> }) => {
+const PermissionTable = React.memo(() => {
+    const events = useContext(EventContext);
     const [mode, setMode] = useState<PermissionEditorMode>("unset");
     const [failedPermission, setFailedPermission] = useState(undefined);
 
-    props.events.reactUse("action_set_mode", event => {
+    events.reactUse("action_set_mode", event => {
         setMode(event.mode);
         setFailedPermission(event.failedPermission);
     });
@@ -1295,25 +1239,28 @@ const PermissionTable = (props: { events: Registry<PermissionEditorEvents> }) =>
                     </div>
                 </div>
             </div>
-            <PermissionList events={props.events}/>
+            <PermissionList events={events} />
             <div className={cssStyle.overlay + " " + cssStyle.unset + " " + (mode === "unset" ? "" : cssStyle.hidden)}/>
 
             <div
                 className={cssStyle.overlay + " " + cssStyle.noPermissions + " " + (mode === "no-permissions" ? "" : cssStyle.hidden)}>
-                <a><Translatable>You don't have the permissions to view this
-                    permissions</Translatable><br/>({failedPermission})</a>
+                <a>
+                    <Translatable>You don't have the permissions to view this permissions</Translatable><br/>
+                    ({failedPermission})
+                </a>
             </div>
         </div>
     );
-};
+});
 
-const RefreshButton = (props: { events: Registry<PermissionEditorEvents> }) => {
+const RefreshButton = React.memo(() => {
+    const events = useContext(EventContext);
     const [unset, setUnset] = useState(true);
     const [nextTime, setNextTime] = useState(0);
     const refButton = useRef<Button>();
 
-    props.events.reactUse("action_set_mode", event => setUnset(event.mode !== "normal" && event.mode !== "no-permissions"));
-    props.events.reactUse("query_permission_values", () => {
+    events.reactUse("action_set_mode", event => setUnset(event.mode !== "normal" && event.mode !== "no-permissions"));
+    events.reactUse("query_permission_values", () => {
         setNextTime(Date.now() + 5000);
         refButton.current?.setState({disabled: true});
     });
@@ -1331,14 +1278,15 @@ const RefreshButton = (props: { events: Registry<PermissionEditorEvents> }) => {
     return <Button
         ref={refButton}
         disabled={unset || Date.now() < nextTime}
-        onClick={() => props.events.fire("query_permission_values")}
+        onClick={() => events.fire("query_permission_values")}
     >
         <IconRenderer icon={"client-check_update"}/> <Translatable>Update</Translatable>
     </Button>
-};
+});
 
 interface PermissionEditorProperties {
-    connection: ConnectionHandler;
+    handlerId: string;
+    serverUniqueId: string;
     events: Registry<PermissionEditorEvents>;
 }
 
@@ -1346,18 +1294,22 @@ interface PermissionEditorState {
     state: "no-permissions" | "unset" | "normal";
 }
 
-export class PermissionEditor extends React.Component<PermissionEditorProperties, PermissionEditorState> {
+export class EditorRenderer extends React.Component<PermissionEditorProperties, PermissionEditorState> {
     render() {
-        return [
-            <MenuBar key={"menu-bar"} events={this.props.events} connection={this.props.connection}/>,
-            <PermissionTable key={"table"} events={this.props.events}/>,
-            <div key={"footer"} className={cssStyle.containerFooter}>
-                <RefreshButton events={this.props.events}/>
-            </div>
-        ];
+        return (
+            <EventContext.Provider value={this.props.events}>
+                <ServerInfoContext.Provider value={{ serverUniqueId: this.props.serverUniqueId, handlerId: this.props.handlerId }}>
+                    <MenuBar key={"menu-bar"} />
+                    <PermissionTable key={"table"} />
+                    <div key={"footer"} className={cssStyle.containerFooter}>
+                        <RefreshButton />
+                    </div>
+                </ServerInfoContext.Provider>
+            </EventContext.Provider>
+        );
     }
 
     componentDidMount(): void {
-        this.props.events.fire("action_set_mode", {mode: "unset"});
+        this.props.events.fire("action_set_mode", { mode: "unset" });
     }
 }

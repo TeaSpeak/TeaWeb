@@ -55,6 +55,7 @@ export class InternalModalInstance implements ModalInstanceController {
 
         try {
             this.modalInstance = constructAbstractModalClass(modalClass.default, { windowed: false }, this.constructorArguments);
+            this.modalInstance["onInitialize"]();
         } catch (error) {
             logError(LogCategory.GENERAL, tr("Failed to create new modal of instance type %s: %o"), this.modalKlass.modalId, error);
             throw tr("failed to create new modal instance");
@@ -153,11 +154,11 @@ export class InternalModalInstance implements ModalInstanceController {
         this.events.destroy();
     }
 
-    private getCloseCallback() {
+    protected getCloseCallback() {
         return () => this.events.fire("action_close");
     }
 
-    private getPopoutCallback() {
+    protected getPopoutCallback() {
         if(!this.modalKlass.popoutSupported) {
             return undefined;
         }
@@ -169,7 +170,7 @@ export class InternalModalInstance implements ModalInstanceController {
         return () => this.events.fire("action_popout");
     }
 
-    private getMinimizeCallback() {
+    protected getMinimizeCallback() {
         /* We can't minimize any windows */
         return undefined;
     }

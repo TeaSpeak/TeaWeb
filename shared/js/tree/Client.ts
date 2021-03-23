@@ -20,7 +20,7 @@ import {spawnYesNo} from "../ui/modal/ModalYesNo";
 import * as hex from "../crypto/hex";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 import {spawnClientVolumeChange, spawnMusicBotVolumeChange} from "../ui/modal/ModalChangeVolumeNew";
-import {spawnPermissionEditorModal} from "../ui/modal/permission/ModalPermissionEditor";
+import {spawnPermissionEditorModal} from "../ui/modal/permission/ModalController";
 import {global_client_actions} from "../events/GlobalEvents";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {VoiceClient} from "../voice/VoiceClient";
@@ -465,7 +465,10 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
                     type: contextmenu.MenuEntryType.ENTRY,
                     icon_class: "client-permission_client",
                     name: tr("Client channel permissions"),
-                    callback: () => spawnPermissionEditorModal(this.channelTree.client, "client-channel", { clientDatabaseId: this.properties.client_database_id })
+                    callback: () => spawnPermissionEditorModal(this.channelTree.client, "client-channel", {
+                        clientDatabaseId: this.properties.client_database_id,
+                        channelId: this.currentChannel()?.channelId
+                    })
                 }
             ]
         }];

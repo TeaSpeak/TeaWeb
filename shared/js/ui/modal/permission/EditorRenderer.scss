@@ -121,7 +121,7 @@ html:root {
             .button {
                 text-align: center;
 
-                :global(.arrow) {
+                .arrow {
                     border-color: var(--text);
                 }
             }
@@ -271,7 +271,7 @@ html:root {
             color: var(--modal-permissions-table-entry-group-text) !important;
             font-weight: bold;
 
-            :global(.arrow) {
+            .arrow {
                 cursor: pointer;
                 border-color: var(--modal-permissions-table-entry-active-text);
             }

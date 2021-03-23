@@ -1,9 +1,6 @@
 import * as React from "react";
-import {useRef, useState} from "react";
-import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
-import {ChannelInfo, GroupProperties, PermissionModalEvents} from "tc-shared/ui/modal/permission/ModalPermissionEditor";
-import {PermissionEditorEvents} from "tc-shared/ui/modal/permission/PermissionEditor";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import {useContext, useEffect, useRef, useState} from "react";
+import {EventHandler, IpcRegistryDescription, ReactEventHandler, Registry} from "tc-shared/events";
 import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {createInputModal} from "tc-shared/ui/elements/Modal";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
@@ -15,23 +12,26 @@ import {FlatInputField} from "tc-shared/ui/react-elements/InputField";
 import {arrayBufferBase64} from "tc-shared/utils/buffers";
 import {tra} from "tc-shared/i18n/localize";
 import {getIconManager} from "tc-shared/file/Icons";
+import {PermissionEditorEvents} from "tc-shared/ui/modal/permission/EditorDefinitions";
+import {
+    ChannelInfo,
+    GroupProperties,
+    PermissionEditorTab,
+    PermissionModalEvents
+} from "tc-shared/ui/modal/permission/ModalDefinitions";
+import {useTr} from "tc-shared/ui/react-elements/Helper";
+import {AbstractModal} from "tc-shared/ui/react-elements/modal/Definitions";
+import {ContextDivider} from "tc-shared/ui/react-elements/ContextDivider";
+import {EditorRenderer} from "tc-shared/ui/modal/permission/EditorRenderer";
+import {spawnContextMenu} from "tc-shared/ui/ContextMenu";
+import {ClientIcon} from "svg-sprites/client-icons";
 
-const cssStyle = require("./TabHandler.scss");
+const cssStyle = require("./ModalRenderer.scss");
 
-export class SideBar extends React.Component<{ connection: ConnectionHandler, modalEvents: Registry<PermissionModalEvents>, editorEvents: Registry<PermissionEditorEvents> }, {}> {
-    render() {
-        return [
-            <ServerGroupsSideBar key={"server-groups"} connection={this.props.connection}
-                                 modalEvents={this.props.modalEvents}/>,
-            <ChannelGroupsSideBar key={"channel-groups"} connection={this.props.connection}
-                                  modalEvents={this.props.modalEvents}/>,
-            <ChannelSideBar key={"channel"} connection={this.props.connection} modalEvents={this.props.modalEvents}/>,
-            <ClientSideBar key={"client"} connection={this.props.connection} modalEvents={this.props.modalEvents}/>,
-            <ClientChannelSideBar key={"client-channel"} connection={this.props.connection}
-                                  modalEvents={this.props.modalEvents}/>
-        ];
-    }
-}
+export type PermissionEditorServerInfo = { handlerId: string, serverUniqueId: string  };
+const ModalEventContext = React.createContext<Registry<PermissionModalEvents>>(undefined);
+const EditorEventContext = React.createContext<Registry<PermissionEditorEvents>>(undefined);
+const ServerInfoContext = React.createContext<PermissionEditorServerInfo>(undefined);
 
 const GroupsButton = (props: { image: string, alt: string, onClick?: () => void, disabled: boolean }) => {
     return (
@@ -43,7 +43,9 @@ const GroupsButton = (props: { image: string, alt: string, onClick?: () => void,
 };
 
 
-const GroupsListEntry = (props: { connection: ConnectionHandler, group: GroupProperties, selected: boolean, callbackSelect: () => void, onContextMenu: (event: React.MouseEvent) => void }) => {
+const GroupsListEntry = React.memo((props: { group: GroupProperties, selected: boolean, callbackSelect: () => void, onContextMenu: (event: React.MouseEvent) => void }) => {
+    const serverInfo = useContext(ServerInfoContext);
+
     let groupTypePrefix = "";
     switch (props.group.type) {
         case "query":
@@ -57,14 +59,14 @@ const GroupsListEntry = (props: { connection: ConnectionHandler, group: GroupPro
     return (
         <div className={cssStyle.entry + " " + (props.selected ? cssStyle.selected : "")} onClick={props.callbackSelect}
              onContextMenu={props.onContextMenu}>
-            <RemoteIconRenderer icon={getIconManager().resolveIcon(props.group.iconId, props.connection.getCurrentServerUniqueId(), props.connection.handlerId)} />
+            <RemoteIconRenderer icon={getIconManager().resolveIcon(props.group.iconId, serverInfo.serverUniqueId, serverInfo.handlerId)} />
             <div className={cssStyle.name}>{groupTypePrefix + props.group.name + " (" + props.group.id + ")"}</div>
         </div>
     )
-};
+});
 
 @ReactEventHandler<GroupsList>(e => e.props.events)
-class GroupsList extends React.Component<{ connection: ConnectionHandler, events: Registry<PermissionModalEvents>, target: "server" | "channel" }, {
+class GroupsList extends React.PureComponent<{ events: Registry<PermissionModalEvents>, target: "server" | "channel" }, {
     selectedGroupId: number,
     showQueryGroups: boolean,
     showTemplateGroups: boolean,
@@ -118,53 +120,59 @@ class GroupsList extends React.Component<{ connection: ConnectionHandler, events
                 });
             }}>
                 <div className={cssStyle.entries}>
-                    {this.visibleGroups.map(e => <GroupsListEntry key={"group-" + e.id}
-                                                                  connection={this.props.connection}
-                                                                  group={e}
-                                                                  selected={e.id === this.state.selectedGroupId}
-                                                                  callbackSelect={() => this.props.events.fire("action_select_group", {
-                                                                      id: e.id,
-                                                                      target: this.props.target
-                                                                  })}
-                                                                  onContextMenu={event => {
-                                                                      event.preventDefault();
-                                                                      this.props.events.fire("action_select_group", {
-                                                                          target: this.props.target,
-                                                                          id: e.id
-                                                                      });
-                                                                      spawn_context_menu(event.pageX, event.pageY, {
-                                                                          name: tr("Rename group"),
-                                                                          type: MenuEntryType.ENTRY,
-                                                                          callback: () => this.onGroupRename(),
-                                                                          icon_class: "client-change_nickname",
-                                                                          invalidPermission: this.state.disableGroupRename
-                                                                      }, {
-                                                                          name: tr("Copy permissions"),
-                                                                          type: MenuEntryType.ENTRY,
-                                                                          icon_class: "client-copy",
-                                                                          callback: () => this.props.events.fire("action_group_copy_permissions", {
-                                                                              target: this.props.target,
-                                                                              sourceGroup: e.id
-                                                                          }),
-                                                                          invalidPermission: this.state.disablePermissionCopy
-                                                                      }, {
-                                                                          name: tr("Delete group"),
-                                                                          type: MenuEntryType.ENTRY,
-                                                                          icon_class: "client-delete",
-                                                                          callback: () => this.onGroupDelete(),
-                                                                          invalidPermission: this.state.disableDelete
-                                                                      }, contextmenu.Entry.HR(), {
-                                                                          name: tr("Add group"),
-                                                                          icon_class: "client-add",
-                                                                          type: MenuEntryType.ENTRY,
-                                                                          callback: () => this.props.events.fire("action_create_group", {
-                                                                              target: this.props.target,
-                                                                              sourceGroup: e.id
-                                                                          }),
-                                                                          invalidPermission: this.state.disableGroupAdd
-                                                                      });
-                                                                  }}
-                    />)}
+                    {this.visibleGroups.map(e => (
+                        <GroupsListEntry key={"group-" + e.id}
+                                         group={e}
+                                         selected={e.id === this.state.selectedGroupId}
+                                         callbackSelect={() => this.props.events.fire("action_select_group", {
+                                             id: e.id,
+                                             target: this.props.target
+                                         })}
+                                         onContextMenu={event => {
+                                             event.preventDefault();
+                                             this.props.events.fire("action_select_group", {
+                                                 target: this.props.target,
+                                                 id: e.id
+                                             });
+
+                                             spawnContextMenu({ pageX: event.pageX, pageY: event.pageY }, [
+                                                 {
+                                                     type: "normal",
+                                                     label: tr("Rename group"),
+                                                     click: () => this.onGroupRename(),
+                                                     icon: ClientIcon.ChangeNickname,
+                                                     enabled: !this.state.disableGroupRename
+                                                 }, {
+                                                     type: "normal",
+                                                     label: tr("Copy permissions"),
+                                                     icon: ClientIcon.Copy,
+                                                     click: () => this.props.events.fire("action_group_copy_permissions", {
+                                                         target: this.props.target,
+                                                         sourceGroup: e.id
+                                                     }),
+                                                     enabled: !this.state.disablePermissionCopy
+                                                 }, {
+                                                     type: "normal",
+                                                     label: tr("Delete group"),
+                                                     click: () => this.onGroupDelete(),
+                                                     icon: ClientIcon.Delete,
+                                                     enabled: !this.state.disableDelete
+                                                 }, {
+                                                     type: "separator"
+                                                 }, {
+                                                     type: "normal",
+                                                     label: tr("Add group"),
+                                                     click: () => this.props.events.fire("action_create_group", {
+                                                         target: this.props.target,
+                                                         sourceGroup: e.id
+                                                     }),
+                                                     icon: ClientIcon.Add,
+                                                     enabled: !this.state.disableGroupAdd
+                                                 }
+                                             ]);
+                                         }}
+                        />
+                    ))}
                 </div>
             </div>,
             <div key={"buttons"} className={cssStyle.buttons}>
@@ -426,7 +434,7 @@ class GroupsList extends React.Component<{ connection: ConnectionHandler, events
 
 
 @ReactEventHandler<GroupsList>(e => e.props.events)
-class ServerClientList extends React.Component<{ connection: ConnectionHandler, events: Registry<PermissionModalEvents> }, {
+class ServerClientList extends React.Component<{ events: Registry<PermissionModalEvents> }, {
     selectedGroupId: number,
     selectedClientId: number,
 
@@ -475,16 +483,18 @@ class ServerClientList extends React.Component<{ connection: ConnectionHandler, 
         return [
             <div key={"list"} className={cssStyle.list + " " + cssStyle.containerList}
                  onContextMenu={e => this.onListContextMenu(e)}>
-                {selectedGroup ?
-                    <div key={"selected-group"} className={cssStyle.entry + " " + cssStyle.selectedGroup}>
-                        <div className={cssStyle.icon}>
-                            <RemoteIconRenderer icon={getIconManager().resolveIcon(selectedGroup.iconId, this.props.connection.getCurrentServerUniqueId(), this.props.connection.handlerId)} />
-                        </div>
-                        <div
-                            className={cssStyle.name}>{groupTypePrefix + selectedGroup.name + " (" + selectedGroup.id + ")"}</div>
-                    </div>
-                    : undefined
-                }
+                {selectedGroup ? (
+                    <ServerInfoContext.Consumer>
+                        {serverInfo => (
+                            <div key={"selected-group"} className={cssStyle.entry + " " + cssStyle.selectedGroup}>
+                                <div className={cssStyle.icon}>
+                                    <RemoteIconRenderer icon={getIconManager().resolveIcon(selectedGroup.iconId, serverInfo.serverUniqueId, serverInfo.handlerId)} />
+                                </div>
+                                <div className={cssStyle.name}>{groupTypePrefix + selectedGroup.name + " (" + selectedGroup.id + ")"}</div>
+                            </div>
+                        )}
+                    </ServerInfoContext.Consumer>
+                ) : undefined}
                 <div className={cssStyle.entries}>
                     {this.clients.map(client => <div
                         key={"client-" + client.databaseId}
@@ -781,41 +791,43 @@ class ServerClientList extends React.Component<{ connection: ConnectionHandler, 
     }
 }
 
-const ServerGroupsSideBar = (props: { connection: ConnectionHandler, modalEvents: Registry<PermissionModalEvents> }) => {
+const ServerGroupsSideBar = React.memo(() => {
+    const events = useContext(ModalEventContext);
     const [active, setActive] = useState(true);
     const [clientList, setClientList] = useState(false);
 
-    props.modalEvents.reactUse("action_activate_tab", event => setActive(event.tab === "groups-server"));
-    props.modalEvents.reactUse("notify_client_list_toggled", event => setClientList(event.visible));
+    events.reactUse("action_activate_tab", event => setActive(event.tab === "groups-server"));
+    events.reactUse("notify_client_list_toggled", event => setClientList(event.visible));
 
     return (
         <div
             className={cssStyle.sideContainer + " " + cssStyle.containerServerGroups + " " + (active ? "" : cssStyle.hidden)}>
             <div className={cssStyle.containerGroupList + " " + (!clientList ? "" : cssStyle.hidden)}>
-                <GroupsList connection={props.connection} events={props.modalEvents} target={"server"}/>
+                <GroupsList events={events} target={"server"}/>
             </div>
             <div className={cssStyle.containerClientList + " " + (clientList ? "" : cssStyle.hidden)}>
-                <ServerClientList connection={props.connection} events={props.modalEvents}/>
+                <ServerClientList events={events} />
             </div>
         </div>
     );
-};
+});
 
-const ChannelGroupsSideBar = (props: { connection: ConnectionHandler, modalEvents: Registry<PermissionModalEvents> }) => {
+const ChannelGroupsSideBar = React.memo(() => {
+    const events = useContext(ModalEventContext);
     const [active, setActive] = useState(false);
 
-    props.modalEvents.reactUse("action_activate_tab", event => setActive(event.tab === "groups-channel"));
+    events.reactUse("action_activate_tab", event => setActive(event.tab === "groups-channel"));
 
     return (
         <div
             className={cssStyle.sideContainer + " " + cssStyle.containerChannelGroups + " " + (active ? "" : cssStyle.hidden)}>
-            <GroupsList connection={props.connection} events={props.modalEvents} target={"channel"}/>
+            <GroupsList events={events} target={"channel"}/>
         </div>
     );
-};
+});
 
 @ReactEventHandler<ChannelList>(e => e.props.events)
-class ChannelList extends React.Component<{ connection: ConnectionHandler, events: Registry<PermissionModalEvents>, tabTarget: "channel" | "client-channel" }, { selectedChanelId: number }> {
+class ChannelList extends React.Component<{ serverInfo: PermissionEditorServerInfo, events: Registry<PermissionModalEvents>, tabTarget: "channel" | "client-channel" }, { selectedChanelId: number }> {
     private channels: ChannelInfo[] = [];
     private isActiveTab = false;
 
@@ -849,7 +861,7 @@ class ChannelList extends React.Component<{ connection: ConnectionHandler, event
                                  id: e.id
                              })}
                         >
-                            <RemoteIconRenderer icon={getIconManager().resolveIcon(e.iconId, this.props.connection.getCurrentServerUniqueId(), this.props.connection.handlerId)} />
+                            <RemoteIconRenderer icon={getIconManager().resolveIcon(e.iconId, this.props.serverInfo.serverUniqueId, this.props.serverInfo.handlerId)} />
                             <a className={cssStyle.name}>{e.name + " (" + e.id + ")"}</a>
                         </div>
                     ))}
@@ -925,20 +937,24 @@ class ChannelList extends React.Component<{ connection: ConnectionHandler, event
     }
 }
 
-const ChannelSideBar = (props: { connection: ConnectionHandler, modalEvents: Registry<PermissionModalEvents> }) => {
+const ChannelSideBar = React.memo(() => {
+    const serverInfo = useContext(ServerInfoContext);
+    const events = useContext(ModalEventContext);
     const [active, setActive] = useState(false);
 
-    props.modalEvents.reactUse("action_activate_tab", event => setActive(event.tab === "channel"));
+    events.reactUse("action_activate_tab", event => setActive(event.tab === "channel"));
 
     return (
         <div
             className={cssStyle.sideContainer + " " + cssStyle.containerChannels + " " + (active ? "" : cssStyle.hidden)}>
-            <ChannelList connection={props.connection} events={props.modalEvents} tabTarget={"channel"}/>
+            <ChannelList serverInfo={serverInfo} events={events} tabTarget={"channel"}/>
         </div>
     );
-};
+});
 
-const ClientSelect = (props: { events: Registry<PermissionModalEvents>, tabTarget: "client" | "client-channel" }) => {
+const ClientSelect = React.memo((props: { tabTarget: "client" | "client-channel" }) => {
+    const events = React.useContext(ModalEventContext);
+
     const [clientIdentifier, setClientIdentifier] = useState<number | string | undefined>(undefined);
     const [clientInfo, setClientInfo] = useState<{ name: string, uniqueId: string, databaseId: number }>(undefined);
 
@@ -947,24 +963,24 @@ const ClientSelect = (props: { events: Registry<PermissionModalEvents>, tabTarge
     const refUniqueIdentifier = useRef<FlatInputField>();
     const refDatabaseId = useRef<FlatInputField>();
 
-    props.events.reactUse("action_activate_tab", event => {
+    events.reactUse("action_activate_tab", event => {
         if (event.tab !== props.tabTarget) {
             return;
         }
 
         if (typeof event.activeClientDatabaseId !== "undefined") {
-            props.events.fire("action_select_client", {
+            events.fire("action_select_client", {
                 target: props.tabTarget,
                 id: event.activeClientDatabaseId === 0 ? "undefined" : event.activeClientDatabaseId
             });
         } else {
             if (clientInfo && clientInfo.databaseId) {
-                props.events.fire("action_set_permission_editor_subject", {
+                events.fire("action_set_permission_editor_subject", {
                     mode: props.tabTarget,
                     clientDatabaseId: clientInfo.databaseId
                 });
             } else {
-                props.events.fire("action_set_permission_editor_subject", {mode: props.tabTarget, clientDatabaseId: 0});
+                events.fire("action_set_permission_editor_subject", {mode: props.tabTarget, clientDatabaseId: 0});
             }
         }
     });
@@ -979,16 +995,16 @@ const ClientSelect = (props: { events: Registry<PermissionModalEvents>, tabTarge
         refDatabaseId.current?.setState({placeholder: placeholder});
     };
 
-    props.events.reactUse("query_client_info", event => {
+    events.reactUse("query_client_info", event => {
         if (event.client !== clientIdentifier)
             return;
 
         refInput.current?.setState({disabled: true});
         resetInfoFields(tr("loading..."));
-        props.events.fire("action_set_permission_editor_subject", {mode: props.tabTarget, clientDatabaseId: 0});
+        events.fire("action_set_permission_editor_subject", {mode: props.tabTarget, clientDatabaseId: 0});
     });
 
-    props.events.reactUse("notify_client_info", event => {
+    events.reactUse("notify_client_info", event => {
         if (event.client !== clientIdentifier)
             return;
 
@@ -999,7 +1015,7 @@ const ClientSelect = (props: { events: Registry<PermissionModalEvents>, tabTarge
             refNickname.current?.setValue(event.info.name);
             refUniqueIdentifier.current?.setValue(event.info.uniqueId);
             refDatabaseId.current?.setValue(event.info.databaseId + "");
-            props.events.fire("action_set_permission_editor_subject", {
+            events.fire("action_set_permission_editor_subject", {
                 mode: props.tabTarget,
                 clientDatabaseId: event.info.databaseId
             });
@@ -1022,7 +1038,7 @@ const ClientSelect = (props: { events: Registry<PermissionModalEvents>, tabTarge
         refDatabaseId.current?.setState({placeholder: undefined});
     });
 
-    props.events.reactUse("action_select_client", event => {
+    events.reactUse("action_select_client", event => {
         if (event.target !== props.tabTarget)
             return;
 
@@ -1030,11 +1046,11 @@ const ClientSelect = (props: { events: Registry<PermissionModalEvents>, tabTarge
         refInput.current.setValue(typeof event.id === "undefined" ? "" : event.id.toString());
         if (typeof event.id === "number" || typeof event.id === "string") {
             /* first do the state update */
-            props.events.fire_react("query_client_info", {client: event.id});
+            events.fire_react("query_client_info", {client: event.id});
         } else {
             refInput.current?.setValue(undefined);
             resetInfoFields(undefined);
-            props.events.fire("action_set_permission_editor_subject", {mode: props.tabTarget, clientDatabaseId: 0});
+            events.fire("action_set_permission_editor_subject", {mode: props.tabTarget, clientDatabaseId: 0});
         }
     });
 
@@ -1086,7 +1102,7 @@ const ClientSelect = (props: { events: Registry<PermissionModalEvents>, tabTarge
                         }
                     }
                     refInput.current?.setState({isInvalid: false});
-                    props.events.fire("action_select_client", {id: client, target: props.tabTarget});
+                    events.fire("action_select_client", {id: client, target: props.tabTarget});
                 }}
             />
             <hr/>
@@ -1097,31 +1113,147 @@ const ClientSelect = (props: { events: Registry<PermissionModalEvents>, tabTarge
                             disabled={true}/>
         </div>
     );
-};
+});
 
-const ClientSideBar = (props: { connection: ConnectionHandler, modalEvents: Registry<PermissionModalEvents> }) => {
+const ClientSideBar = React.memo(() => {
+    const events = useContext(ModalEventContext);
     const [active, setActive] = useState(false);
 
-    props.modalEvents.reactUse("action_activate_tab", event => setActive(event.tab === "client"));
+    events.reactUse("action_activate_tab", event => setActive(event.tab === "client"));
 
     return (
         <div
             className={cssStyle.sideContainer + " " + cssStyle.containerClient + " " + (active ? "" : cssStyle.hidden)}>
-            <ClientSelect events={props.modalEvents} tabTarget={"client"}/>
+            <ClientSelect tabTarget={"client"}/>
         </div>
     );
-};
+});
 
-const ClientChannelSideBar = (props: { connection: ConnectionHandler, modalEvents: Registry<PermissionModalEvents> }) => {
+const ClientChannelSideBar = React.memo(() => {
+    const serverInfo = useContext(ServerInfoContext);
+    const events = useContext(ModalEventContext);
     const [active, setActive] = useState(false);
 
-    props.modalEvents.reactUse("action_activate_tab", event => setActive(event.tab === "client-channel"));
+    events.reactUse("action_activate_tab", event => setActive(event.tab === "client-channel"));
 
     return (
         <div
             className={cssStyle.sideContainer + " " + cssStyle.containerChannelClient + " " + (active ? "" : cssStyle.hidden)}>
-            <ClientSelect events={props.modalEvents} tabTarget={"client-channel"}/>
-            <ChannelList connection={props.connection} events={props.modalEvents} tabTarget={"client-channel"}/>
+            <ClientSelect tabTarget={"client-channel"}/>
+            <ChannelList serverInfo={serverInfo} events={events} tabTarget={"client-channel"}/>
         </div>
     );
+});
+
+export const PermissionTabName: { [T in PermissionEditorTab]: { name: string, useTranslate: () => string, renderTranslate: () => React.ReactNode } } = {
+    "groups-server": {name: "Server Groups", useTranslate: () => useTr("Server Groups"), renderTranslate: () => <Translatable>Server Groups</Translatable>},
+    "groups-channel": {name: "Channel Groups", useTranslate: () => useTr("Channel Groups"), renderTranslate: () => <Translatable>Channel Groups</Translatable>},
+    "channel": {name: "Channel Permissions", useTranslate: () => useTr("Channel Permissions"), renderTranslate: () => <Translatable>Channel Permissions</Translatable>},
+    "client": {name: "Client Permissions", useTranslate: () => useTr("Client Permissions"), renderTranslate: () => <Translatable>Client Permissions</Translatable>},
+    "client-channel": {name: "Client Channel Permissions", useTranslate: () => useTr("Client Channel Permissions"), renderTranslate: () => <Translatable>Client Channel Permissions</Translatable>},
 };
+
+const ActiveTabInfo = React.memo(() => {
+    const events = useContext(ModalEventContext);
+    const [activeTab, setActiveTab] = useState<PermissionEditorTab>("groups-server");
+    events.reactUse("action_activate_tab", event => setActiveTab(event.tab));
+
+    return (
+        <div className={cssStyle.header + " " + cssStyle.activeTabInfo}>
+            <div className={cssStyle.entry}>
+                <a title={PermissionTabName[activeTab].useTranslate()} key={"tab-" + activeTab}>
+                    {PermissionTabName[activeTab].renderTranslate()}
+                </a>
+            </div>
+        </div>
+    );
+});
+
+const TabSelectorEntry = React.memo((props: { entry: PermissionEditorTab }) => {
+    const events = useContext(ModalEventContext);
+    const [active, setActive] = useState(props.entry === "groups-server");
+
+    events.reactUse("action_activate_tab", event => setActive(event.tab === props.entry));
+
+    return (
+        <div className={cssStyle.entry + " " + (active ? cssStyle.selected : "")}
+             onClick={() => !active && events.fire("action_activate_tab", {tab: props.entry})}>
+            <a title={PermissionTabName[props.entry].useTranslate()}>
+                {PermissionTabName[props.entry].renderTranslate()}
+            </a>
+        </div>
+    );
+});
+
+const TabSelector = React.memo(() => {
+    return (
+        <div className={cssStyle.header + " " + cssStyle.tabSelector}>
+            <TabSelectorEntry entry={"groups-server"}/>
+            <TabSelectorEntry entry={"groups-channel"}/>
+            <TabSelectorEntry entry={"channel"}/>
+            <TabSelectorEntry entry={"client"}/>
+            <TabSelectorEntry entry={"client-channel"}/>
+        </div>
+    );
+});
+
+const InitialRendererTrigger = React.memo(() => {
+    const events = useContext(ModalEventContext);
+    useEffect(() => events.fire("notify_initial_rendered"), []);
+    return null;
+})
+
+export type DefaultTabValues = { groupId?: number, channelId?: number, clientDatabaseId?: number };
+export class PermissionEditorModal extends AbstractModal {
+    readonly serverInfo: PermissionEditorServerInfo;
+    readonly modalEvents: Registry<PermissionModalEvents>;
+    readonly editorEvents: Registry<PermissionEditorEvents>;
+
+    constructor(serverInfo: PermissionEditorServerInfo, modalEvents: IpcRegistryDescription<PermissionModalEvents>, editorEvents: IpcRegistryDescription<PermissionEditorEvents>) {
+        super();
+
+        this.serverInfo = serverInfo;
+        this.modalEvents = Registry.fromIpcDescription(modalEvents);
+        this.editorEvents = Registry.fromIpcDescription(editorEvents);
+    }
+
+    protected onDestroy() {
+        super.onDestroy();
+
+        this.modalEvents.destroy();
+        this.editorEvents.destroy();
+    }
+
+    renderBody() {
+        return (
+            <ModalEventContext.Provider value={this.modalEvents}>
+                <EditorEventContext.Provider value={this.editorEvents}>
+                    <ServerInfoContext.Provider value={this.serverInfo}>
+                        <div className={cssStyle.container}>
+                            <div className={cssStyle.contextContainer + " " + cssStyle.left}>
+                                <ActiveTabInfo />
+                                <ServerGroupsSideBar key={"server-groups"} />
+                                <ChannelGroupsSideBar key={"channel-groups"} />
+                                <ChannelSideBar key={"channel"} />
+                                <ClientSideBar key={"client"} />
+                                <ClientChannelSideBar key={"client-channel"} />
+                            </div>
+                            <ContextDivider id={"permission-editor"} defaultValue={25} direction={"horizontal"} />
+                            <div className={cssStyle.contextContainer + " " + cssStyle.right}>
+                                <TabSelector />
+                                <EditorRenderer events={this.editorEvents} handlerId={this.serverInfo.handlerId} serverUniqueId={this.serverInfo.serverUniqueId} />
+                            </div>
+                        </div>
+                        <InitialRendererTrigger />
+                    </ServerInfoContext.Provider>
+                </EditorEventContext.Provider>
+            </ModalEventContext.Provider>
+        );
+    }
+
+    renderTitle(): React.ReactElement<Translatable> {
+        return <Translatable>Server permission editor</Translatable>;
+    }
+}
+
+export default PermissionEditorModal;

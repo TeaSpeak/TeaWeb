@@ -15,8 +15,15 @@ export const ServerTag = React.memo((props: {
     serverName: string,
     handlerId: string,
     serverUniqueId?: string,
-    className?: string
+    className?: string,
+
+    style?: EntryTagStyle
 }) => {
+    let style = props.style || "normal";
+    if(style === "text-only") {
+        return <React.Fragment key={"text-only"}>{props.serverName}</React.Fragment>;
+    }
+
     return (
         <div
             className={cssStyle.tag + (props.className ? ` ${props.className}` : ``)}

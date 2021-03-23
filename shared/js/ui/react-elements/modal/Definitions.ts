@@ -16,6 +16,9 @@ import {
     ModalClientGroupAssignmentVariables
 } from "tc-shared/ui/modal/group-assignment/Definitions";
 import {VideoViewerEvents} from "tc-shared/ui/modal/video-viewer/Definitions";
+import {PermissionModalEvents} from "tc-shared/ui/modal/permission/ModalDefinitions";
+import {PermissionEditorEvents} from "tc-shared/ui/modal/permission/EditorDefinitions";
+import {PermissionEditorServerInfo} from "tc-shared/ui/modal/permission/ModalRenderer";
 
 export type ModalType = "error" | "warning" | "info" | "none";
 export type ModalRenderType = "page" | "dialog";
@@ -133,6 +136,7 @@ export abstract class AbstractModal {
     color() : "none" | "blue" { return "none"; }
     verticalAlignment() : "top" | "center" | "bottom" { return "center"; }
 
+    /** @deprecated */
     protected onInitialize() {}
     protected onDestroy() {}
 
@@ -196,4 +200,9 @@ export interface ModalConstructorArguments {
         /* events */ IpcRegistryDescription<ModalClientGroupAssignmentEvents>,
         /* variables */ IpcVariableDescriptor<ModalClientGroupAssignmentVariables>,
     ],
+    "modal-permission-edit": [
+        /* serverInfo */ PermissionEditorServerInfo,
+        /* modalEvents */ IpcRegistryDescription<PermissionModalEvents>,
+        /* editorEvents */ IpcRegistryDescription<PermissionEditorEvents>
+    ]
 }
