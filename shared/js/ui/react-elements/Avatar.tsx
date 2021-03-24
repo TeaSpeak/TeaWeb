@@ -20,6 +20,7 @@ const AvatarDefaultImage = React.memo((props: { className?: string, alt?: string
     <img
         draggable={false}
         src={kDefaultAvatarImage}
+        style={ImageStyle}
         alt={typeof props.alt === "string" ? props.alt : tr("default avatar")}
         color={props.className}
         onClick={event => {
@@ -28,7 +29,7 @@ const AvatarDefaultImage = React.memo((props: { className?: string, alt?: string
             }
 
             event.preventDefault();
-            showImagePreview(kDefaultAvatarImage, undefined);
+            showImagePreview(kDefaultAvatarImage, kDefaultAvatarImage);
         }}
     />
 ));

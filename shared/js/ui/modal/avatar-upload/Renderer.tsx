@@ -71,13 +71,13 @@ const MaxAvatarSize = React.memo(() => {
     const currentAvatar = useContext(CurrentAvatarContext);
     const maxSize = variables.useReadOnly("maxAvatarSize", undefined);
 
-    if(currentAvatar.status === "loading" || maxSize.status === "loading") {
+    if(maxSize.status === "loading") {
         return (
             <div className={cssStyle.containerLimit} key={"loading"}>
                 <Translatable>Maximal avatar size:</Translatable> <Translatable>loading</Translatable> <LoadingDots />
             </div>
         )
-    } else if(currentAvatar.status === "unset" || currentAvatar.status === "server") {
+    } else if(currentAvatar.status === "loading" ||currentAvatar.status === "unset" || currentAvatar.status === "server") {
         return (
             <div className={cssStyle.containerLimit} key={"unset"}>
                 <VariadicTranslatable text={"Maximal avatar size: {}"}>

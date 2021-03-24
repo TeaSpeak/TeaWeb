@@ -71,11 +71,11 @@
 .containerImage {
     max-width: 90%;
     max-height: 90%;
-    align-self: center;
 
-    display: flex;
-    flex-direction: column;
-    justify-content: stretch;
+    align-self: center;
+    text-align: center;
+
+    display: block;
 
     img {
         flex-shrink: 1;
