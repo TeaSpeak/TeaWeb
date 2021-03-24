@@ -2,6 +2,7 @@
 * **24.03.21**
     - Improved the avatar upload modal (now way more intuitive)
     - Fixed a bug which cause client avatars to be stuck within the loading screen
+    - Don't spam permission errors if we don't have the permission to view the channel description
   
 * **23.03.21**
     - Made the permission editor popoutable

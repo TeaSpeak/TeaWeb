@@ -301,6 +301,8 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         if(!this.channelDescriptionCached) {
             await this.channelTree.client.serverConnection.send_command("channelgetdescription", {
                 cid: this.channelId
+            }, {
+                process_result: false
             });
 
             if(!this.channelDescriptionCached) {
