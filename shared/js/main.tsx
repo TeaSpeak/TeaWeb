@@ -29,6 +29,7 @@ import {ActionResult} from "tc-services";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {bookmarks} from "tc-shared/Bookmarks";
+import {getAudioBackend} from "tc-shared/audio/Player";
 
 /* required import for init */
 import "svg-sprites/client-icons";
@@ -47,12 +48,12 @@ import "./ui/AppController";
 import "./ui/frames/menu-bar/MainMenu";
 import "./ui/modal/connect/Controller";
 import "./ui/modal/video-viewer/Controller";
+import "./ui/modal/avatar-upload/Controller";
 import "./ui/elements/ContextDivider";
 import "./ui/elements/Tab";
 import "./clientservice";
 import "./text/bbcode/InviteController";
 import "./text/bbcode/YoutubeController";
-import {getAudioBackend} from "tc-shared/audio/Player";
 
 assertMainApplication();
 

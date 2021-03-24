@@ -2,9 +2,19 @@ export class Mutex<T> {
     private value: T;
     private taskExecuting = false;
     private taskQueue = [];
+    private freeListener = [];
 
     constructor(value: T) {
         this.value = value;
+    }
+
+
+    isFree() : boolean {
+        return !this.taskExecuting && this.taskQueue.length === 0;
+    }
+
+    awaitFree() : Promise<void> {
+        return new Promise<void>(resolve => this.freeListener.push(resolve));
     }
 
     execute<R>(callback: (value: T, setValue: (newValue: T) => void) => R | Promise<R>) : Promise<R> {
@@ -53,10 +63,26 @@ export class Mutex<T> {
         const task = this.taskQueue.pop_front();
         if(typeof task === "undefined") {
             this.taskExecuting = false;
+            this.triggerFinished();
             return;
         }
 
         this.taskExecuting = true;
         task().then(() => this.executeNextTask());
+    }
+
+    private triggerFinished() {
+        while(this.isFree()) {
+            const listener = this.freeListener.pop_front();
+            if(!listener) {
+                break;
+            }
+
+            try {
+                listener();
+            } catch (error) {
+                console.error(error);
+            }
+        }
     }
 }

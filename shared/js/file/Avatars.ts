@@ -57,8 +57,9 @@ export abstract class ClientAvatar {
     }
 
     public getTypedStateData<T extends AvatarState>(state: T) : AvatarStateData[T] {
-        if(this.state !== state)
+        if(this.state !== state) {
             throw "invalid avatar state";
+        }
 
         return this.stateData as any;
     }
@@ -79,11 +80,34 @@ export abstract class ClientAvatar {
         this.setState("errored", data);
     }
 
-    async awaitLoaded() {
-        if(this.state !== "loading")
-            return;
+    async awaitLoaded() : Promise<true>;
+    async awaitLoaded(timeout: number) : Promise<boolean>;
+    async awaitLoaded(timeout?: number) : Promise<boolean> {
+        if(this.state !== "loading") {
+            return true;
+        }
 
-        await new Promise(resolve => this.events.on("avatar_state_changed", event => event.newState !== "loading" && resolve()));
+        await new Promise(resolve => {
+            let timeoutId;
+            const callback = success => {
+                if(typeof timeoutId !== "undefined") {
+                    clearTimeout(timeoutId);
+                }
+
+                unregister();
+                resolve(success);
+            };
+
+            const unregister = this.events.on("avatar_state_changed", event => {
+                if(event.newState !== "loading") {
+                    callback(true);
+                }
+            });
+
+            if(typeof timeout === "number") {
+                timeoutId = setTimeout(() => callback(false), timeout);
+            }
+        });
     }
 
     getState() : AvatarState {
@@ -99,8 +123,10 @@ export abstract class ClientAvatar {
     }
 
     getAvatarUrl() {
-        if(this.state === "loaded")
+        if(this.state === "loaded") {
             return this.getTypedStateData("loaded").url || kDefaultAvatarImage;
+        }
+
         return kDefaultAvatarImage;
     }
 

@@ -19,6 +19,7 @@ import {VideoViewerEvents} from "tc-shared/ui/modal/video-viewer/Definitions";
 import {PermissionModalEvents} from "tc-shared/ui/modal/permission/ModalDefinitions";
 import {PermissionEditorEvents} from "tc-shared/ui/modal/permission/EditorDefinitions";
 import {PermissionEditorServerInfo} from "tc-shared/ui/modal/permission/ModalRenderer";
+import {ModalAvatarUploadEvents, ModalAvatarUploadVariables} from "tc-shared/ui/modal/avatar-upload/Definitions";
 
 export type ModalType = "error" | "warning" | "info" | "none";
 export type ModalRenderType = "page" | "dialog";
@@ -204,5 +205,10 @@ export interface ModalConstructorArguments {
         /* serverInfo */ PermissionEditorServerInfo,
         /* modalEvents */ IpcRegistryDescription<PermissionModalEvents>,
         /* editorEvents */ IpcRegistryDescription<PermissionEditorEvents>
+    ],
+    "modal-avatar-upload": [
+        /* events */ IpcRegistryDescription<ModalAvatarUploadEvents>,
+        /* variables */ IpcVariableDescriptor<ModalAvatarUploadVariables>,
+        /* serverUniqueId */ string
     ]
 }

@@ -1,4 +1,7 @@
 # Changelog:
+* **24.03.21**
+    - Improved the avatar upload modal (now way more intuitive)
+  
 * **23.03.21**
     - Made the permission editor popoutable
     - Now using SVG flags for higher quality.

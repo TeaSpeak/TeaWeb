@@ -3,6 +3,7 @@ import {ClientGroupInfo, ClientInfoEvents,} from "tc-shared/ui/frames/side/Clien
 
 import {Registry} from "tc-shared/events";
 import {openClientInfo} from "tc-shared/ui/modal/ModalClientInfo";
+import {spawnAvatarUpload} from "tc-shared/ui/modal/avatar-upload/Controller";
 
 export class ClientInfoController {
     private readonly uiEvents: Registry<ClientInfoEvents>;
@@ -27,7 +28,13 @@ export class ClientInfoController {
         this.uiEvents.on("query_version", () => this.sendVersion());
         this.uiEvents.on("query_forum", () => this.sendForum());
 
-        this.uiEvents.on("action_edit_avatar", () => this.connection?.update_avatar());
+        this.uiEvents.on("action_edit_avatar", () => {
+            if(!this.connection?.connected) {
+                return;
+            }
+
+            spawnAvatarUpload(this.connection);
+        });
         this.uiEvents.on("action_show_full_info", () => {
             const client = this.connection?.getSelectedClientInfo().getClient();
             if(client) {

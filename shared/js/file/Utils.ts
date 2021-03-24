@@ -17,10 +17,21 @@ export const downloadTextAsFile = (text: string, name: string) => {
     }, 0);
 };
 
-export const requestFileAsText = async (): Promise<string> => {
+export const requestFile = async (options: {
+    accept?: string,
+    multiple?: boolean
+}): Promise<File[]> => {
     const element = document.createElement("input");
     element.style.display = "none";
     element.type = "file";
+
+    if(typeof options.accept === "string") {
+        element.accept = options.accept;
+    }
+
+    if(typeof options.multiple === "string") {
+        element.multiple = options.multiple;
+    }
 
     document.body.appendChild(element);
     element.click();
@@ -28,10 +39,21 @@ export const requestFileAsText = async (): Promise<string> => {
         element.onchange = resolve;
     });
 
-    if (element.files.length !== 1)
-        return undefined;
-    const file = element.files[0];
-    element.remove();
+    const result = [];
+    for(let index = 0; index < element.files.length; index++) {
+        result.push(element.files.item(index));
+    }
 
-    return await file.text();
+    element.remove();
+    return result;
+}
+
+export const requestFileAsText = async (): Promise<string> => {
+    const files = await requestFile({ multiple: false });
+    if(files.length !== 1) {
+        return undefined;
+    }
+
+    /* FIXME: text() might not be available in Safari */
+    return await files[0].text();
 };

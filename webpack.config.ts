@@ -330,6 +330,11 @@ export const config = async (env: any, target: "web" | "client"): Promise<Config
                 "tc-events": path.resolve(__dirname, "vendor/TeaEventBus/src/index.ts"),
                 "tc-services": path.resolve(__dirname, "vendor/TeaClientServices/src/index.ts"),
             },
+            fallback: {
+                stream: "stream-browserify",
+                crypto: "crypto-browserify",
+                buffer: "buffer"
+            }
         },
         externals: [
             {"tc-loader": "window loader"}

@@ -103,4 +103,10 @@ registerModal({
     popoutSupported: true
 });
 
+registerModal({
+    modalId: "modal-avatar-upload",
+    classLoader: async () => await import("tc-shared/ui/modal/avatar-upload/Renderer"),
+    popoutSupported: true
+});
+
 
