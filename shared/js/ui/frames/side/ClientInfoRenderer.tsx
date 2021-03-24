@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useContext, useEffect, useState} from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import {
     ClientCountryInfo,
     ClientForumInfo,
@@ -25,31 +25,60 @@ import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {getIconManager} from "tc-shared/file/Icons";
 import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {CountryCode} from "tc-shared/ui/react-elements/CountryCode";
+import {getKeyBoard, SpecialKey} from "tc-shared/PPTListener";
 
 const cssStyle = require("./ClientInfoRenderer.scss");
 
 const EventsContext = React.createContext<Registry<ClientInfoEvents>>(undefined);
 const ClientContext = React.createContext<OptionalClientInfoInfo>(undefined);
 
-const Avatar = React.memo(() => {
+const EditOverlay = React.memo(() => {
     const events = useContext(EventsContext);
+
+    const refContainer = useRef<HTMLDivElement>();
+
+    useEffect(() => {
+        const keyboard = getKeyBoard();
+        return keyboard.registerHook({
+            keyShift: true,
+
+            callbackPress: () => {
+                refContainer.current?.classList.add(cssStyle.disabled);
+            },
+            callbackRelease: () => {
+                refContainer.current?.classList.remove(cssStyle.disabled);
+            }
+        });
+    }, []);
+
+    return (
+        <div
+            ref={refContainer}
+            className={cssStyle.edit}
+            onClick={() => events.fire("action_edit_avatar")}
+        >
+            <ClientIconRenderer icon={ClientIcon.AvatarUpload} className={cssStyle.icon} />
+        </div>
+    );
+});
+
+const Avatar = React.memo(() => {
     const client = useContext(ClientContext);
 
     let avatar: "loading" | ClientAvatar;
     if(client.type === "none") {
         avatar = "loading";
     } else {
-        avatar = getGlobalAvatarManagerFactory().getManager(client.handlerId).resolveClientAvatar({ id: client.clientId, clientUniqueId: client.clientUniqueId, database_id: client.clientDatabaseId });
+        avatar = getGlobalAvatarManagerFactory().getManager(client.handlerId)
+            .resolveClientAvatar({ id: client.clientId, clientUniqueId: client.clientUniqueId, database_id: client.clientDatabaseId });
     }
 
     return (
         <div className={cssStyle.containerAvatar + " " + (client.type === "self" ? cssStyle.editable : undefined)}>
             <div className={cssStyle.avatar}>
-                <AvatarRenderer avatar={avatar} className={cssStyle.avatarImage + " " + (avatar === "loading" ? cssStyle.loading : "")} />
+                <AvatarRenderer avatar={avatar} className={cssStyle.avatarImage + " " + (avatar === "loading" ? cssStyle.loading : "")} key={avatar === "loading" ? "loading" : avatar.clientAvatarId} />
             </div>
-            <div className={cssStyle.edit} onClick={() => events.fire("action_edit_avatar")}>
-                <ClientIconRenderer icon={ClientIcon.AvatarUpload} className={cssStyle.icon} />
-            </div>
+            <EditOverlay />
         </div>
     )
 });

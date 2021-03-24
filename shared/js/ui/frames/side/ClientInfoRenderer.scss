@@ -206,6 +206,11 @@ $bot_thumbnail_height: 9em;
         &:hover {
             opacity: .75;
         }
+
+        &.disabled {
+            opacity: 0!important;
+            pointer-events: none!important;
+        }
     }
 
     &.editable {

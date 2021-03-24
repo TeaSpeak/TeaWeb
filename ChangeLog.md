@@ -1,6 +1,7 @@
 # Changelog:
 * **24.03.21**
     - Improved the avatar upload modal (now way more intuitive)
+    - Fixed a bug which cause client avatars to be stuck within the loading screen
   
 * **23.03.21**
     - Made the permission editor popoutable

@@ -1,77 +1,119 @@
 import * as React from "react";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {ClientAvatar, kDefaultAvatarImage, kLoadingAvatarImage} from "tc-shared/file/Avatars";
-import * as image_preview from "tc-shared/ui/frames/ImagePreview";
+import {useTr} from "tc-shared/ui/react-elements/Helper";
+import {showImagePreview} from "tc-shared/ui/frames/ImagePreview";
 
 const ImageStyle = { height: "100%", width: "100%", cursor: "pointer" };
-export const AvatarRenderer = React.memo((props: { avatar: ClientAvatar | "loading" | "default", className?: string, alt?: string }) => {
-    let [ revision, setRevision ] = useState(0);
+
+const AvatarLoadingImage = React.memo((props: { alt?: string }) => (
+    <img
+        draggable={false}
+        alt={typeof props.alt === "string" ? props.alt : tr("loading")}
+        title={useTr("loading avatar")}
+        src={kLoadingAvatarImage}
+        style={ImageStyle}
+    />
+));
+
+const AvatarDefaultImage = React.memo((props: { className?: string, alt?: string }) => (
+    <img
+        draggable={false}
+        src={kDefaultAvatarImage}
+        alt={typeof props.alt === "string" ? props.alt : tr("default avatar")}
+        color={props.className}
+        onClick={event => {
+            if(event.isDefaultPrevented()) {
+                return;
+            }
+
+            event.preventDefault();
+            showImagePreview(kDefaultAvatarImage, undefined);
+        }}
+    />
+));
+
+const ClientAvatarRenderer = React.memo((props: { avatar: ClientAvatar, className?: string, alt?: string }) => {
+    const [ , setRevision ] = useState(0);
 
     let image;
-    let avatar: ClientAvatar;
-    if(props.avatar === "loading") {
-        image = <img draggable={false} src={kLoadingAvatarImage} alt={tr("loading")}/>;
-    } else if(props.avatar === "default") {
-        image = <img draggable={false} src={kDefaultAvatarImage} alt={tr("default avatar")} />;
-    } else {
-        const imageUrl = props.avatar.getAvatarUrl();
-        switch (props.avatar.getState()) {
-            case "unset":
-                image = <img
-                    key={"default"}
-                    title={tr("default avatar")}
-                    alt={typeof props.alt === "string" ? props.alt : tr("default avatar")}
-                    src={props.avatar.getAvatarUrl()}
-                    style={ImageStyle}
-                    onClick={event => {
-                        if(event.isDefaultPrevented())
-                            return;
+    switch (props.avatar.getState()) {
+        case "unset":
+            image = (
+                <AvatarDefaultImage key={"default"} />
+            );
+            break;
 
-                        event.preventDefault();
-                        image_preview.showImagePreview(imageUrl, undefined);
-                    }}
-                    draggable={false}
-                />;
-                break;
+        case "loading":
+            image = (
+                <AvatarLoadingImage key={"loading"} />
+            );
+            break;
 
-            case "loaded":
-                image = <img
+        case "loaded":
+            const imageUrl = props.avatar.getAvatarUrl();
+            image = (
+                <img
                     key={"user-" + props.avatar.getAvatarHash()}
                     alt={typeof props.alt === "string" ? props.alt : tr("user avatar")}
                     title={tr("user avatar")}
                     src={imageUrl}
                     style={ImageStyle}
                     onClick={event => {
-                        if(event.isDefaultPrevented())
+                        if(event.isDefaultPrevented()) {
                             return;
+                        }
 
                         event.preventDefault();
-                        image_preview.showImagePreview(imageUrl, undefined);
+                        showImagePreview(imageUrl, undefined);
                     }}
                     draggable={false}
-                />;
-                break;
+                />
+            );
+            break;
 
-            case "errored":
-                image = <img draggable={false} key={"error"} alt={typeof props.alt === "string" ? props.alt : tr("error")} title={tr("avatar failed to load:\n") + props.avatar.getLoadError()} src={imageUrl} style={ImageStyle} />;
-                break;
+        case "errored":
+            image = (
+                <img
+                    draggable={false}
+                    key={"error"}
+                    alt={typeof props.alt === "string" ? props.alt : tr("error")}
+                    title={tr("avatar failed to load:\n") + props.avatar.getLoadError()}
+                    style={ImageStyle}
+                />
+            );
+            break;
 
-            case "loading":
-                image = <img draggable={false} key={"loading"} alt={typeof props.alt === "string" ? props.alt : tr("loading")} title={tr("loading avatar")} src={kLoadingAvatarImage} style={ImageStyle} />;
-                break;
-
-            case undefined:
-                break;
-        }
-
-        avatar = props.avatar;
+        case undefined:
+            break;
     }
 
-    useEffect(() => avatar && avatar.events.on("avatar_state_changed", () => setRevision(revision + 1)), [ props.avatar ]);
+    props.avatar.events.reactUse("avatar_state_changed", () => {
+        setRevision(performance.now());
+    }, undefined, []);
+
+    return image;
+});
+
+export const AvatarRenderer = React.memo((props: { avatar: ClientAvatar | "loading" | "default", className?: string, alt?: string }) => {
+    let body;
+    if(props.avatar === "loading") {
+        body = (
+            <AvatarLoadingImage key={"loading"} {...props} />
+        );
+    } else if(props.avatar === "default") {
+        body = (
+            <AvatarDefaultImage key={"default"} {...props} />
+        );
+    } else if(props.avatar instanceof ClientAvatar) {
+        body = (
+            <ClientAvatarRenderer key={"user-avatar"} avatar={props.avatar} className={props.className} alt={props.alt} />
+        );
+    }
 
     return (
         <div className={props.className} style={{ overflow: "hidden" }}>
-            {image}
+            {body}
         </div>
-    )
+    );
 });
