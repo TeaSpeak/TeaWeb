@@ -31,11 +31,11 @@ deploy:
 #  - provider: script
 #    cleanup: false
 #    skip_cleanup: true
-#    script: "bash  scripts/travis/deploy_docker.sh development"
+#    script: "bash scripts/travis/deploy_docker.sh development"
 #    on:
 #      branch: develop
   - provider: script
-    script: "bash  scripts/travis/deploy_server.sh production"
+    script: "bash scripts/travis/deploy_server.sh production"
     cleanup: false
     skip_cleanup: true
     on:
@@ -43,7 +43,7 @@ deploy:
   - provider: script
     cleanup: false
     skip_cleanup: true
-    script: "bash  scripts/travis/deploy_github.sh"
+    script: "bash scripts/travis/deploy_github.sh"
     on:
       branch: master
 #  - provider: script
