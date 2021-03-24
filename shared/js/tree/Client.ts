@@ -147,7 +147,7 @@ export class ClientConnectionInfo {
 
 export interface ClientEvents extends ChannelTreeEntryEvents {
     notify_properties_updated: {
-        updated_properties: {[Key in keyof ClientProperties]: ClientProperties[Key]};
+        updated_properties: Partial<ClientProperties>;
         client_properties: ClientProperties
     },
     notify_mute_state_change: { muted: boolean }

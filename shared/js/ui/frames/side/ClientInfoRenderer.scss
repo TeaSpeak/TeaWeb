@@ -359,6 +359,12 @@ $bot_thumbnail_height: 9em;
                     justify-content: flex-start;
                     flex-direction: row-reverse;
                 }
+
+                .channelGroupInherited {
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: flex-end;
+                }
             }
 
             &.clientTeaforoAccount {

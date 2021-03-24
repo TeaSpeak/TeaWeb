@@ -25,7 +25,10 @@ export type CachedClientInfo = {
     volume: { volume: number, muted: boolean },
     status: ClientStatusInfo,
     forumAccount: ClientForumInfo | undefined,
+
     channelGroup: number,
+    channelGroupInheritedChannel: number,
+
     serverGroups: number[],
     version: ClientVersionInfo
 }
@@ -127,8 +130,8 @@ export class SelectedClientInfo {
                 this.events.fire("notify_cache_changed", { category: "description" });
             }
 
-            if('client_channel_group_id' in event.updated_properties) {
-                this.currentClientStatus.channelGroup = event.client_properties.client_channel_group_id;
+            if('client_channel_group_id' in event.updated_properties || 'client_channel_group_inherited_channel_id' in event.updated_properties) {
+                this.updateChannelGroup(client);
                 this.events.fire("notify_cache_changed", { category: "group-channel" });
             }
 
@@ -218,6 +221,14 @@ export class SelectedClientInfo {
         }
     }
 
+    private updateChannelGroup(client: ClientEntry) {
+        this.currentClientStatus.channelGroup = client.properties.client_channel_group_id;
+        this.currentClientStatus.channelGroupInheritedChannel = client.properties.client_channel_group_inherited_channel_id;
+        if(this.currentClientStatus.channelGroupInheritedChannel === client.currentChannel().channelId) {
+            this.currentClientStatus.channelGroupInheritedChannel = 0;
+        }
+    }
+
     private initializeClientInfo(client: ClientEntry) {
         this.currentClientStatus = {
             type: client instanceof LocalClientEntry ? "self" : client.properties.client_type === ClientType.CLIENT_QUERY ? "query" : "voice",
@@ -227,8 +238,12 @@ export class SelectedClientInfo {
             clientId: client.clientId(),
 
             description: client.properties.client_description,
-            channelGroup: client.properties.client_channel_group_id,
+
+            channelGroup: 0,
+            channelGroupInheritedChannel: 0,
+
             serverGroups: client.assignedServerGroupIds(),
+
             country: undefined,
             forumAccount: undefined,
             joinTimestamp: client.properties.client_lastconnected,
@@ -240,6 +255,7 @@ export class SelectedClientInfo {
                 version: client.properties.client_version
             }
         };
+        this.updateChannelGroup(client);
         this.updateCachedClientStatus(client);
         this.updateCachedCountry(client);
         this.updateCachedVolume(client);

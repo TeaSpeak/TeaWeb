@@ -341,6 +341,3 @@ export function spawnAvatarUpload(connection: ConnectionHandler) {
     /* Trying to prompt the user */
     controller.events.fire("action_open_select");
 }
-
-(window as any).test = () => spawnAvatarUpload(server_connections.getActiveConnectionHandler());
-setTimeout(() => (window as any).test(), 1500);

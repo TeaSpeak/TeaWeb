@@ -8,7 +8,7 @@ import {
     ClientInfoOnline,
     ClientStatusInfo,
     ClientVersionInfo,
-    ClientVolumeInfo,
+    ClientVolumeInfo, InheritedChannelInfo,
     OptionalClientInfoInfo
 } from "tc-shared/ui/frames/side/ClientInfoDefinitions";
 import {Registry} from "tc-shared/events";
@@ -16,7 +16,7 @@ import {ClientAvatar, getGlobalAvatarManagerFactory} from "tc-shared/file/Avatar
 import {AvatarRenderer} from "tc-shared/ui/react-elements/Avatar";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
-import {ClientTag} from "tc-shared/ui/tree/EntryTags";
+import {ChannelTag, ClientTag} from "tc-shared/ui/tree/EntryTags";
 import {guid} from "tc-shared/crypto/uid";
 import {useDependentState} from "tc-shared/ui/react-elements/Helper";
 import {format_online_time} from "tc-shared/utils/TimeUtils";
@@ -420,11 +420,29 @@ const ChannelGroupRenderer = () => {
         return undefined;
     }, [ client.contextHash ]);
 
-    events.reactUse("notify_channel_group", event => setChannelGroup(event.group), undefined, []);
+    const [ inheritedChannel, setInheritedChannel ] = useDependentState<InheritedChannelInfo>(() => undefined, [ client.contextHash ]);
+
+    events.reactUse("notify_channel_group", event => {
+        setChannelGroup(event.group);
+        setInheritedChannel(event.inheritedChannel);
+    }, undefined, []);
 
     let body;
     if(channelGroup) {
-        body = <GroupRenderer group={channelGroup} key={"group-" + channelGroup.groupId} />;
+        let groupRendered = <GroupRenderer group={channelGroup} key={"group-" + channelGroup.groupId} />;
+        if(inheritedChannel) {
+            body = (
+                <React.Fragment key={"inherited"}>
+                    {groupRendered}
+                    <div className={cssStyle.channelGroupInherited}>
+                        <Translatable>Inherited from</Translatable>&nbsp;
+                        {inheritedChannel.channelName}
+                    </div>
+                </React.Fragment>
+            )
+        } else {
+            body = groupRendered;
+        }
     } else {
         body = <React.Fragment key={"loading"}><Translatable>loading</Translatable> <LoadingDots /></React.Fragment>;
     }
