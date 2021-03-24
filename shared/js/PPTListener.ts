@@ -148,16 +148,20 @@ export interface KeyEvent extends KeyDescriptor {
     readonly key: string;
 }
 
-export interface KeyHook extends KeyDescriptor {
+export interface KeyHook extends Partial<KeyDescriptor> {
     callbackPress: () => any;
     callbackRelease: () => any;
+}
+
+interface RegisteredKeyHook extends KeyHook {
+    triggered: boolean
 }
 
 export interface KeyBoardBackend {
     registerListener(listener: (event: KeyEvent) => void);
     unregisterListener(listener: (event: KeyEvent) => void);
 
-    registerHook(hook: KeyHook);
+    registerHook(hook: KeyHook) : () => void;
     unregisterHook(hook: KeyHook);
 
     isKeyPressed(key: string | SpecialKey) : boolean;
@@ -168,8 +172,7 @@ export class AbstractKeyBoard implements KeyBoardBackend {
     protected readonly activeSpecialKeys: { [key: number] : boolean };
     protected readonly activeKeys;
 
-    protected registeredKeyHooks: KeyHook[] = [];
-    protected activeKeyHooks: KeyHook[] = [];
+    protected registeredKeyHooks: RegisteredKeyHook[] = [];
 
     constructor() {
         this.activeSpecialKeys = {};
@@ -188,12 +191,26 @@ export class AbstractKeyBoard implements KeyBoardBackend {
     }
 
     registerHook(hook: KeyHook) {
-        this.registeredKeyHooks.push(hook);
+        const registeredHook: RegisteredKeyHook = {
+            triggered: false,
+            ...hook
+        };
+
+        this.registeredKeyHooks.push(registeredHook);
+        if(this.shouldHookBeActive(registeredHook)) {
+            registeredHook.triggered = true;
+            registeredHook.callbackPress();
+        }
+
+        return () => this.unregisterHook(hook);
     }
 
     unregisterHook(hook: KeyHook) {
+        if(!("triggered" in hook)) {
+            return;
+        }
+
         this.registeredKeyHooks.remove(hook);
-        this.activeKeyHooks.remove(hook);
     }
 
     registerListener(listener: (event: KeyEvent) => void) {
@@ -202,6 +219,26 @@ export class AbstractKeyBoard implements KeyBoardBackend {
 
     unregisterListener(listener: (event: KeyEvent) => void) {
         this.registeredListener.remove(listener);
+    }
+
+    private shouldHookBeActive(hook: KeyHook) {
+        if(typeof hook.keyAlt !== "undefined" && hook.keyAlt != this.activeSpecialKeys[SpecialKey.ALT]) {
+            return false;
+        }
+
+        if(typeof hook.keyCtrl !== "undefined" && hook.keyCtrl != this.activeSpecialKeys[SpecialKey.CTRL]) {
+            return false;
+        }
+
+        if(typeof hook.keyShift !== "undefined" && hook.keyShift != this.activeSpecialKeys[SpecialKey.SHIFT]) {
+            return false;
+        }
+
+        if(typeof hook.keyWindows !== "undefined" && hook.keyWindows != this.activeSpecialKeys[SpecialKey.WINDOWS]) {
+            return false;
+        }
+
+        return typeof hook.keyCode === "undefined" || typeof this.activeKeys[hook.keyCode] !== "undefined";
     }
 
     protected fireKeyEvent(event: KeyEvent) {
@@ -214,61 +251,34 @@ export class AbstractKeyBoard implements KeyBoardBackend {
             return;
         }
 
-        let oldHooks = [...this.activeKeyHooks];
-        let newHooks = [];
-
         this.activeSpecialKeys[SpecialKey.ALT] = event.keyAlt;
         this.activeSpecialKeys[SpecialKey.CTRL] = event.keyCtrl;
         this.activeSpecialKeys[SpecialKey.SHIFT] = event.keyShift;
         this.activeSpecialKeys[SpecialKey.WINDOWS] = event.keyWindows;
-
-        delete this.activeKeys[event.keyCode];
         if(event.type == EventType.KEY_PRESS) {
             this.activeKeys[event.keyCode] = event;
-
-            for(const hook of this.registeredKeyHooks) {
-                if(hook.keyCode !== event.keyCode) {
-                    continue;
-                }
-
-                if(hook.keyAlt != event.keyAlt) {
-                    continue;
-                }
-
-                if(hook.keyCtrl != event.keyCtrl) {
-                    continue;
-                }
-
-                if(hook.keyShift != event.keyShift) {
-                    continue;
-                }
-
-                if(hook.keyWindows != event.keyWindows) {
-                    continue;
-                }
-
-                newHooks.push(hook);
-                if(!oldHooks.remove(hook) && hook.callbackPress) {
-                    hook.callbackPress();
-                    logTrace(LogCategory.GENERAL, tr("Trigger key press for %o!"), hook);
-                }
-            }
+        } else {
+            delete this.activeKeys[event.keyCode];
         }
 
-        //We have a new situation
-        for(const hook of oldHooks) {
-            //Do not test for meta key states because they could differ in a key release event
-            if(hook.keyCode === event.keyCode) {
-                if(hook.callbackRelease) {
-                    hook.callbackRelease();
-                    logTrace(LogCategory.GENERAL, tr("Trigger key release for %o!"), hook);
+
+        for(const hook of this.registeredKeyHooks) {
+            const hookActive = this.shouldHookBeActive(hook);
+            if(hookActive === hook.triggered) {
+                continue;
+            }
+
+            hook.triggered = hookActive;
+            if(hookActive) {
+                if(hook.callbackPress) {
+                    hook.callbackPress();
                 }
             } else {
-                newHooks.push(hook);
+                if(hook.callbackRelease) {
+                    hook.callbackRelease();
+                }
             }
         }
-
-        this.activeKeyHooks = newHooks;
     }
 
     protected resetKeyboardState() {
@@ -281,11 +291,15 @@ export class AbstractKeyBoard implements KeyBoardBackend {
             delete this.activeKeys[code];
         }
 
-        for(const hook of this.activeKeyHooks) {
-            hook.callbackRelease();
-        }
+        for(const hook of this.registeredKeyHooks) {
+            if(hook.triggered) {
+                if(hook.callbackRelease) {
+                    hook.callbackRelease();
+                }
 
-        this.activeKeyHooks = [];
+                hook.triggered = false;
+            }
+        }
     }
 }
 
