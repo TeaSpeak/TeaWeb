@@ -154,37 +154,17 @@ source ./scripts/install_dependencies.sh
 
 echo "----------   Web client    ----------"
 
-function move_target_file() {
-    file_name=$(ls -1t dist-package | grep -E "^TeaWeb-.*\.zip$" | head -n 1)
-    if [[ -z "$file_name" ]]; then
-        handle_failure -1 "Failed to find target file"
-    fi
-
-    mkdir -p "${PACKAGES_DIRECTORY}" || { echo "failed to create target path"; exit 1; }
-    target_file="${PACKAGES_DIRECTORY}/$file_name"
-    if [[ -f "$target_file" ]]; then
-        echo "Removing old packed file located at $target_file"
-        rm "${target_file}" && handle_failure -1 "Failed to remove target file"
-    fi
-    mv "dist-package/${file_name}" "${target_file}"
-    echo "Moved target file to $target_file"
-}
-
 function execute_build_release() {
     execute \
         "Building release package" \
         "Failed to build release" \
         "./scripts/build.sh web release"
-
-    move_target_file
 }
 function execute_build_debug() {
     execute \
         "Building debug package" \
         "Failed to build debug" \
         "./scripts/build.sh web dev"
-
-    move_target_file
 }
 
 chmod +x ./scripts/build.sh
