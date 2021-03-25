@@ -209,6 +209,13 @@ html:root {
                 margin-right: .5em;
             }
 
+            &.title {
+                color: #557edc;
+
+                .entryName {
+                    margin-left: .25em;
+                }
+            }
 
             &:first-of-type {
                 border-radius: .1em .1em 0 0;

@@ -22,6 +22,7 @@ import {bookmarks} from "tc-shared/Bookmarks";
 import {connectionHistory} from "tc-shared/connectionlog/History";
 import {RemoteIconInfo} from "tc-shared/file/Icons";
 import {spawnModalAddCurrentServerToBookmarks} from "tc-shared/ui/modal/bookmarks-add-server/Controller";
+import {getAudioBackend, OutputDevice} from "tc-shared/audio/Player";
 
 class InfoController {
     private readonly mode: ControlBarMode;
@@ -67,6 +68,9 @@ class InfoController {
             this.registerDefaultRecorderEvents();
             this.sendMicrophoneList();
         }));
+        events.push(settings.globalChangeListener(Settings.KEY_SPEAKER_DEVICE_ID, () => this.sendSpeakerList()));
+        getAudioBackend().executeWhenInitialized(() => this.sendSpeakerList());
+
         if(this.mode === "main") {
             events.push(server_connections.events().on("notify_active_handler_changed", event => this.setConnectionHandler(event.newHandler)));
         }
@@ -298,6 +302,37 @@ class InfoController {
         });
     }
 
+    public async sendSpeakerList() {
+        const backend = getAudioBackend();
+        if(!backend.isInitialized()) {
+            this.events.fire_react("notify_speaker_list", { state: "uninitialized" });
+            return;
+        }
+
+        const devices = await backend.getAvailableDevices();
+        const selectedDeviceId = backend.getCurrentDevice()?.device_id;
+        const defaultDeviceId = backend.getDefaultDeviceId();
+        this.events.fire_react("notify_speaker_list", {
+            state: "initialized",
+            devices: devices.map(device => {
+                let selected = false;
+                if(selectedDeviceId === OutputDevice.DefaultDeviceId && device.device_id === defaultDeviceId) {
+                    selected = true;
+                } else if(selectedDeviceId === device.device_id) {
+                    selected = true;
+                }
+
+                return {
+                    name: device.name,
+                    driver: device.driver,
+
+                    id: device.device_id,
+                    selected: selected
+                }
+            })
+        });
+    }
+
     public sendSubscribeState() {
         this.events.fire_react("notify_subscribe_state", {
             subscribe: !!this.currentHandler?.isSubscribeToAllChannels()
@@ -389,6 +424,7 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
     events.on("query_microphone_state", () => infoHandler.sendMicrophoneState());
     events.on("query_microphone_list", () => infoHandler.sendMicrophoneList());
     events.on("query_speaker_state", () => infoHandler.sendSpeakerState());
+    events.on("query_speaker_list", () => infoHandler.sendSpeakerList());
     events.on("query_subscribe_state", () => infoHandler.sendSubscribeState());
     events.on("query_host_button", () => infoHandler.sendHostButton());
     events.on("query_video_state", event => infoHandler.sendVideoState(event.broadcastType));
@@ -470,9 +506,25 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
         global_client_actions.fire("action_open_window_settings", { defaultCategory: "audio-microphone" });
     });
 
-    events.on("action_toggle_speaker", event => {
+    events.on("action_toggle_speaker", async event => {
         /* change the default global setting */
         settings.setValue(Settings.KEY_CLIENT_STATE_SPEAKER_MUTED, !event.enabled);
+
+        if(typeof event.targetDeviceId === "string") {
+            try {
+                const devices = await getAudioBackend().getAvailableDevices();
+                const device = devices.find(device => device.device_id === event.targetDeviceId);
+                if(!device) {
+                    throw tr("Target device could not be found.");
+                }
+
+                await getAudioBackend().setCurrentDevice(device.device_id);
+                settings.setValue(Settings.KEY_SPEAKER_DEVICE_ID, device.device_id);
+            } catch (error) {
+                createErrorModal(tr("Failed to change speaker"), tr("Failed to change speaker.\nTarget device could not be found.")).open();
+                return;
+            }
+        }
 
         infoHandler.getCurrentHandler()?.setSpeakerMuted(!event.enabled);
     });

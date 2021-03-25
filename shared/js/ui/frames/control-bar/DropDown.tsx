@@ -2,6 +2,7 @@ import * as React from "react";
 import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
 import {IconRenderer, RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {getIconManager, RemoteIconInfo} from "tc-shared/file/Icons";
+import {joinClassList} from "tc-shared/ui/react-elements/Helper";
 
 const cssStyle = require("./Button.scss");
 
@@ -13,7 +14,7 @@ export interface DropdownEntryProperties {
     onAuxClick?: (event: React.MouseEvent) => void;
     onContextMenu?: (event: React.MouseEvent) => void;
 
-    children?: React.ReactElement<DropdownEntry>[]
+    children?: React.ReactElement<DropdownEntry | DropdownTitleEntry>[]
 }
 
 const LocalIconRenderer = (props: { icon?: string | RemoteIconInfo, className?: string }) => {
@@ -24,9 +25,7 @@ const LocalIconRenderer = (props: { icon?: string | RemoteIconInfo, className?: 
     }
 }
 
-export class DropdownEntry extends ReactComponentBase<DropdownEntryProperties, {}> {
-    protected defaultState() { return {}; }
-
+export class DropdownEntry extends React.PureComponent<DropdownEntryProperties> {
     render() {
         if(this.props.children) {
             return (
@@ -47,6 +46,18 @@ export class DropdownEntry extends ReactComponentBase<DropdownEntryProperties, {
                 </div>
             );
         }
+    }
+}
+
+export class DropdownTitleEntry extends React.PureComponent<{
+    children
+}> {
+    render() {
+        return (
+            <div className={joinClassList(cssStyle.dropdownEntry, cssStyle.title)}>
+                <a className={cssStyle.entryName}>{this.props.children}</a>
+            </div>
+        );
     }
 }
 

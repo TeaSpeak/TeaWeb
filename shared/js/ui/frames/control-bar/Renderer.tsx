@@ -5,14 +5,14 @@ import {
     ConnectionState,
     ControlBarEvents,
     ControlBarMode,
-    HostButtonInfo, MicrophoneDeviceInfo,
+    HostButtonInfo, AudioDeviceInfo,
     MicrophoneState,
     VideoDeviceInfo,
     VideoState
 } from "tc-shared/ui/frames/control-bar/Definitions";
 import * as React from "react";
 import {useContext, useRef, useState} from "react";
-import {DropdownEntry} from "tc-shared/ui/frames/control-bar/DropDown";
+import {DropdownEntry, DropdownTitleEntry} from "tc-shared/ui/frames/control-bar/DropDown";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {Button} from "tc-shared/ui/frames/control-bar/Button";
 import {spawnContextMenu} from "tc-shared/ui/ContextMenu";
@@ -377,21 +377,14 @@ const kDriverWeights = {
     "Windows WASAPI": 50
 };
 
-const MicrophoneDeviceList = React.memo(() => {
-    const events = useContext(Events);
-    const [ deviceList, setDeviceList ] = useState<MicrophoneDeviceInfo[]>(() => {
-        events.fire("query_microphone_list");
-        return [];
-    });
-    events.reactUse("notify_microphone_list", event => setDeviceList(event.devices));
-
-    if(deviceList.length <= 1) {
+const AudioIODeviceList = React.memo((props: { deviceList: AudioDeviceInfo[], onClick: (target: AudioDeviceInfo) => void }) => {
+    if(props.deviceList.length <= 1) {
         /* we don't need a select here */
         return null;
     }
 
-    const devices: {[key: string]: { weight: number, device: MicrophoneDeviceInfo }} = {};
-    for(const entry of deviceList) {
+    const devices: {[key: string]: { weight: number, device: AudioDeviceInfo }} = {};
+    for(const entry of props.deviceList) {
         const weight = entry.selected ? kDriverWeightSelected : (kDriverWeights[entry.driver] | 0);
         if(typeof devices[entry.name] !== "undefined" && devices[entry.name].weight >= weight) {
             continue;
@@ -403,20 +396,73 @@ const MicrophoneDeviceList = React.memo(() => {
         }
     }
 
+    const orderedDevices = Object.values(devices);
+    const groupDevices = orderedDevices.length > 6;
+    let currentGroup = undefined;
+
+    let deviceElements = [];
+    for(const { device } of orderedDevices) {
+        if(groupDevices) {
+            if(currentGroup !== device.driver) {
+                currentGroup = device.driver;
+                deviceElements.push(
+                    <DropdownTitleEntry key={"g-" + currentGroup}>
+                        {currentGroup} <Translatable>Driver</Translatable>
+                    </DropdownTitleEntry>
+                );
+            }
+        }
+
+        deviceElements.push(
+            <DropdownEntry
+                text={device.name || tr("Unknown device name")}
+                key={"m-" + device.id}
+                icon={device.selected ? ClientIcon.Apply : undefined}
+                onClick={() => props.onClick(device)}
+            />
+        );
+    }
+
     return (
         <>
             <hr key={"hr"} />
-            {Object.values(devices).map(({ device }) => (
-                <DropdownEntry
-                    text={device.name || tr("Unknown device name")}
-                    key={"m-" + device.id}
-                    icon={device.selected ? ClientIcon.Apply : undefined}
-                    onClick={() => events.fire("action_toggle_microphone", { enabled: true, targetDeviceId: device.id })}
-                />
-            ))}
+            {deviceElements}
         </>
     );
 });
+
+const MicrophoneDeviceList = React.memo(() => {
+    const events = useContext(Events);
+    const [ deviceList, setDeviceList ] = useState<AudioDeviceInfo[]>(() => {
+        events.fire("query_microphone_list");
+        return [];
+    });
+    events.reactUse("notify_microphone_list", event => setDeviceList(event.devices));
+
+    return (
+        <AudioIODeviceList deviceList={deviceList} onClick={device => events.fire("action_toggle_microphone", { enabled: true, targetDeviceId: device.id })} />
+    );
+});
+
+const SpeakerDeviceList = React.memo(() => {
+    const events = useContext(Events);
+    const [ deviceList, setDeviceList ] = useState<AudioDeviceInfo[]>(() => {
+        events.fire("query_speaker_list");
+        return [];
+    });
+    events.reactUse("notify_speaker_list", event => {
+        if(event.state === "uninitialized") {
+            setDeviceList([]);
+        } else {
+            setDeviceList(event.devices);
+        }
+    });
+
+    return (
+        <AudioIODeviceList deviceList={deviceList} onClick={device => events.fire("action_toggle_speaker", { enabled: true, targetDeviceId: device.id })} />
+    );
+});
+
 
 const SpeakerButton = () => {
     const events = useContext(Events);
@@ -429,11 +475,52 @@ const SpeakerButton = () => {
     events.on("notify_speaker_state", event => setEnabled(event.enabled));
 
     if(enabled) {
-        return <Button colorTheme={"red"} autoSwitch={false} iconNormal={ClientIcon.OutputMuted} tooltip={tr("Mute headphones")}
-                       onToggle={() => events.fire("action_toggle_speaker", { enabled: false })} key={"enabled"} />;
+        return (
+            <Button
+                colorTheme={"red"}
+                autoSwitch={false}
+                iconNormal={ClientIcon.OutputMuted}
+                tooltip={tr("Mute headphones")}
+                onToggle={() => events.fire("action_toggle_speaker", { enabled: false })}
+                key={"enabled"}
+            >
+                <DropdownEntry
+                    icon={ClientIcon.OutputMuted}
+                    text={<Translatable>Mute headphones</Translatable>}
+                    onClick={() => events.fire("action_toggle_speaker", { enabled: false })}
+                />
+                <DropdownEntry
+                    icon={ClientIcon.Settings}
+                    text={<Translatable>Open speaker settings</Translatable>}
+                    onClick={() => events.fire("action_open_speaker_settings", {})}
+                />
+                <SpeakerDeviceList />
+            </Button>
+        );
     } else {
-        return <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={ClientIcon.OutputMuted} tooltip={tr("Unmute headphones")}
-                       onToggle={() => events.fire("action_toggle_speaker", { enabled: true })} key={"disabled"} />;
+        return (
+            <Button
+                switched={true}
+                colorTheme={"red"}
+                autoSwitch={false}
+                iconNormal={ClientIcon.OutputMuted}
+                tooltip={tr("Unmute headphones")}
+                onToggle={() => events.fire("action_toggle_speaker", { enabled: true })}
+                key={"disabled"}
+            >
+                <DropdownEntry
+                    icon={ClientIcon.OutputMuted}
+                    text={<Translatable>Unmute headphones</Translatable>}
+                    onClick={() => events.fire("action_toggle_speaker", { enabled: true })}
+                />
+                <DropdownEntry
+                    icon={ClientIcon.Settings}
+                    text={<Translatable>Open speaker settings</Translatable>}
+                    onClick={() => events.fire("action_open_speaker_settings", {})}
+                />
+                <SpeakerDeviceList />
+            </Button>
+        );
     }
 }
 

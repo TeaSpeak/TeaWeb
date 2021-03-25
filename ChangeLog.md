@@ -1,4 +1,8 @@
 # Changelog:
+* **25.03.21**
+    - Allowing to directly select the speaker output device
+    - Saving the speaker output device
+  
 * **24.03.21**
     - Improved the avatar upload modal (now way more intuitive)
     - Fixed a bug which cause client avatars to be stuck within the loading screen
