@@ -2,7 +2,7 @@ import {createErrorModal, createInfoModal, createInputModal, createModal, Modal}
 import {sliderfy} from "tc-shared/ui/elements/Slider";
 import {settings, Settings} from "tc-shared/settings";
 import * as sound from "tc-shared/audio/Sounds";
-import {manager, set_master_volume, Sound} from "tc-shared/audio/Sounds";
+import {manager, setSoundMasterVolume, Sound} from "tc-shared/audio/Sounds";
 import * as profiles from "tc-shared/profiles/ConnectionProfile";
 import {ConnectionProfile} from "tc-shared/profiles/ConnectionProfile";
 import {IdentitifyType} from "tc-shared/profiles/Identity";
@@ -653,8 +653,10 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
                     _old.removeClass("selected");
                     tag.addClass("selected");
 
-                    getAudioBackend().setCurrentDevice(device?.device_id).then(() => {
+                    const targetDeviceId = device.device_id || OutputDevice.NoDeviceId;
+                    getAudioBackend().setCurrentDevice(targetDeviceId).then(() => {
                         logDebug(LogCategory.AUDIO, tr("Changed default speaker device"));
+                        settings.setValue(Settings.KEY_SPEAKER_DEVICE_ID, targetDeviceId);
                     }).catch((error) => {
                         _old.addClass("selected");
                         tag.removeClass("selected");
@@ -726,7 +728,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
             });
             slider.on('change', event => {
                 const volume = parseInt(slider.attr('value'));
-                set_master_volume(volume / 100);
+                setSoundMasterVolume(volume / 100);
                 settings.setValue(Settings.KEY_SOUND_MASTER_SOUNDS, volume);
             });
         }

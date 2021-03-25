@@ -111,7 +111,7 @@ export function get_master_volume() : number {
     return master_volume;
 }
 
-export function set_master_volume(volume: number) {
+export function setSoundMasterVolume(volume: number) {
     volume_require_save = volume_require_save || master_volume != volume;
     master_volume = volume;
     if(master_mixed) {
@@ -159,7 +159,7 @@ export function save() {
     }
 }
 
-export function initialize() : Promise<void> {
+export function initializeSounds() : Promise<void> {
     $.ajaxSetup({
         beforeSend: function(jqXHR,settings){
             if (settings.dataType === 'binary') {

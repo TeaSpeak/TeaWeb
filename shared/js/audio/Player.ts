@@ -5,6 +5,11 @@ export interface OutputDevice {
     name: string;
 }
 
+export namespace OutputDevice {
+    export const NoDeviceId = "none";
+    export const DefaultDeviceId = "default";
+}
+
 export interface AudioBackendEvents {
     notify_initialized: {},
     notify_volume_changed: { oldVolume: number, newVolume: number }

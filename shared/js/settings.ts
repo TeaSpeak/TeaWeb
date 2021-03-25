@@ -810,6 +810,12 @@ export class Settings {
         defaultValue: 500
     };
 
+    static readonly KEY_SPEAKER_DEVICE_ID: RegistryKey<string> = {
+        key: "speaker_device_id",
+        valueType: "string",
+        description: "The target speaker device id",
+    }
+
     static readonly FN_LOG_ENABLED: (category: string) => RegistryKey<boolean> = category => {
         return {
             key: "log." + category.toLowerCase() + ".enabled",

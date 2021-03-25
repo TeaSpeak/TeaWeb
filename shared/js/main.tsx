@@ -1,8 +1,5 @@
 import * as loader from "tc-loader";
-import * as bipc from "./ipc/BrowserIPC";
-import * as sound from "./audio/Sounds";
-import * as i18n from "./i18n/localize";
-import {tra} from "./i18n/localize";
+import {initializeI18N, tra} from "./i18n/localize";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
 import * as global_ev_handler from "./events/ClientGlobalControlHandler";
 import {AppParameters, settings, Settings, UrlParameterBuilder, UrlParameterParser} from "tc-shared/settings";
@@ -29,7 +26,7 @@ import {ActionResult} from "tc-services";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {bookmarks} from "tc-shared/Bookmarks";
-import {getAudioBackend} from "tc-shared/audio/Player";
+import {getAudioBackend, OutputDevice} from "tc-shared/audio/Player";
 
 /* required import for init */
 import "svg-sprites/client-icons";
@@ -54,25 +51,44 @@ import "./ui/elements/Tab";
 import "./clientservice";
 import "./text/bbcode/InviteController";
 import "./text/bbcode/YoutubeController";
+import {initializeSounds, setSoundMasterVolume} from "./audio/Sounds";
+import {getInstanceConnectHandler, setupIpcHandler} from "./ipc/BrowserIPC";
 
 assertMainApplication();
 
 let preventWelcomeUI = false;
 async function initialize() {
     try {
-        await i18n.initializeI18N();
+        await initializeI18N();
     } catch(error) {
         console.error(tr("Failed to initialized the translation system!\nError: %o"), error);
         loader.critical_error("Failed to setup the translation system");
         return;
     }
 
-    bipc.setupIpcHandler();
+    setupIpcHandler();
 }
 
 async function initializeApp() {
     global_ev_handler.initialize(global_client_actions);
     getAudioBackend().setMasterVolume(settings.getValue(Settings.KEY_SOUND_MASTER) / 100);
+    getAudioBackend().executeWhenInitialized(() => {
+        const defaultDeviceId = getAudioBackend().getDefaultDeviceId();
+        let targetDeviceId = settings.getValue(Settings.KEY_SPEAKER_DEVICE_ID, OutputDevice.DefaultDeviceId);
+        if(targetDeviceId === OutputDevice.DefaultDeviceId) {
+            targetDeviceId = defaultDeviceId;
+        }
+
+        getAudioBackend().setCurrentDevice(targetDeviceId).catch(error => {
+            logWarn(LogCategory.AUDIO, tr("Failed to set last used output speaker device: %o"), error);
+            if(targetDeviceId !== defaultDeviceId) {
+                getAudioBackend().setCurrentDevice(defaultDeviceId).catch(error => {
+                    logError(LogCategory.AUDIO, tr("Failed to set output device to default device: %o"), error);
+                    createErrorModal(tr("Failed to initialize output device"), tr("Failed to initialize output device.")).open();
+                });
+            }
+        });
+    });
 
     const recorder = new RecorderProfile("default");
     try {
@@ -83,10 +99,10 @@ async function initializeApp() {
     }
     setDefaultRecorder(recorder);
 
-    sound.initialize().then(() => {
+    initializeSounds().then(() => {
         logInfo(LogCategory.AUDIO, tr("Sounds initialized"));
     });
-    sound.set_master_volume(settings.getValue(Settings.KEY_SOUND_MASTER_SOUNDS) / 100);
+    setSoundMasterVolume(settings.getValue(Settings.KEY_SOUND_MASTER_SOUNDS) / 100);
 }
 
 /* The native client has received a connect request. */
@@ -161,7 +177,6 @@ type ConnectRequestResult = {
  * @param parameters General connect parameters from the connect URL
  */
 async function doHandleConnectRequest(serverAddress: string, serverUniqueId: string | undefined, parameters: UrlParameterParser) : Promise<ConnectRequestResult> {
-
     let targetServerConnection: ConnectionHandler;
     let isCurrentServerConnection: boolean;
 
@@ -423,7 +438,7 @@ const task_connect_handler: loader.Task = {
             }
         };
 
-        const chandler = bipc.getInstanceConnectHandler();
+        const chandler = getInstanceConnectHandler();
         if(chandler && AppParameters.getValue(AppParameters.KEY_CONNECT_NO_SINGLE_INSTANCE)) {
             try {
                 await chandler.post_connect_request(connectData, () => new Promise<boolean>(resolve => {
