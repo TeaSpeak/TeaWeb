@@ -310,15 +310,15 @@ class InfoController {
         }
 
         const devices = await backend.getAvailableDevices();
-        const selectedDeviceId = backend.getCurrentDevice()?.device_id;
+        const selectedDeviceId = backend.getCurrentDevice()?.deviceId;
         const defaultDeviceId = backend.getDefaultDeviceId();
         this.events.fire_react("notify_speaker_list", {
             state: "initialized",
             devices: devices.map(device => {
                 let selected = false;
-                if(selectedDeviceId === OutputDevice.DefaultDeviceId && device.device_id === defaultDeviceId) {
+                if(selectedDeviceId === OutputDevice.DefaultDeviceId && device.deviceId === defaultDeviceId) {
                     selected = true;
-                } else if(selectedDeviceId === device.device_id) {
+                } else if(selectedDeviceId === device.deviceId) {
                     selected = true;
                 }
 
@@ -326,7 +326,7 @@ class InfoController {
                     name: device.name,
                     driver: device.driver,
 
-                    id: device.device_id,
+                    id: device.deviceId,
                     selected: selected
                 }
             })
@@ -513,13 +513,13 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
         if(typeof event.targetDeviceId === "string") {
             try {
                 const devices = await getAudioBackend().getAvailableDevices();
-                const device = devices.find(device => device.device_id === event.targetDeviceId);
+                const device = devices.find(device => device.deviceId === event.targetDeviceId);
                 if(!device) {
                     throw tr("Target device could not be found.");
                 }
 
-                await getAudioBackend().setCurrentDevice(device.device_id);
-                settings.setValue(Settings.KEY_SPEAKER_DEVICE_ID, device.device_id);
+                await getAudioBackend().setCurrentDevice(device.deviceId);
+                settings.setValue(Settings.KEY_SPEAKER_DEVICE_ID, device.deviceId);
             } catch (error) {
                 createErrorModal(tr("Failed to change speaker"), tr("Failed to change speaker.\nTarget device could not be found.")).open();
                 return;

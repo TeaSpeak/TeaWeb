@@ -1,5 +1,5 @@
 export interface OutputDevice {
-    device_id: string;
+    deviceId: string;
 
     driver: string;
     name: string;

@@ -4,7 +4,7 @@ import {tr} from "tc-shared/i18n/localize";
 import {Registry} from "tc-events";
 
 const kWebDevice: OutputDevice = {
-    device_id: "default",
+    deviceId: "default",
     name: "default playback",
     driver: 'Web Audio'
 };
@@ -59,7 +59,7 @@ export class WebAudioBackend implements AudioBackend {
     }
 
     getDefaultDeviceId(): string {
-        return kWebDevice.device_id;
+        return kWebDevice.deviceId;
     }
 
     getMasterVolume(): number {

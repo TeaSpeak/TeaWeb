@@ -25,6 +25,7 @@ import * as ReactDOM from "react-dom";
 import {NotificationSettings} from "tc-shared/ui/modal/settings/Notifications";
 import {initialize_audio_microphone_controller, MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/Microphone";
 import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
+import {getBackend} from "tc-shared/backend";
 
 type ProfileInfoEvent = {
     id: string,
@@ -486,7 +487,7 @@ function settings_general_language(container: JQuery, modal: Modal) {
         if (__build.target === "web") {
             location.reload();
         } else {
-            createErrorModal(tr("Not implemented"), tr("Client restart isn't implemented.<br>Please do it manually!")).open();
+            getBackend("native").reloadWindow();
         }
     });
 
@@ -629,7 +630,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
 
             const current_selected = getAudioBackend().getCurrentDevice();
             const generate_device = (device: OutputDevice | undefined) => {
-                const selected = device === current_selected || (typeof (current_selected) !== "undefined" && typeof (device) !== "undefined" && current_selected.device_id == device.device_id);
+                const selected = device === current_selected || (typeof (current_selected) !== "undefined" && typeof (device) !== "undefined" && current_selected.deviceId == device.deviceId);
 
                 const tag = $.spawn("div").addClass("device").toggleClass("selected", selected).append(
                     $.spawn("div").addClass("container-selected").append(
@@ -653,7 +654,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
                     _old.removeClass("selected");
                     tag.addClass("selected");
 
-                    const targetDeviceId = device.device_id || OutputDevice.NoDeviceId;
+                    const targetDeviceId = device.deviceId || OutputDevice.NoDeviceId;
                     getAudioBackend().setCurrentDevice(targetDeviceId).then(() => {
                         logDebug(LogCategory.AUDIO, tr("Changed default speaker device"));
                         settings.setValue(Settings.KEY_SPEAKER_DEVICE_ID, targetDeviceId);
