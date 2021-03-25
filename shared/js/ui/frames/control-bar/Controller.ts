@@ -529,6 +529,10 @@ export function initializeControlBarController(events: Registry<ControlBarEvents
         infoHandler.getCurrentHandler()?.setSpeakerMuted(!event.enabled);
     });
 
+    events.on("action_open_speaker_settings", () => {
+        global_client_actions.fire("action_open_window_settings", { defaultCategory: "audio-speaker" });
+    });
+
     events.on("action_toggle_subscribe", event => {
         settings.setValue(Settings.KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS, event.subscribe);
 
