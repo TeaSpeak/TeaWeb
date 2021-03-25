@@ -76,7 +76,7 @@ export class HandshakeHandler {
 
     private async handleHandshakeFinished() {
         const data = {
-            client_nickname: this.parameters.nickname || "Another TeaSpeak user",
+            client_nickname: this.parameters.nickname || this.parameters.profile.connectUsername(),
             client_platform: navigator.browserSpecs?.name + " " + navigator.platform,
             client_version: "TeaWeb " + __build.version + " (" + navigator.userAgent + ")",
             client_version_sign: undefined,
