@@ -2656,7 +2656,7 @@
       }
     },
     {
-      "translated": "Не реализованы",
+      "translated": "Не реализовано",
       "flags": [
         "google-translate"
       ],
@@ -2728,7 +2728,7 @@
       }
     },
     {
-      "translated": "У вас нет разрешения на создание запроса входа на сервер",
+      "translated": "У вас нет разрешения на создание пользователя с правами ServerQuery",
       "flags": [
         "google-translate"
       ],
@@ -3664,7 +3664,7 @@
       }
     },
     {
-      "translated": "Подключено как {0}",
+      "translated": "Вы подключены как {0}",
       "flags": [
         "google-translate"
       ],
@@ -3912,7 +3912,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "You switched from channel {1} to {2}"
+        "message": "You switched from {1} to {2}"
       }
     },
     {
@@ -4654,7 +4654,7 @@
       }
     },
     {
-      "translated": "Расходная группа",
+      "translated": "Развернуть группу",
       "flags": [
         "google-translate"
       ],
@@ -4663,7 +4663,7 @@
       }
     },
     {
-      "translated": "Расходовать все",
+      "translated": "Развернуть все",
       "flags": [
         "google-translate"
       ],
@@ -4708,7 +4708,7 @@
       }
     },
     {
-      "translated": "Добавить разрешение на грант",
+      "translated": "Добавить возможность предоставления прав",
       "flags": [
         "google-translate"
       ],
@@ -4717,7 +4717,7 @@
       }
     },
     {
-      "translated": "Удалить разрешение на выдачу",
+      "translated": "Удалить возможность предоставления прав",
       "flags": [
         "google-translate"
       ],
@@ -5631,7 +5631,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "Server Address"
+        "message": "Server address"
       }
     },
     {
@@ -5667,7 +5667,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "Connect Profile"
+        "message": "Connect profile"
       }
     },
     {
@@ -6769,7 +6769,7 @@
       }
     },
     {
-      "translated": "канал",
+      "translated": "Канал",
       "flags": [
         "google-translate"
       ],
@@ -6796,7 +6796,7 @@
       }
     },
     {
-      "translated": "клиент",
+      "translated": "Клиент",
       "flags": [
         "google-translate"
       ],
@@ -9186,7 +9186,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "Set away for all servers"
+        "message": "Set away on all servers"
       }
     },
     {
@@ -9370,7 +9370,7 @@
       }
     },
     {
-      "translated": "Настройки",
+      "translated": "Инструменты",
       "flags": [
         "google-translate"
       ],
@@ -10693,12 +10693,21 @@
       }
     },
     {
+      "translated": "Качество звука",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Voice quality"
+      }
+    },
+    {
       "translated": "Необходимые права для разговора:",
       "flags": [
         "google-translate"
       ],
       "key": {
-        "message": "Talk power:"
+        "message": "Talk power"
       }
     },
     {
@@ -12429,8 +12438,1240 @@
       "key": {
         "message": "Expend all channels"
       }
+    },
+    {
+      "translated": "Скрыть историю подключений",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Hide connect history"
+      }
+    },
+    {
+      "translated": "Показать историю подключений",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Show connect history"
+      }
+    },
+    {
+      "translated": "Подключиться в той же вкладке",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Connect in the same tab"
+      }
+    },
+    {
+      "translated": "Адрес",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Address"
+      }
+    },
+    {
+      "translated": "Клиенты",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Clients"
+      }
+    },
+    {
+      "translated": "Подключений",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Connections"
+      }
+    },
+    {
+      "translated": "Открыть реестр",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Open Registry"
+      }
+    },
+    {
+      "translated": "Реестр глобальных настроек",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Global settings registry"
+      }
+    },
+    {
+      "translated": "Список настроек",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Setting list"
+      }
+    },
+    {
+      "translated": "Редактор настроек",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Setting editor"
+      }
+    },
+    {
+      "translated": "Имя настройки",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Setting key"
+      }
+    },
+    {
+      "translated": "Значение по умолчанию",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Default Value"
+      }
+    },
+    {
+      "translated": "Фильтр настроек",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Filter settings"
+      }
+    },
+    {
+      "translated": "Открыть список изменений",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Open client changelog"
+      }
+    },
+    {
+      "translated": "Соединение с сервером ",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Connecting to "
+      }
+    },
+    {
+      "translated": "Соединение с сервером {0}{1}",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Connecting to {0}{1}"
+      }
+    },
+    {
+      "translated": "Разрешение имени хоста",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Resolving hostname"
+      }
+    },
+    {
+      "translated": "Имя хоста успешно разрешено для сервера {0}:{1}",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Hostname resolved successfully to {0}:{1}"
+      }
+    },
+    {
+      "translated": "Вы отключились от сервера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Disconnected from server"
+      }
+    },
+    {
+      "translated": "{0} появился на вашем канале {1}",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "{0} appeared to your channel {1}"
+      }
+    },
+    {
+      "translated": "Внимание: изменение языка клиента требует перезапуска клиента!",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Attention: Changing the client language require a client restart!"
+      }
+    },
+    {
+      "translated": "Автоматический перезапуск клиента пока не реализован.<br>Пожалуйста, сделайте это вручную!",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Client restart isn't implemented.<br>Please do it manually!"
+      }
+    },
+    {
+      "translated": "Перейти к последнему сообщению",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Jump to present"
+      }
+    },
+    {
+      "translated": "Показать старые сообщения",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Load older messages"
+      }
+    },
+    {
+      "translated": "Пожалуйста подождите",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "please wait"
+      }
+    },
+    {
+      "translated": "Добро пожаловать в TeaSpeak-клиент",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Welcome to the TeaSpeak - Client"
+      }
+    },
+    {
+      "translated": "Добро пожаловать, уважаемый пользователь TeaSpeak.",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Welcome dear TeaSpeak user."
+      }
+    },
+    {
+      "translated": "Мы хотели бы установить несколько вещей, прежде чем продолжить.<br>",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "We would like to setup a few things before you're ready to go.<br>"
+      }
+    },
+    {
+      "translated": "Не волнуйся! Мы проведем вас через основной процесс настройки.",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Dont worry! We'll guide you thru the basic setup process."
+      }
+    },
+    {
+      "translated": "Вместе мы пройдем по этим шагам:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Together we'll go thru these steps:"
+      }
+    },
+    {
+      "translated": "Приветстве",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Welcome Greeting"
+      }
+    },
+    {
+      "translated": "Настройка микрофона",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Microphone configuration"
+      }
+    },
+    {
+      "translated": "Настройка идентификации",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Identity setup"
+      }
+    },
+    {
+      "translated": "Настройка динамиков",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Speaker configuration"
+      }
+    },
+    {
+      "translated": "Вы можете выйти из этого руководства в любой момент и сразу перейти к использованию клиента.",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "It is save to exit this guide at any point and directly jump ahead using the client."
+      }
+    },
+    {
+      "translated": "Пропустить",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Skip guide"
+      }
+    },
+    {
+      "translated": "Следующий шаг",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Next step"
+      }
+    },
+    {
+      "translated": "Шаг назад",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Last step"
+      }
+    },
+    {
+      "translated": "Завершить обучение",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Finish guide"
+      }
+    },
+    {
+      "translated": "Настройка микрофона",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Microphone setup"
+      }
+    },
+    {
+      "translated": "Во-первых, нам нужно установить микрофон.<br>Позвольте мне провести вас через основные элементы пользовательского интерфейса.<br><br>Чтобы продолжить, нажмите в любом месте экрана.",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Firstly we need to setup a microphone.<br>Let me guide you thru the basic UI elements.<br><br>To continue click anywhere on the screen."
+      }
+    },
+    {
+      "translated": "Поздравляю,<br>вы закончили настройку TeaSpeak",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Congratulations,<br>your done setting up TeaSpeak"
+      }
+    },
+    {
+      "translated": "Вы закончили настройку клиента. Но не волнуйся,<br>",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "You're done setting up your client. But dont worry,<br>"
+      }
+    },
+    {
+      "translated": "вы можете найти все эти настройки в меню настроек<br>",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "your could find all these settings within the settings menu<br>"
+      }
+    },
+    {
+      "translated": "Чтобы открыть настройки клиента, нажмите кнопку \"Интсрументы\", а затем \"Настройки\"<br>",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "To open the client settings click on \"tools\" and than \"settings\"<br>"
+      }
+    },
+    {
+      "translated": "Добавить группу",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Add group"
+      }
+    },
+    {
+      "translated": "Копировать разрешения",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Copy permissions"
+      }
+    },
+    {
+      "translated": "Создание новой группы сервера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Create a new server group"
+      }
+    },
+    {
+      "translated": "Недопустимая длина имени группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Invalid group name length"
+      }
+    },
+    {
+      "translated": "Тип группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Target group type"
+      }
+    },
+    {
+      "translated": "Создайте группу с помощью шаблона",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Create group using this template"
+      }
+    },
+    {
+      "translated": "Шаблон не выбран",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "No template"
+      }
+    },
+    {
+      "translated": "Создать группу",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Create Group"
+      }
+    },
+    {
+      "translated": "Обычная группа",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Regular Groups"
+      }
+    },
+    {
+      "translated": "Копировать разрешения группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Copy group permissions"
+      }
+    },
+    {
+      "translated": "Исходная группа",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Source group"
+      }
+    },
+    {
+      "translated": "Целевая группа",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Target group"
+      }
+    },
+    {
+      "translated": "Выберите группу",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Select a group"
+      }
+    },
+    {
+      "translated": "Вставить",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Paste"
+      }
+    },
+    {
+      "translated": "Копировать",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Copy"
+      }
+    },
+    {
+      "translated": "Добавить клиента",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Add client"
+      }
+    },
+    {
+      "translated": "Добавить клиента",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Remove client"
+      }
+    },
+    {
+      "translated": "Копировать уникальный id",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Copy unique id"
+      }
+    },
+    {
+      "translated": "ID клиента из базы данных или уникальный id",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Database or Unique ID"
+      }
+    },
+    {
+      "translated": "Уникальный идентификатор",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Unique identifier"
+      }
+    },
+    {
+      "translated": "ID клиента из базы данных",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Client database ID"
+      }
+    },
+    {
+      "translated": "Открыть чат",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Open conversation"
+      }
+    },
+    {
+      "translated": "Один чат",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "One conversation"
+      }
+    },
+    {
+      "translated": "Вы отключились от сервера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "You've disconnected from the server"
+      }
+    },
+    {
+      "translated": "Вчера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Yesterday"
+      }
+    },
+    {
+      "translated": "Сегодня",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Today"
+      }
+    },
+    {
+      "translated": "Вчера в",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Yesterday at"
+      }
+    },
+    {
+      "translated": "Сегодня в",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Today at"
+      }
+    },
+    {
+      "translated": "одну минуту назад",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "one minute ago"
+      }
+    },
+    {
+      "translated": "мин. назад",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "minutes ago"
+      }
+    },
+    {
+      "translated": "сек. назад",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "seconds ago"
+      }
+    },
+    {
+      "translated": "О приложении",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "About"
+      }
+    },
+    {
+      "translated": "TeaSpeak-Client, сборка ",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "TeaSpeak-Client build "
+      }
+    },
+    {
+      "translated": "Особая благодарность",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Special thanks"
+      }
+    },
+    {
+      "translated": "Контакты",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Contact"
+      }
+    },
+    {
+      "translated": "Лицензия",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "License"
+      }
+    },
+    {
+      "translated": "Настройки микрофона",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Open microphone settings"
+      }
+    },
+    {
+      "translated": "Свернуть подканалы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Collapse sub channels"
+      }
+    },
+    {
+      "translated": "Развернуть подканалы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Expend sub channels"
+      }
+    },
+    {
+      "translated": "Нормально",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Normal Name"
+      }
+    },
+    {
+      "translated": "По центру",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Centered"
+      }
+    },
+    {
+      "translated": "Слева",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Left Aligned"
+      }
+    },
+    {
+      "translated": "Справа",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Right Aligned"
+      }
+    },
+    {
+      "translated": "Повторяющийся",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Repetitive"
+      }
+    },
+    {
+      "translated": "Управление",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Control"
+      }
+    },
+    {
+      "translated": "Видео",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Video"
+      }
+    },
+    {
+      "translated": "Добавить разрешение для группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Add permissions to this group"
+      }
+    },
+    {
+      "translated": "Удалить разрешение для группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Remove permissions from this group"
+      }
+    },
+    {
+      "translated": "Добавить предоставленные разрешения для группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Add granted permissions to this group"
+      }
+    },
+    {
+      "translated": "Удалить предоставленные разрешения для группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Remove granted permissions from this group"
+      }
+    },
+    {
+      "translated": "Виртуальный сервер",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Virtual Server"
+      }
+    },
+    {
+      "translated": "Управление виртуальным сервером",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Virtual server management"
+      }
+    },
+    {
+      "translated": "Администрирование",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Administration"
+      }
+    },
+    {
+      "translated": "Доступ",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Access"
+      }
+    },
+    {
+      "translated": "Группа",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Group"
+      }
+    },
+    {
+      "translated": "Передача файлов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "File Transfer"
+      }
+    },
+    {
+      "translated": "Администратор",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Admin"
+      }
+    },
+    {
+      "translated": "Основы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Basics"
+      }
+    },
+    {
+      "translated": "Слоты",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Slots"
+      }
+    },
+    {
+      "translated": "Первый запуск",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "First run"
+      }
+    },
+    {
+      "translated": "Время работы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Uptime"
+      }
+    },
+    {
+      "translated": "Платформа",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Platform"
+      }
+    },
+    {
+      "translated": "Средний пинг",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Average ping"
+      }
+    },
+    {
+      "translated": "Средняя потеря пакетов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Average packet loss"
+      }
+    },
+    {
+      "translated": "Уникальный ID",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Global unique ID"
+      }
+    },
+    {
+      "translated": "Текущие Каналы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Current Channels"
+      }
+    },
+    {
+      "translated": "Шифрование данных",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Voice data encryption"
+      }
+    },
+    {
+      "translated": "Уровень безопасности",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Minimal security level"
+      }
+    },
+    {
+      "translated": "Жалоб до бана",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Complains until ban"
+      }
+    },
+    {
+      "translated": "Пригласить людей",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Invite People"
+      }
+    },
+    {
+      "translated": "Пригласить людей на",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Invite People to"
+      }
+    },
+    {
+      "translated": "Короткий URL",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Use short URL"
+      }
+    },
+    {
+      "translated": "Дополнительные настройки",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Advanced settings"
+      }
+    },
+    {
+      "translated": "Ссылка",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Link"
+      }
+    },
+    {
+      "translated": "Ссылка никогда не истекает",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Link expires never"
+      }
+    },
+    {
+      "translated": "Автоприсоединение к каналу",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Automatically join channel"
+      }
+    },
+    {
+      "translated": "Не используйте пароль",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Don't use a password"
+      }
+    },
+    {
+      "translated": "Скопировано!",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Copied!"
+      }
+    },
+    {
+      "translated": "Дополнительные опции",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Advanced options"
+      }
+    },
+    {
+      "translated": "Токен / ключ привилегии",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Token"
+      }
+    },
+    {
+      "translated": "Не используйте токен",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Don't use a token"
+      }
+    },
+    {
+      "translated": "Ссылка для Веб Клиента",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "WebClient URL"
+      }
+    },
+    {
+      "translated": "Время истечения ссылки",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Link expire time"
+      }
+    },
+    {
+      "translated": "Ссылка истекает",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Link expires at"
+      }
+    },
+    {
+      "translated": "Никогда",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "never"
+      }
+    },
+    {
+      "translated": "5 минут",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "5 Minutes"
+      }
+    },
+    {
+      "translated": "1 час",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "1 hour"
+      }
+    },
+    {
+      "translated": "24 часа",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "24 hours"
+      }
+    },
+    {
+      "translated": "1 неделя",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "1 Week"
+      }
+    },
+    {
+      "translated": "1 месяц",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "1 Month"
+      }
+    },
+    {
+      "translated": "Открыть режим разработчика",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Open developer tools"
+      }
+    },
+    {
+      "translated": "Перезагрузить UI ",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Reload UI"
+      }
     }
-
-
+    
   ]
 }

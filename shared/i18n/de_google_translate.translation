@@ -1061,7 +1061,7 @@
             }
         },
         {
-            "translated": "<b> Namen ändern </ b>",
+            "translated": "<b> Name ändern </ b>",
             "flags": [
                 "human-verified"
             ],
@@ -1107,7 +1107,7 @@
             }
         },
         {
-            "translated": "<b> Botnamen ändern </ b>",
+            "translated": "<b> Botname ändern </ b>",
             "flags": [
                 "human-verified"
             ],
@@ -3204,9 +3204,9 @@
             }
         },
         {
-            "translated": "Namen ändern!",
+            "translated": "Name ändern!",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Change name!"
@@ -7170,9 +7170,9 @@
             }
         },
         {
-            "translated": "Verbinden Sie sich mit einem Server",
+            "translated": "Mit einem Server verbinden",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "in-use-system"
             ],
             "key": {
@@ -10222,9 +10222,9 @@
             }
         },
         {
-            "translated": "Zielniveau:",
+            "translated": "Ziellevel:",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -11504,9 +11504,9 @@
             }
         },
         {
-            "translated": "Anschließen",
+            "translated": "Verbinde",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "in-use-system"
             ],
             "key": {
@@ -11617,9 +11617,9 @@
             }
         },
         {
-            "translated": "Das Identitätsniveau ist zu niedrig",
+            "translated": "Das Identitätslevel ist zu niedrig",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "in-use-system"
             ],
             "key": {
@@ -11976,9 +11976,9 @@
             }
         },
         {
-            "translated": "Trennen Sie die Verbindung zum aktuellen Server",
+            "translated": "Verbindung trennen zum aktuellen Server",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "in-use-system",
                 "ui-visible"
             ],
@@ -11998,9 +11998,9 @@
             }
         },
         {
-            "translated": "Setzen Sie sich auf diesem Server fort",
+            "translated": "Abwesend melden, auf diesem Server",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -12009,9 +12009,9 @@
             }
         },
         {
-            "translated": "Setzen Sie die Nachricht auf diesem Server ab",
+            "translated": "Abwesenheitsnachricht für diesen Server absetzen",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -12020,18 +12020,18 @@
             }
         },
         {
-            "translated": "Setzen Sie sich für alle Server frei",
+            "translated": "Bei allen Servern als abwesend melden",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Set away for all servers"
             }
         },
         {
-            "translated": "Setzen Sie eine Nachricht für alle Server ab",
+            "translated": "Abwesenheitsnachricht für alle Server absetzen",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -12351,9 +12351,9 @@
             }
         },
         {
-            "translated": "Namen ändern",
+            "translated": "Name ändern",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "in-use-system"
             ],
             "key": {
@@ -15406,9 +15406,9 @@
             }
         },
         {
-            "translated": "Gespräch eröffnen",
+            "translated": "Gespräch öffnen",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "in-use-system"
             ],
             "key": {
@@ -17403,9 +17403,9 @@
             }
         },
         {
-            "translated": "Stellen Sie auf einer anderen Registerkarte eine Verbindung zu einem Server her",
+            "translated": "Mit einem Server verbinden (in einem neuen Tab)",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -17455,7 +17455,7 @@
             }
         },
         {
-            "translated": "Wechseln Sie zum Channel-Chat",
+            "translated": "Zum Channel Chat wechseln",
             "flags": [
                 "human-verified",
                 "ui-visible",
@@ -19281,7 +19281,7 @@
             }
         },
         {
-            "translated": "Sounds muten, wenn der Ausgang stummgeschaltet ist",
+            "translated": "Sounds muten, wenn die Lautsprecherausgabe stummgeschaltet ist",
             "flags": [
                 "human-verified",
                 "ui-visible",
@@ -19303,9 +19303,9 @@
             }
         },
         {
-            "translated": "Erstelle neu",
+            "translated": "Neu erstellen",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -19446,9 +19446,9 @@
             }
         },
         {
-            "translated": "Niveau",
+            "translated": "Level",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -22144,9 +22144,9 @@
             "key": {
                 "message": "Failed to calculate identity level after improvement (%o)"
             },
-            "translated": "Fehler beim Berechnen des Identitätsniveaus nach Verbesserung (% o)",
+            "translated": "Fehler beim Berechnen des Identitätslevel nach Verbesserung (% o)",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "in-use-system"
             ]
         },
@@ -27006,9 +27006,9 @@
             "key": {
                 "message": "Set away on all servers"
             },
-            "translated": "Auf allen Servern wegstellen",
+            "translated": "Abwesend melden, auf allen Servern",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ]
@@ -27825,7 +27825,7 @@
             },
             "translated": "Zeichnen Sie den Fokus auf das Fenster, wenn das Ereignis eintritt",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ]
@@ -33226,18 +33226,656 @@
             ]
         },
         {
-            "key": {},
-            "translated": "nicht definiert",
+            "key": {
+            "message": "Open microphone settings"
+            },
+            "translated": "Mikrofon Einstellungen öffnen",
             "flags": [
-                "google-translated"
+                "human-verified"
+            ]
+        },
+
+        {
+            "key": {
+            "message": "Start screen sharing"
+            },
+            "translated": "Starte Bildschirmübertragung",
+            "flags": [
+                "human-verified"
             ]
         },
         {
-            "key": {},
-            "translated": "nicht definiert",
+            "key": {
+            "message": "Start video broadcasting"
+            },
+            "translated": "Starte Webcam Übertragung",
             "flags": [
-                "google-translated"
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Select your source"
+            },
+            "translated": "Wähle die Videoquelle",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Video preview"
+            },
+            "translated": "Video Vorschau",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Dimension"
+            },
+            "translated": "Auflösung",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Aspect ratio"
+            },
+            "translated": "Seitenverhältnis",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Start video Broadcasting"
+            },
+            "translated": "Starte Webcam Übertragung",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Server connection"
+            },
+            "translated": "Server Verbindung",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Disconnect from the current server"
+            },
+            "translated": "Verbindung zum aktuellen Server trennen",
+            "flags": [
+                "human-verified"
+            ]
+        },
+
+        {
+            "key": {
+            "message": "Disconnect from all connected servers"
+            },
+            "translated": "Verbindung zu allen Servern trennen",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Enable your microphone"
+            },
+            "translated": "Mikrofon aktivieren",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Disable your microphone"
+            },
+            "translated": "Mikrofon deaktivieren",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Enable your speakers"
+            },
+            "translated": "Lautsprecher aktivieren",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Disable your speakers"
+            },
+            "translated": "Lautsprecher deaktiveren",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Toggle your microphone status"
+            },
+            "translated": "Mikrofonstatus umschalten",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Toggle your speaker status"
+            },
+            "translated": "Lautsprecherstatus umschalten",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Toggle your away state"
+            },
+            "translated": "Abwesenheitsstatus umschalten",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Toggle your away state for every server"
+            },
+            "translated": "Abwesenheitsstatus für alle Server umschalten",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Enable away for the current server"
+            },
+            "translated": "Aktiviere Abwesenheit für den zurzeitigen Server",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Disable away for the current server"
+            },
+            "translated": "Deaktiviere Abwesenheit für den zurzeitigen Server",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Enable away for every server"
+            },
+            "translated": "Aktiviere Abwesenheit für jeden Server",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Disable away for every server"
+            },
+            "translated": "Deaktiviere Abwesenheit für jeden Server",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "Client events"
+            },
+            "translated": "Client Ereignisse",
+            "flags": [
+                "human-verified",
+                "in-use-system",
+                "ui-visible"
+            ]
+        },
+        {
+            "key": {
+            "message": "Messages"
+            },
+            "translated": "Nachrichten",
+            "flags": [
+                "human-verified",
+                "in-use-system",
+                "ui-visible"
+            ]
+        },
+        {
+            "key": {
+            "message": "You received a poke"
+            },
+            "translated": "Du wurdest angestubst",
+            "flags": [
+                "human-verified",
+                "in-use-system",
+                "ui-visible"
+            ]
+        },
+        {
+            "key": {
+            "message": "You send a poke"
+            },
+            "translated": "Du hast jemanden angestupst",
+            "flags": [
+                "human-verified",
+                "in-use-system",
+                "ui-visible"
+            ]
+        },
+        {
+            "key": {
+            "message": "You received a private message"
+            },
+            "translated": "Du hast eine private Nachricht bekommen",
+            "flags": [
+                "human-verified",
+                "in-use-system",
+                "ui-visible"
+            ]
+        },
+        {
+            "key": {
+            "message": "You send a private message"
+            },
+            "translated": "Du hast eine private Nachricht gesendet",
+            "flags": [
+                "human-verified",
+                "in-use-system",
+                "ui-visible"
+            ]
+        },
+        {
+            "key": {
+            "message": "View"
+            },
+            "translated": "Ansicht",
+            "flags": [
+                "human-verified",
+                "in-use-system",
+                "ui-visible"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+                
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": "A server has been send"
+            },
+            "translated": "Eine Server Nachricht wurde gesendet",
+            "flags": [
+                "human-verified",
+                "in-use-system",
+                "ui-visible"
+            ]
+        },
+        {
+            "key": {
+            "message": "The Server has been closed"
+            },
+            "translated": "Der Server wurde geschlossen",
+            "flags": [
+                "human-verified",
+                "in-use-system",
+                "ui-visible"
+            ]
+        },
+        {
+            "key": {
+            "message": "You´ve been banned from the server"
+            },
+            "translated": "Du wurdest vom Server verbannt",
+            "flags": [
+                "human-verified",
+                "in-use-system",
+                "ui-visible"
+            ]
+        },
+        {
+            "key": {
+            "message": "Connection"
+            },
+            "translated": "Verbindung",
+            "flags": [
+                "human-verified",
+                "in-use-system",
+                "ui-visible"
+            ]
+        },
+        {
+            "key": {
+            "message": "You´re connecting to a server"
+            },
+            "translated": "Du verbindest dich mit einem Server",
+            "flags": [
+                "human-verified",
+                "in-use-system"
+            ]
+        },
+        {
+            "key": {
+            "message": "You´ve successfully connected to the server"
+            },
+            "translated": "Du wurdest erfolgreich mit dem Server verbunden",
+            "flags": [
+                "human-verified",
+                "in-use-system",
+                "ui-visible"
+            ]
+        },
+        {
+            "key": {
+            "message": "You´re connect attempt failed"
+            },
+            "translated": "Dein Verbindungsversuch schlug fehl",
+            "flags": [
+                "human-verified",
+                "in-use-system",
+                "ui-visible"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },       
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+            "message": ""
+            },
+            "translated": "",
+            "flags": [
+                "human-verified"
             ]
         }
+
     ]
 }
