@@ -404,7 +404,7 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
         }, [ variable, customData ]);
 
         if(arguments.length >= 3) {
-            return cacheEntry.status === "loaded" ? cacheEntry.currentValue : defaultValue;
+            return cacheEntry.status === "loaded" || cacheEntry.status === "applying" ? cacheEntry.currentValue : defaultValue;
         } else {
             return {
                 status: cacheEntry.status,

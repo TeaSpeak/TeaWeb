@@ -109,4 +109,8 @@ registerModal({
     popoutSupported: true
 });
 
-
+registerModal({
+    modalId: "modal-input-processor",
+    classLoader: async () => await import("tc-shared/ui/modal/input-processor/Renderer"),
+    popoutSupported: true
+});

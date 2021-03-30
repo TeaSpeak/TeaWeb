@@ -64,7 +64,7 @@ export const ControlledBoxedInputField = (props: {
 
                        ref={props.refInput}
 
-                       value={props.value || ""}
+                       value={typeof props.value !== "undefined" ? props.value : ""}
                        placeholder={props.placeholder}
 
                        readOnly={typeof props.editable === "boolean" ? !props.editable : false}

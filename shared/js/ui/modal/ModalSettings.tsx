@@ -23,9 +23,10 @@ import {KeyMapSettings} from "tc-shared/ui/modal/settings/Keymap";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {NotificationSettings} from "tc-shared/ui/modal/settings/Notifications";
-import {initialize_audio_microphone_controller, MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/Microphone";
+import {initialize_audio_microphone_controller} from "tc-shared/ui/modal/settings/Microphone";
 import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
 import {getBackend} from "tc-shared/backend";
+import {MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/MicrophoneDefinitions";
 
 type ProfileInfoEvent = {
     id: string,

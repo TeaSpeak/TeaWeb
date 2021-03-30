@@ -49,6 +49,12 @@ export function setDefaultRecorder(recorder: RecorderProfile) {
 
 export interface RecorderProfileEvents {
     notify_device_changed: { },
+
+    notify_voice_start: { },
+    notify_voice_end: { },
+
+    /* attention: this notify will only be called when the audio input hasn't been initialized! */
+    notify_input_initialized: { },
 }
 
 export class RecorderProfile {
@@ -84,8 +90,9 @@ export class RecorderProfile {
 
         this.pptHook = {
             callbackRelease: () => {
-                if(this.pptTimeout)
+                if(this.pptTimeout) {
                     clearTimeout(this.pptTimeout);
+                }
 
                 this.pptTimeout = setTimeout(() => {
                     this.registeredFilter["ppt-gate"]?.setState(true);
@@ -93,8 +100,9 @@ export class RecorderProfile {
             },
 
             callbackPress: () => {
-                if(this.pptTimeout)
+                if(this.pptTimeout) {
                     clearTimeout(this.pptTimeout);
+                }
 
                 this.registeredFilter["ppt-gate"]?.setState(false);
             },
@@ -154,14 +162,18 @@ export class RecorderProfile {
 
         this.input.events.on("notify_voice_start", () => {
             logDebug(LogCategory.VOICE, "Voice start");
-            if(this.callback_start)
+            if(this.callback_start) {
                 this.callback_start();
+            }
+            this.events.fire("notify_voice_start");
         });
 
         this.input.events.on("notify_voice_end", () => {
             logDebug(LogCategory.VOICE, "Voice end");
-            if(this.callback_stop)
+            if(this.callback_stop) {
                 this.callback_stop();
+            }
+            this.events.fire("notify_voice_end");
         });
 
         this.input.setFilterMode(FilterMode.Block);
@@ -174,6 +186,7 @@ export class RecorderProfile {
         if(this.callback_input_initialized) {
             this.callback_input_initialized(this.input);
         }
+        this.events.fire("notify_input_initialized");
 
 
         /* apply initial config values */

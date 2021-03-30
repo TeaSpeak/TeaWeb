@@ -5,7 +5,7 @@ import {
     FilterMode,
     InputConsumer,
     InputConsumerType,
-    InputEvents,
+    InputEvents, InputProcessor, InputProcessorConfigMapping, InputProcessorStatistics, InputProcessorType,
     InputStartError,
     InputState,
     LevelMeter,
@@ -43,12 +43,6 @@ export class WebAudioRecorder implements AudioRecorderBacked {
     getDeviceList(): DeviceList {
         return inputDeviceList;
     }
-
-    isRnNoiseSupported() {
-        return false;
-    }
-
-    toggleRnNoise(target: boolean) { throw "not supported"; }
 }
 
 class JavascriptInput implements AbstractInput {
@@ -454,8 +448,10 @@ class JavascriptInput implements AbstractInput {
     }
 
     setVolume(volume: number) {
-        if(volume === this.volumeModifier)
+        if(volume === this.volumeModifier) {
             return;
+        }
+
         this.volumeModifier = volume;
         this.audioNodeVolume.gain.value = volume;
     }
@@ -481,6 +477,32 @@ class JavascriptInput implements AbstractInput {
             oldMode,
             newMode: mode
         });
+    }
+
+    getInputProcessor(): InputProcessor {
+        return new JavaScriptInputProcessor();
+    }
+
+    createLevelMeter(): LevelMeter {
+        throw tr("implement me!");
+    }
+}
+
+class JavaScriptInputProcessor implements InputProcessor {
+    applyProcessorConfig<T extends InputProcessorType>(processor: T, config: InputProcessorConfigMapping[T]) {
+        throw tr("target processor is not supported");
+    }
+
+    getProcessorConfig<T extends InputProcessorType>(processor: T): InputProcessorConfigMapping[T] {
+        throw tr("target processor is not supported");
+    }
+
+    getStatistics(): InputProcessorStatistics {
+        return {} as any;
+    }
+
+    hasProcessor(processor: InputProcessorType): boolean {
+        return false;
     }
 }
 

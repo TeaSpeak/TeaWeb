@@ -1,0 +1,45 @@
+html:root {
+    /* Permission editor modal */
+    --modal-permissions-header-text: #e1e1e1;
+    --modal-permissions-header-background: #19191b;
+    --modal-permissions-header-hover: #4e4e4e;
+    --modal-permissions-header-selected: #0073d4;
+
+    --modal-permission-right: #303036;
+    --modal-permission-left: #222226;
+
+    --modal-permissions-entry-hover: #28282c;
+    --modal-permissions-entry-selected: #111111;
+    --modal-permissions-current-group: #101012;
+
+    --modal-permissions-buttons-background: #0f0f0f;
+    --modal-permissions-buttons-hover: #262626;
+    --modal-permissions-buttons-disabled: #1b1b1b;
+
+    --modal-permissions-seperator: #1e1e1e; /* the seperator for the "enter a unique id" and "client info" part */
+    --modal-permissions-container-seperator: #222224; /* the seperator between left and right */
+
+    --modal-permissions-icon-select: #121213;
+    --modal-permissions-icon-select-border: #0d0d0d;
+    --modal-permissions-icon-select-hover: #17171a;
+    --modal-permissions-icon-select-hover-border: #333333;
+
+    --modal-permission-no-permnissions: #18171c;
+    --modal-permissions-table-border: #1e2025;
+
+    --modal-permissions-table-header: #303036;
+    --modal-permissions-table-row-odd: #303036;
+    --modal-permissions-table-row-even: #25252a;
+    --modal-permissions-table-row-hover: #343a47;
+
+    --modal-permissions-table-header-text: #e1e1e1;
+    --modal-permissions-table-row-text: #535455;
+    --modal-permissions-table-entry-active-text: #e1e1e1;
+    --modal-permissions-table-entry-group-text: #e1e1e1;
+
+    --modal-permissions-table-input: #e1e1e1;
+    --modal-permissions-table-input-focus: #3f7dbf;
+
+    /* The host banner */
+    --hostbanner-background: #2e2e2e;
+}

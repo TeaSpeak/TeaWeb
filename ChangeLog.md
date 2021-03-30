@@ -1,4 +1,9 @@
 # Changelog:
+* **29.03.21**
+    - Accquiering the default input recorder when opening the settings
+    - Adding new modal Input Processing Properties for the native client
+    - Fixed that you can't finish off the name editing by pressing enter
+  
 * **25.03.21**
     - Allowing to directly select the speaker output device
     - Saving the speaker output device

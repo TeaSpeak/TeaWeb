@@ -8,10 +8,10 @@ import {
 import {assertMainApplication} from "tc-shared/ui/utils";
 import {Registry} from "tc-events";
 import {getIpcInstance} from "tc-shared/ipc/BrowserIPC";
-import _ from "lodash";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {tr, tra} from "tc-shared/i18n/localize";
 import {guid} from "tc-shared/crypto/uid";
+import _ from "lodash";
 
 assertMainApplication();
 
@@ -27,15 +27,27 @@ type WindowHandle = {
 
 export class WebWindowManager implements WindowManager {
     private readonly events: Registry<WindowManagerEvents>;
+    private readonly listenerUnload;
     private registeredWindows: { [key: string]: WindowHandle } = {};
 
     constructor() {
         this.events = new Registry<WindowManagerEvents>();
-        /* TODO: Close all active windows on page unload */
+
+        this.listenerUnload = () => this.destroyAllWindows();
+        window.addEventListener("unload", this.listenerUnload);
     }
 
     getEvents(): Registry<WindowManagerEvents> {
         return this.events;
+    }
+
+    destroy() {
+        window.removeEventListener("unload", this.listenerUnload);
+        this.destroyAllWindows();
+    }
+
+    private destroyAllWindows() {
+        Object.values(this.registeredWindows).forEach(window => window.destroy());
     }
 
     async createWindow(options: WindowSpawnOptions): Promise<WindowCreateResult> {

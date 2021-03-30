@@ -1,10 +1,6 @@
 @import "../../../css/static/properties";
 @import "../../../css/static/mixin";
 
-html:root {
-    --hostbanner-background: #2e2e2e;
-}
-
 .container {
     position: relative;
     overflow: hidden;
@@ -14,6 +10,7 @@ html:root {
     justify-content: stretch;
 
     flex-shrink: 0;
+    user-select: none;
 
     .withBackground {
         background-color: var(--hostbanner-background);

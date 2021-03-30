@@ -1,9 +1,9 @@
 import * as React from "react";
-import {useEffect, useRef, useState} from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {Registry} from "tc-shared/events";
-import {MicrophoneDevice, MicrophoneSettingsEvents, SelectedMicrophone} from "tc-shared/ui/modal/settings/Microphone";
+import {MicrophoneDevice, MicrophoneSettingsEvents, SelectedMicrophone} from "tc-shared/ui/modal/settings/MicrophoneDefinitions";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
@@ -17,8 +17,12 @@ import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
 import {BoxedInputField} from "tc-shared/ui/react-elements/InputField";
 import {HighlightContainer, HighlightRegion, HighlightText} from "./Heighlight";
 import {InputDevice} from "tc-shared/audio/Recorder";
+import {joinClassList} from "tc-shared/ui/react-elements/Helper";
+import {IconTooltip} from "tc-shared/ui/react-elements/Tooltip";
+import _ from "lodash";
 
 const cssStyle = require("./Microphone.scss");
+const EventContext = React.createContext<Registry<MicrophoneSettingsEvents>>(undefined);
 
 type MicrophoneSelectedState = "selected" | "applying" | "unselected";
 const MicrophoneStatus = (props: { state: MicrophoneSelectedState }) => {
@@ -34,89 +38,134 @@ const MicrophoneStatus = (props: { state: MicrophoneSelectedState }) => {
             return null;
 
         case "selected":
-            return <ClientIconRenderer key={"selected"} icon={ClientIcon.Apply}/>;
+            return (
+                <ClientIconRenderer key={"selected"} icon={ClientIcon.Apply} />
+            );
     }
 }
 
 type ActivityBarStatus =
-    { mode: "success" }
+    { mode: "success", level: number }
     | { mode: "error", message: string }
     | { mode: "loading" }
     | { mode: "uninitialized" };
-const ActivityBar = (props: { events: Registry<MicrophoneSettingsEvents>, deviceId: string | "none", disabled?: boolean }) => {
-    const refHider = useRef<HTMLDivElement>();
-    const [status, setStatus] = useState<ActivityBarStatus>({ mode: "loading" });
 
-    if(typeof props.deviceId === "undefined") {
-        throw "invalid device id";
+const ActivityBarStatusContext = React.createContext<ActivityBarStatus>({ mode: "loading" });
+
+const DeviceActivityBarStatusProvider = React.memo((props: { deviceId: string, children }) => {
+    const events = useContext(EventContext);
+    const [ status, setStatus ] = useState<ActivityBarStatus>({ mode: "loading" });
+
+    const updateState = (newState: ActivityBarStatus) => {
+        if(!_.isEqual(newState, status)) {
+            setStatus(newState);
+        }
     }
 
-    props.events.reactUse("notify_device_level", event => {
-        refHider.current.style.width = "100%";
-        if (event.status === "uninitialized") {
-            if (status.mode === "uninitialized") {
-                return;
-            }
-
-            setStatus({mode: "uninitialized"});
-        } else if (event.status === "no-permissions") {
-            const noPermissionsMessage = tr("no permissions");
-            if (status.mode === "error" && status.message === noPermissionsMessage) {
-                return;
-            }
-
-            setStatus({mode: "error", message: noPermissionsMessage});
-        } else {
+    events.reactUse("notify_device_level", event => {
+        if(event.status === "uninitialized") {
+            updateState({ mode: "uninitialized" });
+        } else if(event.status === "no-permissions") {
+            updateState({ mode: "error", message: tr("no permissions") });
+        } else if(event.status === "healthy") {
             const device = event.level[props.deviceId];
             if (!device) {
-                if (status.mode === "loading") {
-                    return;
-                }
-
-                setStatus({mode: "loading"});
-            } else if (device.status === "success") {
-                if (status.mode !== "success") {
-                    setStatus({mode: "success"});
-                }
-
-                refHider.current.style.width = (100 - device.level) + "%";
+                updateState({ mode: "loading" });
+            } else if(device.status === "success") {
+                updateState({ mode: "success", level: device.level });
             } else {
-                if (status.mode === "error" && status.message === device.error) {
-                    return;
-                }
-
-                setStatus({mode: "error", message: device.error + ""});
+                updateState({ mode: "error", message: device.error });
             }
         }
-    }, true, [status]);
+    }, undefined, []);
 
+    return (
+        <ActivityBarStatusContext.Provider value={status}>
+            {props.children}
+        </ActivityBarStatusContext.Provider>
+    );
+});
 
-    let error;
+const InputActivityBarStatusProvider = React.memo((props: { children }) => {
+    const events = useContext(EventContext);
+    const [ status, setStatus ] = useState<ActivityBarStatus>(() => {
+        events.fire("query_input_level");
+        return { mode: "loading" };
+    });
+
+    events.reactUse("notify_input_level", event => {
+        switch (event.level.status) {
+            case "success":
+                setStatus({ mode: "success", level: event.level.level });
+                break;
+
+            case "error":
+                setStatus({ mode: "error", message: event.level.message });
+                break;
+
+            case "uninitialized":
+                setStatus({ mode: "uninitialized" });
+                break;
+
+            default:
+                setStatus({ mode: "error", message: tr("unknown status") });
+                break;
+        }
+    }, undefined, []);
+
+    return (
+        <ActivityBarStatusContext.Provider value={status}>
+            {props.children}
+        </ActivityBarStatusContext.Provider>
+    );
+});
+
+const ActivityBar = (props: { disabled?: boolean }) => {
+    const status = useContext(ActivityBarStatusContext);
+
+    let error = undefined;
+    let hiderWidth = "100%";
     switch (status.mode) {
         case "error":
-            error = <div className={cssStyle.text + " " + cssStyle.error} key={"error"}>{status.message}</div>;
+            error = (
+                <div className={joinClassList(cssStyle.text, cssStyle.error)} key={"error"}>
+                    {status.message}
+                </div>
+            );
             break;
 
         case "loading":
-            error =
-                <div className={cssStyle.text} key={"loading"}><Translatable>Loading</Translatable>&nbsp;<LoadingDots/>
-                </div>;
+            error = (
+                <div className={cssStyle.text} key={"loading"}>
+                    <Translatable>Loading</Translatable>&nbsp;<LoadingDots/>
+                </div>
+            );
             break;
 
         case "success":
-            error = undefined;
+            hiderWidth = (100 - status.level) + "%";
             break;
     }
+
     return (
         <div
             className={cssStyle.containerActivityBar + " " + cssStyle.bar + " " + (props.disabled ? cssStyle.disabled : "")}>
-            <div ref={refHider} className={cssStyle.hider} style={{width: "100%"}}/>
+            <div className={cssStyle.hider} style={{ width: hiderWidth }} />
             {error}
         </div>
-    )
+    );
 };
 
-const Microphone = (props: { events: Registry<MicrophoneSettingsEvents>, device: MicrophoneDevice, state: MicrophoneSelectedState, onClick: () => void }) => {
+const Microphone = React.memo((props: { device: MicrophoneDevice, state: MicrophoneSelectedState, onClick: () => void }) => {
+    let activityBar;
+    if(props.device.id !== InputDevice.NoDeviceId) {
+        activityBar = (
+            <DeviceActivityBarStatusProvider deviceId={props.device.id} key={"bar"}>
+                <ActivityBar />
+            </DeviceActivityBarStatusProvider>
+        );
+    }
+
     return (
         <div className={cssStyle.device + " " + (props.state === "unselected" ? "" : cssStyle.selected)}
              onClick={props.onClick}>
@@ -128,13 +177,11 @@ const Microphone = (props: { events: Registry<MicrophoneSettingsEvents>, device:
                 <div className={cssStyle.name}>{props.device.name}</div>
             </div>
             <div className={cssStyle.containerActivity}>
-                {props.device.id === InputDevice.NoDeviceId ? undefined :
-                    <ActivityBar key={"a"} events={props.events} deviceId={props.device.id}/>
-                }
+                {activityBar}
             </div>
         </div>
     );
-};
+});
 
 type MicrophoneListState = {
     type: "normal" | "loading" | "audio-not-initialized"
@@ -284,7 +331,6 @@ const MicrophoneList = (props: { events: Registry<MicrophoneSettingsEvents> }) =
                             name: tr("No device"),
                             default: false
                         }}
-                        events={props.events}
                         state={deviceSelectState("none")}
                         onClick={() => {
                             if (state.type !== "normal" || selectedDevice?.selectingDevice) {
@@ -295,23 +341,24 @@ const MicrophoneList = (props: { events: Registry<MicrophoneSettingsEvents> }) =
                         }}
             />
 
-            {deviceList.map(device => <Microphone
-                key={"d-" + device.id}
-                device={device}
-                events={props.events}
-                state={deviceSelectState(device)}
-                onClick={() => {
-                    if (state.type !== "normal" || selectedDevice?.selectingDevice) {
-                        return;
-                    }
+            {deviceList.map(device => (
+                <Microphone
+                    key={"d-" + device.id}
+                    device={device}
+                    state={deviceSelectState(device)}
+                    onClick={() => {
+                        if (state.type !== "normal" || selectedDevice?.selectingDevice) {
+                            return;
+                        }
 
-                    if(device.default) {
-                        props.events.fire("action_set_selected_device", { target: { type: "default" } });
-                    } else {
-                        props.events.fire("action_set_selected_device", { target: { type: "device", deviceId: device.id } });
-                    }
-                }}
-            />)}
+                        if(device.default) {
+                            props.events.fire("action_set_selected_device", { target: { type: "default" } });
+                        } else {
+                            props.events.fire("action_set_selected_device", { target: { type: "device", deviceId: device.id } });
+                        }
+                    }}
+                />
+            ))}
         </div>
     )
 }
@@ -405,33 +452,36 @@ const PPTKeyButton = React.memo((props: { events: Registry<MicrophoneSettingsEve
     }
 });
 
-const PPTDelaySettings = (props: { events: Registry<MicrophoneSettingsEvents> }) => {
+const PPTDelaySettings = React.memo(() => {
+    const events = useContext(EventContext);
+
     const [delayActive, setDelayActive] = useState<"loading" | boolean>(() => {
-        props.events.fire("query_setting", {setting: "ppt-release-delay"});
+        events.fire("query_setting", {setting: "ppt-release-delay"});
         return "loading";
     });
 
     const [delay, setDelay] = useState<"loading" | number>(() => {
-        props.events.fire("query_setting", {setting: "ppt-release-delay-active"});
+        events.fire("query_setting", {setting: "ppt-release-delay-active"});
         return "loading";
     });
 
     const [isActive, setActive] = useState(false);
 
-    props.events.reactUse("notify_setting", event => {
-        if (event.setting === "vad-type")
+    events.reactUse("notify_setting", event => {
+        if (event.setting === "vad-type") {
             setActive(event.value === "push_to_talk");
-        else if (event.setting === "ppt-release-delay")
+        } else if (event.setting === "ppt-release-delay") {
             setDelay(event.value);
-        else if (event.setting === "ppt-release-delay-active")
+        } else if (event.setting === "ppt-release-delay-active") {
             setDelayActive(event.value);
+        }
     });
 
     return (
         <div className={cssStyle.containerPptDelay}>
             <Checkbox
                 onChange={value => {
-                    props.events.fire("action_set_setting", {setting: "ppt-release-delay-active", value: value})
+                    events.fire("action_set_setting", {setting: "ppt-release-delay-active", value: value})
                 }}
                 disabled={!isActive}
                 value={delayActive === true}
@@ -458,45 +508,48 @@ const PPTDelaySettings = (props: { events: Registry<MicrophoneSettingsEvents> })
 
 
                         const newValue = event.target.valueAsNumber;
-                        if (isNaN(newValue))
+                        if (isNaN(newValue)) {
                             return;
+                        }
 
-                        if (newValue < 0 || newValue > 4000)
+                        if (newValue < 0 || newValue > 4000) {
                             return;
+                        }
 
-                        props.events.fire("action_set_setting", {setting: "ppt-release-delay", value: newValue});
+                        events.fire("action_set_setting", {setting: "ppt-release-delay", value: newValue});
                     }}
                 />}
             />
         </div>
     );
-}
+});
 
-const RNNoiseLabel = () => (
-    <VariadicTranslatable text={"Enable RNNoise cancelation ({})"}>
+const RNNoiseLabel = React.memo(() => (
+    <VariadicTranslatable text={"Enable RNNoise cancellation ({})"}>
         <a href={"https://jmvalin.ca/demo/rnnoise/"} target={"_blank"} style={{ margin: 0 }}><Translatable>more info</Translatable></a>
     </VariadicTranslatable>
-)
+));
 
-const RNNoiseSettings = (props: { events: Registry<MicrophoneSettingsEvents> }) => {
+const RNNoiseSettings = React.memo(() => {
     if(__build.target === "web") {
         return null;
     }
 
+    const events = useContext(EventContext);
     const [ enabled, setEnabled ] = useState<boolean | "loading">(() => {
-        props.events.fire("query_setting", { setting: "rnnoise" });
+        events.fire("query_setting", { setting: "rnnoise" });
         return "loading";
     });
-    props.events.reactUse("notify_setting", event => event.setting === "rnnoise" && setEnabled(event.value));
+    events.reactUse("notify_setting", event => event.setting === "rnnoise" && setEnabled(event.value));
 
     return (
         <Checkbox label={<RNNoiseLabel />}
                   disabled={enabled === "loading"}
                   value={enabled === true}
-                  onChange={value => props.events.fire("action_set_setting", { setting: "rnnoise", value: value })}
+                  onChange={value => events.fire("action_set_setting", { setting: "rnnoise", value: value })}
         />
     )
-}
+});
 
 const VadSelector = (props: { events: Registry<MicrophoneSettingsEvents> }) => {
     const [selectedType, setSelectedType] = useState<VadType | "loading">(() => {
@@ -558,10 +611,11 @@ const VadSelector = (props: { events: Registry<MicrophoneSettingsEvents> }) => {
     );
 }
 
-const ThresholdSelector = (props: { events: Registry<MicrophoneSettingsEvents> }) => {
+const ThresholdSelector = React.memo(() => {
+    const events = useContext(EventContext);
     const refSlider = useRef<Slider>();
     const [value, setValue] = useState<"loading" | number>(() => {
-        props.events.fire("query_setting", {setting: "threshold-threshold"});
+        events.fire("query_setting", {setting: "threshold-threshold"});
         return "loading";
     });
 
@@ -592,7 +646,7 @@ const ThresholdSelector = (props: { events: Registry<MicrophoneSettingsEvents> }
         }
     }
 
-    props.events.reactUse("notify_setting", event => {
+    events.reactUse("notify_setting", event => {
         if (event.setting === "threshold-threshold") {
             refSlider.current?.setState({value: event.value});
             setValue(event.value);
@@ -601,7 +655,7 @@ const ThresholdSelector = (props: { events: Registry<MicrophoneSettingsEvents> }
         }
     });
 
-    props.events.reactUse("notify_devices", event => {
+    events.reactUse("notify_devices", event => {
         if(event.status === "success") {
             const defaultDevice = event.devices.find(device => device.default);
             defaultDeviceId.current = defaultDevice?.id;
@@ -612,13 +666,15 @@ const ThresholdSelector = (props: { events: Registry<MicrophoneSettingsEvents> }
         }
     });
 
-    props.events.reactUse("notify_device_selected", event => changeCurrentDevice(event.device));
+    events.reactUse("notify_device_selected", event => changeCurrentDevice(event.device));
 
     let isActive = isVadActive && currentDevice.type === "device";
     return (
         <div className={cssStyle.containerSensitivity}>
             <div className={cssStyle.containerBar}>
-                <ActivityBar events={props.events} deviceId={currentDevice.type === "device" ? currentDevice.deviceId : "none"} disabled={!isActive || !currentDevice} key={"activity-" + currentDevice} />
+                <InputActivityBarStatusProvider>
+                    <ActivityBar disabled={!isActive || !currentDevice} key={"activity-" + currentDevice} />
+                </InputActivityBarStatusProvider>
             </div>
             <Slider
                 ref={refSlider}
@@ -635,12 +691,12 @@ const ThresholdSelector = (props: { events: Registry<MicrophoneSettingsEvents> }
                 disabled={value === "loading" || !isActive}
 
                 onChange={value => {
-                    props.events.fire("action_set_setting", {setting: "threshold-threshold", value: value})
+                    events.fire("action_set_setting", {setting: "threshold-threshold", value: value})
                 }}
             />
         </div>
     )
-};
+});
 
 const HelpText0 = () => (
     <HighlightText highlightId={"hs-0"} className={cssStyle.help}>
@@ -700,6 +756,24 @@ const HelpText2 = () => (
     </HighlightText>
 );
 
+const InputProcessorButton = React.memo(() => {
+    const events = useContext(EventContext);
+
+    if(__build.target !== "client") {
+        return;
+    }
+
+    return (
+        <Button
+            color={"none"}
+            type={"extra-small"}
+            onClick={() => events.fire("action_open_processor_properties")}
+        >
+            <Translatable>Input processor properties</Translatable>
+        </Button>
+    );
+});
+
 export const MicrophoneSettings = (props: { events: Registry<MicrophoneSettingsEvents> }) => {
     const [highlighted, setHighlighted] = useState(() => {
         props.events.fire("query_help");
@@ -709,44 +783,63 @@ export const MicrophoneSettings = (props: { events: Registry<MicrophoneSettingsE
     props.events.reactUse("notify_highlight", event => setHighlighted(event.field));
 
     return (
-        <HighlightContainer highlightedId={highlighted} onClick={() => props.events.fire("action_help_click")}
-                            classList={cssStyle.highlightContainer}>
-            <div className={cssStyle.container}>
-                <HelpText0/>
-                <HighlightRegion className={cssStyle.left} highlightId={"hs-1"}>
-                    <div className={cssStyle.header}>
-                        <a><Translatable>Select your Microphone Device</Translatable></a>
-                        <ListRefreshButton events={props.events}/>
-                    </div>
-                    <MicrophoneList events={props.events}/>
-                    <HelpText2/>
-                </HighlightRegion>
-                <HighlightRegion className={cssStyle.right} highlightId={"hs-2"}>
-                    <HelpText1/>
-                    <div className={cssStyle.header}>
-                        <a><Translatable>Microphone Settings</Translatable></a>
-                    </div>
-                    <div className={cssStyle.body}>
-                        <VolumeSettings events={props.events}/>
-                        <VadSelector events={props.events}/>
-                    </div>
-                    <div className={cssStyle.header}>
-                        <a><Translatable>Sensitivity Settings</Translatable></a>
-                    </div>
-                    <div className={cssStyle.body}>
-                        <ThresholdSelector events={props.events}/>
-                    </div>
-                    <div className={cssStyle.header}>
-                        <a><Translatable>Advanced Settings</Translatable></a>
-                    </div>
-                    <div className={cssStyle.body}>
-                        <div className={cssStyle.containerAdvanced}>
-                            <PPTDelaySettings events={props.events}/>
-                            <RNNoiseSettings events={props.events} />
+        <EventContext.Provider value={props.events}>
+            <HighlightContainer
+                highlightedId={highlighted}
+                onClick={() => props.events.fire("action_help_click")}
+                classList={cssStyle.highlightContainer}
+            >
+                <div className={cssStyle.container}>
+                    <HelpText0/>
+                    <HighlightRegion className={cssStyle.left} highlightId={"hs-1"}>
+                        <div className={cssStyle.header}>
+                            <div className={cssStyle.text}>
+                                <Translatable>Select your Microphone Device</Translatable>
+                            </div>
+                            <ListRefreshButton events={props.events}/>
                         </div>
-                    </div>
-                </HighlightRegion>
-            </div>
-        </HighlightContainer>
+                        <MicrophoneList events={props.events}/>
+                        <HelpText2/>
+                    </HighlightRegion>
+                    <HighlightRegion className={cssStyle.right} highlightId={"hs-2"}>
+                        <HelpText1/>
+                        <div className={cssStyle.header}>
+                            <div className={cssStyle.text}>
+                                <Translatable>Microphone Settings</Translatable>
+                            </div>
+                        </div>
+                        <div className={cssStyle.body}>
+                            <VolumeSettings events={props.events}/>
+                            <VadSelector events={props.events}/>
+                        </div>
+                        <div className={cssStyle.header}>
+                            <div className={cssStyle.text}>
+                                <Translatable>Sensitivity Settings</Translatable>
+                            </div>
+                            <IconTooltip className={cssStyle.icon}>
+                                <div className={cssStyle.tooltipContainer}>
+                                    <Translatable>The volume meter will show the processed audio volume as others would hear you.</Translatable>
+                                </div>
+                            </IconTooltip>
+                        </div>
+                        <div className={cssStyle.body}>
+                            <ThresholdSelector />
+                        </div>
+                        <div className={cssStyle.header}>
+                            <div className={cssStyle.text}>
+                                <Translatable>Advanced Settings</Translatable>
+                            </div>
+                        </div>
+                        <div className={cssStyle.body}>
+                            <div className={cssStyle.containerAdvanced}>
+                                <PPTDelaySettings />
+                                <RNNoiseSettings />
+                                <InputProcessorButton />
+                            </div>
+                        </div>
+                    </HighlightRegion>
+                </div>
+            </HighlightContainer>
+        </EventContext.Provider>
     );
 }

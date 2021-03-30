@@ -20,6 +20,7 @@ import {PermissionModalEvents} from "tc-shared/ui/modal/permission/ModalDefiniti
 import {PermissionEditorEvents} from "tc-shared/ui/modal/permission/EditorDefinitions";
 import {PermissionEditorServerInfo} from "tc-shared/ui/modal/permission/ModalRenderer";
 import {ModalAvatarUploadEvents, ModalAvatarUploadVariables} from "tc-shared/ui/modal/avatar-upload/Definitions";
+import {ModalInputProcessorEvents, ModalInputProcessorVariables} from "tc-shared/ui/modal/input-processor/Definitios";
 
 export type ModalType = "error" | "warning" | "info" | "none";
 export type ModalRenderType = "page" | "dialog";
@@ -210,5 +211,9 @@ export interface ModalConstructorArguments {
         /* events */ IpcRegistryDescription<ModalAvatarUploadEvents>,
         /* variables */ IpcVariableDescriptor<ModalAvatarUploadVariables>,
         /* serverUniqueId */ string
+    ],
+    "modal-input-processor": [
+        /* events */ IpcRegistryDescription<ModalInputProcessorEvents>,
+        /* variables */ IpcVariableDescriptor<ModalInputProcessorVariables>,
     ]
 }

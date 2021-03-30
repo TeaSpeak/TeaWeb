@@ -3,7 +3,7 @@ import {setupIpcHandler} from "tc-shared/ipc/BrowserIPC";
 import {initializeI18N} from "tc-shared/i18n/localize";
 import {Stage} from "tc-loader";
 import {AbstractModal, constructAbstractModalClass} from "tc-shared/ui/react-elements/modal/Definitions";
-import {AppParameters} from "tc-shared/settings";
+import {AppParameters, Settings, settings} from "tc-shared/settings";
 import {setupJSRender} from "tc-shared/ui/jsrender";
 import {findRegisteredModal} from "tc-shared/ui/react-elements/modal/Registry";
 import {ModalWindowControllerInstance} from "./Controller";
@@ -26,8 +26,16 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
         await import("tc-shared/proto");
         await initializeI18N();
         setupIpcHandler();
-
         setupJSRender();
+
+        {
+            const font = settings.getValue(Settings.KEY_FONT_SIZE);
+
+            document.body.style.fontSize = font + "px";
+            settings.globalChangeListener(Settings.KEY_FONT_SIZE, value => {
+                document.body.style.fontSize = value + "px";
+            });
+        }
     }
 });
 

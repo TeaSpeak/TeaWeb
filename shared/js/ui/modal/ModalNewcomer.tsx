@@ -3,10 +3,11 @@ import {tra} from "tc-shared/i18n/localize";
 import {Registry} from "tc-shared/events";
 import {modal_settings, SettingProfileEvents} from "tc-shared/ui/modal/ModalSettings";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
-import {initialize_audio_microphone_controller, MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/Microphone";
+import {initialize_audio_microphone_controller} from "tc-shared/ui/modal/settings/Microphone";
 import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import {MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/MicrophoneDefinitions";
 
 export interface EventModalNewcomer {
     "show_step": {

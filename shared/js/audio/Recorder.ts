@@ -1,17 +1,11 @@
-import * as loader from "tc-loader";
-import {Stage} from "tc-loader";
 import {AbstractInput, LevelMeter} from "../voice/RecorderBase";
 import {Registry} from "../events";
-import {Settings, settings} from "tc-shared/settings";
 
 export interface AudioRecorderBacked {
     createInput() : AbstractInput;
     createLevelMeter(device: InputDevice) : Promise<LevelMeter>;
 
     getDeviceList() : DeviceList;
-
-    isRnNoiseSupported() : boolean;
-    toggleRnNoise(target: boolean);
 }
 
 export interface DeviceListEvents {
@@ -166,15 +160,3 @@ export function setRecorderBackend(instance: AudioRecorderBacked) {
 
     recorderBackend = instance;
 }
-
-loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
-    name: "audio filter init",
-    priority: 10,
-    function: async () => {
-        const backend = getRecorderBackend();
-        if(backend.isRnNoiseSupported()) {
-            getRecorderBackend().toggleRnNoise(settings.getValue(Settings.KEY_RNNOISE_FILTER));
-            settings.globalChangeListener(Settings.KEY_RNNOISE_FILTER, value => getRecorderBackend().toggleRnNoise(value));
-        }
-    }
-})

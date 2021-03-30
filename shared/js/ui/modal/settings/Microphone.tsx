@@ -1,92 +1,21 @@
 import * as React from "react";
 import {Registry} from "tc-shared/events";
-import {LevelMeter} from "tc-shared/voice/RecorderBase";
-import {LogCategory, logTrace, logWarn} from "tc-shared/log";
+import {AbstractInput, FilterMode, LevelMeter} from "tc-shared/voice/RecorderBase";
+import {LogCategory, logError, logTrace, logWarn} from "tc-shared/log";
 import {defaultRecorder} from "tc-shared/voice/RecorderProfile";
-import {DeviceListState, getRecorderBackend, InputDevice} from "tc-shared/audio/Recorder";
+import {getRecorderBackend, InputDevice} from "tc-shared/audio/Recorder";
 import {Settings, settings} from "tc-shared/settings";
 import {getBackend} from "tc-shared/backend";
 import * as _ from "lodash";
 import {getAudioBackend} from "tc-shared/audio/Player";
-
-export type MicrophoneSetting =
-    "volume"
-    | "vad-type"
-    | "ppt-key"
-    | "ppt-release-delay"
-    | "ppt-release-delay-active"
-    | "threshold-threshold"
-    | "rnnoise";
-
-export type MicrophoneDevice = {
-    id: string,
-    name: string,
-    driver: string,
-    default: boolean
-};
-
-export type SelectedMicrophone = { type: "default" } | { type: "none" } | { type: "device", deviceId: string };
-export type MicrophoneDevices = {
-    status: "error",
-    error: string
-} | {
-    status: "audio-not-initialized"
-} | {
-    status: "no-permissions",
-    shouldAsk: boolean
-} | {
-    status: "success",
-    devices: MicrophoneDevice[]
-    selectedDevice: SelectedMicrophone;
-};
-export interface MicrophoneSettingsEvents {
-    "query_devices": { refresh_list: boolean },
-    "query_help": {},
-    "query_setting": {
-        setting: MicrophoneSetting
-    },
-
-    "action_help_click": {},
-    "action_request_permissions": {},
-    "action_set_selected_device": { target: SelectedMicrophone },
-    "action_set_selected_device_result": {
-        status: "error",
-        reason: string
-    },
-
-    "action_set_setting": {
-        setting: MicrophoneSetting;
-        value: any;
-    },
-
-    notify_setting: {
-        setting: MicrophoneSetting;
-        value: any;
-    }
-
-    notify_devices: MicrophoneDevices,
-    notify_device_selected: { device: SelectedMicrophone },
-
-    notify_device_level: {
-        level: {
-            [key: string]: {
-                deviceId: string,
-                status: "success" | "error",
-
-                level?: number,
-                error?: string
-            }
-        },
-
-        status: Exclude<DeviceListState, "error">
-    },
-
-    notify_highlight: {
-        field: "hs-0" | "hs-1" | "hs-2" | undefined
-    }
-
-    notify_destroy: {}
-}
+import {
+    InputDeviceLevel,
+    MicrophoneSettingsEvents,
+    SelectedMicrophone
+} from "tc-shared/ui/modal/settings/MicrophoneDefinitions";
+import {spawnInputProcessorModal} from "tc-shared/ui/modal/input-processor/Controller";
+import {createErrorModal} from "tc-shared/ui/elements/Modal";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 export function initialize_audio_microphone_controller(events: Registry<MicrophoneSettingsEvents>) {
     const recorderBackend = getRecorderBackend();
@@ -217,6 +146,47 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
             selectedDevice = event.device;
             updateLevelMeter();
         });
+    }
+
+    {
+        let currentLevel: InputDeviceLevel = { status: "uninitialized" };
+        let levelMeter: LevelMeter;
+
+        /* input device level meter */
+        const initializeInput = (input: AbstractInput) => {
+            try {
+                levelMeter?.destroy();
+
+                levelMeter = input.createLevelMeter();
+                levelMeter.setObserver(value => {
+                    currentLevel = { status: "success", level: value };
+                    events.fire_react("notify_input_level", { level: currentLevel });
+                });
+
+                currentLevel = { status: "success", level: 0 };
+            } catch (error) {
+                if(typeof error !== "string") {
+                    logError(LogCategory.GENERAL, tr("Failed to create input device level meter: %o"), error);
+                    error = tr("lookup the console");
+                }
+
+                currentLevel = { status: "error", message: error };
+            }
+            events.fire_react("notify_input_level", { level: currentLevel });
+        }
+
+        events.on("notify_destroy", () => {
+            levelMeter?.setObserver(undefined);
+            levelMeter?.destroy();
+        });
+
+        events.on("query_input_level", () => events.fire_react("notify_input_level", { level: currentLevel }));
+
+        if(defaultRecorder.input) {
+            initializeInput(defaultRecorder.input);
+        } else {
+            events.on("notify_destroy", defaultRecorder.events.one("notify_input_initialized", () => initializeInput(defaultRecorder.input)));
+        }
     }
 
     /* device list */
@@ -444,6 +414,16 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
         }
     }));
 
+    events.on("action_open_processor_properties", () => {
+        const processor = defaultRecorder.input?.getInputProcessor();
+        if(!processor) {
+            createErrorModal(tr("Missing input processor"), tr("Missing default recorders input processor.")).open();
+            return;
+        }
+
+        spawnInputProcessorModal(processor);
+    });
+
     events.on("notify_destroy", recorderBackend.getDeviceList().getEvents().on("notify_list_updated", () => {
         events.fire("query_devices");
     }));
@@ -455,45 +435,28 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
     if(!getAudioBackend().isInitialized()) {
         getAudioBackend().executeWhenInitialized(() => events.fire_react("query_devices"));
     }
-}
 
-/*
-import * as loader from "tc-loader";
-import {Stage} from "tc-loader";
-import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
-import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
-import {Translatable} from "tc-shared/ui/react-elements/i18n";
-import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
-
-loader.register_task(Stage.LOADED, {
-    name: "test",
-    function: async () => {
-        aplayer.on_ready(() => {
-            const modal = spawnReactModal(class extends InternalModal {
-                settings = new Registry<MicrophoneSettingsEvents>();
-                constructor() {
-                    super();
-
-                    initialize_audio_microphone_controller(this.settings);
-                }
-
-                renderBody(): React.ReactElement {
-                    return <div style={{
-                        padding: "1em",
-                        backgroundColor: "#2f2f35"
-                    }}>
-                        <MicrophoneSettings events={this.settings} />
-                    </div>;
-                }
-
-                title(): string | React.ReactElement<Translatable> {
-                    return "test";
-                }
+    /* TODO: Only do this on user request? */
+    {
+        const ownDefaultRecorder = () => {
+            const originalHandlerId = defaultRecorder.current_handler?.handlerId;
+            defaultRecorder.unmount().then(() => {
+                defaultRecorder.input.start().catch(error => {
+                    logError(LogCategory.AUDIO, tr("Failed to start default input: %o"), error);
+                });
             });
 
-            modal.show();
-        });
-    },
-    priority: -2
-});
-*/
+            events.on("notify_destroy", () => {
+                server_connections.findConnection(originalHandlerId)?.acquireInputHardware().catch(error => {
+                    logError(LogCategory.GENERAL, tr("Failed to acquire microphone after settings detach: %o"), error);
+                });
+            });
+        };
+
+        if(defaultRecorder.input) {
+            ownDefaultRecorder();
+        } else {
+            events.on("notify_destroy", defaultRecorder.events.one("notify_input_initialized", () => ownDefaultRecorder()));
+        }
+    }
+}

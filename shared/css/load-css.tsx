@@ -25,6 +25,7 @@ import "./static/modal-serverinfobandwidth.scss"
 import "./static/modal-serverinfo.scss"
 import "./static/modal-settings.scss"
 import "./static/overlay-image-preview.scss"
+import "./static/color-variables.scss"
 
 import "./static/ts/tab.scss"
 import "./static/ts/country.scss"
