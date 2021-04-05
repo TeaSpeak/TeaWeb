@@ -20,6 +20,7 @@ import {ChannelTreeRenderer} from "tc-shared/ui/tree/Renderer";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 import {ImagePreviewHook} from "tc-shared/ui/frames/ImagePreview";
 import {InternalModalHook} from "tc-shared/ui/react-elements/modal/internal";
+import {TooltipHook} from "tc-shared/ui/react-elements/Tooltip";
 
 const cssStyle = require("./AppRenderer.scss");
 const VideoFrame = React.memo((props: { events: Registry<AppUiEvents> }) => {
@@ -109,6 +110,10 @@ export const TeaAppMainView = (props: {
 
             <ErrorBoundary>
                 <InternalModalHook />
+            </ErrorBoundary>
+
+            <ErrorBoundary>
+                <TooltipHook />
             </ErrorBoundary>
         </div>
     );

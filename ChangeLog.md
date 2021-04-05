@@ -1,4 +1,9 @@
 # Changelog:
+* **05.04.21**
+    - Fixed the mute but for the webclient
+    - Fixed that "always active" microphone filter now works reliably  
+    - Improved the recorder API
+  
 * **29.03.21**
     - Accquiering the default input recorder when opening the settings
     - Adding new modal Input Processing Properties for the native client

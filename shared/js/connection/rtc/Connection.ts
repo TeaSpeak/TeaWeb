@@ -661,6 +661,25 @@ export class RTCConnection {
         return oldTrack;
     }
 
+    async clearTrackSources(types: RTCSourceTrackType[]) : Promise<MediaStreamTrack[]> {
+        const result = [];
+
+        for(const type of types) {
+            if(this.currentTracks[type]) {
+                result.push(this.currentTracks[type]);
+                this.currentTracks[type] = null;
+            } else {
+                result.push(undefined);
+            }
+        }
+
+        if(result.find(entry => typeof entry !== "undefined") !== -1) {
+            await this.updateTracks();
+        }
+
+        return result;
+    }
+
     public async startVideoBroadcast(type: VideoBroadcastType, config: VideoBroadcastConfig) {
         let track: RTCBroadcastableTrackType;
         let broadcastType: number;

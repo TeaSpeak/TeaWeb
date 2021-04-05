@@ -2,7 +2,7 @@ import * as React from "react";
 import {Registry} from "tc-shared/events";
 import {AbstractInput, FilterMode, LevelMeter} from "tc-shared/voice/RecorderBase";
 import {LogCategory, logError, logTrace, logWarn} from "tc-shared/log";
-import {defaultRecorder} from "tc-shared/voice/RecorderProfile";
+import {ConnectionRecorderProfileOwner, defaultRecorder, RecorderProfileOwner} from "tc-shared/voice/RecorderProfile";
 import {getRecorderBackend, InputDevice} from "tc-shared/audio/Recorder";
 import {Settings, settings} from "tc-shared/settings";
 import {getBackend} from "tc-shared/backend";
@@ -16,6 +16,7 @@ import {
 import {spawnInputProcessorModal} from "tc-shared/ui/modal/input-processor/Controller";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {server_connections} from "tc-shared/ConnectionManager";
+import {ignorePromise} from "tc-shared/proto";
 
 export function initialize_audio_microphone_controller(events: Registry<MicrophoneSettingsEvents>) {
     const recorderBackend = getRecorderBackend();
@@ -438,25 +439,26 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
 
     /* TODO: Only do this on user request? */
     {
-        const ownDefaultRecorder = () => {
-            const originalHandlerId = defaultRecorder.current_handler?.handlerId;
-            defaultRecorder.unmount().then(() => {
-                defaultRecorder.input.start().catch(error => {
+        const oldOwner = defaultRecorder.getOwner();
+        let originalHandlerId = oldOwner instanceof ConnectionRecorderProfileOwner ? oldOwner.getConnection().handlerId : undefined;
+
+        ignorePromise(defaultRecorder.ownRecorder(new class extends RecorderProfileOwner {
+            protected handleRecorderInput(input: AbstractInput) {
+                input.start().catch(error => {
                     logError(LogCategory.AUDIO, tr("Failed to start default input: %o"), error);
                 });
-            });
+            }
 
-            events.on("notify_destroy", () => {
-                server_connections.findConnection(originalHandlerId)?.acquireInputHardware().catch(error => {
-                    logError(LogCategory.GENERAL, tr("Failed to acquire microphone after settings detach: %o"), error);
-                });
-            });
-        };
+            protected handleUnmount() {
+                /* We've been passed to somewhere else */
+                originalHandlerId = undefined;
+            }
+        }));
 
-        if(defaultRecorder.input) {
-            ownDefaultRecorder();
-        } else {
-            events.on("notify_destroy", defaultRecorder.events.one("notify_input_initialized", () => ownDefaultRecorder()));
-        }
+        events.on("notify_destroy", () => {
+            server_connections.findConnection(originalHandlerId)?.acquireInputHardware().catch(error => {
+                logError(LogCategory.GENERAL, tr("Failed to acquire microphone after settings detach: %o"), error);
+            });
+        });
     }
 }

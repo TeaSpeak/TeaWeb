@@ -667,7 +667,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 entry.getVoiceClient()?.abortReplay();
             }
         } else {
-            client.speaking = false;
+            client.getVoiceClient()?.abortReplay();
         }
 
         const own_channel = this.connection.client.getClient().currentChannel();

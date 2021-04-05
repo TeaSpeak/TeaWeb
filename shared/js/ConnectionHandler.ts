@@ -151,6 +151,7 @@ export class ConnectionHandler {
     sound: SoundManager;
 
     serverFeatures: ServerFeatures;
+    log: ServerEventLog;
 
     private sideBar: SideBarManager;
     private playlistManager: PlaylistManager;
@@ -171,7 +172,7 @@ export class ConnectionHandler {
 
     private pluginCmdRegistry: PluginCmdRegistry;
 
-    private client_status: LocalClientStatus = {
+    private handlerState: LocalClientStatus = {
         input_muted: false,
 
         output_muted: false,
@@ -186,8 +187,6 @@ export class ConnectionHandler {
     private inputHardwareState: InputHardwareState = InputHardwareState.MISSING;
     private listenerRecorderInputDeviceChanged: (() => void);
 
-    log: ServerEventLog;
-
     constructor() {
         this.handlerId = guid();
         this.events_ = new Registry<ConnectionEvents>();
@@ -196,7 +195,13 @@ export class ConnectionHandler {
         this.settings = new ServerSettings();
 
         this.serverConnection = getServerConnectionFactory().create(this);
-        this.serverConnection.events.on("notify_connection_state_changed", event => this.on_connection_state_changed(event.oldState, event.newState));
+        this.serverConnection.events.on("notify_connection_state_changed", event => {
+            logTrace(LogCategory.CLIENT, tr("From %s to %s"), ConnectionState[event.oldState], ConnectionState[event.newState]);
+            this.events_.fire("notify_connection_state_changed", {
+                oldState: event.oldState,
+                newState: event.newState
+            });
+        });
 
         this.serverConnection.getVoiceConnection().events.on("notify_recorder_changed", event => {
             this.setInputHardwareState(this.getVoiceRecorder() ? InputHardwareState.VALID : InputHardwareState.MISSING);
@@ -245,14 +250,25 @@ export class ConnectionHandler {
         this.events_.fire("notify_handler_initialized");
     }
 
-    initialize_client_state(source?: ConnectionHandler) {
-        this.client_status.input_muted = source ? source.client_status.input_muted : settings.getValue(Settings.KEY_CLIENT_STATE_MICROPHONE_MUTED);
-        this.client_status.output_muted = source ? source.client_status.output_muted : settings.getValue(Settings.KEY_CLIENT_STATE_SPEAKER_MUTED);
-        this.update_voice_status();
+    initializeHandlerState(source?: ConnectionHandler) {
+        if(source) {
+            this.handlerState.input_muted = source.handlerState.input_muted;
+            this.handlerState.output_muted = source.handlerState.output_muted;
+            this.update_voice_status();
 
-        this.setSubscribeToAllChannels(source ? source.client_status.channel_subscribe_all : settings.getValue(Settings.KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS));
-        this.doSetAway(source ? source.client_status.away : (settings.getValue(Settings.KEY_CLIENT_STATE_AWAY) ? settings.getValue(Settings.KEY_CLIENT_AWAY_MESSAGE) : false), false);
-        this.setQueriesShown(source ? source.client_status.queries_visible : settings.getValue(Settings.KEY_CLIENT_STATE_QUERY_SHOWN));
+            this.setAway(source.handlerState.away);
+            this.setQueriesShown(source.handlerState.queries_visible);
+            this.setSubscribeToAllChannels(source.handlerState.channel_subscribe_all);
+            /* Ignore lastChannelCodecWarned */
+        } else {
+            this.handlerState.input_muted = settings.getValue(Settings.KEY_CLIENT_STATE_MICROPHONE_MUTED);
+            this.handlerState.output_muted = settings.getValue(Settings.KEY_CLIENT_STATE_SPEAKER_MUTED);
+            this.update_voice_status();
+
+            this.setSubscribeToAllChannels(settings.getValue(Settings.KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS));
+            this.doSetAway(settings.getValue(Settings.KEY_CLIENT_STATE_AWAY) ? settings.getValue(Settings.KEY_CLIENT_AWAY_MESSAGE) : false, false);
+            this.setQueriesShown(settings.getValue(Settings.KEY_CLIENT_STATE_QUERY_SHOWN));
+        }
     }
 
     events() : Registry<ConnectionEvents> {
@@ -386,7 +402,9 @@ export class ConnectionHandler {
 
     async disconnectFromServer(reason?: string) {
         this.cancelAutoReconnect(true);
-        if(!this.connected) return;
+        if(!this.connected) {
+            return;
+        }
 
         this.handleDisconnect(DisconnectReason.REQUESTED);
         try {
@@ -458,12 +476,12 @@ export class ConnectionHandler {
             this.settings.setServer(this.channelTree.server.properties.virtualserver_unique_identifier);
 
             /* apply the server settings */
-            if(this.client_status.channel_subscribe_all) {
+            if(this.handlerState.channel_subscribe_all) {
                 this.channelTree.subscribe_all_channels();
             } else {
                 this.channelTree.unsubscribe_all_channels();
             }
-            this.channelTree.toggle_server_queries(this.client_status.queries_visible);
+            this.channelTree.toggle_server_queries(this.handlerState.queries_visible);
 
             this.sync_status_with_server();
             this.channelTree.server.updateProperties();
@@ -740,7 +758,7 @@ export class ConnectionHandler {
             this.serverConnection.disconnect();
         }
 
-        this.client_status.lastChannelCodecWarned = 0;
+        this.handlerState.lastChannelCodecWarned = 0;
 
         if(autoReconnect) {
             if(!this.serverConnection) {
@@ -776,14 +794,6 @@ export class ConnectionHandler {
         }
     }
 
-    private on_connection_state_changed(old_state: ConnectionState, new_state: ConnectionState) {
-        logTrace(LogCategory.CLIENT, tr("From %s to %s"), ConnectionState[old_state], ConnectionState[new_state]);
-        this.events_.fire("notify_connection_state_changed", {
-            oldState: old_state,
-            newState: new_state
-        });
-    }
-
     private updateVoiceStatus() {
         if(!this.localClient) {
             /* we've been destroyed */
@@ -816,8 +826,8 @@ export class ConnectionHandler {
                 localClientUpdates.client_input_hardware = codecSupportEncode;
                 localClientUpdates.client_output_hardware = codecSupportDecode;
 
-                if(this.client_status.lastChannelCodecWarned !== currentChannel.getChannelId()) {
-                    this.client_status.lastChannelCodecWarned = currentChannel.getChannelId();
+                if(this.handlerState.lastChannelCodecWarned !== currentChannel.getChannelId()) {
+                    this.handlerState.lastChannelCodecWarned = currentChannel.getChannelId();
 
                     if(!codecSupportEncode || !codecSupportDecode) {
                         let message;
@@ -837,8 +847,8 @@ export class ConnectionHandler {
             }
 
             localClientUpdates.client_input_hardware = localClientUpdates.client_input_hardware && this.inputHardwareState === InputHardwareState.VALID;
-            localClientUpdates.client_output_muted = this.client_status.output_muted;
-            localClientUpdates.client_input_muted = this.client_status.input_muted;
+            localClientUpdates.client_output_muted = this.handlerState.output_muted;
+            localClientUpdates.client_input_muted = this.handlerState.input_muted;
             if(localClientUpdates.client_input_muted || localClientUpdates.client_output_muted) {
                 shouldRecord = false;
             }
@@ -863,11 +873,13 @@ export class ConnectionHandler {
                     this.getClient().updateVariables(...updates);
 
                     this.clientStatusSync = true;
-                    this.serverConnection.send_command("clientupdate", localClientUpdates).catch(error => {
-                        logWarn(LogCategory.GENERAL, tr("Failed to update client audio hardware properties. Error: %o"), error);
-                        this.log.log("error.custom", { message: tr("Failed to update audio hardware properties.") });
-                        this.clientStatusSync = false;
-                    });
+                    if(this.connected) {
+                        this.serverConnection.send_command("clientupdate", localClientUpdates).catch(error => {
+                            logWarn(LogCategory.GENERAL, tr("Failed to update client audio hardware properties. Error: %o"), error);
+                            this.log.log("error.custom", { message: tr("Failed to update audio hardware properties.") });
+                            this.clientStatusSync = false;
+                        });
+                    }
                 }
             }
         } else {
@@ -902,10 +914,10 @@ export class ConnectionHandler {
     sync_status_with_server() {
         if(this.serverConnection.connected())
             this.serverConnection.send_command("clientupdate", {
-                client_input_muted: this.client_status.input_muted,
-                client_output_muted: this.client_status.output_muted,
-                client_away: typeof(this.client_status.away) === "string" || this.client_status.away,
-                client_away_message: typeof(this.client_status.away) === "string" ? this.client_status.away : "",
+                client_input_muted: this.handlerState.input_muted,
+                client_output_muted: this.handlerState.output_muted,
+                client_away: typeof(this.handlerState.away) === "string" || this.handlerState.away,
+                client_away_message: typeof(this.handlerState.away) === "string" ? this.handlerState.away : "",
                 /* TODO: Somehow store this? */
                 //client_input_hardware: this.client_status.sound_record_supported && this.getInputHardwareState() === InputHardwareState.VALID,
                 //client_output_hardware: this.client_status.sound_playback_supported
@@ -917,11 +929,8 @@ export class ConnectionHandler {
 
     /* can be called as much as you want, does nothing if nothing changed */
     async acquireInputHardware() {
-        /* if we're having multiple recorders, try to get the right one */
-        let recorder: RecorderProfile = defaultRecorder;
-
         try {
-            await this.serverConnection.getVoiceConnection().acquireVoiceRecorder(recorder);
+            await this.serverConnection.getVoiceConnection().acquireVoiceRecorder(defaultRecorder);
         } catch (error) {
             logError(LogCategory.AUDIO, tr("Failed to acquire recorder: %o"), error);
             createErrorModal(tr("Failed to acquire recorder"), tr("Failed to acquire recorder.\nLookup the console for more details.")).open();
@@ -983,7 +992,7 @@ export class ConnectionHandler {
         }
     }
 
-    getVoiceRecorder() : RecorderProfile | undefined { return this.serverConnection.getVoiceConnection().voiceRecorder(); }
+    getVoiceRecorder() : RecorderProfile | undefined { return this.serverConnection?.getVoiceConnection().voiceRecorder(); }
 
 
     reconnect_properties(profile?: ConnectionProfile) : ConnectParametersOld {
@@ -1098,11 +1107,11 @@ export class ConnectionHandler {
 
     /* state changing methods */
     setMicrophoneMuted(muted: boolean, dontPlaySound?: boolean) {
-        if(this.client_status.input_muted === muted) {
+        if(this.handlerState.input_muted === muted) {
             return;
         }
 
-        this.client_status.input_muted = muted;
+        this.handlerState.input_muted = muted;
         if(!dontPlaySound) {
             this.sound.play(muted ? Sound.MICROPHONE_MUTED : Sound.MICROPHONE_ACTIVATED);
         }
@@ -1111,21 +1120,30 @@ export class ConnectionHandler {
     }
     toggleMicrophone() { this.setMicrophoneMuted(!this.isMicrophoneMuted()); }
 
-    isMicrophoneMuted() { return this.client_status.input_muted; }
+    isMicrophoneMuted() { return this.handlerState.input_muted; }
     isMicrophoneDisabled() { return this.inputHardwareState !== InputHardwareState.VALID; }
 
     setSpeakerMuted(muted: boolean, dontPlaySound?: boolean) {
-        if(this.client_status.output_muted === muted) return;
-        if(muted && !dontPlaySound) this.sound.play(Sound.SOUND_MUTED); /* play the sound *before* we're setting the muted state */
-        this.client_status.output_muted = muted;
+        if(this.handlerState.output_muted === muted) {
+            return;
+        }
+
+        if(muted && !dontPlaySound) {
+            /* play the sound *before* we're setting the muted state */
+            this.sound.play(Sound.SOUND_MUTED);
+        }
+        this.handlerState.output_muted = muted;
         this.events_.fire("notify_state_updated", { state: "speaker" });
-        if(!muted && !dontPlaySound) this.sound.play(Sound.SOUND_ACTIVATED); /* play the sound *after* we're setting we've unmuted the sound */
+        if(!muted && !dontPlaySound) {
+            /* play the sound *after* we're setting we've unmuted the sound */
+            this.sound.play(Sound.SOUND_ACTIVATED);
+        }
         this.update_voice_status();
         this.serverConnection.getVoiceConnection().stopAllVoiceReplays();
     }
 
     toggleSpeakerMuted() { this.setSpeakerMuted(!this.isSpeakerMuted()); }
-    isSpeakerMuted() { return this.client_status.output_muted; }
+    isSpeakerMuted() { return this.handlerState.output_muted; }
 
     /*
      * Returns whatever the client is able to playback sound (voice). Reasons for returning true could be:
@@ -1136,8 +1154,11 @@ export class ConnectionHandler {
     isSpeakerDisabled() : boolean { return false; }
 
     setSubscribeToAllChannels(flag: boolean) {
-        if(this.client_status.channel_subscribe_all === flag) return;
-        this.client_status.channel_subscribe_all = flag;
+        if(this.handlerState.channel_subscribe_all === flag) {
+            return;
+        }
+
+        this.handlerState.channel_subscribe_all = flag;
         if(flag) {
             this.channelTree.subscribe_all_channels();
         } else {
@@ -1146,25 +1167,27 @@ export class ConnectionHandler {
         this.events_.fire("notify_state_updated", { state: "subscribe" });
     }
 
-    isSubscribeToAllChannels() : boolean { return this.client_status.channel_subscribe_all; }
+    isSubscribeToAllChannels() : boolean { return this.handlerState.channel_subscribe_all; }
 
     setAway(state: boolean | string) {
         this.doSetAway(state, true);
     }
 
-    private doSetAway(state: boolean | string, play_sound: boolean) {
-        if(this.client_status.away === state)
+    private doSetAway(state: boolean | string, playSound: boolean) {
+        if(this.handlerState.away === state) {
             return;
+        }
 
-        const was_away = this.isAway();
-        const will_away = typeof state === "boolean" ? state : true;
-        if(was_away != will_away && play_sound)
-            this.sound.play(will_away ? Sound.AWAY_ACTIVATED : Sound.AWAY_DEACTIVATED);
+        const wasAway = this.isAway();
+        const willAway = typeof state === "boolean" ? state : true;
+        if(wasAway != willAway && playSound) {
+            this.sound.play(willAway ? Sound.AWAY_ACTIVATED : Sound.AWAY_DEACTIVATED);
+        }
 
-        this.client_status.away = state;
+        this.handlerState.away = state;
         this.serverConnection.send_command("clientupdate", {
-            client_away: typeof(this.client_status.away) === "string" || this.client_status.away,
-            client_away_message: typeof(this.client_status.away) === "string" ? this.client_status.away : "",
+            client_away: typeof(this.handlerState.away) === "string" || this.handlerState.away,
+            client_away_message: typeof(this.handlerState.away) === "string" ? this.handlerState.away : "",
         }).catch(error => {
             logWarn(LogCategory.GENERAL, tr("Failed to update away status. Error: %o"), error);
             this.log.log("error.custom", {message: tr("Failed to update away status.")});
@@ -1175,11 +1198,13 @@ export class ConnectionHandler {
         });
     }
     toggleAway() { this.setAway(!this.isAway()); }
-    isAway() : boolean { return typeof this.client_status.away !== "boolean" || this.client_status.away; }
+    isAway() : boolean { return typeof this.handlerState.away !== "boolean" || this.handlerState.away; }
 
     setQueriesShown(flag: boolean) {
-        if(this.client_status.queries_visible === flag) return;
-        this.client_status.queries_visible = flag;
+        if(this.handlerState.queries_visible === flag) {
+            return;
+        }
+        this.handlerState.queries_visible = flag;
         this.channelTree.toggle_server_queries(flag);
 
         this.events_.fire("notify_state_updated", {
@@ -1188,7 +1213,7 @@ export class ConnectionHandler {
     }
 
     areQueriesShown() : boolean {
-        return this.client_status.queries_visible;
+        return this.handlerState.queries_visible;
     }
 
     getInputHardwareState() : InputHardwareState { return this.inputHardwareState; }

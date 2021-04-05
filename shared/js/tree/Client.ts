@@ -260,12 +260,13 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
         switch (event.newState) {
             case VoicePlayerState.PLAYING:
             case VoicePlayerState.STOPPING:
-                this.speaking = true;
+                this.setSpeaking(true);
                 break;
 
             case VoicePlayerState.STOPPED:
             case VoicePlayerState.INITIALIZING:
-                this.speaking = false;
+            default:
+                this.setSpeaking(false);
                 break;
         }
     }
@@ -698,13 +699,21 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
         return ClientEntry.chatTag(this.clientId(), this.clientNickName(), this.clientUid(), braces);
     }
 
-    set speaking(flag) {
-        if(flag === this._speaking) return;
-        this._speaking = flag;
-        this.events.fire("notify_speak_state_change", { speaking: flag });
+    /** @deprecated Don't use this any more! */
+    set speaking(flag: boolean) {
+        this.setSpeaking(!!flag);
     }
 
     isSpeaking() { return this._speaking; }
+
+    protected setSpeaking(flag: boolean) {
+        if(this._speaking === flag) {
+            return;
+        }
+
+        this._speaking = flag;
+        this.events.fire("notify_speak_state_change", { speaking: flag });
+    }
 
     updateVariables(...variables: {key: string, value: string}[]) {
 
@@ -912,6 +921,10 @@ export class LocalClientEntry extends ClientEntry {
     constructor(handle: ConnectionHandler) {
         super(0, "local client");
         this.handle = handle;
+    }
+
+    setSpeaking(flag: boolean) {
+        super.setSpeaking(flag);
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined): void {

@@ -1,7 +1,7 @@
 /* setup jsrenderer */
 import "jsrender";
 import {tr} from "./i18n/localize";
-import {LogCategory, logTrace} from "tc-shared/log";
+import {LogCategory, logError, logTrace} from "tc-shared/log";
 
 if(__build.target === "web") {
     (window as any).$ = require("jquery");
@@ -301,3 +301,152 @@ if(typeof ($) !== "undefined") {
 if(!Object.values) {
     Object.values = object => Object.keys(object).map(e => object[e]);
 }
+
+export function crashOnThrow<T>(promise: Promise<T> | (() => Promise<T>)) : Promise<T> {
+    if(typeof promise === "function") {
+        try {
+            promise = promise();
+        } catch (error) {
+            promise = Promise.reject(error);
+        }
+    }
+
+    return promise.catch(error => {
+        /* TODO: Crash screen of the app? */
+        logError(LogCategory.GENERAL, tr("Critical app error: %o"), error);
+
+        /* Lets make this promise stuck for ever */
+        return new Promise(() => {});
+    });
+}
+
+export function ignorePromise<T>(_promise: Promise<T>) {}
+
+export function NoThrow(target: any, methodName: string, descriptor: PropertyDescriptor) {
+    const crashApp = error => {
+        /* TODO: Crash screen of the app? */
+        logError(LogCategory.GENERAL, tr("Critical app error: %o"), error);
+    };
+
+    const promiseAccepted = { value: false };
+
+    const originalMethod: Function = descriptor.value;
+    descriptor.value = function () {
+        try {
+            const result = originalMethod.apply(this, arguments);
+            if(result instanceof Promise) {
+                promiseAccepted.value = true;
+                return result.catch(error => {
+                    crashApp(error);
+
+                    /* Lets make this promise stuck for ever since we're in a not well defined state */
+                    return new Promise(() => {});
+                });
+            }
+
+            return result;
+        } catch (error) {
+            crashApp(error);
+
+            if(!promiseAccepted.value) {
+                throw error;
+            } else {
+                /*
+                 * We don't know if we can return a promise or if just the object is expected.
+                 * Since we don't know that, we're just rethrowing the error for now.
+                 */
+                return new Promise(() => {});
+            }
+        }
+    };
+}
+
+const kCallOnceSymbol = Symbol("call-once-data");
+export function CallOnce(target: any, methodName: string, descriptor: PropertyDescriptor) {
+    const callOnceData = target[kCallOnceSymbol] || (target[kCallOnceSymbol] = {});
+
+    const originalMethod: Function = descriptor.value;
+    descriptor.value = function () {
+        if(callOnceData[methodName]) {
+            debugger;
+            throw "method " + methodName + " has already been called";
+        }
+
+        return originalMethod.apply(this, arguments);
+    };
+}
+
+const kNonNullSymbol = Symbol("non-null-data");
+export function NonNull(target: any, methodName: string, parameterIndex: number) {
+    const nonNullInfo = target[kNonNullSymbol] || (target[kNonNullSymbol] = {});
+    const methodInfo = nonNullInfo[methodName] || (nonNullInfo[methodName] = {});
+    if(!Array.isArray(methodInfo.indexes)) {
+        /* Initialize method info */
+        methodInfo.overloaded = false;
+        methodInfo.indexes = [];
+    }
+
+    methodInfo.indexes.push(parameterIndex);
+    setImmediate(() => {
+        if(methodInfo.overloaded || methodInfo.missingWarned) {
+            return;
+        }
+
+        methodInfo.missingWarned = true;
+        logError(LogCategory.GENERAL, "Method %s has been constrained but the @Constrained decoration is missing.");
+        debugger;
+    });
+}
+
+/**
+ * The class or method has been constrained
+ */
+export function ParameterConstrained(target: any, methodName: string, descriptor: PropertyDescriptor) {
+    const nonNullInfo = target[kNonNullSymbol];
+    if(!nonNullInfo) {
+        return;
+    }
+
+    const methodInfo = nonNullInfo[methodName] || (nonNullInfo[methodName] = {});
+    if(!methodInfo) {
+        return;
+    }
+
+    methodInfo.overloaded = true;
+    const originalMethod: Function = descriptor.value;
+    descriptor.value = function () {
+        for(let index = 0; index < methodInfo.indexes.length; index++) {
+            const argument = arguments[methodInfo.indexes[index]];
+            if(typeof argument === undefined || typeof  argument === null) {
+                throw "parameter " + methodInfo.indexes[index] + " should not be null or undefined";
+            }
+        }
+
+        return originalMethod.apply(this, arguments);
+    };
+}
+
+class TestClass {
+    @NoThrow
+    noThrow0() { }
+
+    @NoThrow
+    async noThrow1() {
+        await new Promise(resolve => setTimeout(resolve, 1));
+    }
+
+    @NoThrow
+    noThrow2() { throw "expected"; }
+
+    @NoThrow
+    async noThrow3() {
+        await new Promise(resolve => setTimeout(resolve, 1));
+        throw "expected";
+    }
+
+    @ParameterConstrained
+    nonNull0(@NonNull value: number) {
+
+    }
+}
+(window as any).TestClass = TestClass;

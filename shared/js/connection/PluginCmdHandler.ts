@@ -25,18 +25,38 @@ export abstract class PluginCmdHandler {
 
     abstract handlePluginCommand(data: string, invoker: PluginCommandInvoker);
 
-    protected sendPluginCommand(data: string, mode: "server" | "view" | "channel" | "private", clientId?: number) : Promise<CommandResult> {
-        if(!this.currentServerConnection)
+    protected sendPluginCommand(data: string, mode: "server" | "view" | "channel" | "private", clientOrChannelId?: number) : Promise<CommandResult> {
+        if(!this.currentServerConnection) {
             throw "plugin command handler not registered";
+        }
+
+        let targetMode: number;
+        switch (mode) {
+            case "channel":
+                targetMode = 0;
+                break;
+
+            case "server":
+                targetMode = 1;
+                break;
+
+            case "private":
+                targetMode = 2;
+                break;
+
+            case "view":
+                targetMode = 3;
+                break;
+
+            default:
+                throw tr("invalid plugin message target");
+        }
 
         return this.currentServerConnection.send_command("plugincmd", {
             data: data,
             name: this.channel,
-            targetmode: mode === "server"  ? 1 :
-                        mode === "view"    ? 3 :
-                        mode === "channel" ? 0 :
-                                             2,
-            target: clientId
+            targetmode: targetMode,
+            target: clientOrChannelId
         });
     }
 }

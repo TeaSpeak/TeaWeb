@@ -11,6 +11,7 @@ interface GlobalTooltipState {
     tooltipId: string;
 }
 
+const globalTooltipRef = React.createRef<GlobalTooltip>();
 class GlobalTooltip extends React.Component<{}, GlobalTooltipState> {
     private currentTooltip_: Tooltip;
     private isUnmount: boolean;
@@ -160,7 +161,4 @@ export const IconTooltip = (props: { children?: React.ReactElement | React.React
     </Tooltip>
 );
 
-const globalTooltipRef = React.createRef<GlobalTooltip>();
-const tooltipContainer = document.createElement("div");
-document.body.appendChild(tooltipContainer);
-ReactDOM.render(<GlobalTooltip ref={globalTooltipRef} />, tooltipContainer);
+export const TooltipHook = React.memo(() => <GlobalTooltip ref={globalTooltipRef} />);
