@@ -110,11 +110,6 @@ export abstract class AbstractConversationController<
         }
     }
 
-    /* TODO: Is this even a thing? */
-    handlePanelShow() {
-        this.uiEvents.fire_react("notify_panel_show");
-    }
-
     protected reportStateToUI(conversation: AbstractChat<any>) {
         let historyState: ChatHistoryState;
         const localHistoryState = this.conversationManager.historyUiStates[conversation.getChatId()];

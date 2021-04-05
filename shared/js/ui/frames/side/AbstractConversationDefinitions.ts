@@ -139,7 +139,6 @@ export interface AbstractConversationUiEvents {
     }
 
     notify_selected_chat: { chatId: "unselected" | string },
-    notify_panel_show: {},
     notify_chat_event: {
         chatId: string,
         triggerUnread: boolean,

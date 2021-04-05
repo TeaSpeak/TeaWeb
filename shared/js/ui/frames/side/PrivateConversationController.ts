@@ -73,21 +73,11 @@ export class PrivateConversationController extends AbstractConversationControlle
 
         this.connection = connection;
         if(connection) {
-            this.initializeConnectionListener(connection);
             this.setConversationManager(connection.getPrivateConversations());
         } else {
             this.setConversationManager(undefined);
         }
         this.reportConversationList();
-    }
-
-    private initializeConnectionListener(connection: ConnectionHandler) {
-        this.connectionListener.push(connection.events().on("notify_visibility_changed", event => {
-            if(!event.visible)
-                return;
-
-            this.handlePanelShow();
-        }));
     }
 
     protected registerConversationManagerEvents(manager: PrivateConversationManager) {

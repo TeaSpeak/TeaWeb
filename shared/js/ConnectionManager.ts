@@ -102,8 +102,6 @@ export class ConnectionManager {
             oldHandlerId: oldHandler?.handlerId,
             newHandlerId: handler?.handlerId
         });
-        oldHandler?.events().fire("notify_visibility_changed", { visible: false });
-        handler?.events().fire("notify_visibility_changed", { visible: true });
     }
 
     swapHandlerOrder(handlerA: ConnectionHandler, handlerB: ConnectionHandler) {

@@ -110,25 +110,6 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         this.resizeObserver = undefined;
     }
 
-    @EventHandler<ChannelTreeUIEvents>("notify_visibility_changed")
-    private handleVisibilityChanged(event: ChannelTreeUIEvents["notify_visibility_changed"]) {
-        if (!event.visible) {
-            this.setState({smoothScroll: false});
-            return;
-        }
-
-        if (this.scrollFixRequested) {
-            return;
-        }
-
-        this.scrollFixRequested = true;
-        requestAnimationFrame(() => {
-            this.scrollFixRequested = false;
-            this.refContainer.current.scrollTop = this.state.scrollOffset;
-            this.setState({smoothScroll: true});
-        });
-    }
-
     private visibleEntries() {
         const entryHeight = ChannelTreeView.EntryHeightEm * this.state.fontSize;
         let viewEntryCount = Math.ceil(this.state.viewHeight / entryHeight);

@@ -824,11 +824,6 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
         }
     }
 
-    @EventHandler<AbstractConversationUiEvents>("notify_panel_show")
-    private handlePanelShow() {
-        this.fixScroll();
-    }
-
     @EventHandler<AbstractConversationUiEvents>("query_conversation_history")
     private handleQueryConversationHistory(event: AbstractConversationUiEvents["query_conversation_history"]) {
         if (event.chatId !== this.currentChatId)

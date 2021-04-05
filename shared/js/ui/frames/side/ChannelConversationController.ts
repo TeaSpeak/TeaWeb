@@ -57,22 +57,11 @@ export class ChannelConversationController extends AbstractConversationControlle
 
         this.connection = connection;
         if(connection) {
-            this.initializeConnectionListener(connection);
             /* FIXME: Update cross channel talk state! */
             this.setConversationManager(connection.getChannelConversations());
         } else {
             this.setConversationManager(undefined);
         }
-    }
-
-    private initializeConnectionListener(connection: ConnectionHandler) {
-        this.connectionListener.push(connection.events().on("notify_visibility_changed", event => {
-            if(!event.visible) {
-                return;
-            }
-
-            this.handlePanelShow();
-        }));
     }
 
     @EventHandler<AbstractConversationUiEvents>("action_delete_message")

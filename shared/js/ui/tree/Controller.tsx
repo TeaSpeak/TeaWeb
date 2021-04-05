@@ -680,8 +680,6 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
         events.fire_react("notify_unread_state", { treeEntryId: event.treeEntryId, unread: entry.isUnread() });
     });
 
-    events.on("notify_destroy", channelTree.client.events().on("notify_visibility_changed", event => events.fire_react("notify_visibility_changed", event)));
-
     events.on("query_tree_entries", event => controller.sendChannelTreeEntriesFull(event.fullInfo ? undefined : []));
     events.on("query_selected_entry", () => controller.sendSelectedEntry());
     events.on("query_channel_info", event => {

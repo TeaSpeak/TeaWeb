@@ -13,6 +13,7 @@ import {findRegisteredModal, RegisteredModal} from "tc-shared/ui/react-elements/
 import {assertMainApplication} from "tc-shared/ui/utils";
 import {InternalModalInstance} from "./internal";
 import {ExternalModalController} from "./external/Controller";
+import {LogCategory, logError} from "tc-shared/log";
 
 assertMainApplication();
 export class GenericModalController<T extends keyof ModalConstructorArguments> implements ModalController {
@@ -82,7 +83,15 @@ export class GenericModalController<T extends keyof ModalConstructorArguments> i
             }
         });
 
-        events.on("action_close", () => this.destroy());
+        events.on("action_close", () => {
+            if(this.popedOut) {
+                this.destroy();
+            } else {
+                this.hide().catch(error => {
+                    logError(LogCategory.GENERAL, tr("Failed to hide modal: %o"), error);
+                }).then(() => this.destroy());
+            }
+        });
         events.on("action_minimize", () => this.instance.minimize());
 
         events.on("action_popout", () => {

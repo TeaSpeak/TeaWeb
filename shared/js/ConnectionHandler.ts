@@ -8,7 +8,6 @@ import {LogCategory, logError, logInfo, logTrace, logWarn} from "./log";
 import {createErrorModal, createInputModal, Modal} from "./ui/elements/Modal";
 import {hashPassword} from "./utils/helpers";
 import {HandshakeHandler} from "./connection/HandshakeHandler";
-import * as htmltags from "./ui/htmltags";
 import {FilterMode, InputStartError, InputState} from "./voice/RecorderBase";
 import {defaultRecorder, RecorderProfile} from "./voice/RecorderProfile";
 import {Regex} from "./ui/modal/ModalConnect";
@@ -38,6 +37,7 @@ import {ConnectParameters} from "tc-shared/ui/modal/connect/Controller";
 import {assertMainApplication} from "tc-shared/ui/utils";
 import {getDNSProvider} from "tc-shared/dns";
 import {W2GPluginCmdHandler} from "tc-shared/ui/modal/video-viewer/W2GPlugin";
+import * as htmltags from "./ui/htmltags";
 
 assertMainApplication();
 
@@ -1247,11 +1247,6 @@ export interface ConnectionEvents {
     notify_connection_state_changed: {
         oldState: ConnectionState,
         newState: ConnectionState
-    },
-
-    /* the handler has become visible/invisible for the client */
-    notify_visibility_changed: {
-        visible: boolean
     },
 
     /* fill only trigger once, after everything has been constructed */

@@ -116,7 +116,9 @@ export class ModalBodyRenderer extends React.PureComponent<{
                 this.props.className,
                 cssStyle["color-" + this.props.modalInstance.color()]
             )}>
-                {this.props.modalInstance.renderBody()}
+                <ErrorBoundary>
+                    {this.props.modalInstance.renderBody()}
+                </ErrorBoundary>
             </div>
         )
     }
@@ -139,8 +141,8 @@ export class ModalFrameRenderer extends React.PureComponent<{
 export class PageModalRenderer extends React.PureComponent<{
     modalInstance: AbstractModal,
     onBackdropClicked: () => void,
-    children: React.ReactElement<ModalFrameRenderer>
-}, {
+    children: React.ReactElement<ModalFrameRenderer>,
+
     shown: boolean
 }> {
     constructor(props) {
@@ -157,7 +159,7 @@ export class PageModalRenderer extends React.PureComponent<{
                 className={joinClassList(
                     cssStyle.modalPageContainer,
                     cssStyle["align-" + this.props.modalInstance.verticalAlignment()],
-                    this.state.shown ? cssStyle.shown : undefined
+                    this.props.shown ? cssStyle.shown : undefined
                 )}
                 tabIndex={-1}
                 role={"dialog"}
