@@ -10,7 +10,6 @@ import {hashPassword} from "./utils/helpers";
 import {HandshakeHandler} from "./connection/HandshakeHandler";
 import {FilterMode, InputStartError, InputState} from "./voice/RecorderBase";
 import {defaultRecorder, RecorderProfile} from "./voice/RecorderProfile";
-import {Regex} from "./ui/modal/ModalConnect";
 import {formatMessage} from "./ui/frames/chat";
 import {EventHandler, Registry} from "./events";
 import {FileManager} from "./file/FileManager";
@@ -37,6 +36,7 @@ import {ConnectParameters} from "tc-shared/ui/modal/connect/Controller";
 import {assertMainApplication} from "tc-shared/ui/utils";
 import {getDNSProvider} from "tc-shared/dns";
 import {W2GPluginCmdHandler} from "tc-shared/ui/modal/video-viewer/W2GPlugin";
+import ipRegex from "ip-regex";
 import * as htmltags from "./ui/htmltags";
 
 assertMainApplication();
@@ -328,7 +328,7 @@ export class ConnectionHandler {
             }
         }
 
-        if(resolvedAddress.host.match(Regex.IP_V4) || resolvedAddress.host.match(Regex.IP_V6)) {
+        if(ipRegex({ exact: true }).test(resolvedAddress.host)) {
             /* We don't have to resolve the target host */
         } else {
             this.log.log("connection.hostname.resolve", {});
@@ -640,7 +640,7 @@ export class ConnectionHandler {
             case DisconnectReason.HANDSHAKE_TEAMSPEAK_REQUIRED:
                 createErrorModal(
                     tr("Target server is a TeamSpeak server"),
-                    formatMessage(tr("The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br:}Please select another profile or change the identify type."))
+                    tr("The target server is a TeamSpeak 3 server!\nOnly TeamSpeak 3 based identities are able to connect.\nPlease select another profile or change the identify type.")
                 ).open();
                 this.sound.play(Sound.CONNECTION_DISCONNECTED);
                 autoReconnect = false;

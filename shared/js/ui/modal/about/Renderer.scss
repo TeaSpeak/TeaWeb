@@ -1,0 +1,97 @@
+.container {
+    display: flex;
+    flex-direction: row;
+
+    text-align: center;
+    justify-content: center;
+
+    position: relative;
+
+    padding: 1em;
+    user-select: none;
+    color: #999999;
+
+    &.windowed {
+        height: 100%;
+        width: 100%;
+    }
+
+    .containerLeft {
+        align-self: center;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .containerRight {
+        align-self: center;
+
+        text-align: left;
+        padding-left: 2em;
+
+        h1 {
+            font-size: 1.5em;
+            margin-block-start: 0.35em;
+            margin-block-end: 0.35em;
+        }
+
+        h2 {
+            font-size: 1.25em;
+            margin-block-start: 0.10em;
+            margin-block-end: 0.10em;
+        }
+
+        p {
+            margin-block-start: .25em;
+            margin-block-end: .25em;
+        }
+
+        a {
+            user-select: all;
+        }
+    }
+
+    .version {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        .key {
+            width: 50%;
+
+            flex-grow: 1;
+            flex-shrink: 1;
+
+            text-align: right;
+        }
+
+        .value {
+            width: 50%;
+            padding-left: .25em;
+
+            text-align: left;
+            user-select: all;
+
+            flex-grow: 1;
+            flex-shrink: 1;
+        }
+    }
+}
+
+.gameContainer {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    canvas {
+        width: 100%;
+        height: 100%;
+
+        image-rendering: crisp-edges;
+    }
+}

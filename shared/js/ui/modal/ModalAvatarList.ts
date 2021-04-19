@@ -29,9 +29,7 @@ export function spawnAvatarList(client: ConnectionHandler) {
         header: tr("Avatars"),
         footer: undefined,
         body: () => {
-            const template = $("#tmpl_avatar_list").renderTag({});
-
-            return template;
+            return $("#tmpl_avatar_list").renderTag({});
         }
     });
 

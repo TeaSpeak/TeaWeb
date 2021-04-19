@@ -1,6 +1,7 @@
 import {createModal} from "../../ui/elements/Modal";
 import {getBackend} from "tc-shared/backend";
 import {tr} from "tc-shared/i18n/localize";
+import {spawnAboutModal} from "tc-shared/ui/modal/about/Controller";
 
 function format_date(date: number) {
     const d = new Date(date);
@@ -9,10 +10,13 @@ function format_date(date: number) {
 }
 
 export function spawnAbout() {
+    spawnAboutModal();
+    return;
+
     const connectModal = createModal({
         header: tr("About"),
         body: () => {
-            let tag = $("#tmpl_about").renderTag({
+            return $("#tmpl_about").renderTag({
                 client: __build.target !== "web",
 
                 version_client: __build.target === "web" ? __build.version || "in-dev" : "loading...",
@@ -20,7 +24,6 @@ export function spawnAbout() {
 
                 version_timestamp: format_date(__build.timestamp)
             });
-            return tag;
         },
         footer: null,
 

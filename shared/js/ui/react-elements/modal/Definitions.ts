@@ -21,6 +21,7 @@ import {PermissionEditorEvents} from "tc-shared/ui/modal/permission/EditorDefini
 import {PermissionEditorServerInfo} from "tc-shared/ui/modal/permission/ModalRenderer";
 import {ModalAvatarUploadEvents, ModalAvatarUploadVariables} from "tc-shared/ui/modal/avatar-upload/Definitions";
 import {ModalInputProcessorEvents, ModalInputProcessorVariables} from "tc-shared/ui/modal/input-processor/Definitios";
+import {ModalAboutVariables} from "tc-shared/ui/modal/about/Definitions";
 
 export type ModalType = "error" | "warning" | "info" | "none";
 export type ModalRenderType = "page" | "dialog";
@@ -215,5 +216,9 @@ export interface ModalConstructorArguments {
     "modal-input-processor": [
         /* events */ IpcRegistryDescription<ModalInputProcessorEvents>,
         /* variables */ IpcVariableDescriptor<ModalInputProcessorVariables>,
+    ],
+    "modal-about": [
+        /* events */ IpcRegistryDescription,
+        /* variables */ IpcVariableDescriptor<ModalAboutVariables>
     ]
 }

@@ -11,7 +11,6 @@ import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {settings, Settings} from "tc-shared/settings";
 import * as log from "tc-shared/log";
 import {LogCategory, logDebug, logError, logInfo, logTrace, logWarn} from "tc-shared/log";
-import {Regex} from "tc-shared/ui/modal/ModalConnect";
 import {AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
 import {WrappedWebSocket} from "./WrappedWebSocket";
 import {AbstractVoiceConnection} from "tc-shared/connection/VoiceConnection";
@@ -24,6 +23,7 @@ import {RTCConnection} from "tc-shared/connection/rtc/Connection";
 import {RtpVideoConnection} from "tc-shared/connection/rtc/video/Connection";
 import { tr } from "tc-shared/i18n/localize";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
+import ipRegex from "ip-regex";
 
 class ReturnListener<T> {
     resolve: (value?: T | PromiseLike<T>) => void;
@@ -137,10 +137,12 @@ export class ServerConnection extends AbstractServerConnection {
         proxySocket:
         if(!settings.getValue(Settings.KEY_CONNECT_NO_DNSPROXY)) {
             let host;
-            if(Regex.IP_V4.test(address.host)) {
-                host = address.host.replace(/\./g, "-") + ".con-gate.work";
-            } else if(Regex.IP_V6.test(address.host)) {
-                host = address.host.replace(/\[(.*)]/, "$1").replace(/:/g, "_") + ".con-gate.work";
+
+            if(ipRegex({ exact: true }).test(address.host)) {
+                host = address.host;
+                host = host.replace(/\./g, "-");
+                host = host.replace(/:/g, "_");
+                host = host + ".con-gate.work";
             } else {
                 break proxySocket;
             }

@@ -81,12 +81,12 @@ export class AppController {
         this.connectionListEvents = new Registry<ConnectionListUIEvents>();
         initializeConnectionListController(this.connectionListEvents);
 
-        this.listener.push(server_connections.events().on("notify_active_handler_changed", event => this.setConnectionHandler(event.newHandler)));
-        this.setConnectionHandler(server_connections.getActiveConnectionHandler());
-
         this.sideBarController = new SideBarController();
         this.serverLogController = new ServerEventLogController();
         this.hostBannerController = new HostBannerController();
+
+        this.listener.push(server_connections.events().on("notify_active_handler_changed", event => this.setConnectionHandler(event.newHandler)));
+        this.setConnectionHandler(server_connections.getActiveConnectionHandler());
     }
 
     setConnectionHandler(connection: ConnectionHandler) {

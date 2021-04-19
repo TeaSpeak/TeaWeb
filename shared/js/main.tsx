@@ -442,7 +442,7 @@ const task_connect_handler: loader.Task = {
         if(chandler && AppParameters.getValue(AppParameters.KEY_CONNECT_NO_SINGLE_INSTANCE)) {
             try {
                 await chandler.post_connect_request(connectData, () => new Promise<boolean>(resolve => {
-                    spawnYesNo(tr("Another TeaWeb instance is already running"), tra("Another TeaWeb instance is already running.{:br:}Would you like to connect there?"), response => {
+                    spawnYesNo(tr("Another TeaWeb instance is already running"), tra("Another TeaWeb instance is already running.\nWould you like to connect there?"), response => {
                         resolve(response);
                     }, {
                         closeable: false
@@ -450,12 +450,9 @@ const task_connect_handler: loader.Task = {
                 }));
                 logInfo(LogCategory.CLIENT, tr("Executed connect successfully in another browser window. Closing this window"));
 
-                const message =
-                    "You're connecting to {0} within the other TeaWeb instance.{:br:}" +
-                    "You could now close this page.";
                 createInfoModal(
                     tr("Connecting successfully within other instance"),
-                    formatMessage(/* @tr-ignore */ tr(message), connectData.address),
+                    formatMessage(tr("You're connecting to {0} within the other TeaWeb instance.\nYou could now close this page."), connectData.address),
                     {
                         closeable: false,
                         footer: undefined

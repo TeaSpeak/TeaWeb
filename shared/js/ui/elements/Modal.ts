@@ -1,6 +1,5 @@
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
-import {KeyCode} from "../../PPTListener";
 import $ from "jquery";
 import {LogCategory, logError} from "tc-shared/log";
 
@@ -341,7 +340,7 @@ export function createInputModal(headMessage: BodyCreator, question: BodyCreator
         button_submit.prop("disabled", !valid);
     });
     input.on('keydown', event => {
-        if(event.keyCode !== KeyCode.KEY_RETURN || event.shiftKey)
+        if(event.key !== "Enter" || event.shiftKey)
             return;
         if(button_submit.prop("disabled"))
             return;
