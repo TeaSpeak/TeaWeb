@@ -1,9 +1,10 @@
 import {LogCategory, logDebug, logError, logInfo, logTrace, logWarn} from "../log";
 import {guid} from "../crypto/uid";
-import {Settings, StaticSettings} from "../settings";
+import {settings, Settings} from "../settings";
 import * as loader from "tc-loader";
 import {formatMessage, formatMessageString} from "../ui/frames/chat";
 
+/* FIXME: Use the storage adapter and not the local storage else settings might get lost! */
 export interface TranslationKey {
     message: string;
     line?: number;
@@ -175,8 +176,9 @@ async function load_repository0(repo: TranslationRepository, reload: boolean) {
         Object.assign(repo, info_json);
     }
 
-    if(!repo.unique_id)
+    if(!repo.unique_id) {
         repo.unique_id = guid();
+    }
 
     repo.translations = repo.translations || [];
     repo.load_timestamp = Date.now();
@@ -208,8 +210,9 @@ export namespace config {
     const repository_config_key = "i18n.repository";
     let _cached_repository_config: RepositoryConfig;
     export function repository_config() {
-        if(_cached_repository_config)
+        if(_cached_repository_config) {
             return _cached_repository_config;
+        }
 
         const config_string = localStorage.getItem(repository_config_key);
         let config: RepositoryConfig;
@@ -224,7 +227,7 @@ export namespace config {
 
         if(config.repositories.length == 0) {
             //Add the default TeaSpeak repository
-            load_repository(StaticSettings.instance.static(Settings.KEY_I18N_DEFAULT_REPOSITORY)).then(repo => {
+            load_repository(settings.getValue(Settings.KEY_I18N_DEFAULT_REPOSITORY)).then(repo => {
                 logInfo(LogCategory.I18N, tr("Successfully added default repository from \"%s\"."), repo.url);
                 register_repository(repo);
             }).catch(error => {

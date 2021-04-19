@@ -4,7 +4,11 @@ import {IpcUiVariableProvider} from "tc-shared/ui/utils/IpcVariable";
 import {spawnModal} from "tc-shared/ui/react-elements/modal";
 import {CallOnce, ignorePromise} from "tc-shared/proto";
 import {getBackend} from "tc-shared/backend";
+import {getStorageAdapter} from "tc-shared/StorageAdapter";
 
+/**
+ * We're using the storage adapter since we don't
+ */
 class Controller {
     readonly events: Registry<ModalAboutEvents>;
     readonly variables: IpcUiVariableProvider<ModalAboutVariables>;
@@ -32,18 +36,18 @@ class Controller {
         this.variables.setVariableProvider("eggShown", () => this.eggShown);
         this.variables.setVariableEditor("eggShown", newValue => { this.eggShown = newValue; });
 
-        this.events.on("action_update_high_score", event => {
-            let highScore = parseInt(localStorage.getItem("ee-snake-high-score"));
+        this.events.on("action_update_high_score", async event => {
+            let highScore = parseInt(await getStorageAdapter().get("ee-snake-high-score"));
             if(!isNaN(highScore) && highScore >= event.score) {
                 /* No change */
                 return;
             }
 
-            localStorage.setItem("ee-snake-high-score", event.score.toString());
+            await getStorageAdapter().set("ee-snake-high-score", event.score.toString());
         });
 
-        this.events.on("query_high_score", () => {
-            let highScore = parseInt(localStorage.getItem("ee-snake-high-score"));
+        this.events.on("query_high_score", async () => {
+            let highScore = parseInt(await getStorageAdapter().get("ee-snake-high-score"));
             if(isNaN(highScore)) {
                 highScore = 0;
             }

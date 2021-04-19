@@ -1,7 +1,7 @@
 import {AbstractServerConnection} from "./connection/ConnectionBase";
 import {PermissionManager} from "./permission/PermissionManager";
 import {GroupManager} from "./permission/GroupManager";
-import {ServerSettings, Settings, settings, StaticSettings} from "./settings";
+import {Settings, settings} from "./settings";
 import {Sound, SoundManager} from "./audio/Sounds";
 import {ConnectionProfile} from "./profiles/ConnectionProfile";
 import {LogCategory, logError, logInfo, logTrace, logWarn} from "./log";
@@ -38,6 +38,8 @@ import {getDNSProvider} from "tc-shared/dns";
 import {W2GPluginCmdHandler} from "tc-shared/ui/modal/video-viewer/W2GPlugin";
 import ipRegex from "ip-regex";
 import * as htmltags from "./ui/htmltags";
+import {ServerSettings} from "tc-shared/ServerSettings";
+import {ignorePromise} from "tc-shared/proto";
 
 assertMainApplication();
 
@@ -165,7 +167,7 @@ export class ConnectionHandler {
     private localClient: LocalClientEntry;
 
     private autoReconnectTimer: number;
-    private autoReconnectAttempt: boolean = false;
+    private isReconnectAttempt: boolean;
 
     private connectAttemptId: number = 1;
     private echoTestRunning = false;
@@ -275,9 +277,9 @@ export class ConnectionHandler {
         return this.events_;
     }
 
-    async startConnectionNew(parameters: ConnectParameters, autoReconnectAttempt: boolean) {
+    async startConnectionNew(parameters: ConnectParameters, isReconnectAttempt: boolean) {
         this.cancelAutoReconnect(true);
-        this.autoReconnectAttempt = autoReconnectAttempt;
+        this.isReconnectAttempt = isReconnectAttempt;
         this.handleDisconnect(DisconnectReason.REQUESTED);
 
         const localConnectionAttemptId = ++this.connectAttemptId;
@@ -368,7 +370,7 @@ export class ConnectionHandler {
             }
         }
 
-        if(this.autoReconnectAttempt) {
+        if(this.isReconnectAttempt) {
             /* this.currentConnectId = 0; */
             /* Reconnect attempts are connecting to the last server. No need to update the general attempt id */
         } else {
@@ -380,24 +382,6 @@ export class ConnectionHandler {
         }
 
         await this.serverConnection.connect(resolvedAddress, new HandshakeHandler(parameters));
-    }
-
-    async startConnection(addr: string, profile: ConnectionProfile, user_action: boolean, parameters: ConnectParametersOld) {
-        await this.startConnectionNew({
-            profile: profile,
-            targetAddress: addr,
-
-            nickname: parameters.nickname,
-            nicknameSpecified: true,
-
-            serverPassword: parameters.password?.password,
-            serverPasswordHashed: parameters.password?.hashed,
-
-            defaultChannel: parameters?.channel?.target,
-            defaultChannelPassword: parameters?.channel?.password,
-
-            token: parameters.token
-        }, !user_action);
     }
 
     async disconnectFromServer(reason?: string) {
@@ -473,7 +457,7 @@ export class ConnectionHandler {
             }
             */
 
-            this.settings.setServer(this.channelTree.server.properties.virtualserver_unique_identifier);
+            this.settings.setServerUniqueId(this.channelTree.server.properties.virtualserver_unique_identifier);
 
             /* apply the server settings */
             if(this.handlerState.channel_subscribe_all) {
@@ -570,7 +554,7 @@ export class ConnectionHandler {
                 this.sound.play(Sound.CONNECTION_REFUSED);
                 break;
             case DisconnectReason.CONNECT_FAILURE:
-                if(this.autoReconnectAttempt) {
+                if(this.isReconnectAttempt) {
                     autoReconnect = true;
                     break;
                 }
@@ -656,13 +640,13 @@ export class ConnectionHandler {
                 break;
             case DisconnectReason.CONNECTION_CLOSED:
                 logError(LogCategory.CLIENT, tr("Lost connection to remote server!"));
-                if(!this.autoReconnectAttempt) {
+                if(!this.isReconnectAttempt) {
                     createErrorModal(
                         tr("Connection closed"),
                         tr("The connection was closed by remote host")
                     ).open();
+                    this.sound.play(Sound.CONNECTION_DISCONNECTED);
                 }
-                this.sound.play(Sound.CONNECTION_DISCONNECTED);
 
                 autoReconnect = true;
                 break;
@@ -673,6 +657,7 @@ export class ConnectionHandler {
                     tr("Connection lost"),
                     tr("Lost connection to remote host (Ping timeout)<br>Even possible?")
                 ).open();
+                autoReconnect = true;
 
                 break;
             case DisconnectReason.SERVER_CLOSED:
@@ -690,25 +675,15 @@ export class ConnectionHandler {
             case DisconnectReason.SERVER_REQUIRES_PASSWORD:
                 this.log.log("server.requires.password", {});
 
-                createInputModal(tr("Server password"), tr("Enter server password:"), password => password.length != 0, async password => {
+                const reconnectParameters = this.generateReconnectParameters();
+                createInputModal(tr("Server password"), tr("Enter server password:"), password => password.length != 0, password => {
                     if(typeof password !== "string") {
                         return;
                     }
 
-                    const profile = this.serverConnection.handshake_handler().parameters.profile;
-                    const cprops = this.reconnect_properties(profile);
-                    cprops.password = {
-                        password: await hashPassword(password),
-                        hashed: true
-                    };
-
-                    if(this.currentConnectId >= 0) {
-                        connectionHistory.updateConnectionServerPassword(this.currentConnectId, cprops.password.password)
-                            .catch(error => {
-                                logWarn(LogCategory.GENERAL, tr("Failed to update the connection server password: %o"), error);
-                            });
-                    }
-                    this.startConnection(this.channelTree.server.remote_address.host + ":" + this.channelTree.server.remote_address.port, profile, false, cprops);
+                    reconnectParameters.serverPassword = password;
+                    reconnectParameters.serverPasswordHashed = false;
+                    ignorePromise(this.startConnectionNew(reconnectParameters, false));
                 }).open();
                 break;
             case DisconnectReason.CLIENT_KICKED:
@@ -754,9 +729,7 @@ export class ConnectionHandler {
 
         this.channelTree.unregisterClient(this.localClient); /* if we dont unregister our client here the client will be destroyed */
         this.channelTree.reset();
-        if(this.serverConnection) {
-            this.serverConnection.disconnect();
-        }
+        ignorePromise(this.serverConnection?.disconnect());
 
         this.handlerState.lastChannelCodecWarned = 0;
 
@@ -768,15 +741,13 @@ export class ConnectionHandler {
             this.log.log("reconnect.scheduled", {timeout: 5000});
 
             logInfo(LogCategory.NETWORKING, tr("Allowed to auto reconnect. Reconnecting in 5000ms"));
-            const server_address = this.serverConnection.remote_address();
-            const profile = this.serverConnection.handshake_handler().parameters.profile;
-
+            const reconnectParameters = this.generateReconnectParameters();
             this.autoReconnectTimer = setTimeout(() => {
                 this.autoReconnectTimer = undefined;
                 this.log.log("reconnect.execute", {});
                 logInfo(LogCategory.NETWORKING, tr("Reconnecting..."));
 
-                this.startConnection(server_address.host + ":" + server_address.port, profile, false, Object.assign(this.reconnect_properties(profile), {auto_reconnect_attempt: true}));
+                ignorePromise(this.startConnectionNew(reconnectParameters, true));
             }, 5000);
         }
 
@@ -995,23 +966,24 @@ export class ConnectionHandler {
     getVoiceRecorder() : RecorderProfile | undefined { return this.serverConnection?.getVoiceConnection().voiceRecorder(); }
 
 
-    reconnect_properties(profile?: ConnectionProfile) : ConnectParametersOld {
-        const name = (this.getClient() ? this.getClient().clientNickName() : "") ||
-                        (this.serverConnection?.handshake_handler() ? this.serverConnection.handshake_handler().parameters.nickname : "") ||
-                        StaticSettings.instance.static(Settings.KEY_CONNECT_USERNAME, profile ? profile.defaultUsername : undefined) ||
-                        "Another TeaSpeak user";
-
-        const targetChannel = this.getClient().currentChannel();
-        const connectParameters = this.serverConnection.handshake_handler().parameters;
-
-        return {
-            channel: targetChannel ? {target: "/" + targetChannel.channelId, password: targetChannel.getCachedPasswordHash()} : undefined,
-            nickname: name,
-            password: connectParameters.serverPassword ? {
-                password: connectParameters.serverPassword,
-                hashed: connectParameters.serverPasswordHashed
-            } : undefined
+    generateReconnectParameters() : ConnectParameters | undefined {
+        const baseProfile = this.serverConnection.handshake_handler()?.parameters;
+        if(!baseProfile) {
+            /* We never tried to connect to anywhere */
+            return undefined;
         }
+
+        baseProfile.nickname = this.getClient()?.clientNickName() || baseProfile.nickname;
+        baseProfile.nicknameSpecified = false;
+
+        const targetChannel = this.getClient()?.currentChannel();
+        if(targetChannel) {
+            baseProfile.defaultChannel = targetChannel.channelId;
+            baseProfile.defaultChannelPassword = targetChannel.getCachedPasswordHash();
+            baseProfile.defaultChannelPasswordHashed = true;
+        }
+
+        return baseProfile;
     }
 
     private async initializeWhisperSession(session: WhisperSession) : Promise<WhisperSessionInitializeData> {

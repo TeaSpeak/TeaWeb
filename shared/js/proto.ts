@@ -3,12 +3,10 @@ import "jsrender";
 import {tr} from "./i18n/localize";
 import {LogCategory, logError, logTrace} from "tc-shared/log";
 
-if(__build.target === "web") {
-    (window as any).$ = require("jquery");
-    (window as any).jQuery = $;
+(window as any).$ = require("jquery");
+(window as any).jQuery = $;
 
-    require("jsrender")($);
-}
+require("jsrender")($);
 
 declare global {
     function setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;

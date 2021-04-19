@@ -150,7 +150,7 @@ export const WhatsNew = (props: { changesUI?: ChangeLog, changesClient?: ChangeL
         );
         infoText = (
             <VariadicTranslatable key={"info-native-ui"}
-                                  text={"The native clients UI has been updated to the version from 18.08.2020."}
+                                  text={"The native clients UI has been updated to the version from {}."}
             >
                 {versionUIDate}
             </VariadicTranslatable>

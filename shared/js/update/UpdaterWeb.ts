@@ -4,6 +4,7 @@ import {Stage} from "tc-loader";
 import {setUIUpdater} from "../update/index";
 import {Updater} from "../update/Updater";
 import {LogCategory, logError} from "../log";
+import {Settings, settings} from "tc-shared/settings";
 
 const ChangeLogContents: string = require("../../../ChangeLog.md");
 const EntryRegex = /^\* \*\*([0-9]{2})\.([0-9]{2})\.([0-9]{2})\*\*$/m;
@@ -139,11 +140,11 @@ class WebUpdater implements Updater {
     }
 
     getLastUsedVersion(): string {
-        return localStorage.getItem(kLastUsedVersionKey) || "08.08.20";
+        return settings.getValue(Settings.KEY_UPDATER_LAST_USED_UI, undefined);
     }
 
     updateUsedVersion() {
-        localStorage.setItem(kLastUsedVersionKey, this.getCurrentVersion());
+        settings.setValue(Settings.KEY_UPDATER_LAST_USED_UI, this.getCurrentVersion());
     }
 }
 

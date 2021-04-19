@@ -4,6 +4,12 @@ import {tr} from "tc-shared/i18n/localize";
 import {LogCategory, logDebug, logError, logInfo, logWarn} from "tc-shared/log";
 import {ChatEvent} from "../ui/frames/side/AbstractConversationDefinitions";
 
+/*
+ * Note:
+ * In this file we're explicitly using the local storage because the index-db database cache is windows bound
+ * like the local storage. We don't need to use the storage adapter here.
+ */
+
 const clientUniqueId2StoreName = uniqueId => "conversation-" + uniqueId;
 
 let currentDatabase: IDBDatabase;
@@ -163,6 +169,7 @@ async function doOpenDatabase(forceUpgrade: boolean) {
         fireDatabaseStateChanged();
     }
 
+    /* localStorage access note, see file start */
     let localVersion = parseInt(localStorage.getItem("indexeddb-private-conversations-version") || "0");
     let upgradePerformed = false;
 
@@ -198,6 +205,7 @@ async function doOpenDatabase(forceUpgrade: boolean) {
             openRequest.onsuccess = () => resolve(openRequest.result);
         });
 
+        /* localStorage access note, see file start */
         localStorage.setItem("indexeddb-private-conversations-version", database.version.toString());
         if(!upgradePerformed && forceUpgrade) {
             logWarn(LogCategory.CHAT, tr("Opened private conversations database, with an update, but update didn't happened. Trying again."));

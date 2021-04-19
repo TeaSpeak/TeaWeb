@@ -2,6 +2,7 @@
 * **19.04.21**
     - Fixed a bug that the client video box is shown as active even though the client does not stream any video
     - Fixed a bug that the video fullscreen windows pops open when a client leaves/joins the channel
+    - Removed extra new line after blockquote for the markdown renderer
   
 * **05.04.21**
     - Fixed the mute but for the webclient
@@ -9,7 +10,7 @@
     - Improved the recorder API
   
 * **29.03.21**
-    - Accquiering the default input recorder when opening the settings
+    - Acquiring the default input recorder when opening the settings
     - Adding new modal Input Processing Properties for the native client
     - Fixed that you can't finish off the name editing by pressing enter
   

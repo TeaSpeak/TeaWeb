@@ -1,8 +1,14 @@
 import {LogCategory, logError, logTrace} from "./log";
-import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {Registry} from "./events";
-import { tr } from "./i18n/localize";
+import {tr} from "./i18n/localize";
+import {CallOnce, ignorePromise} from "tc-shared/proto";
+import {getStorageAdapter} from "tc-shared/StorageAdapter";
+import * as loader from "tc-loader";
+
+/*
+ * TODO: Sync settings across renderer instances
+ */
 
 export type RegistryValueType = boolean | number | string | object;
 export type RegistryValueTypeNames = "boolean" | "number" | "string" | "object";
@@ -54,7 +60,7 @@ function decodeValueFromString<T extends RegistryValueType>(input: string, type:
     }
 }
 
-function encodeValueToString<T extends RegistryValueType>(input: T) : string {
+export function encodeSettingValueToString<T extends RegistryValueType>(input: T) : string {
     switch (typeof input) {
         case "string":
             return input;
@@ -73,7 +79,7 @@ function encodeValueToString<T extends RegistryValueType>(input: T) : string {
     }
 }
 
-function resolveKey<ValueType extends RegistryValueType, DefaultType>(
+export function resolveSettingKey<ValueType extends RegistryValueType, DefaultType>(
     key: RegistryKey<ValueType>,
     resolver: (key: string) => string | undefined | null,
     defaultValue: DefaultType
@@ -136,9 +142,9 @@ export class UrlParameterParser {
     getValue<V extends RegistryValueType>(key: ValuedRegistryKey<V>, defaultValue?: V) : V;
     getValue<V extends RegistryValueType, DV>(key: RegistryKey<V> | ValuedRegistryKey<V>, defaultValue: DV) : V | DV {
         if(arguments.length > 1) {
-            return resolveKey(key, key => this.getParameter(key), defaultValue);
+            return resolveSettingKey(key, key => this.getParameter(key), defaultValue);
         } else if("defaultValue" in key) {
-            return resolveKey(key, key => this.getParameter(key), key.defaultValue);
+            return resolveSettingKey(key, key => this.getParameter(key), key.defaultValue);
         } else {
             throw tr("missing value");
         }
@@ -152,7 +158,7 @@ export class UrlParameterBuilder {
         if(value === undefined) {
             delete this.parameters[key.key];
         } else {
-            this.parameters[key.key] = encodeURIComponent(encodeValueToString(value));
+            this.parameters[key.key] = encodeURIComponent(encodeSettingValueToString(value));
         }
     }
 
@@ -287,32 +293,6 @@ export namespace AppParameters {
         valueType: "boolean",
         defaultValue: false
     };
-}
-
-export class StaticSettings {
-    private static _instance: StaticSettings;
-    static get instance() : StaticSettings {
-        if(!this._instance) {
-            this._instance = new StaticSettings(true);
-        }
-
-        return this._instance;
-    }
-
-    protected staticValues = {};
-
-    protected constructor(_reserved = undefined) { }
-
-    static<V extends RegistryValueType, DV>(key: RegistryKey<V>, defaultValue: DV) : V | DV;
-    static<V extends RegistryValueType>(key: ValuedRegistryKey<V>, defaultValue?: V) : V;
-
-    static<V extends RegistryValueType, DV>(key: RegistryKey<V> | ValuedRegistryKey<V>, defaultValue: DV) : V | DV {
-        if(arguments.length > 1) {
-            return AppParameters.getValue(key, defaultValue);
-        } else {
-            return AppParameters.getValue(key as ValuedRegistryKey<V>);
-        }
-    }
 }
 
 export interface SettingsEvents {
@@ -816,6 +796,18 @@ export class Settings {
         description: "The target speaker device id",
     }
 
+    static readonly KEY_UPDATER_LAST_USED_UI: RegistryKey<string> = {
+        key: "updater_last_used_ui",
+        valueType: "string",
+        description: "Last used TeaSpeak UI version",
+    }
+
+    static readonly KEY_UPDATER_LAST_USED_CLIENT: RegistryKey<string> = {
+        key: "updater_last_used_client",
+        valueType: "string",
+        description: "Last used TeaSpeak Client version (TeaClient only)",
+    }
+
     static readonly FN_LOG_ENABLED: (category: string) => RegistryKey<boolean> = category => {
         return {
             key: "log." + category.toLowerCase() + ".enabled",
@@ -925,44 +917,49 @@ export class Settings {
         return result;
     })();
 
-    static initialize() {
-        settings = new Settings();
-        (window as any).settings = settings;
-        (window as any).Settings = Settings;
-    }
-
-
     readonly events: Registry<SettingsEvents>;
 
-    private readonly cacheGlobal = {};
+    private settingsCache: any;
     private saveWorker: number;
-    private updated: boolean = false;
+    private updated: boolean;
+
+    private saveState: "none" | "saving" | "saving-changed";
 
     constructor() {
         this.events = new Registry<SettingsEvents>();
-        const json = localStorage.getItem("settings.global");
+        this.updated = false;
+        this.saveState = "none";
+    }
+
+    @CallOnce
+    async initialize() {
+        const json = await getStorageAdapter().get("settings.global");
+
         try {
-            this.cacheGlobal = JSON.parse(json);
+            this.settingsCache = JSON.parse(json);
         } catch(error) {
+            this.settingsCache = {};
             logError(LogCategory.GENERAL, tr("Failed to load global settings!\nJson: %s\nError: %o"), json, error);
 
             const show_popup = () => {
                 //FIXME: Readd this
                 //createErrorModal(tr("Failed to load global settings"), tr("Failed to load global client settings!\nLookup console for more information.")).open();
             };
-            if(!loader.finished())
+            if(!loader.finished()) {
                 loader.register_task(loader.Stage.LOADED, {
                     priority: 0,
                     name: "Settings error",
                     function: async () => show_popup()
                 });
-            else
+            } else {
                 show_popup();
+            }
         }
-        if(!this.cacheGlobal) this.cacheGlobal = {};
+
         this.saveWorker = setInterval(() => {
-            if(this.updated)
+            if(this.updated) {
                 this.save();
+            }
         }, 5 * 1000);
     }
 
@@ -970,9 +967,9 @@ export class Settings {
     getValue<V extends RegistryValueType>(key: ValuedRegistryKey<V>, defaultValue?: V) : V;
     getValue<V extends RegistryValueType, DV>(key: RegistryKey<V> | ValuedRegistryKey<V>, defaultValue: DV) : V | DV {
         if(arguments.length > 1) {
-            return resolveKey(key, key => this.cacheGlobal[key], defaultValue);
+            return resolveSettingKey(key, key => this.settingsCache[key], defaultValue);
         } else if("defaultValue" in key) {
-            return resolveKey(key, key => this.cacheGlobal[key], key.defaultValue);
+            return resolveSettingKey(key, key => this.settingsCache[key], key.defaultValue);
         } else {
             debugger;
             throw tr("missing default value");
@@ -984,21 +981,21 @@ export class Settings {
             value = undefined;
         }
 
-        if(this.cacheGlobal[key.key] === value) {
+        if(this.settingsCache[key.key] === value) {
             return;
         }
 
-        const oldValue = this.cacheGlobal[key.key];
+        const oldValue = this.settingsCache[key.key];
         if(value === undefined) {
-            delete this.cacheGlobal[key.key];
+            delete this.settingsCache[key.key];
         } else {
-            this.cacheGlobal[key.key] = encodeValueToString(value);
+            this.settingsCache[key.key] = encodeSettingValueToString(value);
         }
 
         this.updated = true;
         this.events.fire("notify_setting_changed", {
             mode: "global",
-            newValue: this.cacheGlobal[key.key],
+            newValue: this.settingsCache[key.key],
             oldValue: oldValue,
             setting: key.key,
             newCastedValue: value
@@ -1018,121 +1015,49 @@ export class Settings {
         })
     }
 
-    save() {
-        this.updated = false;
-        let global = JSON.stringify(this.cacheGlobal);
-        localStorage.setItem("settings.global", global);
-        if(localStorage.save)
-            localStorage.save();
-    }
-}
-
-export class ServerSettings {
-    private cacheServer = {};
-    private serverUniqueId: string;
-    private serverSaveWorker: number;
-    private serverSettingsUpdated: boolean = false;
-    private _destroyed = false;
-
-    constructor() {
-        this.serverSaveWorker = setInterval(() => {
-            if(this.serverSettingsUpdated) {
-                this.save();
-            }
-        }, 5 * 1000);
-    }
-
-    destroy() {
-        this._destroyed = true;
-
-        this.serverUniqueId = undefined;
-        this.cacheServer = undefined;
-
-        clearInterval(this.serverSaveWorker);
-        this.serverSaveWorker = undefined;
-    }
-
-    getValue<V extends RegistryValueType, DV>(key: RegistryKey<V>, defaultValue: DV) : V | DV;
-    getValue<V extends RegistryValueType>(key: ValuedRegistryKey<V>, defaultValue?: V) : V;
-    getValue(key, defaultValue) {
-        if(this._destroyed) {
-            throw "destroyed";
-        }
-
-        if(arguments.length > 1) {
-            return resolveKey(key, key => this.cacheServer[key], defaultValue);
-        } else if("defaultValue" in key) {
-            return resolveKey(key, key => this.cacheServer[key], key.defaultValue);
-        } else {
-            debugger;
-            throw tr("missing default value");
-        }
-    }
-
-    setValue<T extends RegistryValueType>(key: RegistryKey<T>, value?: T) {
-        if(this._destroyed) {
-            throw "destroyed";
-        }
-
-        if(this.cacheServer[key.key] === value) {
+    private async doSave() {
+        if(this.saveState === "none") {
             return;
         }
 
-        this.serverSettingsUpdated = true;
-        if(value === undefined || value === null) {
-            delete this.cacheServer[key.key];
-        } else {
-            this.cacheServer[key.key] = encodeValueToString(value);
-        }
+        do {
+            this.saveState = "saving";
 
-        if(UPDATE_DIRECT) {
-            this.save();
-        }
-    }
-
-    setServer(server_unique_id: string) {
-        if(this._destroyed) throw "destroyed";
-        if(this.serverUniqueId) {
-            this.save();
-            this.cacheServer = {};
-            this.serverUniqueId = undefined;
-        }
-        this.serverUniqueId = server_unique_id;
-
-        if(this.serverUniqueId) {
-
-            const json = localStorage.getItem("settings.server_" + server_unique_id);
             try {
-                this.cacheServer = JSON.parse(json);
-            } catch(error) {
-                logError(LogCategory.GENERAL, tr("Failed to load server settings for server %s!\nJson: %s\nError: %o"), server_unique_id, json, error);
+                await getStorageAdapter().set("settings.global", JSON.stringify(this.settingsCache));
+            } catch (error) {
+                logError(LogCategory.GENERAL, tr("Failed to save global settings: %o"), error);
             }
-            if(!this.cacheServer)
-                this.cacheServer = {};
-        }
+        } while(this.saveState !== "saving");
+
+        this.saveState = "none";
     }
 
     save() {
-        if(this._destroyed) {
-            throw "destroyed";
-        }
-        this.serverSettingsUpdated = false;
+        switch (this.saveState) {
+            case "saving":
+            case "saving-changed":
+                this.saveState = "saving-changed";
+                return;
 
-        if(this.serverUniqueId) {
-            let server = JSON.stringify(this.cacheServer);
-            localStorage.setItem("settings.server_" + this.serverUniqueId, server);
-
-            if(localStorage.save) {
-                localStorage.save();
-            }
+            default:
+            case "none":
+                this.saveState = "saving";
+                break;
         }
+
+        ignorePromise(this.doSave());
     }
 }
 
-export let settings: Settings = null;
-
+export let settings: Settings;
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     priority: 1000,
     name: "Settings initialize",
-    function: async () => Settings.initialize()
+    function: async () => {
+        settings = new Settings();
+        await settings.initialize();
+        (window as any).settings = settings;
+        (window as any).Settings = Settings;
+    }
 })

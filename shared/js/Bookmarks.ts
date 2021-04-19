@@ -1,6 +1,6 @@
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
-import {WritableKeys} from "tc-shared/proto";
+import {ignorePromise, WritableKeys} from "tc-shared/proto";
 import {LogCategory, logDebug, logError, logInfo, logTrace, logWarn} from "tc-shared/log";
 import {guid} from "tc-shared/crypto/uid";
 import {Registry} from "tc-events";
@@ -8,6 +8,7 @@ import {server_connections} from "tc-shared/ConnectionManager";
 import {defaultConnectProfile, findConnectProfile} from "tc-shared/profiles/ConnectionProfile";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
 import * as _ from "lodash";
+import {getStorageAdapter} from "tc-shared/StorageAdapter";
 
 type BookmarkBase = {
     readonly uniqueId: string,
@@ -49,7 +50,7 @@ export type OrderedBookmarkEntry = {
     childCount: number,
 };
 
-const kLocalStorageKey = "bookmarks_v2";
+const kStorageKey = "bookmarks_v2";
 export class BookmarkManager {
     readonly events: Registry<BookmarkEvents>;
     private readonly registeredBookmarks: BookmarkEntry[];
@@ -59,25 +60,24 @@ export class BookmarkManager {
         this.events = new Registry<BookmarkEvents>();
         this.registeredBookmarks = [];
         this.defaultBookmarkCreated = false;
-        this.loadBookmarks();
     }
 
-    private loadBookmarks() {
-        const bookmarksJson = localStorage.getItem(kLocalStorageKey);
+    async loadBookmarks() {
+        const bookmarksJson = await getStorageAdapter().get(kStorageKey);
         if(typeof bookmarksJson !== "string") {
-            const oldBookmarksJson = localStorage.getItem("bookmarks");
+            const oldBookmarksJson = await getStorageAdapter().get("bookmarks");
             if(typeof oldBookmarksJson === "string") {
                 logDebug(LogCategory.BOOKMARKS, tr("Found no new bookmarks but found old bookmarks. Trying to import."));
                 try {
                     this.importOldBookmarks(oldBookmarksJson);
                     logInfo(LogCategory.BOOKMARKS, tr("Successfully imported %d old bookmarks."), this.registeredBookmarks.length);
-                    this.saveBookmarks();
+                    await this.saveBookmarks();
                 } catch (error) {
                     const saveKey = "bookmarks_v1_save_" + Date.now();
                     logError(LogCategory.BOOKMARKS, tr("Failed to import old bookmark data. Saving it as %s"), saveKey);
-                    localStorage.setItem(saveKey, oldBookmarksJson);
+                    await getStorageAdapter().set(saveKey, oldBookmarksJson);
                 } finally {
-                    localStorage.removeItem("bookmarks");
+                    await getStorageAdapter().delete("bookmarks");
                 }
             }
         } else {
@@ -93,9 +93,9 @@ export class BookmarkManager {
                 logTrace(LogCategory.BOOKMARKS, tr("Loaded %d bookmarks."), this.registeredBookmarks.length);
             } catch (error) {
                 const saveKey = "bookmarks_v2_save_" + Date.now();
-                logError(LogCategory.BOOKMARKS, tr("Failed to parse bookmarks. Saving them at %s and using a clean setup."), saveKey)
-                localStorage.setItem(saveKey, bookmarksJson);
-                localStorage.removeItem("bookmarks_v2");
+                logError(LogCategory.BOOKMARKS, tr("Failed to parse bookmarks. Saving them at %s and using a clean setup."), saveKey);
+                await getStorageAdapter().set(saveKey, bookmarksJson);
+                await getStorageAdapter().delete(kStorageKey);
             }
         }
 
@@ -118,8 +118,6 @@ export class BookmarkManager {
                 defaultChannel: undefined,
                 defaultChannelPasswordHash: undefined,
             });
-
-            this.saveBookmarks();
         }
     }
 
@@ -203,12 +201,12 @@ export class BookmarkManager {
         this.defaultBookmarkCreated = true;
     }
 
-    private saveBookmarks() {
-        localStorage.setItem(kLocalStorageKey, JSON.stringify({
+    async saveBookmarks() {
+        await getStorageAdapter().set(kStorageKey, JSON.stringify({
             version: 2,
             bookmarks: this.registeredBookmarks,
             defaultBookmarkCreated: this.defaultBookmarkCreated,
-        }))
+        }));
     }
 
     getRegisteredBookmarks() : BookmarkEntry[] {
@@ -278,7 +276,7 @@ export class BookmarkManager {
         } as BookmarkInfo);
         this.registeredBookmarks.push(bookmark);
         this.events.fire("notify_bookmark_created", { bookmark });
-        this.saveBookmarks();
+        ignorePromise(this.saveBookmarks());
         return bookmark;
     }
 
@@ -294,7 +292,7 @@ export class BookmarkManager {
         } as BookmarkDirectory);
         this.registeredBookmarks.push(bookmark);
         this.events.fire("notify_bookmark_created", { bookmark });
-        this.saveBookmarks();
+        ignorePromise(this.saveBookmarks());
         return bookmark;
     }
 
@@ -322,7 +320,7 @@ export class BookmarkManager {
 
         children.pop_front();
         this.events.fire("notify_bookmark_deleted", { bookmark: entry, children });
-        this.saveBookmarks();
+        ignorePromise(this.saveBookmarks());
     }
 
     executeConnect(uniqueId: string, newTab: boolean) {
@@ -441,7 +439,7 @@ export class BookmarkManager {
             return;
         }
 
-        this.saveBookmarks();
+        ignorePromise(this.saveBookmarks());
         this.events.fire("notify_bookmark_edited", { bookmark: bookmarkInfo, keys: editedKeys });
     }
 
@@ -518,6 +516,7 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     name: "initialize bookmarks",
     function: async () => {
         bookmarks = new BookmarkManager();
+        await bookmarks.loadBookmarks();
         (window as any).bookmarks = bookmarks;
     },
     priority: 20
