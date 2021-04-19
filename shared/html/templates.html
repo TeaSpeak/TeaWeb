@@ -784,6 +784,602 @@
             </div>
         </script>
 
+        <script class="jsrender-template" id="tmpl_server_edit" type="text/html">
+            <div> <!-- Only for rendering -->
+                <div class="container-general">
+                    <div class="container-name-icon">
+                        <input type="text" class="input-boxed virtualserver_name" placeholder="{{tr 'Virtual Server name' /}}" value="{{>virtualserver_name}}"/>
+                        <div class="container-icon-select">
+                            <div class="button-select-icon icon-preview">
+                                <node key="server_icon"/>
+                            </div>
+                            <div class="container-dropdown">
+                                <div class="button">
+                                    <div class="arrow down"></div>
+                                </div>
+                                <div class="dropdown">
+                                    <div class="entry button-select-icon">{{tr "Edit icon" /}}</div>
+                                    <div class="entry button-icon-remove">{{tr "Remove icon" /}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-password">
+                        <input class="input-boxed virtualserver_password" placeholder="{{tr 'Password' /}}" type="password"
+                               id="field_server_password_{{rnd '0~13377331'/}}" {{if virtualserver_flag_password}}
+                               value="WolverinDEV" {{/if}}/>
+                    </div>
+                    <div class="container-slots">
+                        <div class="input-boxed">
+                            <a class="prefix">{{tr "Slots:" /}}</a>
+                            <input type="number" class="virtualserver_maxclients" value="{{:virtualserver_maxclients}}">
+                            <div class="container-tooltip tooltip-slots-max">
+                                <img src="img/icon_tooltip.svg"/>
+                                <div class="tooltip">
+                                    <a>{{tr "Max amount of simultaneously connected clients." /}}</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-boxed">
+                            <a class="prefix">{{tr "Reserved slots:" /}}</a>
+                            <input type="number" class="virtualserver_reserved_slots" value="{{:virtualserver_reserved_slots}}">
+                            <div class="container-tooltip tooltip-slots-reserved">
+                                <img src="img/icon_tooltip.svg"/>
+                                <div class="tooltip">
+                                    <a>{{tr "Reserved server slots for admins." /}}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-welcome-message">
+                        <div class="toolbar">
+                            <div class="button button-bold">B</div>
+                            <div class="button button-italic">I</div>
+                            <div class="button button-underline">U</div>
+                            <label class="button button-color">
+                                <input type="color" value="#FF0000">
+                                <a class="rainbow-letter">C</a>
+                            </label>
+                        </div>
+                        <textarea class="input-boxed virtualserver_welcomemessage" placeholder="{{tr 'Welcome message' /}}">{{>virtualserver_welcomemessage}}</textarea>
+                    </div>
+                </div>
+
+                <div class="container-categories">
+                    <div class="categories">
+                        <div class="entry" container="container-host">{{tr "Host" /}}</div>
+                        <div class="entry" container="container-network">{{tr "Networking" /}}</div>
+                        <div class="entry" container="container-security">{{tr "Security" /}}</div>
+                        <div class="entry" container="container-messages">{{tr "Messages" /}}</div>
+                        <div class="entry" container="container-misc">{{tr "Misc" /}}</div>
+                    </div>
+                    <div class="bodies">
+                        <div class="body container-host">
+                            <div class="container-top container-host-message">
+                                <div class="header">{{tr "Host Message" /}}</div>
+                                <div class="content">
+                                    <div class="container-message">
+                                        <div class="container-title">
+                                            <a>{{tr "Message" /}}</a>
+                                        </div>
+                                        <textarea class="input-boxed virtualserver_hostmessage" placeholder="{{tr 'Enter a message...' /}}">{{>virtualserver_hostmessage}}</textarea>
+                                    </div>
+                                    <div class="container-mode">
+                                        <div class="container-title">
+                                            <a>{{tr "Message Mode" /}}</a>
+                                        </div>
+                                        <select class="input-boxed virtualserver_hostmessage_mode">
+                                            <option value="0" {{if virtualserver_hostmessage_mode == 0}}selected{{/if}}>{{tr "No message" /}}</option>
+                                            <option value="1" {{if virtualserver_hostmessage_mode == 1}}selected{{/if}}>{{tr "Show message in log" /}}</option>
+                                            <option value="2" {{if virtualserver_hostmessage_mode == 2}}selected{{/if}}>{{tr "Show message as modal" /}}</option>
+                                            <option value="3" {{if virtualserver_hostmessage_mode == 3}}selected{{/if}}>{{tr "Show message as modal and disconnect the client" /}}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="container-bottom">
+                                <div class="container-left container-host-banner">
+                                    <div class="header">{{tr "Host Banner" /}}</div>
+                                    <div class="content">
+                                        <div class="container-url">
+                                            <a>{{tr "URL" /}}</a>
+                                            <div class="input-boxed">
+                                                <input class="virtualserver_hostbanner_url" value="{{>virtualserver_hostbanner_url}}">
+                                                <div class="container-tooltip tooltip-host-banner-url">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>{{tr "URL which will be opened when the client clicks on the host banner" /}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="container-gfx-url">
+                                            <a>{{tr "Image URL" /}}</a>
+                                            <div class="input-boxed">
+                                                <input class="virtualserver_hostbanner_gfx_url" value="{{>virtualserver_hostbanner_gfx_url}}">
+                                                <div class="container-tooltip tooltip-host-banner-gfx-url">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>{{tr "URL of the image which will be displayed" /}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="container-refresh">
+                                            <a>{{tr "Refresh Interval" /}}</a>
+                                            <div class="input-boxed">
+                                                <input type="number" min="0" class="virtualserver_hostbanner_gfx_interval" value="{{>virtualserver_hostbanner_gfx_interval}}">
+                                                <div class="container-tooltip tooltip-host-banner-gfx-refresh">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>{{tr "Time in seconds which determine in which interval the client reloads the hostbanner. A value of 0 means no reload." /}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="container-resize">
+                                            <a>{{tr "Resize Mode" /}}</a>
+                                            <div class="input-boxed">
+                                                <select class="virtualserver_hostbanner_mode">
+                                                    <option value="0" {{if virtualserver_hostbanner_mode == 0}}selected{{/if}}>{{tr "Do not adjust" /}}</option>
+                                                    <option value="1" {{if virtualserver_hostbanner_mode == 1}}selected{{/if}}>{{tr "Adjust but ignore ratio aspect" /}}</option>
+                                                    <option value="2" {{if virtualserver_hostbanner_mode == 2}}selected{{/if}}>{{tr "Adjust and keep ratio aspect" /}}</option>
+                                                </select>
+                                                <div class="container-tooltip tooltip-host-banner-gfx-refresh">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>{{tr "Time in seconds which determine in which interval the client reloads the hostbanner.<br>A value of 0 means no reload." /}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="container-gfx-preview">
+                                            <div class="container-title">
+                                                <a>{{tr "Image Preview" /}}</a>
+                                            </div>
+                                            <a class="container-image">
+                                                <img src="{{:virtualserver_hostbanner_gfx_url}}"
+                                                     alt="&nbsp;{{tr 'Hostbanner Preview' /}}"
+                                                     title="{{tr 'Hostbanner Preview' /}}"
+                                                     {{if !virtualserver_hostbanner_gfx_url}}style="display: none;"{{/if}}
+                                                >
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="container-right container-host-button">
+                                    <div class="header">{{tr "Host Button" /}}</div>
+                                    <div class="content">
+                                        <div class="container-url">
+                                            <a>{{tr "URL" /}}</a>
+                                            <div class="input-boxed">
+                                                <input class="virtualserver_hostbutton_url" value="{{:virtualserver_hostbutton_url}}">
+                                                <div class="container-tooltip">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>{{tr "URL which will be opened when the client clicks on the host button" /}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="container-tooltip-button">
+                                            <a>{{tr "Tooltip" /}}</a>
+                                            <div class="input-boxed">
+                                                <input class="virtualserver_hostbutton_tooltip" value="{{:virtualserver_hostbutton_tooltip}}">
+                                                <div class="container-tooltip">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>{{tr "Text for the tooltip on button hover" /}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="container-gfx-url">
+                                            <a>{{tr "Icon URL" /}}</a>
+                                            <div class="input-boxed">
+                                                <input class="virtualserver_hostbutton_gfx_url" value="{{:virtualserver_hostbutton_gfx_url}}">
+                                                <div class="container-tooltip">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>{{tr "URL of the image which will be displayed" /}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="container-gfx-preview">
+                                            <div class="container-title">
+                                                <a>{{tr "Icon Preview" /}}</a>
+                                            </div>
+                                            <a class="container-image">
+                                                <img src="{{:virtualserver_hostbutton_gfx_url}}"
+                                                     alt="&nbsp;{{tr 'Hostbutton Preview' /}}"
+                                                     title="{{tr 'Hostbutton Preview' /}}"
+                                                     {{if !virtualserver_hostbutton_gfx_url}}style="display: none;"{{/if}}
+                                                >
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="body container-network">
+                            <div class="container-top container-binding">
+                                <div class="header">{{tr "Binding" /}}</div>
+                                <div class="content">
+                                    <div class="container-host">
+                                        <a>{{tr "Host" /}}</a>
+                                        <div class="input-boxed">
+                                            <input class="virtualserver_host" value="{{:virtualserver_host}}">
+                                            <div class="container-tooltip">
+                                                <img src="img/icon_tooltip.svg"/>
+                                                <div class="tooltip">
+                                                    <a>
+                                                        {{tr "A comma separated set of IP's where the server is listening on." /}}<br>
+                                                        {{tr "IPv4 and IPv6 is supported!" /}}<br>
+                                                        {{tr "Note: If you change this you need to restart the virtual server!" /}}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="container-port">
+                                        <a>{{tr "Port" /}}</a>
+                                        <div class="input-boxed">
+                                            <input type="number" min="1" max="65535" class="virtualserver_port" value="{{:virtualserver_port}}">
+                                            <div class="container-tooltip">
+                                                <img src="img/icon_tooltip.svg"/>
+                                                <div class="tooltip">
+                                                    <a>
+                                                        {{tr "The port where the server should be listening to." /}}<br>
+                                                        {{tr "Note: If you change this you need to restart the virtual server!" /}}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <label class="container-weblist">
+                                        <div class="checkbox">
+                                            <input type="checkbox" class="virtualserver_weblist_enabled" {{if virtualserver_weblist_enabled}}checked{{/if}}>
+                                            <div class="mark"></div>
+                                        </div>
+                                        <a>{{tr "Enable reporting to the TeamSpeak server list" /}}</a>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="container-bottom">
+                                <div class="container-left container-download">
+                                    <div class="header">{{tr "File Download" /}}</div>
+                                    <div class="content">
+                                        <div class="container-bandwidth">
+                                            <a>{{tr "Bandwidth limit" /}}</a>
+                                            <div class="input-boxed">
+                                                <input type="number" min="-1" class="virtualserver_max_download_total_bandwidth" value="{{:virtualserver_max_download_total_bandwidth}}">
+                                                <div class="container-tooltip">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>{{tr "Max bandwidth used by all file transfer clients." /}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <a class="unit">{{tr "Bytes/s" /}}</a>
+                                        </div>
+                                        <div class="container-quota">
+                                            <a>{{tr "Quota" /}}</a>
+                                            <div class="input-boxed">
+                                                <input type="number" min="0" class="virtualserver_download_quota" value="{{:virtualserver_download_quota}}">
+                                                <div class="container-tooltip">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>
+                                                            {{tr "Max amount of data in megabytes which could be downloaded." /}}<br>
+                                                            {{tr "The quota will be reset on every new month" /}}
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <a class="unit">{{tr "MiB/mo" /}}</a>
+                                        </div>
+                                        <div class="container-used-quota">
+                                            <a>{{tr "Quota this month" /}}</a>
+                                            <div class="value virtualserver_month_bytes_downloaded">{{>virtualserver_month_bytes_downloaded}}</div>
+                                        </div>
+                                        <div class="container-used-quota">
+                                            <a>{{tr "Quota total" /}}</a>
+                                            <div class="value virtualserver_total_bytes_downloaded">{{>virtualserver_total_bytes_downloaded}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="container-right container-upload">
+                                    <div class="header">{{tr "File Upload" /}}</div>
+                                    <div class="content">
+                                        <div class="container-bandwidth">
+                                            <a>{{tr "Bandwidth limit" /}}</a>
+                                            <div class="input-boxed">
+                                                <input type="number" min="-1" class="virtualserver_max_upload_total_bandwidth" value="{{:virtualserver_max_upload_total_bandwidth}}">
+                                                <div class="container-tooltip">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>{{tr "Max bandwidth used by all file transfer clients." /}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <a class="unit">{{tr "Bytes/s" /}}</a>
+                                        </div>
+                                        <div class="container-quota">
+                                            <a>{{tr "Quota" /}}</a>
+                                            <div class="input-boxed">
+                                                <input type="number" min="0" class="virtualserver_upload_quota" value="{{:virtualserver_upload_quota}}">
+                                                <div class="container-tooltip">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>
+                                                            {{tr "Max amount of data in megabytes which could be downloaded." /}}<br>
+                                                            {{tr "The quota will be reset on every new month" /}}
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <a class="unit">{{tr "MiB/mo" /}}</a>
+                                        </div>
+                                        <div class="container-used-quota">
+                                            <a>{{tr "Quota this month" /}}</a>
+                                            <div class="value virtualserver_month_bytes_uploaded">{{>virtualserver_month_bytes_uploaded}}</div>
+                                        </div>
+                                        <div class="container-used-quota">
+                                            <a>{{tr "Quota total" /}}</a>
+                                            <div class="value virtualserver_total_bytes_uploaded">{{>virtualserver_total_bytes_uploaded}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="body container-security">
+                            <div class="container-top container-antiflood">
+                                <div class="header">{{tr "Anti Flood" /}}</div>
+                                <div class="content">
+                                    <div class="container-reduce">
+                                        <a>{{tr "Reduced points every ½ seconds." /}}</a>
+                                        <div class="input-boxed">
+                                            <input type="number" min="0" class="virtualserver_antiflood_points_tick_reduce" value="{{:virtualserver_antiflood_points_tick_reduce}}">
+                                            <div class="container-tooltip">
+                                                <img src="img/icon_tooltip.svg"/>
+                                                <div class="tooltip">
+                                                    <a>{{tr "Flood point count which will be reduced each server tick." /}}</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="container-block-commands">
+                                        <a>{{tr "Points needed to block commands" /}}</a>
+                                        <div class="input-boxed">
+                                            <input type="number" min="0" class="virtualserver_antiflood_points_needed_command_block" value="{{:virtualserver_antiflood_points_needed_command_block}}">
+                                            <div class="container-tooltip">
+                                                <img src="img/icon_tooltip.svg"/>
+                                                <div class="tooltip">
+                                                    <a>{{tr "If the value has been reached, the users command will be rejected." /}}</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="container-block-ip">
+                                        <a>{{tr "Points needed to ban IP" /}}</a>
+                                        <div class="input-boxed">
+                                            <input type="number" min="0" class="virtualserver_antiflood_points_needed_ip_block" value="{{:virtualserver_antiflood_points_needed_ip_block}}">
+                                            <div class="container-tooltip">
+                                                <img src="img/icon_tooltip.svg"/>
+                                                <div class="tooltip">
+                                                    <a>{{tr "If the value has been reached, the user will be temporally banned from the server." /}}</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="container-bottom container-security">
+                                <div class="header">{{tr "Misc" /}}</div>
+                                <div class="content">
+                                    <div class="container-encryption">
+                                        <a>{{tr "Channel voice data encryption" /}}</a>
+                                        <div class="input-boxed">
+                                            <select class="virtualserver_codec_encryption_mode">
+                                                <option value="0" {{if virtualserver_codec_encryption_mode == 0}}selected{{/if}}>{{tr "Edit per channel individually" /}}</option>
+                                                <option value="1" {{if virtualserver_codec_encryption_mode == 1}}selected{{/if}}>{{tr "Globally disabled" /}}</option>
+                                                <option value="2" {{if virtualserver_codec_encryption_mode == 2}}selected{{/if}}>{{tr "Globally enabled (recommended)" /}}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="container-security-level">
+                                        <a>{{tr "Needed Security Level" /}}</a>
+                                        <div class="input-boxed">
+                                            <input type="number" min="8" class="virtualserver_needed_identity_security_level" value="{{:virtualserver_needed_identity_security_level}}">
+                                            <div class="container-tooltip">
+                                                <img src="img/icon_tooltip.svg"/>
+                                                <div class="tooltip">
+                                                    <a>{{tr "Required security level to join the server. (Only applies to TeamSpeak identities)" /}}</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="container-security-level-description">
+                                        <a></a>
+                                        <div class="container-description">
+                                            <a>{{tr "Level &nbsp;<b>0 - 23</b> generated in seconds" /}}</a>
+                                            <a>{{tr "Level <b>24 - 29</b> generated in minutes" /}}</a>
+                                            <a>{{tr "Level <b>29 - 34</b> generated in hours" /}}</a>
+                                            <a>{{tr "Level <b>35 - 39</b> generated in days" /}}</a>
+                                            <a>{{tr "Level <b>40 - 43</b> generated in months" /}}</a>
+                                            <a>{{tr "Level <b>44 - 23</b> generated in years" /}}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="body container-messages">
+                            <div class="container-top container-channel">
+                                <div class="header">{{tr "Channel" /}}</div>
+                                <div class="content">
+                                    <div class="container-topic">
+                                        <div class="container-title">
+                                            <a>{{tr "Topic" /}}</a>
+                                        </div>
+                                        <div class="input-boxed">
+                                            <input class="virtualserver_default_channel_topic" value="{{:virtualserver_default_channel_topic}}">
+                                            <div class="container-tooltip">
+                                                <img src="img/icon_tooltip.svg"/>
+                                                <div class="tooltip">
+                                                    <a>{{tr "The default server channel topic" /}}</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="container-description">
+                                        <div class="container-title">
+                                            <a>{{tr "Description" /}}</a>
+                                        </div>
+                                        <textarea class="input-boxed virtualserver_default_channel_description" placeholder="{{tr 'Enter a message...' /}}">{{>virtualserver_default_channel_description}}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="container-bottom container-client">
+                                <div class="header">{{tr "Client" /}}</div>
+                                <div class="content">
+                                    <div class="container-description">
+                                        <a>{{tr "Description" /}}</a>
+                                        <div class="input-boxed">
+                                            <input class="virtualserver_default_client_description" value="{{:virtualserver_default_client_description}}">
+                                            <div class="container-tooltip">
+                                                <img src="img/icon_tooltip.svg"/>
+                                                <div class="tooltip">
+                                                    <a>{{tr "The default client description" /}}</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="body container-misc">
+                            <div class="container-top container-default-groups">
+                                <div class="header">{{tr "Default groups" /}}</div>
+                                <div class="content">
+                                    <div class="container-default-group">
+                                        <a>{{tr "Server Group" /}}</a>
+                                        <select class="input-boxed virtualserver_default_server_group">
+                                        </select>
+                                    </div>
+                                    <div class="container-default-group">
+                                        <a>{{tr "Music Bot Group" /}}</a>
+                                        <select class="input-boxed virtualserver_default_music_group">
+                                        </select>
+                                    </div>
+                                    <div class="container-default-group">
+                                        <a>{{tr "Channel Admin Group" /}}</a>
+                                        <select class="input-boxed virtualserver_default_channel_admin_group">
+                                        </select>
+                                    </div>
+                                    <div class="container-default-group">
+                                        <a>{{tr "Channel Group" /}}</a>
+                                        <select class="input-boxed virtualserver_default_channel_group">
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="container-bottom">
+                                <div class="container-left container-complains">
+                                    <div class="header">{{tr "Complains" /}}</div>
+                                    <div class="content">
+                                        <div class="container-ban-threshold">
+                                            <a>{{tr "Complains until ban" /}}</a>
+                                            <div class="input-boxed">
+                                                <input type="number" min="0" class="virtualserver_complain_autoban_count" value="{{:virtualserver_complain_autoban_count}}">
+                                                <div class="container-tooltip">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>{{tr "Amount of complains against one user until he receives an automated ban." /}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="container-ban-time">
+                                            <a>{{tr "Autoban time" /}}</a>
+                                            <div class="input-boxed">
+                                                <input type="number" min="0" class="virtualserver_complain_autoban_time" value="{{:virtualserver_complain_autoban_time}}">
+                                                <div class="container-tooltip">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>{{tr "Amount of complains against one user until he receives an automated ban." /}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="container-cooldown">
+                                            <a>{{tr "Complain auto remove" /}}</a>
+                                            <div class="input-boxed">
+                                                <input type="number" min="0" class="virtualserver_complain_remove_time" value="{{:virtualserver_complain_remove_time}}">
+                                                <div class="container-tooltip">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>{{tr "Time in seconds after a complain expires." /}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="container-right container-others">
+                                    <div class="header">{{tr "Others" /}}</div>
+                                    <div class="content">
+                                        <div class="container-silence">
+                                            <a>{{tr "Clients before silence" /}}</a>
+                                            <div class="input-boxed">
+                                                <input type="number" min="0" class="virtualserver_min_clients_in_channel_before_forced_silence" value="{{:virtualserver_min_clients_in_channel_before_forced_silence}}">
+                                                <div class="container-tooltip">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>{{tr "Minimum clients within a channel to enforce silence." /}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="container-dim">
+                                            <a>{{tr "Priority speaker dim factor" /}}</a>
+                                            <div class="input-boxed">
+                                                <input min="-100" max="100" class="virtualserver_priority_speaker_dimm_modificator" value="{{:virtualserver_priority_speaker_dimm_modificator}}">
+                                                <div class="container-tooltip">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>{{tr "Dim factor in '%' for priority speakers." /}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="container-gfx-url">
+                                            <a>{{tr "Default delete delay" /}}</a>
+                                            <div class="input-boxed">
+                                                <input class="virtualserver_channel_temp_delete_delay_default" value="{{:virtualserver_channel_temp_delete_delay_default}}">
+                                                <div class="container-tooltip">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>{{tr "The default temporary channel delete delay." /}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="container-buttons">
+                    <button class="btn btn-danger button-cancel">{{tr "Cancel" /}}</button>
+                    <button class="btn btn-success button-save">{{tr "Save Changes" /}}</button>
+                </div>
+            </div>
+        </script>
+
         <!-- Permission overview -->
         <script class="jsrender-template" id="tmpl_server_group_assignment" type="text/html">
             <div class="group-assignment-list">
