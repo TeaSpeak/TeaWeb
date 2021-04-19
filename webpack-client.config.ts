@@ -23,8 +23,5 @@ export = env => config_base.config(env, "client").then(config => {
         callback(undefined, undefined);
     });
 
-    config.externals.push({ "jquery": "window.$" });
-    config.externals.push({ "jsrender": "window.$" });
-
     return Promise.resolve(config);
 });
