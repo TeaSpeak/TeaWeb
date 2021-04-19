@@ -1,4 +1,8 @@
 # Changelog:
+* **19.04.21**
+    - Fixed a bug that the client video box is shown as active even though the client does not stream any video
+    - Fixed a bug that the video fullscreen windows pops open when a client leaves/joins the channel
+  
 * **05.04.21**
     - Fixed the mute but for the webclient
     - Fixed that "always active" microphone filter now works reliably  

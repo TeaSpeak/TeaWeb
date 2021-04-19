@@ -19,7 +19,7 @@ import {RtpVideoClient} from "./VideoClient";
 import {tr} from "tc-shared/i18n/localize";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
 import {ConnectionStatistics} from "tc-shared/connection/ConnectionBase";
-import * as _ from "lodash";
+import _ from "lodash";
 
 class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
     private readonly handle: RtpVideoConnection;
@@ -543,6 +543,7 @@ export class RtpVideoConnection implements VideoConnection {
     private handleVideoAssignmentChanged(type: VideoBroadcastType, event: RTCConnectionEvents["notify_video_assignment_changed"]) {
         const oldClient = Object.values(this.registeredClients).find(client => client.getRtpTrack(type) === event.track);
         if(oldClient) {
+            oldClient.setBroadcastId(type, undefined);
             oldClient.setRtpTrack(type, undefined);
         }
 

@@ -134,6 +134,11 @@ class RemoteClientVideoController implements ClientVideoController {
             return;
         }
 
+        if(videoClient.getVideoState(type) === VideoBroadcastState.Stopped) {
+            /* There is no video we could join */
+            return;
+        }
+
         videoClient.joinBroadcast(type).catch(error => {
             logError(LogCategory.VIDEO, tr("Failed to join video broadcast: %o"), error);
             /* TODO: Propagate error? */
@@ -399,7 +404,7 @@ class ChannelVideoController {
 
         this.events.on("action_toggle_spotlight", event => {
             this.toggleSpotlight(event.videoIds, event.enabled);
-            if(!this.isExpended()) {
+            if(event.expend && !this.isExpended()) {
                 this.events.fire("action_toggle_expended", { expended: true });
             }
         });
@@ -742,7 +747,9 @@ export class ChannelVideoFrame {
 
         ReactDOM.render(React.createElement(ChannelVideoRenderer, { handlerId: handle.handlerId, events: this.events }), this.container);
 
-        this.events.on("notify_expended", event => this.container.classList.toggle(cssStyle.expended, event.expended));
+        this.events.on("notify_expended", event => {
+            this.container.classList.toggle(cssStyle.expended, event.expended);
+        });
         this.controller.callbackVisibilityChanged = flag => {
             this.container.classList.toggle(cssStyle.hidden, !flag);
             if(!flag) {
