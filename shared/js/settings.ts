@@ -1052,7 +1052,7 @@ export class Settings {
 
 export let settings: Settings;
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
-    priority: 1000,
+    priority: 1100,
     name: "Settings initialize",
     function: async () => {
         settings = new Settings();
