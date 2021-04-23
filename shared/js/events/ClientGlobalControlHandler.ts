@@ -13,13 +13,13 @@ import {tr, tra} from "../i18n/localize";
 import {spawnGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-editor/Controller";
 import {spawnModalCssVariableEditor} from "tc-shared/ui/modal/css-editor/Controller";
 import {server_connections} from "tc-shared/ConnectionManager";
-import {spawnAbout} from "tc-shared/ui/modal/ModalAbout";
 import {spawnVideoSourceSelectModal} from "tc-shared/ui/modal/video-source/Controller";
 import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {spawnEchoTestModal} from "tc-shared/ui/modal/echo-test/Controller";
 import {spawnConnectModalNew} from "tc-shared/ui/modal/connect/Controller";
 import {spawnBookmarkModal} from "tc-shared/ui/modal/bookmarks/Controller";
 import {Sound} from "tc-shared/audio/Sounds";
+import {spawnAboutModal} from "tc-shared/ui/modal/about/Controller";
 
 /*
 function initialize_sounds(event_registry: Registry<ClientGlobalControlEvents>) {
@@ -150,7 +150,7 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                 break;
 
             case "about":
-                spawnAbout();
+                spawnAboutModal();
                 break;
 
             case "server-echo-test":
