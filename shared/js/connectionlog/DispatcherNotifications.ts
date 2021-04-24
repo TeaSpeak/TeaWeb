@@ -359,11 +359,11 @@ registerDispatcher(EventType.CLIENT_VIEW_LEAVE, (data, handlerId) => {
             break;
 
         case ViewReasonId.VREASON_SERVER_KICK:
-            message = tra("{0} was kicked from the server by {1}.{2}", data.client, data.invoker.client_name, data.message ? " (" + data.message + ")" : "");
+            message = tra("{0} was kicked from the server by {1}.{2}", data.client.client_name, data.invoker.client_name, data.message ? " (" + data.message + ")" : "");
             break;
 
         case ViewReasonId.VREASON_CHANNEL_KICK:
-            message = tra("{0} was kicked from channel {1} by {2}.{3}", data.client, data.channel_from.channel_name, data.invoker.client_name, data.message ? " (" + data.message + ")" : "");
+            message = tra("{0} was kicked from channel {1} by {2}.{3}", data.client.client_name, data.channel_from.channel_name, data.invoker.client_name, data.message ? " (" + data.message + ")" : "");
             break;
 
         case ViewReasonId.VREASON_BAN:

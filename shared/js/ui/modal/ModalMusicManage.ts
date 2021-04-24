@@ -1619,7 +1619,7 @@ function build_permission_container(event_registry: Registry<music_manage>, tag:
                         last_sync_value = event.value;
                     } else if (event.status === "error") {
                         if (typeof last_sync_value === "number") input.val(last_sync_value);
-                        createErrorModal(tr("Failed to change permission"), tra("Failed to change permission:{:br:}{}", event.error_msg)).open();
+                        createErrorModal(tr("Failed to change permission"), tra("Failed to change permission:\n{}", event.error_msg)).open();
                     }
                 });
 
@@ -1977,7 +1977,7 @@ function build_permission_container(event_registry: Registry<music_manage>, tag:
                     last_sync_value = event.value;
                 } else if (event.status === "error") {
                     if (typeof last_sync_value === "number") input.val(last_sync_value);
-                    createErrorModal(tr("Failed to change permission"), tra("Failed to change permission:{:br:}{}", event.error_msg)).open();
+                    createErrorModal(tr("Failed to change permission"), tra("Failed to change permission:\n{}", event.error_msg)).open();
                 }
                 hide_indicator = false;
                 update_indicator();

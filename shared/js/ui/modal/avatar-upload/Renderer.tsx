@@ -19,6 +19,7 @@ import {joinClassList, useDependentState} from "tc-shared/ui/react-elements/Help
 
 import kDefaultAvatarUrl from "../../../../img/style/avatar.png";
 import byteSizeToString = network.binarySizeToString;
+import {tra} from "tc-shared/i18n/localize";
 
 const ServerUniqueIdContext = React.createContext<string>(undefined);
 const EventContext = React.createContext<Registry<ModalAvatarUploadEvents>>(undefined);
@@ -294,7 +295,7 @@ class ModalAvatarUpload extends AbstractModal {
                 createErrorModal(tr("Failed to load avatar"), tra("Failed to load avatar: {}", result.reason)).open();
                 succeeded = false;
             } else if(result.status === "cache-unavailable") {
-                createErrorModal(tr("Failed to load avatar"), tra("Failed to load avatar:{:br:}Own avatar cach unavailable.")).open();
+                createErrorModal(tr("Failed to load avatar"), tra("Failed to load avatar:{:br:}Own avatar cache unavailable.")).open();
                 succeeded = false;
             } else {
                 succeeded = false;

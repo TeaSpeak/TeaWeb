@@ -16,7 +16,7 @@ import {ClientAvatar, getGlobalAvatarManagerFactory} from "tc-shared/file/Avatar
 import {AvatarRenderer} from "tc-shared/ui/react-elements/Avatar";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
-import {ChannelTag, ClientTag} from "tc-shared/ui/tree/EntryTags";
+import {ClientTag} from "tc-shared/ui/tree/EntryTags";
 import {guid} from "tc-shared/crypto/uid";
 import {useDependentState} from "tc-shared/ui/react-elements/Helper";
 import {format_online_time} from "tc-shared/utils/TimeUtils";
@@ -25,7 +25,8 @@ import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {getIconManager} from "tc-shared/file/Icons";
 import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {CountryCode} from "tc-shared/ui/react-elements/CountryCode";
-import {getKeyBoard, SpecialKey} from "tc-shared/PPTListener";
+import {getKeyBoard} from "tc-shared/PPTListener";
+import {tra} from "tc-shared/i18n/localize";
 
 const cssStyle = require("./ClientInfoRenderer.scss");
 

@@ -321,9 +321,9 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
 
         if (event.status !== "success") {
             if (event.status === "timeout") {
-                createErrorModal(tr("Failed to enter path"), tra("Failed to enter given path.{:br:}Action resulted in a timeout.")).open();
+                createErrorModal(tr("Failed to enter path"), tra("Failed to enter given path.\nAction resulted in a timeout.")).open();
             } else {
-                createErrorModal(tr("Failed to enter path"), tra("Failed to enter given path:{:br:}{0}", event.error)).open();
+                createErrorModal(tr("Failed to enter path"), tra("Failed to enter given path:\n{0}", event.error)).open();
             }
         }
     }
@@ -457,9 +457,9 @@ const FileName = (props: { path: string, file: ListedFileInfo }) => {
         } else {
             setFileName(props.file.name);
             if (event.status === "timeout") {
-                createErrorModal(tr("Failed to rename file"), tra("Failed to rename file.{:br:}Action resulted in a timeout.")).open();
+                createErrorModal(tr("Failed to rename file"), tra("Failed to rename file.\nAction resulted in a timeout.")).open();
             } else {
-                createErrorModal(tr("Failed to rename file"), tra("Failed to rename file:{:br:}{0}", event.error)).open();
+                createErrorModal(tr("Failed to rename file"), tra("Failed to rename file:\n{0}", event.error)).open();
             }
         }
     });
@@ -1306,7 +1306,7 @@ export class FileBrowserRenderer extends ReactComponentBase<FileListTablePropert
             if (e.status === "success")
                 return;
 
-            createErrorModal(tr("Failed to delete entry"), tra("Failed to delete \"{0}\":{:br:}{1}", e.name, e.error || tr("Unknown error"))).open();
+            createErrorModal(tr("Failed to delete entry"), tra("Failed to delete \"{0}\":\n{1}", e.name, e.error || tr("Unknown error"))).open();
         });
     }
 
@@ -1358,9 +1358,9 @@ export class FileBrowserRenderer extends ReactComponentBase<FileListTablePropert
         this.forceUpdate();
 
         if (event.status === "timeout") {
-            createErrorModal(tr("Failed to create directory"), tra("Failed to create directory.{:br:}Action resulted in a timeout.")).open();
+            createErrorModal(tr("Failed to create directory"), tra("Failed to create directory.\nAction resulted in a timeout.")).open();
         } else {
-            createErrorModal(tr("Failed to create directory"), tra("Failed to create directory:{:br:}{0}", event.error)).open();
+            createErrorModal(tr("Failed to create directory"), tra("Failed to create directory:\n{0}", event.error)).open();
         }
     }
 

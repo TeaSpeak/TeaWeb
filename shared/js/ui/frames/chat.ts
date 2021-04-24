@@ -94,7 +94,7 @@ export function formatMessage(pattern: string, ...objects: any[]) : JQuery[] {
     return result;
 }
 
-export function formatMessageString(pattern: string, ...args: string[]) : string {
+export function formatMessageString(pattern: string, ...args: (string | number | boolean)[]) : string {
     return parseMessageWithArguments(pattern, args.length).map(e => typeof e === "string" ? e : args[e]).join("");
 }
 

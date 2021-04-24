@@ -345,7 +345,7 @@ function initializeGroupCreateController(connection: ConnectionHandler, events: 
         }).catch(error => {
             if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                 createErrorModal(tr("Failed to create group"),
-                    tra("Failed to create group.\nMissing permission {}", connection.permissions.resolveInfo(parseInt(error.json["failed_permid"]))?.name || tr("unknwon"))).open();
+                    tra("Failed to create group.\nMissing permission {}", connection.permissions.getFailedPermission(error))).open();
                 return;
             }
 

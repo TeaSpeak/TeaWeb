@@ -11,7 +11,7 @@ import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
-import {traj} from "tc-shared/i18n/localize";
+import {trJQuery} from "tc-shared/i18n/localize";
 import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {LocalClientEntry} from "tc-shared/tree/Client";
 import {ServerCommand} from "tc-shared/connection/ConnectionBase";
@@ -281,7 +281,7 @@ export class ChannelConversation extends AbstractChat<ChannelConversationEvents>
                 error = error.extra_message || error.message;
             }
 
-            createErrorModal(tr("Failed to delete message"), traj("Failed to delete conversation message{:br:}Error: {}", error)).open();
+            createErrorModal(tr("Failed to delete message"), trJQuery("Failed to delete conversation message{:br:}Error: {}", error)).open();
         });
     }
 

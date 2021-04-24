@@ -1,5 +1,5 @@
 import * as sdpTransform from "sdp-transform";
-import { tr } from "tc-shared/i18n/localize";
+import {tr, tra} from "tc-shared/i18n/localize";
 
 interface SdpCodec {
     payload: number;

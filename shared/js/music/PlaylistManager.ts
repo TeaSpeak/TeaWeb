@@ -4,6 +4,7 @@ import {Registry} from "tc-shared/events";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import _ = require("lodash");
+import {tra} from "tc-shared/i18n/localize";
 
 export type PlaylistEntry = {
     type: "song",

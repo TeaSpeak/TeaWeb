@@ -1,5 +1,5 @@
 import {LogCategory, logError, logWarn} from "tc-shared/log";
-import {tr} from "tc-shared/i18n/localize";
+import {tr, tra} from "tc-shared/i18n/localize";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";

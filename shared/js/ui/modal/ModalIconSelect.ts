@@ -3,7 +3,7 @@ import PermissionType from "../../permission/PermissionType";
 import {createErrorModal, createModal} from "../../ui/elements/Modal";
 import {LogCategory, logError, logInfo, logWarn} from "../../log";
 import {CommandResult} from "../../connection/ServerConnectionDeclaration";
-import {tra, traj} from "../../i18n/localize";
+import {tra, trJQuery} from "../../i18n/localize";
 import {arrayBufferBase64} from "../../utils/buffers";
 import * as crc32 from "../../crypto/crc32";
 import {FileInfo} from "../../file/FileManager";
@@ -285,13 +285,13 @@ function handle_icon_upload(file: File, client: ConnectionHandler): UploadingIco
             } catch (error) {
                 logInfo(LogCategory.GENERAL, "Image failed to load (%o)", error);
                 logError(LogCategory.GENERAL, tr("Failed to load file %s: Image failed to load"), file.name);
-                createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.{:br:}Failed to load image", file.name)).open();
+                createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.\nFailed to load image", file.name)).open();
                 icon.state = "error";
             }
 
             const width_error = message => {
                 logError(LogCategory.GENERAL, tr("Failed to load file %s: Invalid bounds: %s"), file.name, message);
-                createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.{:br:}Image is too large ({})", file.name, message)).open();
+                createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.\nImage is too large ({})", file.name, message)).open();
                 icon.state = "error";
             };
 
@@ -469,7 +469,7 @@ export function spawnIconUpload(client: ConnectionHandler) {
     const update_upload_button = () => {
         const icon_count = icons.filter(e => e.state === "valid").length;
         button_upload.empty();
-        traj("Upload icons ({})", icon_count).forEach(e => e.appendTo(button_upload));
+        trJQuery("Upload icons ({})", icon_count).forEach(e => e.appendTo(button_upload));
         button_upload.prop("disabled", icon_count == 0);
     };
     update_upload_button();

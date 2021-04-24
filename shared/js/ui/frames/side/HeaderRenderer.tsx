@@ -12,6 +12,7 @@ import {
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {getIconManager} from "tc-shared/file/Icons";
+import {tra} from "tc-shared/i18n/localize";
 
 const StateContext = React.createContext<SideHeaderState>(undefined);
 const EventsContext = React.createContext<Registry<SideHeaderEvents>>(undefined);

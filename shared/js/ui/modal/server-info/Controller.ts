@@ -6,7 +6,6 @@ import {CallOnce, ignorePromise} from "tc-shared/proto";
 import {spawnModal} from "tc-shared/ui/react-elements/modal";
 import {ServerConnectionInfoResult, ServerProperties} from "tc-shared/tree/Server";
 import {LogCategory, logWarn} from "tc-shared/log";
-import {openServerInfoBandwidth} from "tc-shared/ui/modal/ModalServerInfoBandwidth";
 import {spawnServerBandwidth} from "tc-shared/ui/modal/server-bandwidth/Controller";
 
 const kPropertyUpdateMatrix: {[T in keyof ServerProperties]?: [keyof ModalServerInfoVariables]} = {

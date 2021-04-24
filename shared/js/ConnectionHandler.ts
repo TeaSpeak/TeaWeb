@@ -3,7 +3,6 @@ import {PermissionManager} from "./permission/PermissionManager";
 import {GroupManager} from "./permission/GroupManager";
 import {Settings, settings} from "./settings";
 import {Sound, SoundManager} from "./audio/Sounds";
-import {ConnectionProfile} from "./profiles/ConnectionProfile";
 import {LogCategory, logError, logInfo, logTrace, logWarn} from "./log";
 import {createErrorModal, createInputModal, Modal} from "./ui/elements/Modal";
 import {hashPassword} from "./utils/helpers";
@@ -13,7 +12,7 @@ import {defaultRecorder, RecorderProfile} from "./voice/RecorderProfile";
 import {formatMessage} from "./ui/frames/chat";
 import {EventHandler, Registry} from "./events";
 import {FileManager} from "./file/FileManager";
-import {tr} from "./i18n/localize";
+import {tr, tra} from "./i18n/localize";
 import {guid} from "./crypto/uid";
 import {PluginCmdRegistry} from "./connection/PluginCmdHandler";
 import {VoiceConnectionStatus, WhisperSessionInitializeData} from "./connection/VoiceConnection";
@@ -632,7 +631,7 @@ export class ConnectionHandler {
             case DisconnectReason.IDENTITY_TOO_LOW:
                 createErrorModal(
                     tr("Identity level is too low"),
-                    formatMessage(tr("You've been disconnected, because your Identity level is too low.{:br:}You need at least a level of {0}"), data["extra_message"])
+                    formatMessage(tr("You've been disconnected, because your Identity level is too low.\nYou need at least a level of {0}"), data["extra_message"])
                 ).open();
                 this.sound.play(Sound.CONNECTION_DISCONNECTED);
 
@@ -691,7 +690,7 @@ export class ConnectionHandler {
                 const modal = createErrorModal(
                     tr("You've been kicked"),
                     formatMessage(
-                        have_invoker ? tr("You've been kicked from the server by {0}:{:br:}{1}") : tr("You've been kicked from the server:{:br:}{1}"),
+                        have_invoker ? tr("You've been kicked from the server by {0}:\n{1}") : tr("You've been kicked from the server:\n{1}"),
                         have_invoker ?
                             htmltags.generate_client_object({ client_id: parseInt(data["invokerid"]), client_unique_id: data["invokeruid"], client_name: data["invokername"]}) :
                             "",

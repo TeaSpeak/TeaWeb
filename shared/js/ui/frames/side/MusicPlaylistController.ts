@@ -4,6 +4,7 @@ import {MusicPlaylistStatus, MusicPlaylistUiEvents} from "tc-shared/ui/frames/si
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {LogCategory, logError} from "tc-shared/log";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
+import {tra} from "tc-shared/i18n/localize";
 
 export class MusicPlaylistController {
     readonly uiEvents: Registry<MusicPlaylistUiEvents>;

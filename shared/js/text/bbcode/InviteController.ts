@@ -6,6 +6,7 @@ import {LogCategory, logError} from "tc-shared/log";
 import {clientServiceInvite, clientServices} from "tc-shared/clientservice";
 import {handleConnectRequest} from "tc-shared/main";
 import {assertMainApplication} from "tc-shared/ui/utils";
+import {tra} from "tc-shared/i18n/localize";
 
 assertMainApplication();
 

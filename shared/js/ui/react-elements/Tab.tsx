@@ -1,4 +1,5 @@
 import * as React from "react";
+import {tra} from "tc-shared/i18n/localize";
 
 const cssStyle = require("./Tab.scss");
 

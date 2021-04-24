@@ -10,7 +10,7 @@ import {Registry} from "tc-shared/events";
 import {InputStartError} from "tc-shared/voice/RecorderBase";
 import {LogCategory, logDebug, logError, logWarn} from "tc-shared/log";
 import {queryMediaPermissions, requestMediaStream, stopMediaStream} from "tc-shared/media/Stream";
-import {tr} from "tc-shared/i18n/localize";
+import {tr, tra} from "tc-shared/i18n/localize";
 
 declare global {
     interface MediaDevices {

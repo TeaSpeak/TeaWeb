@@ -7,7 +7,7 @@ import {LogCategory, logError, logTrace} from "../../../log";
 import {Entry, MenuEntry, MenuEntryType, spawn_context_menu} from "../../../ui/elements/ContextMenu";
 import {getKeyBoard, SpecialKey} from "../../../PPTListener";
 import {spawnYesNo} from "../../../ui/modal/ModalYesNo";
-import {tr, tra, traj} from "../../../i18n/localize";
+import {tr, tra} from "../../../i18n/localize";
 import {
     FileTransfer,
     FileTransferState,
@@ -708,7 +708,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 });
                 transfer.awaitFinished().then(() => {
                     if (transfer.transferState() === FileTransferState.ERRORED) {
-                        createErrorModal(tr("Failed to download file"), traj("Failed to download {0}:{:br:}{1}", fileName, transfer.currentErrorMessage())).open();
+                        createErrorModal(tr("Failed to download file"), tra("Failed to download {0}:\n{1}", fileName, transfer.currentErrorMessage())).open();
                     }
                 });
             } catch (error) {
@@ -739,7 +739,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         } else if (event.mode === "files") {
             const pathInfo = parsePath(event.path, connection);
             if (pathInfo.type !== "channel") {
-                createErrorModal(tr("Failed to upload file(s)"), tra("Failed to upload files:{:br:}File uplaod is only supported in channel directories")).open();
+                createErrorModal(tr("Failed to upload file(s)"), tra("Failed to upload files:\nFile uplaod is only supported in channel directories")).open();
                 return;
             }
             for (const file of event.files) {
@@ -753,7 +753,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 });
                 transfer.awaitFinished().then(() => {
                     if (transfer.transferState() === FileTransferState.ERRORED) {
-                        createErrorModal(tr("Failed to upload file"), tra("Failed to upload {0}:{:br:}{1}", fileName, transfer.currentErrorMessage())).open();
+                        createErrorModal(tr("Failed to upload file"), tra("Failed to upload {0}:\n{1}", fileName, transfer.currentErrorMessage())).open();
                     }
                 });
             }

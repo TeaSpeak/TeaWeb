@@ -4,6 +4,7 @@ import {ClientGroupInfo, ClientInfoEvents, InheritedChannelInfo,} from "tc-share
 import {Registry} from "tc-shared/events";
 import {openClientInfo} from "tc-shared/ui/modal/ModalClientInfo";
 import {spawnAvatarUpload} from "tc-shared/ui/modal/avatar-upload/Controller";
+import {tra} from "tc-shared/i18n/localize";
 
 export class ClientInfoController {
     private readonly uiEvents: Registry<ClientInfoEvents>;

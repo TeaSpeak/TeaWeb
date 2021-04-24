@@ -2,6 +2,7 @@ import {useEffect, useState} from "react";
 import * as _ from "lodash";
 import {ReadonlyKeys, WritableKeys} from "tc-shared/proto";
 import {useDependentState} from "tc-shared/ui/react-elements/Helper";
+import {tra} from "tc-shared/i18n/localize";
 
 /*
  * To deliver optimized performance, we only promisify the values we need.
@@ -71,7 +72,7 @@ export abstract class UiVariableProvider<Variables extends UiVariableMap> {
     sendVariable<T extends keyof Variables>(variable: T, customData?: any, forceSend?: boolean) : void | Promise<void> {
         const providers = this.variableProvider[variable as any];
         if(!providers) {
-            throw tra("missing provider for {}", variable);
+            throw tra("missing provider for {}", variable as string);
         }
 
         const result = providers(customData);
@@ -98,7 +99,7 @@ export abstract class UiVariableProvider<Variables extends UiVariableMap> {
     async getVariable<T extends keyof Variables>(variable: T, customData?: any, ignoreCache?: boolean) : Promise<Variables[T]> {
         const providers = this.variableProvider[variable as any];
         if(!providers) {
-            throw tra("missing provider for {}", variable);
+            throw tra("missing provider for {}", variable as string);
         }
 
         const result = providers(customData);

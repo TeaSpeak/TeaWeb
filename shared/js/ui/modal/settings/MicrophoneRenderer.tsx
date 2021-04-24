@@ -20,6 +20,7 @@ import {InputDevice} from "tc-shared/audio/Recorder";
 import {joinClassList} from "tc-shared/ui/react-elements/Helper";
 import {IconTooltip} from "tc-shared/ui/react-elements/Tooltip";
 import _ from "lodash";
+import {tra} from "tc-shared/i18n/localize";
 
 const cssStyle = require("./Microphone.scss");
 const EventContext = React.createContext<Registry<MicrophoneSettingsEvents>>(undefined);

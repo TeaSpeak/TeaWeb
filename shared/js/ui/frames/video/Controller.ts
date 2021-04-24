@@ -18,7 +18,7 @@ import {
 } from "tc-shared/connection/VideoConnection";
 import {ClientEntry, ClientType, LocalClientEntry, MusicClientEntry} from "tc-shared/tree/Client";
 import {LogCategory, logError, logWarn} from "tc-shared/log";
-import {tr} from "tc-shared/i18n/localize";
+import {tr, tra} from "tc-shared/i18n/localize";
 import {Settings, settings} from "tc-shared/settings";
 import * as _ from "lodash";
 import PermissionType from "tc-shared/permission/PermissionType";

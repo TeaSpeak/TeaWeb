@@ -10,7 +10,7 @@ import {joinClassList, useTr} from "tc-shared/ui/react-elements/Helper";
 import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
 import {ControlledBoxedInputField, ControlledSelect} from "tc-shared/ui/react-elements/InputField";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
-import {traj} from "tc-shared/i18n/localize";
+import {tr, tra} from "tc-shared/i18n/localize";
 
 const cssStyle = require("./Renderer.scss");
 const EventContext = React.createContext<Registry<ModalInputProcessorEvents>>(undefined);
@@ -382,7 +382,7 @@ class Modal extends AbstractModal {
         this.variables = createIpcUiVariableConsumer(variables);
 
         this.events.on("notify_apply_error", event => {
-            createErrorModal(tr("Failed to apply changes"), traj("Failed to apply changes:{:br:}{}", event.message)).open();
+            createErrorModal(tr("Failed to apply changes"), tra("Failed to apply changes:\n{}", event.message)).open();
         })
     }
 

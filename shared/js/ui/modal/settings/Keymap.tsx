@@ -189,7 +189,7 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
             });
         } else {
             this.setState({state: "loaded"});
-            createErrorModal(tr("Failed to change key"), tra("Failed to change key for action \"{}\":{:br:}{}", this.props.action, event.status === "timeout" ? tr("timeout") : event.error));
+            createErrorModal(tr("Failed to change key"), tra("Failed to change key for action \"{}\":\n{}", this.props.action, event.status === "timeout" ? tr("timeout") : event.error));
         }
     }
 }

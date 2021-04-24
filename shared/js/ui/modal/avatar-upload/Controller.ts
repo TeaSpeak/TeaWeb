@@ -8,7 +8,7 @@ import PermissionType from "tc-shared/permission/PermissionType";
 import {getOwnAvatarStorage, LocalAvatarInfo} from "tc-shared/file/OwnAvatarStorage";
 import {LogCategory, logError, logInfo, logWarn} from "tc-shared/log";
 import {Mutex} from "tc-shared/Mutex";
-import {tr, traj} from "tc-shared/i18n/localize";
+import {tr, trJQuery} from "tc-shared/i18n/localize";
 import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {formatMessage} from "tc-shared/ui/frames/chat";
@@ -211,11 +211,11 @@ class Controller {
 
                 let message;
                 if(error instanceof CommandResult) {
-                    message = formatMessage(tr("Failed to delete avatar.{:br:}Error: {0}"), error.formattedMessage());
+                    message = formatMessage(tr("Failed to delete avatar.\nError: {0}"), error.formattedMessage());
                 }
 
                 if(!message) {
-                    message = formatMessage(tr("Failed to delete avatar.{:br:}Lookup the console for more details"));
+                    message = formatMessage(tr("Failed to delete avatar.\nLookup the console for more details"));
                 }
 
                 createErrorModal(tr("Failed to delete avatar"), message).open();
@@ -262,7 +262,7 @@ class Controller {
                 if (transfer.transferState() !== FileTransferState.FINISHED) {
                     if (transfer.transferState() === FileTransferState.ERRORED) {
                         logWarn(LogCategory.FILE_TRANSFER, tr("Failed to upload clients avatar: %o"), transfer.currentError());
-                        createErrorModal(tr("Failed to upload avatar"), traj("Failed to upload avatar:{:br:}{0}", transfer.currentErrorMessage())).open();
+                        createErrorModal(tr("Failed to upload avatar"), tr("Failed to upload avatar:\n{0}", transfer.currentErrorMessage())).open();
                         return;
                     } else if (transfer.transferState() === FileTransferState.CANCELED) {
                         createErrorModal(tr("Failed to upload avatar"), tr("Your avatar upload has been canceled.")).open();
@@ -287,11 +287,11 @@ class Controller {
 
                 let message;
                 if(error instanceof CommandResult) {
-                    message = formatMessage(tr("Failed to update avatar flag.{:br:}Error: {0}"), error.formattedMessage());
+                    message = formatMessage(tr("Failed to update avatar flag.\nError: {0}"), error.formattedMessage());
                 }
 
                 if(!message) {
-                    message = formatMessage(tr("Failed to update avatar flag.{:br:}Lookup the console for more details"));
+                    message = formatMessage(tr("Failed to update avatar flag.\nLookup the console for more details"));
                 }
 
                 createErrorModal(tr("Failed to set avatar"), message).open();

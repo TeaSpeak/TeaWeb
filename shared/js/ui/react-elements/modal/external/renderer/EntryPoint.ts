@@ -1,6 +1,6 @@
 import * as loader from "tc-loader";
 import {setupIpcHandler} from "tc-shared/ipc/BrowserIPC";
-import {initializeI18N} from "tc-shared/i18n/localize";
+import {initializeI18N, tra} from "tc-shared/i18n/localize";
 import {Stage} from "tc-loader";
 import {AbstractModal, constructAbstractModalClass} from "tc-shared/ui/react-elements/modal/Definitions";
 import {AppParameters, Settings, settings} from "tc-shared/settings";

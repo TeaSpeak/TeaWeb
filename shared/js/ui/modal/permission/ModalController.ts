@@ -86,7 +86,7 @@ export function spawnPermissionEditorModal(connection: ConnectionHandler, defaul
 function initializePermissionModalResultHandlers(events: Registry<PermissionModalEvents>) {
     events.on("action_rename_group_result", event => {
         if (event.status === "error") {
-            createErrorModal(tr("Failed to rename group"), formatMessage(tr("Failed to rename group:{:br:}"), event.error)).open();
+            createErrorModal(tr("Failed to rename group"), formatMessage(tra("Failed to rename group:\n{}", event.error))).open();
         } else {
             createInfoModal(tr("Group renamed"), tr("The group has been renamed.")).open();
         }

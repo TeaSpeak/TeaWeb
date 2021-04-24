@@ -7,6 +7,7 @@ import {openMusicManage} from "tc-shared/ui/modal/ModalMusicManage";
 import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {LogCategory, logError} from "tc-shared/log";
+import {tra} from "tc-shared/i18n/localize";
 
 const ChannelInfoUpdateProperties: (keyof ChannelProperties)[] = [
     "channel_name",

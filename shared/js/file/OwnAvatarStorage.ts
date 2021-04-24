@@ -3,6 +3,7 @@ import {LogCategory, logError, logWarn} from "tc-shared/log";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import * as crypto from "crypto-js";
+import {tra} from "tc-shared/i18n/localize";
 
 export type LocalAvatarInfo = {
     fileName: string,

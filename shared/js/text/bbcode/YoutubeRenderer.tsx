@@ -11,6 +11,7 @@ import {useContext} from "react";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 
 import IconPlay from "./YoutubePlayButton.svg";
+import {tra} from "tc-shared/i18n/localize";
 const cssStyle = require("./YoutubeRenderer.scss");
 
 const patternYtVideoId = /^(?:http(?:s)?:\/\/)?(?:www\.)?(?:m\.)?(?:youtu\.be\/|youtube\.com\/(?:(?:watch)?\?(?:.*&)?v(?:i)?=|(?:embed|v|vi|user)\/))([^?&"'>]{10,11})$/;
