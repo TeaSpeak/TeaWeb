@@ -1617,9 +1617,9 @@
     },
     {
       "key": {
-        "message": "The profile data is invalid.{:br:}This might cause data loss."
+        "message": "The profile data is invalid.\nThis might cause data loss."
       },
-      "translated": "Os dados do perfil são inválidos.{:Br:} Isso pode causar perda de dados.",
+      "translated": "Os dados do perfil são inválidos.\n Isso pode causar perda de dados.",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -4765,9 +4765,9 @@
     },
     {
       "key": {
-        "message": "The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br:}Please select another profile or change the identify type."
+        "message": "The target server is a TeamSpeak 3 server!\nOnly TeamSpeak 3 based identities are able to connect.\nPlease select another profile or change the identify type."
       },
-      "translated": "O servidor de destino é um servidor TeamSpeak 3!{:br:}Somente identidades baseadas no TeamSpeak 3 se podem conectar.{:br:}Selecione outro perfil ou altere o tipo de identificação.",
+      "translated": "O servidor de destino é um servidor TeamSpeak 3!\nSomente identidades baseadas no TeamSpeak 3 se podem conectar.\nSelecione outro perfil ou altere o tipo de identificação.",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -4785,9 +4785,9 @@
     },
     {
       "key": {
-        "message": "You've been disconnected, because your Identity level is too low.{:br:}You need at least a level of {0}"
+        "message": "You've been disconnected, because your Identity level is too low.\nYou need at least a level of {0}"
       },
-      "translated": "Você foi desconectado porque seu nível de identidade é muito baixo.{:br:}você precisa de pelo menos um nível de {0}",
+      "translated": "Você foi desconectado porque seu nível de identidade é muito baixo.\nvocê precisa de pelo menos um nível de {0}",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -4896,9 +4896,9 @@
     },
     {
       "key": {
-        "message": "You've been kicked from the server by {0}:{:br:}{1}"
+        "message": "You've been kicked from the server by {0}:\n{1}"
       },
-      "translated": "Você foi expulso do servidor por {0}:{:br:}{1}",
+      "translated": "Você foi expulso do servidor por {0}:\n{1}",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -4906,9 +4906,9 @@
     },
     {
       "key": {
-        "message": "You've been kicked from the server:{:br:}{1}"
+        "message": "You've been kicked from the server:\n{1}"
       },
-      "translated": "Você foi expulso do servidor:{:br:}{1}",
+      "translated": "Você foi expulso do servidor:\n{1}",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -5046,9 +5046,9 @@
     },
     {
       "key": {
-        "message": "Microphone start failed.{:br:}Error: {}"
+        "message": "Microphone start failed.\nError: {}"
       },
-      "translated": "Falha no início do microfone.{:br:}Erro: {}",
+      "translated": "Falha no início do microfone.\nErro: {}",
       "flags": [
         "google-translated"
       ]
@@ -5144,9 +5144,9 @@
     },
     {
       "key": {
-        "message": "Failed to delete avatar.{:br:}Error: {0}"
+        "message": "Failed to delete avatar.\nError: {0}"
       },
-      "translated": "Falha ao excluir o avatar.{:br:}Erro: {0}",
+      "translated": "Falha ao excluir o avatar.\nErro: {0}",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -5154,9 +5154,9 @@
     },
     {
       "key": {
-        "message": "Failed to delete avatar.{:br:}Lookup the console for more details"
+        "message": "Failed to delete avatar.\nLookup the console for more details"
       },
-      "translated": "Falha ao excluir o avatar.{:br:}Consulte a consola para obter mais detalhes",
+      "translated": "Falha ao excluir o avatar.\nConsulte a consola para obter mais detalhes",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -5193,27 +5193,27 @@
     },
     {
       "key": {
-        "message": "Failed to initialize avatar upload.{:br:}Missing permission {0}"
+        "message": "Failed to initialize avatar upload.\nMissing permission {0}"
       },
-      "translated": "Falha ao inicializar o upload do avatar.{:br:}falta de permissão {0}",
+      "translated": "Falha ao inicializar o upload do avatar.\nfalta de permissão {0}",
       "flags": [
         "google-translated"
       ]
     },
     {
       "key": {
-        "message": "Failed to initialize avatar upload.{:br:}Error: {0}"
+        "message": "Failed to initialize avatar upload.\nError: {0}"
       },
-      "translated": "Falha ao inicializar o upload do avatar.{:br:}Erro: {0}",
+      "translated": "Falha ao inicializar o upload do avatar.\nErro: {0}",
       "flags": [
         "google-translated"
       ]
     },
     {
       "key": {
-        "message": "Failed to initialize avatar upload.{:br:}Lookup the console for more details"
+        "message": "Failed to initialize avatar upload.\nLookup the console for more details"
       },
-      "translated": "Falha ao inicializar o upload do avatar.{:br:}Consulte a consola para obter mais detalhes",
+      "translated": "Falha ao inicializar o upload do avatar.\nConsulte a consola para obter mais detalhes",
       "flags": [
         "google-translated"
       ]
@@ -5239,18 +5239,18 @@
     },
     {
       "key": {
-        "message": "Failed to upload avatar.{:br:}Error: {0}"
+        "message": "Failed to upload avatar.\nError: {0}"
       },
-      "translated": "Falha ao fazer upload do avatar.{:br:}Erro: {0}",
+      "translated": "Falha ao fazer upload do avatar.\nErro: {0}",
       "flags": [
         "google-translated"
       ]
     },
     {
       "key": {
-        "message": "Failed to initialize avatar upload.{:br:}Lookup the console for more details"
+        "message": "Failed to initialize avatar upload.\nLookup the console for more details"
       },
-      "translated": "Falha ao inicializar o upload do avatar.{:br:}Consulte o console para obter mais detalhes",
+      "translated": "Falha ao inicializar o upload do avatar.\nConsulte o console para obter mais detalhes",
       "flags": [
         "google-translated"
       ]
@@ -5277,9 +5277,9 @@
     },
     {
       "key": {
-        "message": "Failed to update avatar flag.{:br:}Error: {0}"
+        "message": "Failed to update avatar flag.\nError: {0}"
       },
-      "translated": "Falha ao atualizar o sinalizador de avatar.{:br:}Erro: {0}",
+      "translated": "Falha ao atualizar o sinalizador de avatar.\nErro: {0}",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -5287,9 +5287,9 @@
     },
     {
       "key": {
-        "message": "Failed to update avatar flag.{:br:}Lookup the console for more details"
+        "message": "Failed to update avatar flag.\nLookup the console for more details"
       },
-      "translated": "Falha ao atualizar o sinalizador de avatar.{:br:} Consulte o console para obter mais detalhes",
+      "translated": "Falha ao atualizar o sinalizador de avatar.\n Consulte o console para obter mais detalhes",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -6198,9 +6198,9 @@
     },
     {
       "key": {
-        "message": "Failed to delete ban. {:br:}Error: {}"
+        "message": "Failed to delete ban. \nError: {}"
       },
-      "translated": "Falha ao excluir ban. {:br:}Erro: {}",
+      "translated": "Falha ao excluir ban. \nErro: {}",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -6463,9 +6463,9 @@
     },
     {
       "key": {
-        "message": "Failed to edited ban. {:br:}Error: {}"
+        "message": "Failed to edited ban. \nError: {}"
       },
-      "translated": "Falha ao editar o banimento. {:br:}Erro: {}",
+      "translated": "Falha ao editar o banimento. \nErro: {}",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -6513,9 +6513,9 @@
     },
     {
       "key": {
-        "message": "Failed to add ban. {:br:}Error: {}"
+        "message": "Failed to add ban. \nError: {}"
       },
-      "translated": "Falha ao adicionar ban. {:br:}Erro: {}",
+      "translated": "Falha ao adicionar ban. \nErro: {}",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -6724,9 +6724,9 @@
     },
     {
       "key": {
-        "message": "Failed to delete account{:br:}Message: {}"
+        "message": "Failed to delete account\nMessage: {}"
       },
-      "translated": "Falha ao excluir a conta{:br:}Mensagem: {}",
+      "translated": "Falha ao excluir a conta\nMensagem: {}",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -6784,9 +6784,9 @@
     },
     {
       "key": {
-        "message": "Failed to rename account{:br:}Message: {}"
+        "message": "Failed to rename account\nMessage: {}"
       },
-      "translated": "Falha ao renomear a conta{:br:}Mensagem: {}",
+      "translated": "Falha ao renomear a conta\nMensagem: {}",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -6824,9 +6824,9 @@
     },
     {
       "key": {
-        "message": "Failed to change password{:br:}Message: {}"
+        "message": "Failed to change password\nMessage: {}"
       },
-      "translated": "Falha ao alterar a senha{:br:}Mensagem: {}",
+      "translated": "Falha ao alterar a senha\nMensagem: {}",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -7086,9 +7086,9 @@
     },
     {
       "key": {
-        "message": "Failed to change the speaker device to the target speaker{:br:}{}"
+        "message": "Failed to change the speaker device to the target speaker\n{}"
       },
-      "translated": "Falha ao alterar o dispositivo do altifalante para o altifalante de destino{:br:}{}",
+      "translated": "Falha ao alterar o dispositivo do altifalante para o altifalante de destino\n{}",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -8122,9 +8122,9 @@
     },
     {
       "key": {
-        "message": "Failed to change the microphone to the target microphone{:br:}{}"
+        "message": "Failed to change the microphone to the target microphone\n{}"
       },
-      "translated": "Falha ao alterar o microfone para o microfone de destino{:br:}{}",
+      "translated": "Falha ao alterar o microfone para o microfone de destino\n{}",
       "flags": [
         "google-translated"
       ]
@@ -8179,9 +8179,9 @@
     },
     {
       "key": {
-        "message": "Failed to change vad type{:br:}{}"
+        "message": "Failed to change vad type\n{}"
       },
-      "translated": "Falha ao alterar o tipo de vad{:br:}{}",
+      "translated": "Falha ao alterar o tipo de vad\n{}",
       "flags": [
         "google-translated"
       ]
@@ -8236,9 +8236,9 @@
     },
     {
       "key": {
-        "message": "Failed to change PPT key:{:br:}{}"
+        "message": "Failed to change PPT key:\n{}"
       },
-      "translated": "Falha ao alterar a chave PPT:{:br:}{}",
+      "translated": "Falha ao alterar a chave PPT:\n{}",
       "flags": [
         "google-translated"
       ]
@@ -8273,9 +8273,9 @@
     },
     {
       "key": {
-        "message": "Failed to change PPT delay state:{:br:}{}"
+        "message": "Failed to change PPT delay state:\n{}"
       },
-      "translated": "Falha ao alterar o estado de atraso do PPT:{:br:}{}",
+      "translated": "Falha ao alterar o estado de atraso do PPT:\n{}",
       "flags": [
         "google-translated"
       ]
@@ -8310,9 +8310,9 @@
     },
     {
       "key": {
-        "message": "Failed to change PPT delay:{:br:}{}"
+        "message": "Failed to change PPT delay:\n{}"
       },
-      "translated": "Falha ao alterar o atraso do PPT:{:br:}{}",
+      "translated": "Falha ao alterar o atraso do PPT:\n{}",
       "flags": [
         "google-translated"
       ]
@@ -8468,9 +8468,9 @@
     },
     {
       "key": {
-        "message": "Failed to logout from forum account.{:br:}Error: {}"
+        "message": "Failed to logout from forum account.\nError: {}"
       },
-      "translated": "Falha ao sair da conta do fórum.{:br:}Erro: {}",
+      "translated": "Falha ao sair da conta do fórum.\nErro: {}",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -9231,9 +9231,9 @@
     },
     {
       "key": {
-        "message": "Failed to create group:{:br:}"
+        "message": "Failed to create group:\n"
       },
-      "translated": "Falha ao criar o grupo:{:br:}",
+      "translated": "Falha ao criar o grupo:\n",
       "flags": [
         "google-translated"
       ]
@@ -9298,9 +9298,9 @@
     },
     {
       "key": {
-        "message": "Failed to rename group:{:br:}"
+        "message": "Failed to rename group:\n"
       },
-      "translated": "Falha ao renomear o grupo:{:br:}",
+      "translated": "Falha ao renomear o grupo:\n",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -9384,9 +9384,9 @@
     },
     {
       "key": {
-        "message": "Failed to delete group:{:br:}"
+        "message": "Failed to delete group:\n"
       },
-      "translated": "Falha ao excluir o grupo:{:br:}",
+      "translated": "Falha ao excluir o grupo:\n",
       "flags": [
         "google-translated"
       ]
@@ -9477,9 +9477,9 @@
     },
     {
       "key": {
-        "message": "Failed to create group:{:br:}"
+        "message": "Failed to create group:\n"
       },
-      "translated": "Falha ao criar o grupo:{:br:}",
+      "translated": "Falha ao criar o grupo:\n",
       "flags": [
         "google-translated"
       ]
@@ -9544,9 +9544,9 @@
     },
     {
       "key": {
-        "message": "Failed to rename group:{:br:}"
+        "message": "Failed to rename group:\n"
       },
-      "translated": "Falha ao renomear o grupo:{:br:}",
+      "translated": "Falha ao renomear o grupo:\n",
       "flags": [
         "google-translated",
         "in-use-system"
@@ -9629,9 +9629,9 @@
     },
     {
       "key": {
-        "message": "Failed to delete group:{:br:}"
+        "message": "Failed to delete group:\n"
       },
-      "translated": "Falha ao excluir o grupo:{:br:}",
+      "translated": "Falha ao excluir o grupo:\n",
       "flags": [
         "google-translated"
       ]
@@ -13937,9 +13937,9 @@
     },
     {
       "key": {
-        "message": "Failed to delete conversation message{:br:}Error: {}"
+        "message": "Failed to delete conversation message\nError: {}"
       },
-      "translated": "Falha ao excluir a mensagem de conversa{:br:}Erro: {}",
+      "translated": "Falha ao excluir a mensagem de conversa\nErro: {}",
       "flags": [
         "google-translated"
       ]
@@ -15349,9 +15349,9 @@
     },
     {
       "key": {
-        "message": "Failed to refresh server properties.{:br:}Error: {}"
+        "message": "Failed to refresh server properties.\nError: {}"
       },
-      "translated": "Falha ao atualizar as propriedades do servidor.{:br:}Erro: {}",
+      "translated": "Falha ao atualizar as propriedades do servidor.\nErro: {}",
       "flags": [
         "google-translated",
         "in-use-system"
