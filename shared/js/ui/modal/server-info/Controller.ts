@@ -7,6 +7,7 @@ import {spawnModal} from "tc-shared/ui/react-elements/modal";
 import {ServerConnectionInfoResult, ServerProperties} from "tc-shared/tree/Server";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {openServerInfoBandwidth} from "tc-shared/ui/modal/ModalServerInfoBandwidth";
+import {spawnServerBandwidth} from "tc-shared/ui/modal/server-bandwidth/Controller";
 
 const kPropertyUpdateMatrix: {[T in keyof ServerProperties]?: [keyof ModalServerInfoVariables]} = {
     "virtualserver_name": [ "name" ],
@@ -176,9 +177,7 @@ export function spawnServerInfoNew(handler: ConnectionHandler) {
     });
 
     controller.events.on("action_close", () => modal.destroy());
-    controller.events.on("action_show_bandwidth", () => {
-        openServerInfoBandwidth(handler.channelTree.server);
-    });
+    controller.events.on("action_show_bandwidth", () => spawnServerBandwidth(handler));
 
     modal.getEvents().on("destroy", () => controller.destroy());
     modal.getEvents().on("destroy", handler.events().on("notify_connection_state_changed", event => {

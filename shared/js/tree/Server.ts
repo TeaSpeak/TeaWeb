@@ -295,7 +295,7 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
     }
 
     requestConnectionInfo() : Promise<ServerConnectionInfoResult> {
-        if(this.requestInfoPromise && Date.now() - 1000 < this.requestInfoPromiseTimestamp) {
+        if(this.requestInfoPromise && Date.now() - 900 < this.requestInfoPromiseTimestamp) {
             return this.requestInfoPromise;
         }
 

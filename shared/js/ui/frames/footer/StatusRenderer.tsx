@@ -140,11 +140,11 @@ const ComponentStatusRenderer = React.memo((props: { component: ConnectionCompon
                 <React.Fragment key={"healthy"}>
                     <div className={cssStyle.row}>
                         <div className={cssStyle.key}><Translatable>Incoming:</Translatable></div>
-                        <div className={cssStyle.value}>{network.byteSizeToString(status.bytesReceived)}</div>
+                        <div className={cssStyle.value}>{network.binarySizeToString(status.bytesReceived)}</div>
                     </div>
                     <div className={cssStyle.row}>
                         <div className={cssStyle.key}><Translatable>Outgoing:</Translatable></div>
-                        <div className={cssStyle.value}>{network.byteSizeToString(status.bytesSend)}</div>
+                        <div className={cssStyle.value}>{network.binarySizeToString(status.bytesSend)}</div>
                     </div>
                 </React.Fragment>
             );

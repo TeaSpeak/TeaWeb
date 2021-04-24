@@ -120,3 +120,9 @@ registerModal({
     classLoader: async () => await import("tc-shared/ui/modal/server-info/Renderer"),
     popoutSupported: true
 });
+
+registerModal({
+    modalId: "modal-server-bandwidth",
+    classLoader: async () => await import("tc-shared/ui/modal/server-bandwidth/Renderer"),
+    popoutSupported: true
+});

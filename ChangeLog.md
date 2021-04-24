@@ -1,4 +1,9 @@
 # Changelog:
+* **24.04.21**
+    - Removed the old server info modal and using the new React based and popoutable modal
+    - Using the new React modal for the server info dialog. The modal now also has improved permission and error visualisation
+    - Improved tooltip handling
+  
 * **19.04.21**
     - Fixed a bug that the client video box is shown as active even though the client does not stream any video
     - Fixed a bug that the video fullscreen windows pops open when a client leaves/joins the channel

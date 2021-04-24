@@ -83,24 +83,25 @@ function initialize_graph(modal: Modal, tag: JQuery, callbacks: ServerBandwidthI
     };
     show_info(undefined, undefined);
 
-    const graph = new Graph(canvas);
-    graph.insert_entry({ timestamp: Date.now(), upload: undefined, download: undefined});
+    const graph = new Graph();
+    graph.initializeCanvas(canvas);
+    graph.pushEntry({ timestamp: Date.now(), upload: undefined, download: undefined});
     callbacks.push((status, values) => {
         last_info = {status: status, info: values};
 
         if(!values) {
-            graph.insert_entry({ timestamp: Date.now(), upload: undefined, download: undefined});
+            graph.pushEntry({ timestamp: Date.now(), upload: undefined, download: undefined});
         } else {
-            graph.insert_entry({
+            graph.pushEntry({
                 timestamp: Date.now(),
                 download: values[fields.download], //values.connection_bandwidth_received_last_second_total,
                 upload: values[fields.uplaod], //values.connection_bandwidth_sent_last_second_total
             });
         }
 
-        /* set set that we want to show the entry within one second */
-        graph._time_span.origin = Object.assign(graph.calculate_time_span(), { time: Date.now() });
-        graph._time_span.target = {
+        /* set that we want to show the entry within one second */
+        graph.timeSpan.origin = Object.assign(graph.calculateTimespan(), { time: Date.now() });
+        graph.timeSpan.target = {
             begin: Date.now() - 120 * 1000,
             end: Date.now(),
             time: Date.now() + 200
@@ -113,20 +114,20 @@ function initialize_graph(modal: Modal, tag: JQuery, callbacks: ServerBandwidthI
         }
     });
 
-    graph.max_gap_size(0);
+    graph.maxGapSize(0);
     graph.initialize();
 
-    graph.callback_detailed_hide = () => {
+    graph.callbackDetailedHide = () => {
         custom_info = false;
         show_info(undefined, undefined);
     };
 
-    graph.callback_detailed_info = (upload, download, timestamp, event) => {
+    graph.callbackDetailedInfo = (upload, download, timestamp, event) => {
         custom_info = true;
         show_info(upload, download);
     };
 
-    modal.close_listener.push(() => graph.terminate());
+    modal.close_listener.push(() => graph.finalize());
     modal.open_listener.push(() => graph.resize());
 
     tag.addClass("window-resize-listener").on('resize', event => graph.resize());

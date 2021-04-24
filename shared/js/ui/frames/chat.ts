@@ -155,27 +155,54 @@ export function parseMessageWithArguments(pattern: string, argumentCount: number
 }
 
 export namespace network {
-    export const KB = 1024;
-    export const MB = 1024 * KB;
-    export const GB = 1024 * MB;
-    export const TB = 1024 * GB;
+    /* https://en.wikipedia.org/wiki/Kilobyte */
+    export const KiB = 1024;
+    export const MiB = 1024 * KiB;
+    export const GiB = 1024 * MiB;
+    export const TiB = 1024 * GiB;
 
-    export function byteSizeToString(value: number) {
+    export const kB = 1000;
+    export const MB = 1000 * kB;
+    export const GB = 1000 * MB;
+    export const TB = 1000 * GB;
+
+    export function binarySizeToString(value: number) {
+        let v: number, unit;
+        if(value > 5 * TiB) {
+            unit = " TiB";
+            v = value / TiB;
+        } else if(value > 5 * GiB) {
+            unit = " GiB";
+            v = value / GiB;
+        } else if(value > 5 * MiB) {
+            unit = " MiB";
+            v = value / MiB;
+        } else if(value > 5 * KiB) {
+            unit = " KiB";
+            v = value / KiB;
+        } else {
+            return value + " B";
+        }
+
+        return v.toFixed(2) + unit;
+    }
+
+    export function decimalSizeToString(value: number) {
         let v: number, unit;
         if(value > 5 * TB) {
-            unit = "tb";
+            unit = " TB";
             v = value / TB;
         } else if(value > 5 * GB) {
-            unit = "gb";
+            unit = " GB";
             v = value / GB;
         } else if(value > 5 * MB) {
-            unit = "mb";
+            unit = " MB";
             v = value / MB;
-        } else if(value > 5 * KB) {
-            unit = "kb";
-            v = value / KB;
+        } else if(value > 5 * kB) {
+            unit = " kB";
+            v = value / kB;
         } else {
-            return value + "b";
+            return value + " B";
         }
 
         return v.toFixed(2) + unit;
@@ -195,18 +222,18 @@ export namespace network {
         let points = value.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
 
         let v, unit;
-        if(value > 2 * TB) {
+        if(value > 2 * TiB) {
             unit = "TB";
-            v = value / TB;
-        } else if(value > GB) {
+            v = value / TiB;
+        } else if(value > GiB) {
             unit = "GB";
-            v = value / GB;
-        } else if(value > MB) {
+            v = value / GiB;
+        } else if(value > MiB) {
             unit = "MB";
-            v = value / MB;
-        } else if(value > KB) {
+            v = value / MiB;
+        } else if(value > KiB) {
             unit = "KB";
-            v = value / KB;
+            v = value / KiB;
         } else {
             unit = "";
             v = value;

@@ -75,9 +75,14 @@ export interface TooltipState {
 export interface TooltipProperties {
     tooltip: () => ReactNode | ReactNode[] | string;
     className?: string;
+
+    /**
+     * Enable the tooltip already when the span is hovered
+     */
+    spawnHover?: boolean,
 }
 
-export class Tooltip extends React.Component<TooltipProperties, TooltipState> {
+export class Tooltip extends React.PureComponent<TooltipProperties, TooltipState> {
     readonly tooltipId = guid();
     private refContainer = React.createRef<HTMLSpanElement>();
     private currentContainer: HTMLElement;
@@ -114,36 +119,42 @@ export class Tooltip extends React.Component<TooltipProperties, TooltipState> {
 
     componentDidUpdate(prevProps: Readonly<TooltipProperties>, prevState: Readonly<TooltipState>, snapshot?: any): void {
         if(this.state.forceShow || this.state.hovered) {
-            globalTooltipRef.current?.updateTooltip(this);
             globalTooltipRef.current?.setState({
                 pageY: this.state.pageY,
                 pageX: this.state.pageX,
                 tooltipId: this.tooltipId
             });
+            globalTooltipRef.current?.updateTooltip(this);
         } else if(prevState.forceShow || prevState.hovered) {
             globalTooltipRef.current?.unmountTooltip(this);
         }
     }
 
     private onMouseEnter(event: React.MouseEvent) {
-        /* check if may only the span has been hovered, should not be the case! */
-        if(event.target === this.refContainer.current) {
-            return;
+        if(typeof this.props.spawnHover !== "boolean" || !this.props.spawnHover) {
+            /* check if may only the span has been hovered, should not be the case! */
+            if(event.target === this.refContainer.current) {
+                return;
+            }
+
+            let container = event.target as HTMLElement;
+            while(container.parentElement !== this.refContainer.current) {
+                container = container.parentElement;
+            }
+            this.currentContainer = container;
+        } else {
+            this.currentContainer = this.refContainer.current;
         }
 
         this.setState({ hovered: true });
-
-        let container = event.target as HTMLElement;
-        while(container.parentElement !== this.refContainer.current)
-            container = container.parentElement;
-        this.currentContainer = container;
-
         this.updatePosition();
     }
 
     updatePosition() {
         const container = this.currentContainer || this.refContainer.current?.children.item(0) || this.refContainer.current;
-        if(!container) return;
+        if(!container) {
+            return;
+        }
 
         const rect = container.getBoundingClientRect();
         this.setState({

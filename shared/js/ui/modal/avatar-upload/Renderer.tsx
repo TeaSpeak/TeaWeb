@@ -18,7 +18,7 @@ import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {joinClassList, useDependentState} from "tc-shared/ui/react-elements/Helper";
 
 import kDefaultAvatarUrl from "../../../../img/style/avatar.png";
-import byteSizeToString = network.byteSizeToString;
+import byteSizeToString = network.binarySizeToString;
 
 const ServerUniqueIdContext = React.createContext<string>(undefined);
 const EventContext = React.createContext<Registry<ModalAvatarUploadEvents>>(undefined);
