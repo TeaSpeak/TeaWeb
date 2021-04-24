@@ -1380,31 +1380,6 @@
             </div>
         </script>
 
-        <!-- Permission overview -->
-        <script class="jsrender-template" id="tmpl_server_group_assignment" type="text/html">
-            <div class="group-assignment-list">
-                <a>{{tr "Changing groups of" /}}
-                    <node key="client"/>
-                </a>
-                <div class="group-list">
-                    {{for groups}}
-                    <div class="group-entry">
-                        <label class="checkbox {{if default}}disabled{{/if}}">
-                            <input type="checkbox" group-id="{{:id}}" {{if default}}default disabled="true" {{/if}}>
-                            <div class="mark"></div>
-                        </label>
-                        <node key="icon_{{>id}}"></node>
-                        <a>{{>name}} ({{>id}})</a>
-                    </div>
-                    {{/for}}
-                </div>
-            </div>
-            <div class="container-buttons">
-                <div class="btn btn-danger button-remove-all">{{tr "Remove all groups" /}}</div>
-                <div class="btn btn-success button-close">{{tr "Close" /}}</div>
-            </div>
-        </script>
-
         <!-- General management templates -->
         <script class="jsrender-template" id="tmpl_ban_list" type="text/html">
         <div> <!-- required for jquery -->
@@ -2015,104 +1990,6 @@
                         <a>{{tr "Please select a user" /}}</a>
                     </div>
                 </div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_avatar_upload" type="text/html">
-            <div class="modal-avatar-upload">
-                <div class="container-upload">
-                    <div class="bmd-form-group">
-                        <button type="button" class="btn btn-primary btn-raised button-select">{{tr "Select avatar"
-                            /}}
-                        </button>
-                        <p>
-                            {{tr "Supported image types: SVG, PNG, JPEG" /}}<br>
-                            {{tr "Supported image sizes: any" /}}
-                        </p>
-                        <input type="file" class="file-inputs" accept=".svg, .png, .jpg, .jpeg">
-                    </div>
-                    <div class="bmd-form-group">
-                        <button type="button" class="btn btn-success button-upload">{{tr "Upload avatar" /}}</button>
-                        <button type="button" class="btn btn-warning button-delete">{{tr "Delete avatar" /}}</button>
-                        <button type="button" class="btn btn-danger button-cancel">{{tr "Cancel" /}}</button>
-                    </div>
-                </div>
-                <div class="container-preview">
-                    <a class="title">{{tr "Preview" /}}</a>
-                    <div class="previews">
-                        <div class="preview preview-client-info">
-                            <div class="container-avatar">
-                                <div class="avatar">
-                                    <img src="#">
-                                </div>
-                            </div>
-                            <a>{{tr "Client info" /}}</a>
-                        </div>
-                        <div class="preview preview-chat">
-                            <div class="container-avatar">
-                                <div class="avatar">
-                                    <img src="#">
-                                </div>
-                            </div>
-                            <a>{{tr "Chat avatar" /}}</a>
-                        </div>
-                        <div class="preview preview-chat-entry">
-                            <div class="container-avatar">
-                                <div class="avatar">
-                                    <img src="#">
-                                </div>
-                            </div>
-                            <a>{{tr "Chat list avatar" /}}</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_about" type="text/html">
-            <div class="container-left">
-                <div class="container-logo">
-                    <img src="https://teaspeak.de/img/teaspeak_cup_animated.png" alt="teacup-animated" />
-                </div>
-                <div class="copyright">Copyright (c) 2017-2020 TeaSpeak<br>(Markus Hadenfeldt)</div>
-                <div class="versions">
-                    {{if client}}
-                    <div class="version version-native">
-                        <a>TeaClient:</a><a class="value version-client">{{>version_client}}</a>
-                    </div>
-                    <div class="version version-web">
-                        <a>UI:</a><a class="value">{{>version_ui}}</a>
-                    </div>
-                    {{else}}
-                    <div class="version version-web">
-                        <a>TeaWeb:</a><a class="value">{{>version_client}}</a>
-                    </div>
-                    {{/if}}
-                </div>
-            </div>
-            <div class="container-right">
-                {{if client}}
-                <h1>TeaSpeak-Client build <span class="version-client">{{>version_client}}</span><!-- ({{>version_timestamp}}) --></h1>
-                {{else}}
-                <h1>TeaSpeak-Web build {{>version_client}} <!-- ({{>version_timestamp}}) --></h1>
-                <!-- We currently dont have a timestamp for the web client -->
-                {{/if}}
-                <h2>{{tr "Special thanks" /}}</h2>
-                <p>
-                    "Яedeemer" (Janni K.)<br>
-                    Chromatic-Solutions (Sofian) for the lovely dark design
-                </p>
-                <h2>{{tr "Contact" /}}</h2>
-                <p>
-                    {{tr "E-Mail:" /}} <a href="mailto:{{if client}}client{{else}}web{{/if}}.support@teaspeak.de">{{if client}}client{{else}}web{{/if}}.support@teaspeak.de</a><br>
-                    {{tr "WWW:" /}} <a href="https://teaspeak.de" target="_blank">https://teaspeak.de</a><br>
-                    {{tr "Community:" /}} <a href="https://teaspeak.de" target="_blank">https://forum.teaspeak.de</a>
-                </p>
-                <h2>{{tr "License" /}}</h2>
-                <p>
-                    The {{if client}}TeaClient{{else}}TeaWeb{{/if}} application is licensed by MPL-2.0<br>
-                    More information here: <a href="https://github.com/TeaSpeak/TeaWeb/blob/master/LICENSE.TXT" target="_blank">https://github.com/TeaSpeak/TeaWeb/blob/master/LICENSE.TXT</a>
-                </p>
             </div>
         </script>
 

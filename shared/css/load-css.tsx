@@ -6,7 +6,6 @@ import "./static/htmltags.scss"
 import "./static/mixin.scss"
 import "./static/modal.scss"
 import "./static/modals.scss"
-import "./static/modal-avatar.scss"
 import "./static/modal-banclient.scss"
 import "./static/modal-banlist.scss"
 import "./static/modal-channelinfo.scss"
@@ -26,3 +25,6 @@ import "./static/color-variables.scss"
 
 import "./static/ts/tab.scss"
 import "./static/ts/country.scss"
+
+/* Currently not in use */
+//import "./static/modal-avatar.scss"

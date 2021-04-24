@@ -40,7 +40,7 @@ export class ClientName extends React.Component<{ client: RDPClient }, {}> {
             }
 
             if(name.awayMessage) {
-                awayMessage = " " + name.awayMessage;
+                awayMessage = ` (${name.awayMessage})`;
             }
 
             return (
