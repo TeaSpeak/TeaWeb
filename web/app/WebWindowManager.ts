@@ -8,10 +8,10 @@ import {
 import {assertMainApplication} from "tc-shared/ui/utils";
 import {Registry} from "tc-events";
 import {getIpcInstance} from "tc-shared/ipc/BrowserIPC";
-import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {tr, tra} from "tc-shared/i18n/localize";
 import {guid} from "tc-shared/crypto/uid";
 import _ from "lodash";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
 
 assertMainApplication();
 
@@ -64,17 +64,16 @@ export class WebWindowManager implements WindowManager {
         let windowInstance = this.tryCreateWindow(options, windowUniqueId);
         if(!windowInstance) {
             try {
-                await new Promise((resolve, reject) => {
-                    spawnYesNo(tr("Would you like to open the popup?"), tra("Would you like to open window {}?", options.windowName), callback => {
-                        if(!callback) {
-                            reject();
-                            return;
-                        }
-
-                        windowInstance = this.tryCreateWindow(options, windowUniqueId);
-                        resolve();
-                    });
+                const result = await promptYesNo({
+                    title: tr("Would you like to open the popup?"),
+                    question: tra("Would you like to open window {}?", options.windowName)
                 });
+
+                if(!result) {
+                    return { status: "error-user-rejected" };
+                }
+
+                windowInstance = this.tryCreateWindow(options, windowUniqueId);
             } catch (_) {
                 return { status: "error-user-rejected" };
             }

@@ -5,8 +5,7 @@ import {DefaultTabValues} from "tc-shared/ui/modal/permission/ModalRenderer";
 import {Group, GroupTarget, GroupType} from "tc-shared/permission/GroupManager";
 import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
 import {ClientNameInfo, CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {formatMessage} from "tc-shared/ui/frames/chat";
-import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
+import {formatMessage, formatMessageString} from "tc-shared/ui/frames/chat";
 import {tra} from "tc-shared/i18n/localize";
 import {PermissionType} from "tc-shared/permission/PermissionType";
 import {GroupedPermissions, PermissionValue} from "tc-shared/permission/PermissionManager";
@@ -32,6 +31,7 @@ import {
     PermissionModalEvents
 } from "tc-shared/ui/modal/permission/ModalDefinitions";
 import {EditorGroupedPermissions, PermissionEditorEvents} from "tc-shared/ui/modal/permission/EditorDefinitions";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
 
 export function spawnPermissionEditorModal(connection: ConnectionHandler, defaultTab: PermissionEditorTab = "groups-server", defaultTabValues?: DefaultTabValues) {
     const modalEvents = new Registry<PermissionModalEvents>();
@@ -96,7 +96,10 @@ function initializePermissionModalResultHandlers(events: Registry<PermissionModa
         if (event.mode === "force")
             return;
 
-        spawnYesNo(tr("Are you sure?"), formatMessage(tr("Do you really want to delete this group?")), result => {
+        promptYesNo({
+            title: tr("Are you sure?"),
+            question: formatMessageString(tr("Do you really want to delete this group?")),
+        }).then(result => {
             if (result !== true)
                 return;
 

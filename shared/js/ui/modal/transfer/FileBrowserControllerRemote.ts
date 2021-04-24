@@ -6,7 +6,6 @@ import PermissionType from "../../../permission/PermissionType";
 import {LogCategory, logError, logTrace} from "../../../log";
 import {Entry, MenuEntry, MenuEntryType, spawn_context_menu} from "../../../ui/elements/ContextMenu";
 import {getKeyBoard, SpecialKey} from "../../../PPTListener";
-import {spawnYesNo} from "../../../ui/modal/ModalYesNo";
 import {tr, tra} from "../../../i18n/localize";
 import {
     FileTransfer,
@@ -25,6 +24,7 @@ import {
     ListedFileInfo,
     PathInfo
 } from "tc-shared/ui/modal/transfer/FileDefinitions";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
 
 function parsePath(path: string, connection: ConnectionHandler): PathInfo {
     if (path === "/" || !path) {
@@ -508,12 +508,18 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         }) : event.files;
 
         if (event.mode === "ask") {
-            spawnYesNo(tr("Are you sure?"), tra("Do you really want to delete {0} {1}?", files.length, files.length === 1 ? tr("files") : tr("files")), result => {
-                if (result)
-                    events.fire("action_delete_file", {
-                        files: files,
-                        mode: "force"
-                    });
+            promptYesNo({
+                title: tr("Are you sure?"),
+                question: tra("Do you really want to delete {0} {1}?", files.length, files.length === 1 ? tr("files") : tr("files")),
+            }).then(result => {
+                if(!result) {
+                    return;
+                }
+
+                events.fire("action_delete_file", {
+                    files: files,
+                    mode: "force"
+                });
             });
             return;
         }

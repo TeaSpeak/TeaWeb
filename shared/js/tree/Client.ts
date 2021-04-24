@@ -15,8 +15,6 @@ import {ConnectionHandler, ViewReasonId} from "../ConnectionHandler";
 import {openClientInfo} from "../ui/modal/ModalClientInfo";
 import {spawnBanClient} from "../ui/modal/ModalBanClient";
 import {spawnChangeLatency} from "../ui/modal/ModalChangeLatency";
-import {formatMessage} from "../ui/frames/chat";
-import {spawnYesNo} from "../ui/modal/ModalYesNo";
 import * as hex from "../crypto/hex";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 import {spawnClientVolumeChange, spawnMusicBotVolumeChange} from "../ui/modal/ModalChangeVolumeNew";
@@ -27,10 +25,11 @@ import {VoiceClient} from "../voice/VoiceClient";
 import {VoicePlayerEvents, VoicePlayerState} from "../voice/VoicePlayer";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 import {VideoClient} from "tc-shared/connection/VideoConnection";
-import { tr } from "tc-shared/i18n/localize";
+import {tr, tra} from "tc-shared/i18n/localize";
 import {EventClient} from "tc-shared/connectionlog/Definitions";
 import {W2GPluginCmdHandler} from "tc-shared/ui/modal/video-viewer/W2GPlugin";
 import {spawnServerGroupAssignments} from "tc-shared/ui/modal/group-assignment/Controller";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
 
 export enum ClientType {
     CLIENT_VOICE,
@@ -1236,13 +1235,17 @@ export class MusicClientEntry extends ClientEntry<MusicClientEvents> {
                 icon_class: "client-delete",
                 disabled: false,
                 callback: () => {
-                    const tag = $.spawn("div").append(formatMessage(tr("Do you really want to delete {0}"), this.createChatTag(false)));
-                    spawnYesNo(tr("Are you sure?"), $.spawn("div").append(tag), result => {
-                        if(result) {
-                            this.channelTree.client.serverConnection.send_command("musicbotdelete", {
-                                bot_id: this.properties.client_database_id
-                            }).then(() => {});
+                    promptYesNo({
+                        title: tr("Are you sure?"),
+                        question: tra("Do you really want to delete {0}", this.clientNickName())
+                    }).then(result => {
+                        if(!result) {
+                            return;
                         }
+
+                        this.channelTree.client.serverConnection.send_command("musicbotdelete", {
+                            bot_id: this.properties.client_database_id
+                        }).then(() => {});
                     });
                 },
                 type: contextmenu.MenuEntryType.ENTRY

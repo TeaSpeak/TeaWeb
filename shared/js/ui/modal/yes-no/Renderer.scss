@@ -1,0 +1,23 @@
+.container {
+    padding: 1em;
+}
+
+.question {
+    min-height: 1.6em;
+}
+
+.buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+
+    margin-top: 2em;
+
+    button {
+        min-width: 6em;
+
+        &:not(:last-of-type) {
+            margin-right: 1em;
+        }
+    }
+}

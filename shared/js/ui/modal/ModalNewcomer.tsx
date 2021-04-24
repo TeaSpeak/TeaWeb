@@ -2,12 +2,12 @@ import {createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
 import {Registry} from "tc-shared/events";
 import {modal_settings, SettingProfileEvents} from "tc-shared/ui/modal/ModalSettings";
-import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {initialize_audio_microphone_controller} from "tc-shared/ui/modal/settings/Microphone";
 import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/MicrophoneDefinitions";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
 
 export interface EventModalNewcomer {
     "show_step": {
@@ -65,7 +65,10 @@ export function openModalNewcomer(): Modal {
 
     event_registry.on("exit_guide", event => {
         if (event.ask_yesno) {
-            spawnYesNo(tr("Are you sure?"), tr("Do you really want to skip the basic setup guide?"), result => {
+            promptYesNo({
+                title: tr("Are you sure?"),
+                question: tr("Do you really want to skip the basic setup guide?"),
+            }).then(result => {
                 if (result)
                     event_registry.fire("exit_guide", {ask_yesno: false});
             });

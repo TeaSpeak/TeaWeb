@@ -13,7 +13,6 @@ import {LogCategory, logDebug, logError, logTrace, logWarn} from "tc-shared/log"
 import * as i18n from "tc-shared/i18n/localize";
 import {RepositoryTranslation, TranslationRepository} from "tc-shared/i18n/localize";
 import {Registry} from "tc-shared/events";
-import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import * as i18nc from "tc-shared/i18n/country";
 import * as forum from "tc-shared/profiles/identities/teaspeak-forum";
 import {formatMessage, set_icon_size} from "tc-shared/ui/frames/chat";
@@ -27,6 +26,7 @@ import {initialize_audio_microphone_controller} from "tc-shared/ui/modal/setting
 import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
 import {getBackend} from "tc-shared/backend";
 import {MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/MicrophoneDefinitions";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
 
 type ProfileInfoEvent = {
     id: string,
@@ -411,7 +411,10 @@ function settings_general_language(container: JQuery, modal: Modal) {
                     repo_tag.find(".button-delete").on('click', e => {
                         e.preventDefault();
 
-                        spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this repository?"), answer => {
+                        promptYesNo({
+                            title: tr("Are you sure?"),
+                            question: tr("Do you really want to delete this repository?"),
+                        }).then(answer => {
                             if (answer) {
                                 i18n.delete_repository(repo);
                                 update_list();
@@ -1323,7 +1326,10 @@ export namespace modal_settings {
                 button.on('click', event => {
                     if (!current_profile || current_profile === "default") return;
 
-                    spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this profile?"), result => {
+                    promptYesNo({
+                        title: tr("Are you sure?"),
+                        question: tr("Do you really want to delete this profile?"),
+                    }).then(result => {
                         if (result)
                             event_registry.fire("delete-profile", {profile_id: current_profile});
                     });
@@ -1646,7 +1652,10 @@ export namespace modal_settings {
                 {
                     button_new.on('click', event => {
                         if (is_profile_generated) {
-                            spawnYesNo(tr("Are you sure"), tr("Do you really want to generate a new identity and override the old identity?"), result => {
+                            promptYesNo({
+                                title: tr("Are you sure"),
+                                question: tr("Do you really want to generate a new identity and override the old identity?"),
+                            }).then(result => {
                                 if (result) event_registry.fire("generate-identity-teamspeak", {profile_id: current_profile});
                             });
                         } else {
@@ -1671,7 +1680,10 @@ export namespace modal_settings {
                 {
                     button_import.on('click', event => {
                         if (is_profile_generated) {
-                            spawnYesNo(tr("Are you sure"), tr("Do you really want to import a new identity and override the old identity?"), result => {
+                            promptYesNo({
+                                title: tr("Are you sure"),
+                                question: tr("Do you really want to import a new identity and override the old identity?"),
+                            }).then(result => {
                                 if (result) event_registry.fire("import-identity-teamspeak", {profile_id: current_profile});
                             });
                         } else {

@@ -24,6 +24,7 @@ import {ModalInputProcessorEvents, ModalInputProcessorVariables} from "tc-shared
 import {ModalServerInfoEvents, ModalServerInfoVariables} from "tc-shared/ui/modal/server-info/Definitions";
 import {ModalAboutVariables} from "tc-shared/ui/modal/about/Definitions";
 import {ModalServerBandwidthEvents} from "tc-shared/ui/modal/server-bandwidth/Definitions";
+import {ModalYesNoEvents, ModalYesNoVariables} from "tc-shared/ui/modal/yes-no/Definitions";
 
 export type ModalType = "error" | "warning" | "info" | "none";
 export type ModalRenderType = "page" | "dialog";
@@ -138,7 +139,7 @@ export abstract class AbstractModal {
 
     /* only valid for the "inline" modals */
     type() : ModalType { return "none"; }
-    color() : "none" | "blue" { return "none"; }
+    color() : "none" | "blue" | "red" { return "none"; }
     verticalAlignment() : "top" | "center" | "bottom" { return "center"; }
 
     /** @deprecated */
@@ -165,6 +166,10 @@ export function constructAbstractModalClass<T extends keyof ModalConstructorArgu
 
 export interface ModalConstructorArguments {
     "__internal__modal__": any[],
+    "modal-yes-no": [
+        /* events */ IpcRegistryDescription<ModalYesNoEvents>,
+        /* variables */ IpcVariableDescriptor<ModalYesNoVariables>,
+    ],
 
     "video-viewer": [
         /* events */ IpcRegistryDescription<VideoViewerEvents>,

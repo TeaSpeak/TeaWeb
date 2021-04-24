@@ -7,7 +7,6 @@ import {LogCategory, logDebug, logError, logInfo, logWarn} from "tc-shared/log";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
 import {RecorderProfile, setDefaultRecorder} from "tc-shared/voice/RecorderProfile";
-import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {openModalNewcomer} from "tc-shared/ui/modal/ModalNewcomer";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
@@ -53,6 +52,7 @@ import "./text/bbcode/InviteController";
 import "./text/bbcode/YoutubeController";
 import {initializeSounds, setSoundMasterVolume} from "./audio/Sounds";
 import {getInstanceConnectHandler, setupIpcHandler} from "./ipc/BrowserIPC";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
 
 assertMainApplication();
 
@@ -203,11 +203,12 @@ async function doHandleConnectRequest(serverAddress: string, serverUniqueId: str
 
     if(!getAudioBackend().isInitialized()) {
         /* Trick the client into clicking somewhere on the site to initialize audio */
-        const resultPromise = new Promise<boolean>(resolve => {
-            spawnYesNo(tra("Connect to {}", serverAddress), tra("Would you like to connect to {}?", serverAddress), resolve).open();
+        const result = await promptYesNo({
+            title: tra("Connect to {}", serverAddress),
+            question: tra("Would you like to connect to {}?", serverAddress)
         });
 
-        if(!(await resultPromise)) {
+        if(!result) {
             /* Well... the client don't want to... */
             return { status: "client-aborted" };
         }
@@ -441,13 +442,12 @@ const task_connect_handler: loader.Task = {
         const chandler = getInstanceConnectHandler();
         if(chandler && AppParameters.getValue(AppParameters.KEY_CONNECT_NO_SINGLE_INSTANCE)) {
             try {
-                await chandler.post_connect_request(connectData, () => new Promise<boolean>(resolve => {
-                    spawnYesNo(tr("Another TeaWeb instance is already running"), tra("Another TeaWeb instance is already running.\nWould you like to connect there?"), response => {
-                        resolve(response);
-                    }, {
-                        closeable: false
-                    }).open();
-                }));
+                await chandler.post_connect_request(connectData, async () => {
+                    return await promptYesNo({
+                        title: tr("Another TeaWeb instance is already running"),
+                        question: tra("Another TeaWeb instance is already running.\nWould you like to connect there?")
+                    });
+                });
                 logInfo(LogCategory.CLIENT, tr("Executed connect successfully in another browser window. Closing this window"));
 
                 createInfoModal(

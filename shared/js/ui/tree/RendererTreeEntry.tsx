@@ -13,5 +13,3 @@ export class UnreadMarkerRenderer extends React.Component<{ entry: RDPEntry }, {
         }
     }
 }
-
-export class RendererTreeEntry<Props, State> extends ReactComponentBase<Props, State> { }

@@ -1,11 +1,11 @@
-import {BodyCreator, createModal, ModalFunctions} from "../../ui/elements/Modal";
+import {BodyCreator, createModal, Modal, ModalFunctions} from "../../ui/elements/Modal";
 
 export function spawnYesNo(header: BodyCreator, body: BodyCreator, callback: (_: boolean) => any, properties?: {
     text_yes?: string,
     text_no?: string,
 
     closeable?: boolean;
-}) {
+}) : Modal {
     properties = properties || {};
 
     const props = ModalFunctions.warpProperties({});

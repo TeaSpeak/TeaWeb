@@ -116,7 +116,10 @@ export function spawnQueryManage(client: ConnectionHandler) {
             template.find(".button-query-delete").on('click', () => {
                 if(!selected_query) return;
 
-                Modals.spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this account?"), result => {
+                Modals.promptYesNo({
+                    title: tr("Are you sure?"),
+                    question:  tr("Do you really want to delete this account?"),
+                }).then(result => {
                     if(result) {
                         client.serverConnection.send_command("querydelete", {
                             client_login_name: selected_query.username
@@ -161,7 +164,6 @@ import {createErrorModal, createInfoModal, createInputModal, createModal, Modal}
 import {CommandResult, QueryListEntry} from "../../connection/ServerConnectionDeclaration";
 import {SingleCommandHandler} from "../../connection/ConnectionBase";
 import {copyToClipboard} from "../../utils/helpers";
-import {spawnYesNo} from "../../ui/modal/ModalYesNo";
 import {LogCategory, logError} from "../../log";
 import PermissionType from "../../permission/PermissionType";
 import {ConnectionHandler} from "../../ConnectionHandler";
@@ -169,6 +171,7 @@ import {spawnQueryCreate, spawnQueryCreated} from "../../ui/modal/ModalQuery";
 import {formatMessage} from "../../ui/frames/chat";
 import {ErrorCode} from "../../connection/ErrorCode";
 import {tr} from "tc-shared/i18n/localize";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
 
 export function spawnQueryManage(client: ConnectionHandler) {
     let modal: Modal;
@@ -336,7 +339,10 @@ export function spawnQueryManage(client: ConnectionHandler) {
                 button_delete.on('click', event => {
                     if (!selected_query) return;
 
-                    spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this account?"), result => {
+                    promptYesNo({
+                        title: tr("Are you sure?"),
+                        question: tr("Do you really want to delete this account?"),
+                    }).then(result => {
                         if (result) {
                             client.serverConnection.send_command("querydelete", {
                                 client_login_name: selected_query.username

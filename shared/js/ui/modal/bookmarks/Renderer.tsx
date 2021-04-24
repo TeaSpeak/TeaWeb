@@ -19,7 +19,6 @@ import {getIconManager} from "tc-shared/file/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {spawnContextMenu} from "tc-shared/ui/ContextMenu";
-import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {createErrorModal, createInfoModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import {HostBannerRenderer} from "tc-shared/ui/frames/HostBannerRenderer";
@@ -32,6 +31,8 @@ import ServerInfoImage from "./serverinfo.png";
 import {IconTooltip} from "tc-shared/ui/react-elements/Tooltip";
 import {CountryCode} from "tc-shared/ui/react-elements/CountryCode";
 import {downloadTextAsFile, requestFileAsText} from "tc-shared/file/Utils";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
+import {tra} from "tc-shared/i18n/localize";
 
 const EventContext = React.createContext<Registry<ModalBookmarkEvents>>(undefined);
 const VariableContext = React.createContext<UiVariableConsumer<ModalBookmarkVariables>>(undefined);
@@ -54,14 +55,16 @@ const BookmarkListEntryRenderer = React.memo((props: { entry: BookmarkListEntry 
 
     const tryDelete = () => {
         if(props.entry.type === "directory" && props.entry.childCount > 0) {
-            spawnYesNo(tr("Are you sure?"), formatMessage(
-                tr("Do you really want to delete the directory \"{0}\"?{:br:}The directory contains {1} entries."),
-                props.entry.displayName, props.entry.childCount
-            ), result => {
-                if(result) {
-                    events.fire("action_delete_bookmark", { uniqueId: props.entry.uniqueId });
+            promptYesNo({
+                title: tr("Are you sure?"),
+                question: tra("Do you really want to delete the directory \"{0}\"?\nThe directory contains {1} entries.", props.entry.displayName, props.entry.childCount)
+            }).then(result => {
+                if(!result) {
+                    return;
                 }
-            }).open();
+
+                events.fire("action_delete_bookmark", { uniqueId: props.entry.uniqueId });
+            });
         } else {
             events.fire("action_delete_bookmark", { uniqueId: props.entry.uniqueId });
         }

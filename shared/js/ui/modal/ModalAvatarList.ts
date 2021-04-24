@@ -2,10 +2,10 @@ import {createErrorModal, createModal} from "../../ui/elements/Modal";
 import {LogCategory, logError} from "../../log";
 import {ConnectionHandler} from "../../ConnectionHandler";
 import {base64_encode_ab} from "../../utils/buffers";
-import {spawnYesNo} from "../../ui/modal/ModalYesNo";
 import {ClientEntry} from "../../tree/Client";
 import moment from "moment";
 import {tr} from "tc-shared/i18n/localize";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
 
 const avatar_to_uid = (id: string) => {
     const buffer = new Uint8Array(id.length / 2);
@@ -90,7 +90,10 @@ export function spawnAvatarList(client: ConnectionHandler) {
          */
 
         callback_delete = () => {
-            spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this avatar?"), result => {
+            promptYesNo({
+                title: tr("Are you sure?"),
+                question: tr("Do you really want to delete this avatar?"),
+            }).then(result => {
                 if (result) {
                     createErrorModal(tr("Not implemented"), tr("Avatar delete hasn't implemented yet")).open();
                     //TODO Implement avatar delete
