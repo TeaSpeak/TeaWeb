@@ -116,7 +116,7 @@ registerModal({
 });
 
 registerModal({
-    modalId: "modal-about",
-    classLoader: async () => await import("tc-shared/ui/modal/about/Renderer"),
+    modalId: "modal-server-info",
+    classLoader: async () => await import("tc-shared/ui/modal/server-info/Renderer"),
     popoutSupported: true
 });

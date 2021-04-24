@@ -32,7 +32,10 @@
     min-height: 0;
 
     text-align: center;
-    cursor: pointer;
+
+    &.clickable {
+        cursor: pointer;
+    }
 
     /* We're disabling the transition since it only works on appearing not on disappearing */
     /* @include transition(height 0.5s ease-in-out); */
@@ -60,8 +63,13 @@
         width: 100%;
 
         > img {
-            width: 100%;
-            height: 100%;
+            object-fit: contain;
+
+            max-height: 100%;
+            max-width: 100%;
+
+            min-width: 100%;
+            min-height: 100%;
         }
     }
 

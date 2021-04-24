@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {ReactElement} from "react";
+import {ReactElement, ReactNode} from "react";
 import {guid} from "tc-shared/crypto/uid";
 
 const cssStyle = require("./Tooltip.scss");
@@ -73,7 +73,7 @@ export interface TooltipState {
 }
 
 export interface TooltipProperties {
-    tooltip: () => ReactElement | ReactElement[] | string;
+    tooltip: () => ReactNode | ReactNode[] | string;
     className?: string;
 }
 
@@ -153,7 +153,7 @@ export class Tooltip extends React.Component<TooltipProperties, TooltipState> {
     }
 }
 
-export const IconTooltip = (props: { children?: React.ReactElement | React.ReactElement[], className?: string, outerClassName?: string }) => (
+export const IconTooltip = (props: { children?: React.ReactNode | React.ReactNode[], className?: string, outerClassName?: string }) => (
     <Tooltip tooltip={() => props.children} className={props.outerClassName}>
         <div className={cssStyle.iconTooltip + " " + props.className}>
             <img src="img/icon_tooltip.svg" alt={""} />

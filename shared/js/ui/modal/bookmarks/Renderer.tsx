@@ -276,6 +276,7 @@ const SelectedBookmarkBanner = React.memo(() => {
                     updateInterval: 0
                 }}
                 className={cssStyle.renderer}
+                clickable={false}
             />
         </div>
     );

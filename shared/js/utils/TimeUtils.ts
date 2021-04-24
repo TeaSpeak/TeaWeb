@@ -8,18 +8,27 @@ export function format_online_time(secs: number) : string {
     let seconds = Math.floor(secs % 60);
 
     let result = "";
-    if(years > 0)
+    if(years > 0) {
         result += years + " " + tr("years") + " ";
-    if(years > 0 || days > 0)
+    }
+
+    if(years > 0 || days > 0) {
         result += days + " " + tr("days") + " ";
-    if(years > 0 || days > 0 || hours > 0)
+    }
+
+    if(years > 0 || days > 0 || hours > 0) {
         result += hours + " " + tr("hours") + " ";
-    if(years > 0 || days > 0 || hours > 0 || minutes > 0)
+    }
+
+    if(years > 0 || days > 0 || hours > 0 || minutes > 0) {
         result += minutes + " " + tr("minutes") + " ";
-    if(years > 0 || days > 0 || hours > 0 || minutes > 0 || seconds > 0)
+    }
+
+    if(years > 0 || days > 0 || hours > 0 || minutes > 0 || seconds > 0) {
         result += seconds + " " + tr("seconds") + " ";
-    else
+    } else {
         result = tr("now") + " ";
+    }
 
     return result.substr(0, result.length - 1);
 }
