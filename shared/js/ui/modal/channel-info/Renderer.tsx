@@ -10,6 +10,9 @@ import {joinClassList, useTr} from "tc-shared/ui/react-elements/Helper";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {BBCodeRenderer} from "tc-shared/text/bbcode";
+import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
+import {ClientIcon} from "svg-sprites/client-icons";
+import {copyToClipboard} from "tc-shared/utils/helpers";
 const cssStyle = require("./Renderer.scss");
 
 const VariablesContext = React.createContext<UiVariableConsumer<ModalChannelInfoVariables>>(undefined);
@@ -47,11 +50,13 @@ const TopicRenderer = React.memo(() => {
 
     return (
         <div className={cssStyle.row}>
-            <div className={cssStyle.title}>
-                <Translatable>Topic</Translatable>
-            </div>
-            <div className={cssStyle.value}>
-                {topic.value}
+            <div className={cssStyle.column}>
+                <div className={cssStyle.title}>
+                    <Translatable>Topic</Translatable>
+                </div>
+                <div className={cssStyle.value}>
+                    {topic.value}
+                </div>
             </div>
         </div>
     )
@@ -60,18 +65,26 @@ const TopicRenderer = React.memo(() => {
 const DescriptionRenderer = React.memo(() => {
     const description = useContext(VariablesContext).useReadOnly("description");
 
-    let overlay;
+    let overlay, copyButton;
     let descriptionBody;
     if(description.status === "loaded") {
         switch(description.value.status) {
             case "success":
+                const descriptionText = description.value.description;
                 descriptionBody = (
                     <BBCodeRenderer
-                        message={description.value.description}
+                        message={descriptionText}
                         settings={{ convertSingleUrls: true }}
                         handlerId={description.value.handlerId}
                     />
                 );
+                copyButton = (
+                    <div className={cssStyle.buttonCopy} onClick={() => {
+                        copyToClipboard(descriptionText);
+                    }}>
+                        <ClientIconRenderer icon={ClientIcon.Copy} />
+                    </div>
+                )
                 break;
 
             case "empty":
@@ -102,7 +115,7 @@ const DescriptionRenderer = React.memo(() => {
     return (
         <div className={cssStyle.description}>
             <div className={cssStyle.title}>
-                <Translatable>Description</Translatable>
+                <Translatable>Description</Translatable> {copyButton}
             </div>
             <div className={cssStyle.value} style={{ display: descriptionBody ? undefined : "none" }}>
                 {descriptionBody}
@@ -167,7 +180,7 @@ class Modal extends AbstractModal {
         return (
             <EventContext.Provider value={this.events}>
                 <VariablesContext.Provider value={this.variables}>
-                    <div className={joinClassList(cssStyle.container, this.properties.windowed && cssStyle.windowed)}>
+                    <div className={joinClassList(cssStyle.container, this.properties.windowed && cssStyle.windowed)} draggable={false}>
                         <div className={cssStyle.row}>
                             <PropertyRenderer property={"type"}>
                                 {value => {
