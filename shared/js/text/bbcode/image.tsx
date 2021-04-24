@@ -1,5 +1,5 @@
 import {ElementRenderer} from "vendor/xbbcode/renderer/base";
-import {TagElement} from "vendor/xbbcode/elements";
+import {BBCodeTagElement} from "vendor/xbbcode/elements";
 import * as React from "react";
 import * as loader from "tc-loader";
 import {rendererReact, rendererText} from "tc-shared/text/bbcode/renderer";
@@ -57,12 +57,12 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     function: async () => {
         let reactId = 0;
 
-        rendererReact.registerCustomRenderer(new class extends ElementRenderer<TagElement, React.ReactNode> {
+        rendererReact.registerCustomRenderer(new class extends ElementRenderer<BBCodeTagElement, React.ReactNode> {
             tags(): string | string[] {
                 return ["img", "image"];
             }
 
-            render(element: TagElement): React.ReactNode {
+            render(element: BBCodeTagElement): React.ReactNode {
                 let target;
                 let content = rendererText.render(element);
                 if (!element.options) {

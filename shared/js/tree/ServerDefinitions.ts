@@ -1,3 +1,5 @@
+export type ServerAudioEncryptionMode = "globally-on" | "globally-off" | "individual";
+
 export class ServerProperties {
     virtualserver_host: string = "";
     virtualserver_port: number = 0;

@@ -1,7 +1,7 @@
 import {XBBCodeRenderer} from "vendor/xbbcode/react";
 import * as React from "react";
 import {rendererHTML, rendererReact, rendererText, BBCodeHandlerContext} from "tc-shared/text/bbcode/renderer";
-import {parse as parseBBCode} from "vendor/xbbcode/parser";
+import {parseBBCode as parseBBCode} from "vendor/xbbcode/parser";
 import {fixupJQueryUrlTags} from "tc-shared/text/bbcode/url";
 import {fixupJQueryImageTags} from "tc-shared/text/bbcode/image";
 import "./bbcode.scss";

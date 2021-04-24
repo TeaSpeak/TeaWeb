@@ -2,7 +2,7 @@ import * as hljs from "highlight.js/lib/core";
 
 import * as loader from "tc-loader";
 import {ElementRenderer} from "vendor/xbbcode/renderer/base";
-import {TagElement} from "vendor/xbbcode/elements";
+import {BBCodeTagElement} from "vendor/xbbcode/elements";
 import * as React from "react";
 import {tra} from "tc-shared/i18n/localize";
 import * as DOMPurify from "dompurify";
@@ -92,12 +92,12 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
             return;
         }
         /* override default parser */
-        rendererReact.registerCustomRenderer(new class extends ElementRenderer<TagElement, React.ReactNode> {
+        rendererReact.registerCustomRenderer(new class extends ElementRenderer<BBCodeTagElement, React.ReactNode> {
             tags(): string | string[] {
                 return ["code", "icode", "i-code"];
             }
 
-            render(element: TagElement): React.ReactNode {
+            render(element: BBCodeTagElement): React.ReactNode {
                 const klass = element.tagNormalized != 'code' ? cssStyle.inlineCode : cssStyle.code;
                 const language = (element.options || "").replace("\"", "'").toLowerCase();
 

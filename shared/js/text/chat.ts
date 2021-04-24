@@ -2,8 +2,8 @@ import UrlKnife from 'url-knife';
 import {Settings, settings} from "../settings";
 import {renderMarkdownAsBBCode} from "../text/markdown";
 import {escapeBBCode} from "../text/bbcode";
-import {parse as parseBBCode} from "vendor/xbbcode/parser";
-import {TagElement} from "vendor/xbbcode/elements";
+import {parseBBCode as parseBBCode} from "vendor/xbbcode/parser";
+import {BBCodeTagElement} from "vendor/xbbcode/elements";
 import {regexImage} from "tc-shared/text/bbcode/image";
 
 interface UrlKnifeUrl {
@@ -88,7 +88,7 @@ export function preprocessChatMessageForSend(message: string) : string {
                 break;
             }
 
-            if(!(element instanceof TagElement)) {
+            if(!(element instanceof BBCodeTagElement)) {
                 continue;
             }
 

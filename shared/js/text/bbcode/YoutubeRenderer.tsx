@@ -2,7 +2,7 @@ import * as React from "react";
 import * as loader from "tc-loader";
 import {BBCodeHandlerContext, rendererReact, rendererText} from "tc-shared/text/bbcode/renderer";
 import {ElementRenderer} from "vendor/xbbcode/renderer/base";
-import {TagElement} from "vendor/xbbcode/elements";
+import {BBCodeTagElement} from "vendor/xbbcode/elements";
 import {BBCodeRenderer} from "tc-shared/text/bbcode";
 import {spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 import {copyToClipboard} from "tc-shared/utils/helpers";
@@ -78,8 +78,8 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     name: "XBBCode code tag init",
     function: async () => {
         ipcChannel = getIpcInstance().createCoreControlChannel("bbcode-youtube");
-        rendererReact.registerCustomRenderer(new class extends ElementRenderer<TagElement, React.ReactNode> {
-            render(element: TagElement): React.ReactNode {
+        rendererReact.registerCustomRenderer(new class extends ElementRenderer<BBCodeTagElement, React.ReactNode> {
+            render(element: BBCodeTagElement): React.ReactNode {
                 const text = rendererText.render(element);
                 return <YoutubeRenderer url={text} />;
             }

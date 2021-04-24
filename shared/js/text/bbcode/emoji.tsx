@@ -2,7 +2,7 @@ import * as loader from "tc-loader";
 import * as React from "react";
 import { rendererReact } from "tc-shared/text/bbcode/renderer";
 import {ElementRenderer} from "vendor/xbbcode/renderer/base";
-import {TextElement} from "vendor/xbbcode/elements";
+import {BBCodeTextElement} from "vendor/xbbcode/elements";
 import ReactRenderer from "vendor/xbbcode/renderer/react";
 import {Settings, settings} from "tc-shared/settings";
 
@@ -16,8 +16,8 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     function: async () => {
         let reactId = 0;
 
-        rendererReact.setTextRenderer(new class extends ElementRenderer<TextElement, React.ReactNode> {
-            render(element: TextElement, renderer: ReactRenderer): React.ReactNode {
+        rendererReact.setTextRenderer(new class extends ElementRenderer<BBCodeTextElement, React.ReactNode> {
+            render(element: BBCodeTextElement, renderer: ReactRenderer): React.ReactNode {
                 if(!settings.getValue(Settings.KEY_CHAT_COLORED_EMOJIES)) {
                     return element.text();
                 }

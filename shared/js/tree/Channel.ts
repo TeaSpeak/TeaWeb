@@ -1,7 +1,7 @@
 import {ChannelTree} from "./ChannelTree";
 import {ClientEntry, ClientEvents} from "./Client";
 import * as log from "../log";
-import {LogCategory, logInfo, LogType, logWarn} from "../log";
+import {LogCategory, logError, logInfo, LogType, logWarn} from "../log";
 import {PermissionType} from "../permission/PermissionType";
 import {settings, Settings} from "../settings";
 import * as contextmenu from "../ui/elements/ContextMenu";
@@ -10,7 +10,6 @@ import {Sound} from "../audio/Sounds";
 import {createErrorModal, createInfoModal, createInputModal} from "../ui/elements/Modal";
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {hashPassword} from "../utils/helpers";
-import {openChannelInfo} from "../ui/modal/ModalChannelInfo";
 import {formatMessage} from "../ui/frames/chat";
 
 import {Registry} from "../events";
@@ -18,10 +17,13 @@ import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 import {spawnFileTransferModal} from "../ui/modal/transfer/ModalFileTransfer";
 import {ErrorCode} from "../connection/ErrorCode";
 import {ClientIcon} from "svg-sprites/client-icons";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 import {EventChannelData} from "tc-shared/connectionlog/Definitions";
 import {spawnChannelEditNew} from "tc-shared/ui/modal/channel-edit/Controller";
 import {spawnInviteGenerator} from "tc-shared/ui/modal/invite/Controller";
+import {NoThrow} from "tc-shared/proto";
+import {ChannelDescriptionResult} from "tc-shared/tree/ChannelDefinitions";
+import {spawnChannelInfo} from "tc-shared/ui/modal/channel-info/Controller";
 
 export enum ChannelType {
     PERMANENT,
@@ -203,9 +205,9 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     private _destroyed = false;
 
     private cachedPasswordHash: string;
-    private channelDescriptionCached: boolean;
+    private channelDescriptionCacheTimestamp: number;
     private channelDescriptionCallback: ((success: boolean) => void)[];
-    private channelDescriptionPromise: Promise<string>;
+    private channelDescriptionPromise: Promise<ChannelDescriptionResult>;
 
     private collapsed: boolean;
     private subscribed: boolean;
@@ -243,7 +245,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         this.collapsed = this.channelTree.client.settings.getValue(Settings.FN_SERVER_CHANNEL_COLLAPSED(this.channelId));
         this.subscriptionMode = this.channelTree.client.settings.getValue(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId), ChannelSubscribeMode.INHERITED);
 
-        this.channelDescriptionCached = false;
+        this.channelDescriptionCacheTimestamp = 0;
         this.channelDescriptionCallback = [];
     }
 
@@ -280,45 +282,78 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         return this.parsed_channel_name.text;
     }
 
-    async getChannelDescription() : Promise<string> {
-        if(this.channelDescriptionPromise) {
-            return this.channelDescriptionPromise;
+    clearDescriptionCache() {
+        this.channelDescriptionPromise = undefined;
+        this.channelDescriptionCacheTimestamp = 0;
+    }
+
+    @NoThrow
+    async getChannelDescription(ignoreCache: boolean) : Promise<ChannelDescriptionResult> {
+        if(ignoreCache || Date.now() - 120 * 1000 > this.channelDescriptionCacheTimestamp) {
+            this.channelDescriptionPromise = this.doGetChannelDescriptionNew();
         }
 
-        const promise = this.doGetChannelDescription();
-        this.channelDescriptionPromise = promise;
-        promise
-            .then(() => this.channelDescriptionPromise = undefined)
-            .catch(() => this.channelDescriptionPromise = undefined);
-        return promise;
+        return await this.channelDescriptionPromise;
     }
 
-    isDescriptionCached() {
-        return this.channelDescriptionCached;
-    }
-
-    private async doGetChannelDescription() {
-        if(!this.channelDescriptionCached) {
+    @NoThrow
+    private async doGetChannelDescriptionNew() : Promise<ChannelDescriptionResult> {
+        try {
             await this.channelTree.client.serverConnection.send_command("channelgetdescription", {
                 cid: this.channelId
             }, {
                 process_result: false
             });
-
-            if(!this.channelDescriptionCached) {
-                /* since the channel description is a low command it will not be processed in sync */
-                await new Promise((resolve, reject) => {
-                    this.channelDescriptionCallback.push(succeeded => {
-                        if(succeeded) {
-                            resolve();
-                        } else {
-                            reject(tr("failed to receive description"));
-                        }
-                    })
-                });
+        } catch (error) {
+            if(error instanceof CommandResult) {
+                if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+                    return {
+                        status: "no-permissions",
+                        failedPermission: this.channelTree.client.permissions.getFailedPermission(error)
+                    }
+                } else {
+                    return {
+                        status: "error",
+                        message: error.formattedMessage()
+                    }
+                }
+            } else if(typeof error === "string") {
+                return {
+                    status: "error",
+                    message: error
+                }
+            } else {
+                logError(LogCategory.CHANNEL, tr("Failed to query channel description for channel %d: %o"), this.channelId, error);
+                return {
+                    status: "error",
+                    message: tr("lookup the console")
+                };
             }
         }
-        return this.properties.channel_description;
+
+        if(!this.channelDescriptionCacheTimestamp) {
+            /* since the channel description is a low command it will not be processed later */
+            const result = await new Promise(resolve => {
+                this.channelDescriptionCallback.push(resolve);
+                setTimeout(() => {
+                    this.channelDescriptionCallback.remove(resolve);
+                    resolve(false);
+                }, 5000);
+            });
+
+            if(!result) {
+                return { status: "error", message: tr("description query failed") };
+            }
+        }
+
+        return {
+            status: "success",
+            description: this.properties.channel_description
+        }
+    }
+
+    isDescriptionCached() {
+        return this.channelDescriptionCacheTimestamp > Date.now() - 120 * 1000;
     }
 
     registerClient(client: ClientEntry) {
@@ -481,7 +516,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 name: tr("Show channel info"),
                 callback: () => {
                     trigger_close = false;
-                    openChannelInfo(this);
+                    spawnChannelInfo(this);
                 },
                 icon_class: "client-about"
             }, {
@@ -646,7 +681,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
             const hasUpdate = JSON.map_field_to(this.properties, value, variable.key);
 
             if(key == "channel_description") {
-                this.channelDescriptionCached = true;
+                this.channelDescriptionCacheTimestamp = Date.now();
                 this.channelDescriptionCallback.forEach(callback => callback(true));
                 this.channelDescriptionCallback = [];
             }
@@ -681,10 +716,14 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         return "[url=channel://" + this.channelId + "/" + encodeURIComponent(this.properties.channel_name) + "]" + this.formattedChannelName() + "[/url]";
     }
 
-    channelType() : ChannelType {
-        if(this.properties.channel_flag_permanent == true) return ChannelType.PERMANENT;
-        if(this.properties.channel_flag_semi_permanent == true) return ChannelType.SEMI_PERMANENT;
-        return ChannelType.TEMPORARY;
+    getChannelType() : ChannelType {
+        if(this.properties.channel_flag_permanent == true) {
+            return ChannelType.PERMANENT;
+        } else if(this.properties.channel_flag_semi_permanent == true) {
+            return ChannelType.SEMI_PERMANENT;
+        } else {
+            return ChannelType.TEMPORARY;
+        }
     }
 
     async joinChannel(ignorePasswordFlag?: boolean) : Promise<boolean> {
@@ -870,11 +909,11 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     }
 
     handleDescriptionChanged() {
-        if(!this.channelDescriptionCached) {
+        if(!this.channelDescriptionCacheTimestamp) {
             return;
         }
 
-        this.channelDescriptionCached = false;
+        this.channelDescriptionCacheTimestamp = 0;
         this.properties.channel_description = undefined;
         this.events.fire("notify_description_changed");
     }

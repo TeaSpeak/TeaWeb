@@ -16,7 +16,7 @@ import {spawnServerInfoNew} from "tc-shared/ui/modal/server-info/Controller";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {
-    kServerConnectionInfoFields,
+    kServerConnectionInfoFields, ServerAudioEncryptionMode,
     ServerConnectionInfo,
     ServerConnectionInfoResult,
     ServerProperties
@@ -400,5 +400,19 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
             imageUrl: this.properties.virtualserver_hostbanner_gfx_url,
             updateInterval: this.properties.virtualserver_hostbanner_gfx_interval,
         };
+    }
+
+    getAudioEncryptionMode() : ServerAudioEncryptionMode {
+        switch (this.properties.virtualserver_codec_encryption_mode) {
+            case 0:
+                return "globally-off";
+
+            default:
+            case 1:
+                return "individual";
+
+            case 2:
+                return "globally-on";
+        }
     }
 }

@@ -2,7 +2,7 @@ import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {copyToClipboard} from "tc-shared/utils/helpers";
 import * as loader from "tc-loader";
 import {ElementRenderer} from "vendor/xbbcode/renderer/base";
-import {TagElement} from "vendor/xbbcode/elements";
+import {BBCodeTagElement} from "vendor/xbbcode/elements";
 import * as React from "react";
 import ReactRenderer from "vendor/xbbcode/renderer/react";
 import {rendererReact, rendererText, BBCodeHandlerContext} from "tc-shared/text/bbcode/renderer";
@@ -53,8 +53,8 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
         let reactId = 0;
 
         const regexUrl = /^(?:[a-zA-Z]{1,16}):(?:\/{1,3}|\\)[-a-zA-Z0-9:;,@#%&()~_?+=\/\\.]*$/g;
-        rendererReact.registerCustomRenderer(new class extends ElementRenderer<TagElement, React.ReactNode> {
-            render(element: TagElement, renderer: ReactRenderer): React.ReactNode {
+        rendererReact.registerCustomRenderer(new class extends ElementRenderer<BBCodeTagElement, React.ReactNode> {
+            render(element: BBCodeTagElement, renderer: ReactRenderer): React.ReactNode {
                 let target: string;
                 if (!element.options) {
                     target = rendererText.render(element);

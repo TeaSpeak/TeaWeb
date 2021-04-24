@@ -176,10 +176,9 @@ ChannelPropertyProviders["sortingOrder"] = {
 ChannelPropertyProviders["topic"] = SimplePropertyProvider("channel_topic", "");
 ChannelPropertyProviders["description"] = {
     provider: async (properties, channel) => {
-        if(typeof properties.channel_description !== "undefined" && (properties.channel_description.length !== 0 || channel?.isDescriptionCached())) {
-            return properties.channel_description;
-        } else if(channel) {
-            return await channel.getChannelDescription();
+        const description = await channel.getChannelDescription(false);
+        if(description.status === "success") {
+            return description.description;
         } else {
             return "";
         }

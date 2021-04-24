@@ -25,6 +25,7 @@ import {ModalServerInfoEvents, ModalServerInfoVariables} from "tc-shared/ui/moda
 import {ModalAboutVariables} from "tc-shared/ui/modal/about/Definitions";
 import {ModalServerBandwidthEvents} from "tc-shared/ui/modal/server-bandwidth/Definitions";
 import {ModalYesNoEvents, ModalYesNoVariables} from "tc-shared/ui/modal/yes-no/Definitions";
+import {ModalChannelInfoEvents, ModalChannelInfoVariables} from "tc-shared/ui/modal/channel-info/Definitions";
 
 export type ModalType = "error" | "warning" | "info" | "none";
 export type ModalRenderType = "page" | "dialog";
@@ -178,6 +179,10 @@ export interface ModalConstructorArguments {
     "channel-edit": [
         /* events */ IpcRegistryDescription<ChannelEditEvents>,
         /* isChannelCreate */ boolean
+    ],
+    "channel-info": [
+        /* events */ IpcRegistryDescription<ModalChannelInfoEvents>,
+        /* variables */ IpcVariableDescriptor<ModalChannelInfoVariables>
     ],
     "echo-test": [
         /* events */ IpcRegistryDescription<EchoTestEvents>
