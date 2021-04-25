@@ -56,24 +56,6 @@
     }
 
     &.mode-resize {
-        /* do adjust and ignore ration */
-        display: flex;
-
-        height: 100%;
-        width: 100%;
-
-        > img {
-            object-fit: contain;
-
-            max-height: 100%;
-            max-width: 100%;
-
-            min-width: 100%;
-            min-height: 100%;
-        }
-    }
-
-    &.mode-resize-ratio {
         display: flex;
         flex-direction: row;
         justify-content: space-around;
@@ -87,6 +69,23 @@
 
             /* better adoptable mode */
             width: min-content;
+        }
+    }
+
+    &.mode-resize-ratio {
+        display: flex;
+
+        height: 100%;
+        width: 100%;
+
+        > img {
+            object-fit: contain;
+
+            max-height: 100%;
+            max-width: 100%;
+
+            min-width: 100%;
+            min-height: 100%;
         }
     }
 }
