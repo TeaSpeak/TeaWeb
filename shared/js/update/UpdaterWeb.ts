@@ -140,7 +140,13 @@ class WebUpdater implements Updater {
     }
 
     getLastUsedVersion(): string {
-        return settings.getValue(Settings.KEY_UPDATER_LAST_USED_UI, undefined);
+        const result = settings.getValue(Settings.KEY_UPDATER_LAST_USED_UI, undefined);
+        if(result === undefined) {
+            this.updateUsedVersion();
+            return this.getCurrentVersion();
+        }
+
+        return result;
     }
 
     updateUsedVersion() {

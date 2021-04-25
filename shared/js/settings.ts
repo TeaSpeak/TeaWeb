@@ -1,10 +1,10 @@
-import {LogCategory, logError, logTrace} from "./log";
+import {LogCategory, logError, logInfo, logTrace} from "./log";
+import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {Registry} from "./events";
 import {tr} from "./i18n/localize";
 import {CallOnce, ignorePromise} from "tc-shared/proto";
 import {getStorageAdapter} from "tc-shared/StorageAdapter";
-import * as loader from "tc-loader";
 
 /*
  * TODO: Sync settings across renderer instances
@@ -936,7 +936,12 @@ export class Settings {
         const json = await getStorageAdapter().get("settings.global");
 
         try {
-            this.settingsCache = JSON.parse(json);
+            if(json === null) {
+                logInfo(LogCategory.GENERAL, tr("Found no settings. Creating new client settings."));
+                this.settingsCache = {};
+            } else {
+                this.settingsCache = JSON.parse(json);
+            }
         } catch(error) {
             this.settingsCache = {};
             logError(LogCategory.GENERAL, tr("Failed to load global settings!\nJson: %s\nError: %o"), json, error);
