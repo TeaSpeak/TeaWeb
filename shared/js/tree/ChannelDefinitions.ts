@@ -1,6 +1,8 @@
 export type ChannelDescriptionResult = {
     status: "success",
     description: string,
+
+    /* The handler id is required for BBCode renderers */
     handlerId: string
 } | {
     status: "empty"

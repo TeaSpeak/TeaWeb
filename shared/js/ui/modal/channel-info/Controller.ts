@@ -112,14 +112,7 @@ class Controller {
         }));
         this.variables.setVariableProvider("password", () => this.channel.properties.channel_flag_password);
         this.variables.setVariableProvider("topic", () => this.channel.properties.channel_topic);
-        this.variables.setVariableProvider("description", async () => {
-            const result = _.cloneDeep(await this.channel.getChannelDescription(false));
-            if(result.status === "success") {
-                result.handlerId = this.channel.channelTree.client.handlerId;
-                return result;
-            }
-            return result;
-        });
+        this.variables.setVariableProvider("description", async () => await this.channel.getChannelDescription(false));
 
         this.events.on("action_reload_description", () => {
             this.channel.clearDescriptionCache();

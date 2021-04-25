@@ -346,10 +346,15 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
             }
         }
 
+        if(!this.properties.channel_description) {
+            return { status: "empty" };
+        }
+
         return {
             status: "success",
-            description: this.properties.channel_description
-        }
+            description: this.properties.channel_description,
+            handlerId: this.channelTree.client.handlerId
+        };
     }
 
     isDescriptionCached() {
