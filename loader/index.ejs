@@ -12,7 +12,7 @@
         <% /* TODO: Put in an appropriate image <meta name="og:image" content="https://www.whatsapp.com/img/whatsapp-promo.png"> */ %>
 
         <% /* Using an absolute path here since the manifest.json works only with such. */ %>
-        <link rel="manifest" href="/manifest.json">
+        <% /* <link rel="manifest" href="/manifest.json"> */ %>
 
 <% if(buildTarget === "client") { %>
         <title>TeaClient</title>
@@ -20,7 +20,7 @@
 <% } else { %>
         <title>TeaSpeak-Web</title>
         <meta name='og:title' content='TeaSpeak-Web'>
-        <link rel='shortcut icon' href='img/favicon/teacup.png' type='image/x-icon' id="favicon">
+        <link rel='shortcut icon' href='<%= require("./images/favicon_teacup.png") %>' type='image/x-icon' id="favicon">
         <% /* <link rel="apple-touch-icon" sizes="194x194" href="/apple-touch-icon.png" type="image/png"> */ %>
 <% } %>
 
@@ -53,7 +53,7 @@
             <div id="overlay-no-js">
                 <div class="container">
                     <div class="img">
-                        <%= require("./images/script.svg") %>
+                        <%= require("!!svg-inline-loader!./images/script.svg") %>
                     </div>
                     <h1>Please enable JavaScript</h1>
                     <h3>TeaSpeak web could not run without it!</h3>
@@ -61,10 +61,6 @@
                 </div>
             </div>
         </noscript>
-
-        <!-- loader setup -->
-        <div id="style"></div>
-        <div id="scripts"></div>
 
         <!-- Loading screen -->
         <div class="loader" id="loader-overlay">

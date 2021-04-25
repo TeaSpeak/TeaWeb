@@ -19,9 +19,20 @@ interface FaviconEvents {
 }
 
 let iconImage: HTMLImageElement;
+let defaultFaviconUrl: string;
 async function initializeFaviconRenderer() {
     const events = new Registry<FaviconEvents>();
     initializeFaviconController(events);
+
+    {
+        const favicon = document.head.getElementsByTagName("link");
+        for(const element of favicon) {
+            if(element.rel === "shortcut icon") {
+                defaultFaviconUrl = element.href;
+                break;
+            }
+        }
+    }
 
     iconImage = new Image();
     iconImage.src = kClientSpriteUrl;
@@ -93,7 +104,16 @@ function initializeFaviconController(events: Registry<FaviconEvents>) {
     events.on("query_icon", () => sendFavicon());
 }
 
-const DefaultFaviconRenderer = () => <link key={"normal"} rel={"shortcut icon"} href={"img/favicon/teacup.png"} type={"image/x-icon"} />;
+const DefaultFaviconRenderer = () => {
+    if(!defaultFaviconUrl) {
+        return null;
+    }
+
+    return (
+        <link key={"normal"} rel={"shortcut icon"} href={defaultFaviconUrl} type={"image/x-icon"} />
+    );
+};
+
 const ClientIconFaviconRenderer = (props: { icon: ClientIcon }) => {
     const url = clientIconToDataUrl(props.icon);
     if(!url) {

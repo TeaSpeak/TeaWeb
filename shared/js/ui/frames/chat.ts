@@ -339,7 +339,7 @@ export function set_icon_size(size: string) {
         document.head.append(iconStyleSize);
     }
 
-    iconStyleSize.innerText = ("\n" +
+    iconStyleSize.innerHTML = ("\n" +
         ".chat-emoji {\n" +
         "  height: " + size + "!important;\n" +
         "  width: " + size + "!important;\n" +

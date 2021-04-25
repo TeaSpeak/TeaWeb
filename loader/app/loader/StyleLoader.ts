@@ -45,7 +45,7 @@ export function loadStyle(path: SourcePath) : Promise<void> {
             resolve();
         };
 
-        document.getElementById("style").appendChild(linkTag);
+        document.head.appendChild(linkTag);
         resourceRequest.markExecuting();
     });
 }

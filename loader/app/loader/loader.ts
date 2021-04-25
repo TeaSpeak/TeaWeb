@@ -156,6 +156,11 @@ export async function execute(customLoadingAnimations: boolean) {
         return;
     }
 
+    /* Cleanup <noscript> elements */
+    for(const element of document.getElementsByTagName("noscript")) {
+        element.remove();
+    }
+
     const timestampBegin = Date.now();
 
     let begin: number = 0;

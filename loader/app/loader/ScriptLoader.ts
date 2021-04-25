@@ -44,7 +44,7 @@ export function loadScript(url: SourcePath) : Promise<void> {
         }
 
         scriptTag.src = config.baseUrl + url;
-        document.getElementById("scripts").appendChild(scriptTag);
+        document.body.appendChild(scriptTag);
         resourceRequest.markExecuting();
     });
 }

@@ -82,32 +82,6 @@
                     </div>
                 </div>
             </script>
-
-            <script class="jsrender-template" id="tmpl_modal_yesno" type="text/html">
-                <div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <div class="container-icon">
-                                    <img src="img/favicon/teacup.png">
-                                </div>
-                                <node key="modal_header"></node>
-                                <div class="container-close">
-                                    <div class="button-modal-close icon_em client-close_button"></div>
-                                </div>
-                            </div>
-                            <div class="modal-body modal-body-yesno">
-                                <node key="question"></node>
-                                <div class="buttons">
-                                    <button type="button" class="btn btn-danger button-no">{{>text_no}}</button>
-                                    <button type="button" class="btn btn-raised btn-success button-yes">{{>text_yes}}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </script>
         </div>
 
         <!-- Template for the settings -->
@@ -2274,60 +2248,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_channel_info" type="text/html">
-            <div> <!-- Important for the renderer -->
-                <div class="row">
-                    <div class="column channel-type">
-                        <a class="title">{{tr "Channel Type" /}}</a>
-                        <div class="value">error: channel type</div>
-                    </div>
-                    <div class="column chat-mode">
-                        <a class="title">{{tr "Chat mode" /}}</a>
-                        <div class="value">error: chat mode</div>
-                    </div>
-                    <div class="column current-clients">
-                        <a class="title">{{tr "Current clients" /}}</a>
-                        <div class="value">error: current clients</div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="column audio-codec">
-                        <a class="title">{{tr "Audio Codec" /}}</a>
-                        <div class="value">error: audio codec</div>
-                    </div>
-                    <div class="column audio-encrypted">
-                        <a class="title">{{tr "Audio encrypted" /}}</a>
-                        <div class="value">error: audio encrypted</div>
-                    </div>
-                    <div class="column flag-password">
-                        <a class="title">{{tr "Password protected" /}}</a>
-                        <div class="value">error: password protected</div>
-                    </div>
-                </div>
-                <div class="row topic"> <!-- only visible if set! -->
-                    <div class="column">
-                        <a class="title">{{tr "Topic" /}}</a>
-                        <div class="value">error: channel topic</div>
-                    </div>
-                </div>
-                <div class="container-description"> <!-- only visible if set -->
-                    <a class="title">
-                        {{tr "Description" /}}
-                        <div class="button-copy">
-                            <div class="icon client-copy"></div>
-                        </div>
-                    </a>
-                    <div class="value">
-                        error: channel description
-                    </div>
-                    <div class="no-value">{{tr "Channel has no description" /}}</div>
-                </div>
-                <div class="container-buttons">
-                    <button class="btn btn-success button-update">{{tr "Refresh" /}}</button>
                 </div>
             </div>
         </script>
