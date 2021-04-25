@@ -371,7 +371,8 @@ export class RtpVideoConnection implements VideoConnection {
                         /* The server stops broadcasting by default, we've to reenable it */
                         Object.values(this.broadcasts).forEach(broadcast => broadcast.restartBroadcast());
                     }
-                } else if(parseInt("scid") === localClient.currentChannel().channelId) {
+                } else {
+                    /* On a channel switch, every client stops video sharing */
                     const broadcast = this.registeredClients[clientId];
                     broadcast?.setBroadcastId("screen", undefined);
                     broadcast?.setBroadcastId("camera", undefined);
@@ -543,7 +544,6 @@ export class RtpVideoConnection implements VideoConnection {
     private handleVideoAssignmentChanged(type: VideoBroadcastType, event: RTCConnectionEvents["notify_video_assignment_changed"]) {
         const oldClient = Object.values(this.registeredClients).find(client => client.getRtpTrack(type) === event.track);
         if(oldClient) {
-            oldClient.setBroadcastId(type, undefined);
             oldClient.setRtpTrack(type, undefined);
         }
 
