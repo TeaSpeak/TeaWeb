@@ -258,7 +258,7 @@ export class Modal {
         _global_modal_last = this.htmlTag[0];
 
         this.shown = true;
-        this.htmlTag.appendTo($("body"));
+        this.htmlTag.prependTo($("body"));
 
         _global_modal_count++;
         this.htmlTag.show();
