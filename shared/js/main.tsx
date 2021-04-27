@@ -213,7 +213,7 @@ async function doHandleConnectRequest(serverAddress: string, serverUniqueId: str
             return { status: "client-aborted" };
         }
 
-        await new Promise(resolve => getAudioBackend().executeWhenInitialized(resolve));
+        await new Promise<void>(resolve => getAudioBackend().executeWhenInitialized(resolve));
     }
 
     const clientNickname = parameters.getValue(AppParameters.KEY_CONNECT_NICKNAME, undefined);

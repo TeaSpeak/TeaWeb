@@ -170,11 +170,11 @@ export abstract class SubscribedPlaylist {
      *
      * @param forceQuery Forcibly query even we're subscribed and already aware of all songs.
      */
-    abstract async querySongs(forceQuery: boolean) : Promise<void>;
+    abstract querySongs(forceQuery: boolean) : Promise<void>;
 
-    abstract async addSong(url: string, urlLoader: "any" | "youtube" | "ffmpeg" | "channel", targetSongId: number | 0, mode?: "before" | "after" | "last") : Promise<void>;
-    abstract async deleteEntry(entryId: number) : Promise<void>;
-    abstract async reorderEntry(entryId: number, targetEntryId: number, mode: "before" | "after") : Promise<void>;
+    abstract addSong(url: string, urlLoader: "any" | "youtube" | "ffmpeg" | "channel", targetSongId: number | 0, mode?: "before" | "after" | "last") : Promise<void>;
+    abstract deleteEntry(entryId: number) : Promise<void>;
+    abstract reorderEntry(entryId: number, targetEntryId: number, mode: "before" | "after") : Promise<void>;
 
     getStatus() : Readonly<SubscribedPlaylistStatus> {
         return this.status;

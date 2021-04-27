@@ -39,7 +39,7 @@ class RemoteIconManager extends AbstractIconManager {
     async initialize() {
         this.ipcChannel.sendMessage("initialize", {});
 
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             const timeout = setTimeout(() => {
                 this.callbackInitialized = undefined;
                 reject(tr("initialize timeout"));

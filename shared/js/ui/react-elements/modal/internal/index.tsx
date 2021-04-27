@@ -111,7 +111,7 @@ export class InternalModalInstance implements ModalInstanceController {
             throw tr("missing modal hanging container");
         }
 
-        await new Promise(resolve => internalModalContainer.current.addModalInstance(this, resolve));
+        await new Promise<void>(resolve => internalModalContainer.current.addModalInstance(this, resolve));
         if(!this.refRendererInstance.current) {
             this.destructModalInstance();
             throw tr("missing rendered modal reference");
@@ -162,7 +162,7 @@ export class InternalModalInstance implements ModalInstanceController {
 
         this.modalInstance["onOpen"]();
         this.state = ModalState.SHOWN;
-        await new Promise(resolve => this.refRendererInstance.current.setState({ shown: true }, resolve));
+        await new Promise<void>(resolve => this.refRendererInstance.current.setState({ shown: true }, resolve));
         this.events.fire("notify_open");
     }
 
@@ -177,7 +177,7 @@ export class InternalModalInstance implements ModalInstanceController {
 
         this.state = ModalState.HIDDEN;
         this.modalInstance["onClose"]();
-        await new Promise(resolve => this.refRendererInstance.current.setState({ shown: false }, resolve));
+        await new Promise<void>(resolve => this.refRendererInstance.current.setState({ shown: false }, resolve));
 
         /* TODO: Somehow get the real animation finish signal? */
         await new Promise(resolve => setTimeout(resolve, 500));

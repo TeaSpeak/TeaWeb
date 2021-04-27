@@ -19,7 +19,7 @@ export class Mutex<T> {
 
     execute<R>(callback: (value: T, setValue: (newValue: T) => void) => R | Promise<R>) : Promise<R> {
         return new Promise<R>((resolve, reject) => {
-            this.taskQueue.push(() => new Promise(taskResolve => {
+            this.taskQueue.push(() => new Promise<void>(taskResolve => {
                 try {
                     const result = callback(this.value, newValue => this.value = newValue);
                     if(result instanceof Promise) {

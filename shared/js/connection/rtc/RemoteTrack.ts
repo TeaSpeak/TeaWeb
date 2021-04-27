@@ -141,7 +141,6 @@ export class RemoteRTPAudioTrack extends RemoteRTPTrack {
         this.htmlAudioNode.srcObject = this.mediaStream;
         this.htmlAudioNode.autoplay = true;
         this.htmlAudioNode.muted = true;
-        this.htmlAudioNode.msRealTime = true;
 
         /*
         {

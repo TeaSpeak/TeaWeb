@@ -339,9 +339,9 @@ export class ConnectionHistory {
                 break;
             }
 
-            promises.push(new Promise(resolve => {
+            promises.push(new Promise<void>(resolve => {
                 const deleteRequest = entry.delete();
-                deleteRequest.onsuccess = resolve;
+                deleteRequest.onsuccess = () => resolve();
                 deleteRequest.onerror = () => {
                     logWarn(LogCategory.GENERAL, tr("Failed to delete a connection attempt: %o"), deleteRequest.error);
                     resolve();

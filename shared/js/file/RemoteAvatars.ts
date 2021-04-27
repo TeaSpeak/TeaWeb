@@ -166,7 +166,7 @@ class RemoteAvatarManagerFactory extends AbstractAvatarManagerFactory {
     async initialize() {
         this.ipcChannel.sendMessage("query-handlers", {});
 
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             const timeout = setTimeout(() => {
                 this.callbackHandlerQueried = undefined;
                 reject(tr("handler query timeout"));

@@ -158,7 +158,7 @@ export class ExternalModalController implements ModalInstanceController {
             this.windowId = result.windowId;
             try {
                 if(!this.modalInitialized) {
-                    await new Promise((resolve, reject) => {
+                    await new Promise<void>((resolve, reject) => {
                         const timeoutId = setTimeout(reject, 15000);
                         this.modalInitializeCallback = () => {
                             clearTimeout(timeoutId);

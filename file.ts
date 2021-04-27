@@ -265,7 +265,7 @@ namespace server {
         } else {
             server = http.createServer(handleHTTPRequest);
         }
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             server.on('error', reject);
             server.listen(options.port, () => {
                 server.off("error", reject);
@@ -276,7 +276,7 @@ namespace server {
 
     export async function shutdown() {
         if(server) {
-            await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+            await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
             server = undefined;
         }
     }
@@ -396,7 +396,7 @@ namespace watcher {
             this._process.addListener("error", this.handle_error.bind(this));
 
             try {
-                await new Promise((resolve, reject) => {
+                await new Promise<void>((resolve, reject) => {
                     const id = setTimeout(reject, 5000, "timeout");
                     this._callback_init = () => {
                         clearTimeout(id);

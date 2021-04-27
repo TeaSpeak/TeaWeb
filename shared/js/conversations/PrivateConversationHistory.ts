@@ -22,7 +22,7 @@ async function requestDatabase() {
         if(databaseMode === "open") {
             return;
         } else if(databaseMode === "opening" || databaseMode === "updating") {
-            await new Promise(resolve => databaseStateChangedCallbacks.push(resolve));
+            await new Promise<void>(resolve => databaseStateChangedCallbacks.push(resolve));
         } else if(databaseMode === "closed") {
             try {
                 await doOpenDatabase(false);
@@ -285,7 +285,7 @@ export async function queryConversationEvents(clientUniqueId: string, query: {
     const events = [];
     let hasMoreEvents = false;
 
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
         cursor.onsuccess = () => {
             if(!cursor.result) {
                 /* no more results */

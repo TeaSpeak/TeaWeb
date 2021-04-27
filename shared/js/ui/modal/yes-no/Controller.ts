@@ -63,7 +63,7 @@ export async function promptYesNo(properties: YesNoParameters) : Promise<boolean
     ignorePromise(modal.show());
 
     return await new Promise<boolean | undefined>(resolve => {
-        modal.getEvents().on("destroy", () => resolve());
+        modal.getEvents().on("destroy", () => resolve(undefined));
         controller.events.on("action_submit", event => {
             resolve(event.status);
             modal.destroy();
