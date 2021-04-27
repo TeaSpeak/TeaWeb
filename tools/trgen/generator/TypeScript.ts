@@ -121,17 +121,20 @@ export function transform(config: Configuration, context: ts.TransformationConte
     config.variables.declareFiles = config.variables.declareFiles || (config.optimized ? "f" : "declare_files");
     config.variables.declarations = config.variables.declarations || (config.optimized ? "d" : "definitions");
 
+    const nodeFactory = ts.factory;
+
     //Initialize nodes
     const extraNodes = [];
-    {
+    if(config.cacheTranslations) {
+        /* This doesn't yet work with TS 4.X */
         cache.nodes = {} as any;
         if(config.useWindow) {
-            const window = ts.createIdentifier("window");
-            const translationMap = ts.createPropertyAccess(window, ts.createIdentifier(config.variables.base));
-            const newTranslations = ts.createAssignment(translationMap, ts.createObjectLiteral());
+            const window = nodeFactory.createIdentifier("window");
+            const translationMap = nodeFactory.createPropertyAccessExpression(window, nodeFactory.createIdentifier(config.variables.base));
+            const newTranslations = nodeFactory.createAssignment(translationMap, nodeFactory.createObjectLiteralExpression());
 
-            extraNodes.push(ts.createParen(
-                ts.createBinary(translationMap, ts.SyntaxKind.BarBarToken, newTranslations)
+            extraNodes.push(nodeFactory.createParenthesizedExpression(
+                nodeFactory.createBinaryExpression(translationMap, ts.SyntaxKind.BarBarToken, newTranslations)
             ));
 
             cache.nodes = {
@@ -139,24 +142,24 @@ export function transform(config: Configuration, context: ts.TransformationConte
             };
         } else if(config.module) {
             cache.nodes = {
-                translationMap: ts.createIdentifier(config.variables.base)
+                translationMap: nodeFactory.createIdentifier(config.variables.base)
             };
 
             extraNodes.push((
-                ts.createVariableDeclarationList([
-                    ts.createVariableDeclaration(config.variables.base, undefined, ts.createObjectLiteral())
+                nodeFactory.createVariableDeclarationList([
+                    nodeFactory.createVariableDeclaration(config.variables.base, undefined, undefined, nodeFactory.createObjectLiteralExpression())
                 ], ts.NodeFlags.Const)
-            ), ts.createToken(SyntaxKind.SemicolonToken));
+            ), nodeFactory.createToken(SyntaxKind.SemicolonToken));
         } else {
-            const variableMap = ts.createIdentifier(config.variables.base);
-            const inlineIf = ts.createBinary(
-                ts.createBinary(
-                    ts.createTypeOf(variableMap),
+            const variableMap = nodeFactory.createIdentifier(config.variables.base);
+            const inlineIf = nodeFactory.createBinaryExpression(
+                nodeFactory.createBinaryExpression(
+                    nodeFactory.createTypeOfExpression(variableMap),
                     SyntaxKind.ExclamationEqualsEqualsToken,
-                    ts.createLiteral("undefined")
+                    nodeFactory.createStringLiteral("undefined")
                 ),
                 ts.SyntaxKind.BarBarToken,
-                ts.createAssignment(variableMap, ts.createObjectLiteral())
+                nodeFactory.createAssignment(variableMap, nodeFactory.createObjectLiteralExpression())
             );
 
             cache.nodes = {
@@ -277,13 +280,13 @@ export function visitNode(config: Configuration, cache: VolatileTransformConfig,
             return node;
         }
 
-        const variableName = ts.createIdentifier(cache.nameGenerator(config, node, object.text || object.getText(sourceFile)));
-        const variableInit = ts.createPropertyAccess(cache.nodes.translationMap, variableName);
+        const variableName = ts.factory.createIdentifier(cache.nameGenerator(config, node, object.text || object.getText(sourceFile)));
+        const variableInit = ts.factory.createPropertyAccessExpression(cache.nodes.translationMap, variableName);
 
-        const variable = ts.createPropertyAccess(cache.nodes.translationMap, variableName);
-        const newVariable = ts.createAssignment(variable, call);
+        const variable = ts.factory.createPropertyAccessExpression(cache.nodes.translationMap, variableName);
+        const newVariable = ts.factory.createAssignment(variable, call);
 
-        return ts.createBinary(variableInit, ts.SyntaxKind.BarBarToken, newVariable);
+        return ts.factory.createBinaryExpression(variableInit, ts.SyntaxKind.BarBarToken, newVariable);
     } else if(node.kind === SyntaxKind.JsxElement) {
         const element = node as ts.JsxElement;
         const tag = element.openingElement.tagName as ts.Identifier;
