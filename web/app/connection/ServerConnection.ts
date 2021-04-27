@@ -2,7 +2,7 @@ import {
     AbstractServerConnection,
     CommandOptionDefaults,
     CommandOptions, ConnectionPing,
-    ConnectionStatistics,
+    ConnectionStatistics, ServerCommand,
 } from "tc-shared/connection/ConnectionBase";
 import {ConnectionHandler, ConnectionState, DisconnectReason} from "tc-shared/ConnectionHandler";
 import {HandshakeHandler} from "tc-shared/connection/HandshakeHandler";
@@ -71,7 +71,7 @@ export class ServerConnection extends AbstractServerConnection {
         this.commandHandlerBoss = new ServerConnectionCommandBoss(this);
         this.defaultCommandHandler = new ConnectionCommandHandler(this);
 
-        this.commandHandlerBoss.register_handler(this.defaultCommandHandler);
+        this.commandHandlerBoss.registerHandler(this.defaultCommandHandler);
         this.command_helper.initialize();
 
         this.rtcConnection = new RTCConnection(this, true);
@@ -101,7 +101,7 @@ export class ServerConnection extends AbstractServerConnection {
             this.rtcConnection.destroy();
             this.command_helper.destroy();
 
-            this.defaultCommandHandler && this.commandHandlerBoss.unregister_handler(this.defaultCommandHandler);
+            this.defaultCommandHandler && this.commandHandlerBoss.unregisterHandler(this.defaultCommandHandler);
             this.defaultCommandHandler = undefined;
 
             this.voiceConnection && this.voiceConnection.destroy();
@@ -330,10 +330,7 @@ export class ServerConnection extends AbstractServerConnection {
                 group.group(log.LogType.TRACE, tr("Json:")).collapsed(true).log("%o", json).end();
                 /* devel-block-end */
 
-                this.commandHandlerBoss.invoke_handle({
-                    command: json["command"],
-                    arguments: json["data"]
-                });
+                this.commandHandlerBoss.invokeCommand(new ServerCommand(json["command"], json["data"], []));
 
                 if(json["command"] === "initserver") {
                     this.handleServerInit();
@@ -344,10 +341,7 @@ export class ServerConnection extends AbstractServerConnection {
             } else if(json["type"] === "command-raw") {
                 const command = parseCommand(json["payload"]);
                 logTrace(LogCategory.NETWORKING, tr("Received command %s"), command.command);
-                this.commandHandlerBoss.invoke_handle({
-                    command: command.command,
-                    arguments: command.payload
-                });
+                this.commandHandlerBoss.invokeCommand(command);
 
                 if(command.command === "initserver") {
                     this.handleServerInit();
@@ -471,7 +465,7 @@ export class ServerConnection extends AbstractServerConnection {
         return this.videoConnection;
     }
 
-    command_handler_boss(): AbstractCommandHandlerBoss {
+    getCommandHandler(): AbstractCommandHandlerBoss {
         return this.commandHandlerBoss;
     }
 

@@ -6,7 +6,7 @@ import {CommandResult} from "../../connection/ServerConnectionDeclaration";
 import {LogCategory, logError, logWarn} from "../../log";
 import {tr, tra} from "../../i18n/localize";
 import * as tooltip from "../../ui/elements/Tooltip";
-import * as i18nc from "../../i18n/country";
+import * as i18nc from "../../i18n/CountryFlag";
 import {find} from "../../permission/PermissionManager";
 import * as htmltags from "../../ui/htmltags";
 import {ErrorCode} from "../../connection/ErrorCode";

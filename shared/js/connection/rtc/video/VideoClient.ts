@@ -82,11 +82,6 @@ export class RtpVideoClient implements VideoClient {
         await this.handle.getConnection().send_command("broadcastvideojoin", {
             bid: this.broadcastIds[broadcastType],
             bt: broadcastType === "camera" ? 0 : 1
-        }).then(() => {
-            /* the broadcast state should switch automatically to running since we got an RTP stream now */
-            if(this.trackStates[broadcastType] === VideoBroadcastState.Initializing) {
-                throw tr("failed to receive stream");
-            }
         }).catch(error => {
             this.joinedStates[broadcastType] = false;
             this.updateBroadcastState(broadcastType);

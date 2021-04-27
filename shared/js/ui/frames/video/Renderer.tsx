@@ -4,30 +4,30 @@ import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {Registry} from "tc-shared/events";
 import {
-    ChannelVideoEvents,
-    ChannelVideoInfo,
+    ChannelVideoEvents, ChannelVideoInfo,
     ChannelVideoStreamState,
-    kLocalVideoId,
-    makeVideoAutoplay,
+    kLocalVideoId, makeVideoAutoplay,
     VideoStreamState,
     VideoSubscribeInfo
 } from "./Definitions";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
-import {ClientTag} from "tc-shared/ui/tree/EntryTags";
 import ResizeObserver from "resize-observer-polyfill";
 import {LogCategory, logTrace, logWarn} from "tc-shared/log";
 import {spawnContextMenu} from "tc-shared/ui/ContextMenu";
 import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
 import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
-import {useTr} from "tc-shared/ui/react-elements/Helper";
+import {joinClassList, useTr} from "tc-shared/ui/react-elements/Helper";
 import {Spotlight, SpotlightDimensions, SpotlightDimensionsContext} from "./RendererSpotlight";
 import * as _ from "lodash";
+import {ClientTag} from "tc-shared/ui/tree/EntryTags";
+import {tra} from "tc-shared/i18n/localize";
 
 
 const SubscribeContext = React.createContext<VideoSubscribeInfo>(undefined);
 const EventContext = React.createContext<Registry<ChannelVideoEvents>>(undefined);
 const HandlerIdContext = React.createContext<string>(undefined);
+export const VideoIdContext = React.createContext<string>(undefined);
 
 export const RendererVideoEventContext = EventContext;
 
@@ -47,15 +47,63 @@ const ExpendArrow = React.memo(() => {
         <div className={cssStyle.expendArrow} onClick={() => events.fire("action_toggle_expended", { expended: !expended })}>
             <ClientIconRenderer icon={ClientIcon.DoubleArrow} className={cssStyle.icon} />
         </div>
+    );
+});
+
+const VideoViewerCount = React.memo(() => {
+    const videoId = useContext(VideoIdContext);
+    const events = useContext(EventContext);
+    if(videoId !== kLocalVideoId) {
+        /* Currently one we can see our own video viewer */
+        return null;
+    }
+
+    const [ viewer, setViewer ] = useState<{ camera: number | undefined, screen: number | undefined }>(() => {
+        events.fire("query_viewer_count");
+        return { screen: undefined, camera: undefined };
+    });
+
+    events.reactUse("notify_viewer_count", event => setViewer({ camera: event.camera, screen: event.screen }));
+
+    let info = [];
+    if(typeof viewer.camera === "number") {
+        info.push(
+            <div className={cssStyle.entry} key={"camera"} title={tra("{} Camera viewers", viewer.camera)}>
+                <div className={cssStyle.value}>{viewer.camera}</div>
+                <ClientIconRenderer icon={ClientIcon.VideoMuted} className={cssStyle.icon} />
+            </div>
+        );
+    }
+
+    if(typeof viewer.screen === "number") {
+        info.push(
+            <div className={cssStyle.entry} key={"screen"} title={tra("{} Screen viewers", viewer.screen)}>
+                <div className={cssStyle.value}>{viewer.screen}</div>
+                <ClientIconRenderer icon={ClientIcon.ShareScreen} className={cssStyle.icon} />
+            </div>
+        );
+    }
+
+    if(info.length === 0) {
+        /* We're not streaming any video */
+        return null;
+    }
+
+    return (
+        <div
+            className={cssStyle.videoViewerCount}
+            onClick={() => {
+                /* TODO! */
+            }}
+        >
+            {info}
+        </div>
     )
 });
 
-const VideoInfo = React.memo((props: { videoId: string }) => {
+const VideoClientInfo = React.memo((props: { videoId: string }) => {
     const events = useContext(EventContext);
     const handlerId = useContext(HandlerIdContext);
-
-    const localVideo = props.videoId === kLocalVideoId;
-    const nameClassList = cssStyle.name + " " + (localVideo ? cssStyle.local : "");
 
     const [ info, setInfo ] = useState<"loading" | ChannelVideoInfo>(() => {
         events.fire("query_video_info", { videoId: props.videoId });
@@ -79,57 +127,21 @@ const VideoInfo = React.memo((props: { videoId: string }) => {
 
     let clientName;
     if(info === "loading") {
-        clientName = <div className={nameClassList} key={"loading"}><Translatable>loading</Translatable> {props.videoId} <LoadingDots /></div>;
+        clientName = (
+            <div className={cssStyle.name} key={"loading"}>
+                <Translatable>loading</Translatable> {props.videoId} <LoadingDots />
+            </div>
+        );
     } else {
-        clientName = <ClientTag clientName={info.clientName} clientUniqueId={info.clientUniqueId} clientId={info.clientId} handlerId={handlerId} className={nameClassList} key={"loaded"} />;
+        clientName = <ClientTag clientName={info.clientName} clientUniqueId={info.clientUniqueId} clientId={info.clientId} handlerId={handlerId} className={cssStyle.name} key={"loaded"} />;
     }
 
     return (
-        <div className={cssStyle.info}>
+        <div className={joinClassList(cssStyle.info, props.videoId === kLocalVideoId && cssStyle.local)}>
             <ClientIconRenderer icon={statusIcon} className={cssStyle.icon} />
             {clientName}
         </div>
     );
-});
-
-const VideoStreamReplay = React.memo((props: { stream: MediaStream | undefined, className: string, streamType: VideoBroadcastType }) => {
-    const refVideo = useRef<HTMLVideoElement>();
-
-    useEffect(() => {
-        let cancelAutoplay;
-        const video = refVideo.current;
-        if(props.stream) {
-            video.style.opacity = "1";
-            video.srcObject = props.stream;
-            video.muted = true;
-            cancelAutoplay = makeVideoAutoplay(video);
-        } else {
-            video.style.opacity = "0";
-        }
-
-        return () => {
-            const video = refVideo.current;
-            if(video) {
-                video.onpause = undefined;
-                video.onended = undefined;
-            }
-
-            if(cancelAutoplay) {
-                cancelAutoplay();
-            }
-        }
-    }, [ props.stream ]);
-
-    let title;
-    if(props.streamType === "camera") {
-        title = useTr("Camera");
-    } else {
-        title = useTr("Screen");
-    }
-
-    return (
-        <video ref={refVideo} className={cssStyle.video + " " + props.className} title={title} x-stream-type={props.streamType} />
-    )
 });
 
 const VideoSubscribeContextProvider = (props: { children?: React.ReactElement | React.ReactElement[] }) => {
@@ -225,13 +237,44 @@ const VideoStreamAvailableRenderer = (props: { videoId: string, mode: VideoBroad
     }
 };
 
-const VideoStreamRenderer = (props: { videoId: string, streamType: VideoBroadcastType, className?: string }) => {
+const MediaStreamVideoRenderer = React.memo((props: { stream: MediaStream | undefined, className: string, title: string }) => {
+    const refVideo = useRef<HTMLVideoElement>();
+
+    useEffect(() => {
+        let cancelAutoplay;
+        const video = refVideo.current;
+        if(props.stream) {
+            video.style.opacity = "1";
+            video.srcObject = props.stream;
+            video.muted = true;
+            cancelAutoplay = makeVideoAutoplay(video);
+        } else {
+            video.style.opacity = "0";
+        }
+
+        return () => {
+            const video = refVideo.current;
+            if(video) {
+                video.onpause = undefined;
+                video.onended = undefined;
+            }
+
+            if(cancelAutoplay) {
+                cancelAutoplay();
+            }
+        }
+    }, [ props.stream ]);
+
+    return (
+        <video ref={refVideo} className={cssStyle.video + " " + props.className} title={props.title} />
+    )
+});
+
+const VideoStreamPlayer = (props: { videoId: string, streamType: VideoBroadcastType, className?: string }) => {
     const events = useContext(EventContext);
     const [ state, setState ] = useState<VideoStreamState>(() => {
         events.fire("query_video_stream", { videoId: props.videoId, broadcastType: props.streamType });
-        return {
-            state: "disconnected",
-        }
+        return { state: "disconnected", }
     });
     events.reactUse("notify_video_stream", event => {
         if(event.videoId === props.videoId && event.broadcastType === props.streamType) {
@@ -243,23 +286,34 @@ const VideoStreamRenderer = (props: { videoId: string, streamType: VideoBroadcas
         case "disconnected":
             return (
                 <div className={cssStyle.text} key={"no-video-stream"}>
-                    <div><Translatable>No video stream</Translatable></div>
+                    <div>
+                        <Translatable>No video stream</Translatable>
+                    </div>
                 </div>
             );
 
         case "connecting":
             return (
                 <div className={cssStyle.text} key={"info-initializing"}>
-                    <div><Translatable>connecting</Translatable> <LoadingDots /></div>
+                    <div>
+                        <Translatable>connecting</Translatable> <LoadingDots />
+                    </div>
                 </div>
             );
 
         case "connected":
-            return <VideoStreamReplay stream={state.stream} className={props.className} streamType={props.streamType} key={"connected"} />;
+            return (
+                <MediaStreamVideoRenderer
+                    stream={state.stream}
+                    className={props.className}
+                    title={props.streamType === "camera" ? tr("Camera") : tr("Screen")}
+                    key={"connected"}
+                />
+            );
 
         case "failed":
             return (
-                <div className={cssStyle.text + " " + cssStyle.error} key={"error"}>
+                <div className={joinClassList(cssStyle.text, cssStyle.error)} key={"error"}>
                     <div><Translatable>Stream replay failed</Translatable></div>
                 </div>
             );
@@ -275,7 +329,7 @@ const VideoStreamRenderer = (props: { videoId: string, streamType: VideoBroadcas
 
 const VideoPlayer = React.memo((props: { videoId: string, cameraState: ChannelVideoStreamState, screenState: ChannelVideoStreamState }) => {
     const streamElements = [];
-    const streamClasses = [cssStyle.videoPrimary, cssStyle.videoSecondary];
+    const streamClasses = [ cssStyle.videoPrimary, cssStyle.videoSecondary ];
 
     if(props.cameraState === "none" && props.screenState === "none") {
         /* No video available. Will be handled bellow */
@@ -302,7 +356,7 @@ const VideoPlayer = React.memo((props: { videoId: string, cameraState: ChannelVi
             );
         } else if(props.screenState === "streaming") {
             streamElements.push(
-                <VideoStreamRenderer key={"stream-screen"} videoId={props.videoId} streamType={"screen"} className={streamClasses.pop_front()} />
+                <VideoStreamPlayer key={"stream-screen"} videoId={props.videoId} streamType={"screen"} className={streamClasses.pop_front()} />
             );
         }
 
@@ -318,7 +372,7 @@ const VideoPlayer = React.memo((props: { videoId: string, cameraState: ChannelVi
             );
         } else if(props.cameraState === "streaming") {
             streamElements.push(
-                <VideoStreamRenderer key={"stream-camera"} videoId={props.videoId} streamType={"camera"} className={streamClasses.pop_front()} />
+                <VideoStreamPlayer key={"stream-camera"} videoId={props.videoId} streamType={"camera"} className={streamClasses.pop_front()} />
             );
         }
     }
@@ -339,6 +393,29 @@ const VideoPlayer = React.memo((props: { videoId: string, cameraState: ChannelVi
     return <>{streamElements}</>;
 });
 
+const VideoToggleButton = React.memo((props: { videoId: string, broadcastType: VideoBroadcastType, target: boolean }) => {
+    const events = useContext(EventContext);
+
+    let title;
+    let icon: ClientIcon;
+    if(props.broadcastType === "camera") {
+        title = props.target ? useTr("Unmute screen video") : useTr("Mute screen video");
+        icon = ClientIcon.ShareScreen;
+    } else {
+        title = props.target ? useTr("Unmute camera video") : useTr("Mute camera video");
+        icon = ClientIcon.VideoMuted;
+    }
+
+    return (
+        <div className={joinClassList(cssStyle.iconContainer, cssStyle.toggle, !props.target && cssStyle.disabled)}
+             onClick={() => events.fire("action_toggle_mute", { videoId: props.videoId, broadcastType: props.broadcastType, muted: props.target })}
+             title={title}
+        >
+            <ClientIconRenderer className={cssStyle.icon} icon={icon} />
+        </div>
+    )
+});
+
 const VideoControlButtons = React.memo((props: {
     videoId: string,
     cameraState: ChannelVideoStreamState,
@@ -348,44 +425,74 @@ const VideoControlButtons = React.memo((props: {
 }) => {
     const events = useContext(EventContext);
 
-    const screenShown = props.screenState !== "none" && props.videoId !== kLocalVideoId;
-    const cameraShown = props.cameraState !== "none" && props.videoId !== kLocalVideoId;
+    let buttons = [];
+    if(props.videoId !== kLocalVideoId) {
+        switch (props.screenState) {
+            case "available":
+            case "ignored":
+                buttons.push(
+                    <VideoToggleButton videoId={props.videoId} target={false} broadcastType={"screen"} key={"screen-disabled"} />
+                );
+                break;
 
-    const screenDisabled = props.screenState === "ignored" || props.screenState === "available";
-    const cameraDisabled = props.cameraState === "ignored" || props.cameraState === "available";
+            case "streaming":
+                buttons.push(
+                    <VideoToggleButton videoId={props.videoId} target={true} broadcastType={"screen"} key={"screen-enabled"} />
+                );
+                break;
+
+            case "none":
+            default:
+                break;
+        }
+
+        switch (props.cameraState) {
+            case "available":
+            case "ignored":
+                buttons.push(
+                    <VideoToggleButton videoId={props.videoId} target={false} broadcastType={"camera"} key={"camera-disabled"} />
+                );
+                break;
+
+            case "streaming":
+                buttons.push(
+                    <VideoToggleButton videoId={props.videoId} target={true} broadcastType={"camera"} key={"camera-enabled"} />
+                );
+                break;
+
+            case "none":
+            default:
+                break;
+        }
+    }
+
+    buttons.push(
+        <div className={cssStyle.iconContainer + " " + (props.fullscreenMode === "unavailable" ? cssStyle.hidden : "")}
+             key={"spotlight"}
+             onClick={() => {
+                 if(props.isSpotlight) {
+                     events.fire("action_set_fullscreen", { videoId: props.fullscreenMode === "set" ? undefined : props.videoId });
+                 } else {
+                     events.fire("action_toggle_spotlight", { videoIds: [ props.videoId ], expend: true, enabled: true });
+                     events.fire("action_focus_spotlight", { });
+                 }
+             }}
+             title={props.isSpotlight ? tr("Toggle fullscreen") : tr("Toggle spotlight")}
+        >
+            <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.Fullscreen} />
+        </div>
+    );
 
     return (
         <div className={cssStyle.actionIcons}>
-            <div className={cssStyle.iconContainer + " " + cssStyle.toggle + " " + (screenShown ? "" : cssStyle.hidden) + " " + (screenDisabled ? cssStyle.disabled : "")}
-                 onClick={() => events.fire("action_toggle_mute", { videoId: props.videoId, broadcastType: "screen", muted: !screenDisabled })}
-                 title={screenDisabled ? tr("Unmute screen video") : tr("Mute screen video")}
-            >
-                <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.ShareScreen} />
-            </div>
-            <div className={cssStyle.iconContainer + " " + cssStyle.toggle + " " + (cameraShown ? "" : cssStyle.hidden) + " " + (cameraDisabled ? cssStyle.disabled : "")}
-                 onClick={() => events.fire("action_toggle_mute", { videoId: props.videoId, broadcastType: "camera", muted: !cameraDisabled })}
-                 title={cameraDisabled ? tr("Unmute camera video") : tr("Mute camera video")}
-            >
-                <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.VideoMuted} />
-            </div>
-            <div className={cssStyle.iconContainer + " " + (props.fullscreenMode === "unavailable" ? cssStyle.hidden : "")}
-                 onClick={() => {
-                     if(props.isSpotlight) {
-                         events.fire("action_set_fullscreen", { videoId: props.fullscreenMode === "set" ? undefined : props.videoId });
-                     } else {
-                         events.fire("action_toggle_spotlight", { videoIds: [ props.videoId ], expend: true, enabled: true });
-                         events.fire("action_focus_spotlight", { });
-                     }
-                 }}
-                 title={props.isSpotlight ? tr("Toggle fullscreen") : tr("Toggle spotlight")}
-            >
-                <ClientIconRenderer className={cssStyle.icon} icon={ClientIcon.Fullscreen} />
-            </div>
+            {buttons}
         </div>
     );
 });
 
-export const VideoContainer = React.memo((props: { videoId: string, isSpotlight: boolean }) => {
+export const VideoContainer = React.memo((props: { isSpotlight: boolean }) => {
+    const videoId = useContext(VideoIdContext);
+
     const events = useContext(EventContext);
     const refContainer = useRef<HTMLDivElement>();
     const fullscreenCapable = "requestFullscreen" in HTMLElement.prototype;
@@ -394,12 +501,12 @@ export const VideoContainer = React.memo((props: { videoId: string, isSpotlight:
 
     const [ cameraState, setCameraState ] = useState<ChannelVideoStreamState>("none");
     const [ screenState, setScreenState ] = useState<ChannelVideoStreamState>(() => {
-        events.fire("query_video", { videoId: props.videoId });
+        events.fire("query_video", { videoId: videoId });
         return "none";
     });
 
     events.reactUse("notify_video", event => {
-        if(event.videoId === props.videoId) {
+        if(event.videoId === videoId) {
             setCameraState(event.cameraStream);
             setScreenState(event.screenStream);
         }
@@ -424,7 +531,7 @@ export const VideoContainer = React.memo((props: { videoId: string, isSpotlight:
     }, [ isFullscreen ]);
 
     events.reactUse("action_set_fullscreen", event => {
-        if(event.videoId === props.videoId) {
+        if(event.videoId === videoId) {
             if(!refContainer.current) { return; }
 
             refContainer.current.requestFullscreen().then(() => {
@@ -448,9 +555,9 @@ export const VideoContainer = React.memo((props: { videoId: string, isSpotlight:
                 if(isFullscreen) {
                     events.fire("action_set_fullscreen", { videoId: undefined });
                 } else if(props.isSpotlight) {
-                    events.fire("action_set_fullscreen", { videoId: props.videoId });
+                    events.fire("action_set_fullscreen", { videoId: videoId });
                 } else {
-                    events.fire("action_toggle_spotlight", { videoIds: [ props.videoId ], expend: true, enabled: true });
+                    events.fire("action_toggle_spotlight", { videoIds: [ videoId ], expend: true, enabled: true });
                     events.fire("action_focus_spotlight", { });
                 }
             }}
@@ -467,7 +574,7 @@ export const VideoContainer = React.memo((props: { videoId: string, isSpotlight:
                         label: tr("Popout Video"),
                         icon: ClientIcon.Fullscreen,
                         click: () => {
-                            events.fire("action_set_pip", { videoId: props.videoId, broadcastType: streamType as any });
+                            events.fire("action_set_pip", { videoId: videoId, broadcastType: streamType as any });
                         },
                         visible: !!streamType && "requestPictureInPicture" in HTMLVideoElement.prototype
                     },
@@ -476,7 +583,7 @@ export const VideoContainer = React.memo((props: { videoId: string, isSpotlight:
                         label: isFullscreen ? tr("Release fullscreen") : tr("Show in fullscreen"),
                         icon: ClientIcon.Fullscreen,
                         click: () => {
-                            events.fire("action_set_fullscreen", { videoId: isFullscreen ? undefined : props.videoId });
+                            events.fire("action_set_fullscreen", { videoId: isFullscreen ? undefined : videoId });
                         }
                     },
                     {
@@ -484,7 +591,7 @@ export const VideoContainer = React.memo((props: { videoId: string, isSpotlight:
                         label: props.isSpotlight ? tr("Release spotlight") : tr("Put client in spotlight"),
                         icon: ClientIcon.Fullscreen,
                         click: () => {
-                            events.fire("action_toggle_spotlight", { videoIds: [ props.videoId ], expend: true, enabled: !props.isSpotlight });
+                            events.fire("action_toggle_spotlight", { videoIds: [ videoId ], expend: true, enabled: !props.isSpotlight });
                             events.fire("action_focus_spotlight", { });
                         }
                     }
@@ -492,10 +599,11 @@ export const VideoContainer = React.memo((props: { videoId: string, isSpotlight:
             }}
             ref={refContainer}
         >
-            <VideoPlayer videoId={props.videoId} cameraState={cameraState} screenState={screenState} />
-            <VideoInfo videoId={props.videoId} />
+            <VideoPlayer videoId={videoId} cameraState={cameraState} screenState={screenState} />
+            <VideoClientInfo videoId={videoId} />
+            <VideoViewerCount />
             <VideoControlButtons
-                videoId={props.videoId}
+                videoId={videoId}
                 cameraState={cameraState}
                 screenState={screenState}
                 isSpotlight={props.isSpotlight}
@@ -505,13 +613,11 @@ export const VideoContainer = React.memo((props: { videoId: string, isSpotlight:
     );
 });
 
-const VideoBarArrow = React.memo((props: { direction: "left" | "right", containerRef: React.RefObject<HTMLDivElement> }) => {
+const VideoBarArrow = React.memo((props: { direction: "left" | "right", shown: boolean, containerRef: React.RefObject<HTMLDivElement> }) => {
     const events = useContext(EventContext);
-    const [ shown, setShown ] = useState(false);
-    events.reactUse("notify_video_arrows", event => setShown(event[props.direction]));
 
     return (
-        <div className={cssStyle.arrow + " " + cssStyle[props.direction] + " " + (shown ? "" : cssStyle.hidden)} ref={props.containerRef}>
+        <div className={cssStyle.arrow + " " + cssStyle[props.direction] + " " + (props.shown ? "" : cssStyle.hidden)} ref={props.containerRef}>
             <div className={cssStyle.iconContainer} onClick={() => events.fire("action_video_scroll", { direction: props.direction })}>
                 <ClientIconRenderer icon={ClientIcon.SimpleArrow} className={cssStyle.icon} />
             </div>
@@ -525,9 +631,12 @@ const VideoBar = React.memo(() => {
     const refArrowRight = useRef<HTMLDivElement>();
     const refArrowLeft = useRef<HTMLDivElement>();
 
-    const [ videos, setVideos ] = useState<"loading" | string[]>(() => {
+    const [ arrowLeftShown, setArrowLeftShown ] = useState(false);
+    const [ arrowRightShown, setArrowRightShown ] = useState(false);
+
+    const [ videos, setVideos ] = useState<string[]>(() => {
         events.fire("query_videos");
-        return "loading";
+        return [];
     });
     events.reactUse("notify_videos", event => setVideos(event.videoIds));
 
@@ -537,29 +646,32 @@ const VideoBar = React.memo(() => {
 
         const rightEndReached = container.scrollLeft + container.clientWidth + 1 >= container.scrollWidth;
         const leftEndReached = container.scrollLeft <= .9;
-        events.fire("notify_video_arrows", { left: !leftEndReached, right: !rightEndReached });
+        setArrowLeftShown(!leftEndReached);
+        setArrowRightShown(!rightEndReached);
     }, [ refVideos ]);
 
     events.reactUse("action_video_scroll", event => {
         const container = refVideos.current;
         const arrowLeft = refArrowLeft.current;
         const arrowRight = refArrowRight.current;
-        if(container && arrowLeft && arrowRight) {
-            const children = [...container.children] as HTMLElement[];
-            if(event.direction === "left") {
-                const currentCutOff = container.scrollLeft;
-                const element = children.filter(element => element.offsetLeft >= currentCutOff)
-                    .sort((a, b) => a.offsetLeft - b.offsetLeft)[0];
+        if(!container || !arrowLeft || !arrowRight) {
+            return;
+        }
 
-                container.scrollLeft = (element.offsetLeft + element.clientWidth) - (container.clientWidth - arrowRight.clientWidth);
-            } else {
-                const currentCutOff = container.scrollLeft + container.clientWidth;
-                const element = children.filter(element => element.offsetLeft <= currentCutOff)
-                    .sort((a, b) => a.offsetLeft - b.offsetLeft)
-                    .last();
+        const children = [...container.children] as HTMLElement[];
+        if(event.direction === "left") {
+            const currentCutOff = container.scrollLeft;
+            const element = children.filter(element => element.offsetLeft >= currentCutOff)
+                .sort((a, b) => a.offsetLeft - b.offsetLeft)[0];
 
-                container.scrollLeft = element.offsetLeft - arrowLeft.clientWidth;
-            }
+            container.scrollLeft = (element.offsetLeft + element.clientWidth) - (container.clientWidth - arrowRight.clientWidth);
+        } else {
+            const currentCutOff = container.scrollLeft + container.clientWidth;
+            const element = children.filter(element => element.offsetLeft <= currentCutOff)
+                .sort((a, b) => a.offsetLeft - b.offsetLeft)
+                .last();
+
+            container.scrollLeft = element.offsetLeft - arrowLeft.clientWidth;
         }
         updateScrollButtons();
     }, undefined, [ updateScrollButtons ]);
@@ -587,16 +699,16 @@ const VideoBar = React.memo(() => {
     return (
         <div className={cssStyle.videoBar}>
             <div className={cssStyle.videos} ref={refVideos}>
-                {videos === "loading" ? undefined :
-                    videos.map(videoId => (
-                        <ErrorBoundary key={videoId}>
-                            <VideoContainer videoId={videoId} isSpotlight={false} />
-                        </ErrorBoundary>
-                    ))
-                }
+                {videos.map(videoId => (
+                    <ErrorBoundary key={videoId}>
+                        <VideoIdContext.Provider value={videoId}>
+                            <VideoContainer isSpotlight={false} />
+                        </VideoIdContext.Provider>
+                    </ErrorBoundary>
+                ))}
             </div>
-            <VideoBarArrow direction={"left"} containerRef={refArrowLeft} />
-            <VideoBarArrow direction={"right"} containerRef={refArrowRight} />
+            <VideoBarArrow direction={"left"} containerRef={refArrowLeft} shown={arrowLeftShown} />
+            <VideoBarArrow direction={"right"} containerRef={refArrowRight} shown={arrowRightShown} />
         </div>
     )
 });

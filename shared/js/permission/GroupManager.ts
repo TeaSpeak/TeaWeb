@@ -168,7 +168,7 @@ export class GroupManager extends AbstractCommandHandler {
             }
         };
 
-        client.serverConnection.command_handler_boss().register_handler(this);
+        client.serverConnection.getCommandHandler().registerHandler(this);
         client.events().on("notify_connection_state_changed", this.connectionStateListener);
 
         this.reset();
@@ -177,7 +177,7 @@ export class GroupManager extends AbstractCommandHandler {
     destroy() {
         this.reset();
         this.connectionHandler.events().off("notify_connection_state_changed", this.connectionStateListener);
-        this.connectionHandler.serverConnection?.command_handler_boss().unregister_handler(this);
+        this.connectionHandler.serverConnection?.getCommandHandler().unregisterHandler(this);
         this.serverGroups = undefined;
         this.channelGroups = undefined;
     }

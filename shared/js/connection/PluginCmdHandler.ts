@@ -97,11 +97,11 @@ export class PluginCmdRegistry {
         this.connection = connection;
 
         this.handler = new PluginCmdRegistryCommandHandler(connection.serverConnection, this.handlePluginCommand.bind(this));
-        this.connection.serverConnection.command_handler_boss().register_handler(this.handler);
+        this.connection.serverConnection.getCommandHandler().registerHandler(this.handler);
     }
 
     destroy() {
-        this.connection.serverConnection.command_handler_boss().unregister_handler(this.handler);
+        this.connection.serverConnection.getCommandHandler().unregisterHandler(this.handler);
 
         Object.keys(this.handlerMap).map(e => this.handlerMap[e]).forEach(handler => {
             handler["currentServerConnection"] = undefined;

@@ -83,6 +83,16 @@ export class SdpProcessor {
         return this.rtpLocalChannelMapping[mediaId];
     }
 
+    getLocalMediaIdFromSsrc(ssrc: number) : string | undefined {
+        for(const key of Object.keys(this.rtpLocalChannelMapping)) {
+            if(this.rtpLocalChannelMapping[key] === ssrc) {
+                return key;
+            }
+        }
+
+        return undefined;
+    }
+
     processIncomingSdp(sdpString: string, _mode: "offer" | "answer") : string {
         /* The server somehow does not encode the level id in hex */
         sdpString = sdpString.replace(/profile-level-id=4325407/g, "profile-level-id=4d0028");

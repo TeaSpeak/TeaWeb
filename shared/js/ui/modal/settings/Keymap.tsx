@@ -101,7 +101,7 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
                 hidden={this.props.hidden}
                 onContextMenu={e => this.onContextMenu(e)}
             >
-                <IconRenderer icon={this.props.icon}/>
+                <IconRenderer icon={this.props.icon} className={cssStyle.icon}/>
                 <a><Translatable trIgnore={true}>{this.props.description}</Translatable></a>
                 {rightItem}
             </div>

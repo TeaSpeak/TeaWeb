@@ -31,18 +31,19 @@ import {W2GPluginCmdHandler} from "tc-shared/ui/modal/video-viewer/W2GPlugin";
 import {spawnServerGroupAssignments} from "tc-shared/ui/modal/group-assignment/Controller";
 import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
 
+/* Must be the same as the TeaSpeak servers enum values */
 export enum ClientType {
-    CLIENT_VOICE,
-    CLIENT_QUERY,
-    CLIENT_INTERNAL,
-    CLIENT_WEB,
-    CLIENT_MUSIC,
-    CLIENT_UNDEFINED
+    CLIENT_VOICE = 0,
+    CLIENT_QUERY = 1,
+    CLIENT_WEB = 3,
+    CLIENT_MUSIC = 4,
+    CLIENT_TEASPEAK = 5,
+    CLIENT_UNDEFINED = 5
 }
 
 export class ClientProperties {
     client_type: ClientType = ClientType.CLIENT_VOICE; //TeamSpeaks type
-    client_type_exact: ClientType = ClientType.CLIENT_VOICE;
+    client_type_exact: ClientType = ClientType.CLIENT_UNDEFINED;
 
     client_database_id: number = 0;
     client_version: string = "";
@@ -911,6 +912,44 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
 
     getAudioVolume() {
         return this.voiceVolume;
+    }
+
+    getClientType() : ClientType {
+        if(this.properties.client_type_exact === ClientType.CLIENT_UNDEFINED) {
+            /* We're on a TS3 server */
+            switch(this.properties.client_type) {
+                case 0:
+                    return ClientType.CLIENT_VOICE;
+
+                case 1:
+                    return ClientType.CLIENT_QUERY;
+
+                default:
+                    return ClientType.CLIENT_UNDEFINED;
+            }
+        } else {
+            switch(this.properties.client_type_exact) {
+                case 0:
+                    return ClientType.CLIENT_VOICE;
+
+                case 1:
+                    return ClientType.CLIENT_QUERY;
+
+                case 3:
+                    return ClientType.CLIENT_WEB;
+
+                case 4:
+                    return ClientType.CLIENT_MUSIC;
+
+                case 5:
+                    return ClientType.CLIENT_TEASPEAK;
+
+                case 2:
+                    /* 2 is the internal client type which should never be visible for the target user */
+                default:
+                    return ClientType.CLIENT_UNDEFINED;
+            }
+        }
     }
 }
 

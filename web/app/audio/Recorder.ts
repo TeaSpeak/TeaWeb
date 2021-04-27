@@ -56,7 +56,7 @@ class JavascriptInput implements AbstractInput {
     private currentAudioStream: MediaStreamAudioSourceNode;
 
     private audioContext: AudioContext;
-    private sourceNode: AudioNode; /* last node which could be connected to the target; target might be the _consumer_node */
+    private audioSourceNode: AudioNode; /* last node which could be connected to the target; target might be the _consumer_node */
     private audioNodeCallbackConsumer: ScriptProcessorNode;
     private readonly audioScriptProcessorCallback;
     private audioNodeVolume: GainNode;
@@ -167,8 +167,12 @@ class JavascriptInput implements AbstractInput {
             return InputStartError.EBUSY;
         }
 
-        /* do it async since if the doStart fails on the first iteration, we're setting the start promise, after it's getting cleared */
-        return await (this.startPromise = Promise.resolve().then(() => this.doStart()));
+        try {
+            this.startPromise = this.doStart();
+            return await this.startPromise;
+        } finally {
+            this.startPromise = undefined;
+        }
     }
 
     private async doStart() : Promise<InputStartError | true> {
@@ -231,8 +235,6 @@ class JavascriptInput implements AbstractInput {
             }
 
             throw error;
-        } finally {
-            this.startPromise = undefined;
         }
     }
 
@@ -383,24 +385,24 @@ class JavascriptInput implements AbstractInput {
     async setConsumer(consumer: InputConsumer) {
         if(this.consumer) {
             if(this.consumer.type == InputConsumerType.NODE) {
-                if(this.sourceNode) {
-                    this.consumer.callbackDisconnect(this.sourceNode);
+                if(this.audioSourceNode) {
+                    this.consumer.callbackDisconnect(this.audioSourceNode);
                 }
             } else if(this.consumer.type === InputConsumerType.CALLBACK) {
-                if(this.sourceNode) {
-                    this.sourceNode.disconnect(this.audioNodeCallbackConsumer);
+                if(this.audioSourceNode) {
+                    this.audioSourceNode.disconnect(this.audioNodeCallbackConsumer);
                 }
             }
         }
 
         if(consumer) {
             if(consumer.type == InputConsumerType.CALLBACK) {
-                if(this.sourceNode) {
-                    this.sourceNode.connect(this.audioNodeCallbackConsumer);
+                if(this.audioSourceNode) {
+                    this.audioSourceNode.connect(this.audioNodeCallbackConsumer);
                 }
             } else if(consumer.type == InputConsumerType.NODE) {
-                if(this.sourceNode) {
-                    consumer.callbackNode(this.sourceNode);
+                if(this.audioSourceNode) {
+                    consumer.callbackNode(this.audioSourceNode);
                 }
             } else {
                 throw "native callback consumers are not supported!";
@@ -413,22 +415,22 @@ class JavascriptInput implements AbstractInput {
         if(this.consumer) {
             if(this.consumer.type == InputConsumerType.NODE) {
                 const node_consumer = this.consumer as NodeInputConsumer;
-                if(this.sourceNode) {
-                    node_consumer.callbackDisconnect(this.sourceNode);
+                if(this.audioSourceNode) {
+                    node_consumer.callbackDisconnect(this.audioSourceNode);
                 }
 
                 if(newNode) {
                     node_consumer.callbackNode(newNode);
                 }
             } else if(this.consumer.type == InputConsumerType.CALLBACK) {
-                this.sourceNode.disconnect(this.audioNodeCallbackConsumer);
+                this.audioSourceNode.disconnect(this.audioNodeCallbackConsumer);
                 if(newNode) {
                     newNode.connect(this.audioNodeCallbackConsumer);
                 }
             }
         }
 
-        this.sourceNode = newNode;
+        this.audioSourceNode = newNode;
     }
 
     currentConsumer(): InputConsumer | undefined {
@@ -480,7 +482,7 @@ class JavascriptInput implements AbstractInput {
     }
 
     getInputProcessor(): InputProcessor {
-        return new JavaScriptInputProcessor();
+        return JavaScriptInputProcessor.Instance;
     }
 
     createLevelMeter(): LevelMeter {
@@ -489,6 +491,8 @@ class JavascriptInput implements AbstractInput {
 }
 
 class JavaScriptInputProcessor implements InputProcessor {
+    static readonly Instance = new JavaScriptInputProcessor();
+
     applyProcessorConfig<T extends InputProcessorType>(processor: T, config: InputProcessorConfigMapping[T]) {
         throw tr("target processor is not supported");
     }
@@ -559,8 +563,8 @@ class JavascriptLevelMeter implements LevelMeter {
         /* starting stream */
         const _result = await requestMediaStream(this._device.deviceId, this._device.groupId, "audio");
         if(!(_result instanceof MediaStream)){
-            if(_result === InputStartError.ENOTALLOWED)
-                throw tr("No permissions");
+            if(_result === InputStartError.ENOTALLOWED) {
+                throw tr("No permissions");}
             if(_result === InputStartError.ENOTSUPPORTED)
                 throw tr("Not supported");
             if(_result === InputStartError.EBUSY)
@@ -630,7 +634,8 @@ class JavascriptLevelMeter implements LevelMeter {
         this._analyser_node.getByteTimeDomainData(this._analyse_buffer);
 
         this._current_level = JThresholdFilter.calculateAudioLevel(this._analyse_buffer, this._analyser_node.fftSize, this._current_level, .75);
-        if(this._callback)
+        if(this._callback) {
             this._callback(this._current_level);
+        }
     }
 }

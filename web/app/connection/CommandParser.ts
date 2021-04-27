@@ -1,9 +1,4 @@
-export interface ParsedCommand {
-    command?: string;
-
-    payload: {[key: string]: string}[]
-    switches: string[]
-}
+import {ServerCommand} from "tc-shared/connection/ConnectionBase";
 
 function unescapeCommandValue(value: string) : string {
     let result = "", index = 0, lastIndex = 0;
@@ -55,7 +50,7 @@ const escapeCharacterMap = {
 
 const escapeCommandValue = (value: string) => value.replace(/[\\ \/|\b\f\n\r\t\x07]/g, value => "\\" + escapeCharacterMap[value]);
 
-export function parseCommand(command: string): ParsedCommand {
+export function parseCommand(command: string): ServerCommand {
     const parts = command.split("|").map(element => element.split(" ").map(e => e.trim()).filter(e => !!e));
 
     let cmd;
@@ -84,11 +79,7 @@ export function parseCommand(command: string): ParsedCommand {
         payloads.push(payload)
     });
 
-    return {
-        command: cmd,
-        payload: payloads,
-        switches: switches
-    }
+    return new ServerCommand(cmd, payloads, switches);
 }
 
 export function buildCommand(data: any | any[], switches?: string[], command?: string) {

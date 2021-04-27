@@ -13,7 +13,7 @@ import {LogCategory, logDebug, logError, logTrace, logWarn} from "tc-shared/log"
 import * as i18n from "tc-shared/i18n/localize";
 import {RepositoryTranslation, TranslationRepository} from "tc-shared/i18n/localize";
 import {Registry} from "tc-shared/events";
-import * as i18nc from "tc-shared/i18n/country";
+import * as i18nc from "../../i18n/CountryFlag";
 import * as forum from "tc-shared/profiles/identities/teaspeak-forum";
 import {formatMessage, set_icon_size} from "tc-shared/ui/frames/chat";
 import {spawnTeamSpeakIdentityImport, spawnTeamSpeakIdentityImprove} from "tc-shared/ui/modal/ModalIdentity";

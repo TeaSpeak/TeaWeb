@@ -449,19 +449,6 @@ export type RTCSourceTrackType = "audio" | "audio-whisper" | "video" | "video-sc
 export type RTCBroadcastableTrackType = Exclude<RTCSourceTrackType, "audio-whisper">;
 const kRtcSourceTrackTypes: RTCSourceTrackType[] = ["audio", "audio-whisper", "video", "video-screen"];
 
-function broadcastableTrackTypeToNumber(type: RTCBroadcastableTrackType) : number {
-    switch (type) {
-        case "video-screen":
-            return 3;
-        case "video":
-            return 2;
-        case "audio":
-            return 1;
-        default:
-            throw tr("invalid target type");
-    }
-}
-
 type TemporaryRtpStream = {
     createTimestamp: number,
     timeoutId: number,
@@ -534,16 +521,15 @@ export class RTCConnection {
         this.retryCalculator = new RetryTimeCalculator(5000, 30000, 10000);
         this.audioSupport = audioSupport;
 
-        this.connection.command_handler_boss().register_handler(this.commandHandler);
+        this.connection.getCommandHandler().registerHandler(this.commandHandler);
         this.reset(true);
 
         this.connection.events.on("notify_connection_state_changed", event => this.handleConnectionStateChanged(event));
-
         (window as any).rtp = this;
     }
 
     destroy() {
-        this.connection.command_handler_boss().unregister_handler(this.commandHandler);
+        this.connection.getCommandHandler().unregisterHandler(this.commandHandler);
     }
 
     isAudioEnabled() : boolean {
@@ -678,6 +664,21 @@ export class RTCConnection {
         }
 
         return result;
+    }
+
+    getTrackTypeFromSsrc(ssrc: number) : RTCSourceTrackType | undefined {
+        const mediaId = this.sdpProcessor.getLocalMediaIdFromSsrc(ssrc);
+        if(!mediaId) {
+            return undefined;
+        }
+
+        for(const type of kRtcSourceTrackTypes) {
+            if(this.currentTransceiver[type]?.mid === mediaId) {
+                return type;
+            }
+        }
+
+        return undefined;
     }
 
     public async startVideoBroadcast(type: VideoBroadcastType, config: VideoBroadcastConfig) {

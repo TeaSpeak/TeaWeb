@@ -6,7 +6,7 @@ import GridLayout from "react-grid-layout";
 import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
 import * as _ from "lodash";
 import {FontSizeObserver} from "tc-shared/ui/react-elements/FontSize";
-import {RendererVideoEventContext, VideoContainer} from "tc-shared/ui/frames/video/Renderer";
+import {RendererVideoEventContext, VideoContainer, VideoIdContext} from "tc-shared/ui/frames/video/Renderer";
 
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!react-resizable/css/styles.css";
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!react-grid-layout/css/styles.css";
@@ -37,7 +37,11 @@ const SpotlightSingle = () => {
 
     let body;
     if(videoId) {
-        body = <VideoContainer videoId={videoId} key={"video-" + videoId} isSpotlight={true} />;
+        body = (
+            <VideoIdContext.Provider value={videoId} key={"video-" + videoId}>
+                <VideoContainer isSpotlight={true} />
+            </VideoIdContext.Provider>
+        );
     } else {
         body = (
             <div className={cssStyle.videoContainer + " " + cssStyle.outlined} key={"no-video"}>
@@ -187,7 +191,9 @@ class SpotlightGridController extends React.PureComponent<{ fontSize: number }, 
                                         {this.state.layout.map(entry => (
                                             <div className={cssStyle.videoContainer} key={entry.i}>
                                                 <ErrorBoundary>
-                                                    <VideoContainer videoId={entry.i} key={entry.i} isSpotlight={true} />
+                                                    <VideoIdContext.Provider value={entry.i} key={"video-" + entry.i}>
+                                                        <VideoContainer key={entry.i} isSpotlight={true} />
+                                                    </VideoIdContext.Provider>
                                                 </ErrorBoundary>
                                             </div>
                                         ))}

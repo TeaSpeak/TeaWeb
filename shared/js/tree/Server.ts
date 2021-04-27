@@ -307,7 +307,7 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
         const connection = this.channelTree.client.serverConnection;
 
         let result: ServerConnectionInfoResult = { status: "error", message: "missing notify" };
-        const handlerUnregister = connection.command_handler_boss().register_explicit_handler("notifyserverconnectioninfo", command => {
+        const handlerUnregister = connection.getCommandHandler().registerCommandHandler("notifyserverconnectioninfo", command => {
             const payload = command.arguments[0];
 
             const info = {} as any;

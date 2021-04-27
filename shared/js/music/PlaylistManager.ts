@@ -201,7 +201,7 @@ class InternalSubscribedPlaylist extends SubscribedPlaylist {
         this.listenerConnection = [];
 
         const serverConnection = this.handle.connection.serverConnection;
-        this.listenerConnection.push(serverConnection.command_handler_boss().register_explicit_handler("notifyplaylistsongadd", command => {
+        this.listenerConnection.push(serverConnection.getCommandHandler().registerCommandHandler("notifyplaylistsongadd", command => {
             const playlistId = parseInt(command.arguments[0]["playlist_id"]);
             if(isNaN(playlistId)) {
                 logWarn(LogCategory.NETWORKING, tr("Received a playlist song add notify with an invalid playlist id (%o)"), command.arguments[0]["playlist_id"]);
@@ -220,7 +220,7 @@ class InternalSubscribedPlaylist extends SubscribedPlaylist {
             });
         }));
 
-        this.listenerConnection.push(serverConnection.command_handler_boss().register_explicit_handler("notifyplaylistsongremove", command => {
+        this.listenerConnection.push(serverConnection.getCommandHandler().registerCommandHandler("notifyplaylistsongremove", command => {
             const playlistId = parseInt(command.arguments[0]["playlist_id"]);
             if(isNaN(playlistId)) {
                 logWarn(LogCategory.NETWORKING, tr("Received a playlist song remove notify with an invalid playlist id (%o)"), command.arguments[0]["playlist_id"]);
@@ -243,7 +243,7 @@ class InternalSubscribedPlaylist extends SubscribedPlaylist {
             });
         }));
 
-        this.listenerConnection.push(serverConnection.command_handler_boss().register_explicit_handler("notifyplaylistsongreorder", command => {
+        this.listenerConnection.push(serverConnection.getCommandHandler().registerCommandHandler("notifyplaylistsongreorder", command => {
             const playlistId = parseInt(command.arguments[0]["playlist_id"]);
             if(isNaN(playlistId)) {
                 logWarn(LogCategory.NETWORKING, tr("Received a playlist song reorder notify with an invalid playlist id (%o)"), command.arguments[0]["playlist_id"]);
@@ -283,7 +283,7 @@ class InternalSubscribedPlaylist extends SubscribedPlaylist {
             });
         }));
 
-        this.listenerConnection.push(serverConnection.command_handler_boss().register_explicit_handler("notifyplaylistsongloaded", command => {
+        this.listenerConnection.push(serverConnection.getCommandHandler().registerCommandHandler("notifyplaylistsongloaded", command => {
             const playlistId = parseInt(command.arguments[0]["playlist_id"]);
             if(isNaN(playlistId)) {
                 logWarn(LogCategory.NETWORKING, tr("Received a playlist song loaded notify with an invalid playlist id (%o)"), command.arguments[0]["playlist_id"]);
@@ -470,7 +470,7 @@ export class PlaylistManager {
         this.connection = connection;
         this.listenerConnection = [];
 
-        this.listenerConnection.push(connection.serverConnection.command_handler_boss().register_explicit_handler("notifyplaylistsonglist", command => {
+        this.listenerConnection.push(connection.serverConnection.getCommandHandler().registerCommandHandler("notifyplaylistsonglist", command => {
             const playlistId = parseInt(command.arguments[0]["playlist_id"]);
             if(isNaN(playlistId)) {
                 logWarn(LogCategory.NETWORKING, tr("Received playlist song list notify with an invalid playlist id (%o)"), command.arguments[0]["playlist_id"]);

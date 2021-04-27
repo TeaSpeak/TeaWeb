@@ -75,7 +75,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
         );
 
         this.listenerCallbacks.push(
-            this.rtcConnection.getConnection().command_handler_boss().register_explicit_handler("notifyclientmoved", event => {
+            this.rtcConnection.getConnection().getCommandHandler().registerCommandHandler("notifyclientmoved", event => {
                 const localClientId = this.rtcConnection.getConnection().client.getClientId();
                 for(const data of event.arguments) {
                     if(parseInt(data["clid"]) === localClientId) {

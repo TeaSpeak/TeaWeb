@@ -394,13 +394,13 @@ export function spawnQueryManage(client: ConnectionHandler) {
                                     return true;
                                 }
                             };
-                            client.serverConnection.command_handler_boss().register_single_handler(single_handler);
+                            client.serverConnection.getCommandHandler().registerSingleHandler(single_handler);
 
                             client.serverConnection.send_command("querychangepassword", {
                                 client_login_name: selected_query.username,
                                 client_login_password: result
                             }).catch(error => {
-                                client.serverConnection.command_handler_boss().remove_single_handler(single_handler);
+                                client.serverConnection.getCommandHandler().removeSingleHandler(single_handler);
                                 if (error instanceof CommandResult)
                                     error = error.extra_message || error.message;
                                 createErrorModal(tr("Unable to change password"), formatMessage(tr("Failed to change password{:br:}Message: {}"), error)).open();

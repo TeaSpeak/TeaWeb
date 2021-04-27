@@ -5,6 +5,7 @@ import {
     VideoBroadcastConfig,
     VideoBroadcastStatistics,
     VideoBroadcastType,
+    VideoBroadcastViewer,
     VideoClient,
     VideoConnection,
     VideoConnectionEvent,
@@ -33,12 +34,14 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
     private broadcastStartId: number;
 
     private localStartPromise: Promise<void>;
+    private subscribedClients: VideoBroadcastViewer[];
 
     constructor(handle: RtpVideoConnection, type: VideoBroadcastType) {
         this.handle = handle;
         this.type = type;
         this.broadcastStartId = 0;
 
+        this.subscribedClients = [];
         this.events = new Registry<LocalVideoBroadcastEvents>();
         this.state = { state: "stopped" };
     }
@@ -67,10 +70,29 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
         const oldState = this.state;
         this.state = newState;
         this.events.fire("notify_state_changed", { oldState: oldState, newState: newState });
+
+        if(this.subscribedClients.length > 0) {
+            switch (newState.state) {
+                case "broadcasting":
+                case "initializing":
+                    break;
+
+                case "failed":
+                case "stopped":
+                default:
+                    const clientIds = this.subscribedClients.map(client => client.clientId);
+                    this.subscribedClients = [];
+                    this.events.fire("notify_clients_left", { clientIds: clientIds });
+            }
+        }
     }
 
     getStatistics(): Promise<VideoBroadcastStatistics | undefined> {
         return Promise.resolve(undefined);
+    }
+
+    getViewer(): VideoBroadcastViewer[] {
+        return this.subscribedClients;
     }
 
     async changeSource(source: VideoSource, constraints: VideoBroadcastConfig): Promise<void> {
@@ -333,6 +355,26 @@ class LocalRtpVideoBroadcast implements LocalVideoBroadcast {
     getConstraints(): VideoBroadcastConfig | undefined {
         return this.currentConfig;
     }
+
+    handleClientJoined(client: VideoBroadcastViewer) {
+        const index = this.subscribedClients.findIndex(client_ => client_.clientId === client.clientId);
+        if(index === -1) {
+            this.subscribedClients.push(client);
+            this.events.fire("notify_clients_joined", { clients: [ client ] });
+        } else {
+            this.subscribedClients[index] = client;
+        }
+    }
+
+    handleClientLeave(clientId: number) {
+        const index = this.subscribedClients.findIndex(client => client.clientId === clientId);
+        if(index === -1) {
+            return;
+        }
+
+        this.subscribedClients.splice(index, 1);
+        this.events.fire("notify_clients_left", { clientIds: [ clientId ] });
+    }
 }
 
 export class RtpVideoConnection implements VideoConnection {
@@ -355,7 +397,7 @@ export class RtpVideoConnection implements VideoConnection {
         this.listener = [];
 
         /* We only have to listen for move events since if the client is leaving the broadcast will be terminated anyways */
-        this.listener.push(this.rtcConnection.getConnection().command_handler_boss().register_explicit_handler("notifyclientmoved", event => {
+        this.listener.push(this.rtcConnection.getConnection().getCommandHandler().registerCommandHandler("notifyclientmoved", event => {
             const localClient = this.rtcConnection.getConnection().client.getClient();
             for(const data of event.arguments) {
                 const clientId = parseInt(data["clid"]);
@@ -380,7 +422,7 @@ export class RtpVideoConnection implements VideoConnection {
             }
         }));
 
-        this.listener.push(this.rtcConnection.getConnection().command_handler_boss().register_explicit_handler("notifybroadcastvideo", event => {
+        this.listener.push(this.rtcConnection.getConnection().getCommandHandler().registerCommandHandler("notifybroadcastvideo", event => {
             const assignedClients: { clientId: number, broadcastType: VideoBroadcastType }[] = [];
             for(const data of event.arguments) {
                 if(!("bid" in data)) {
@@ -426,6 +468,76 @@ export class RtpVideoConnection implements VideoConnection {
                     client.setBroadcastId(type, undefined);
                 }
             });
+        }));
+
+        this.listener.push(this.rtcConnection.getConnection().getCommandHandler().registerCommandHandler("notifystreamjoined", command => {
+            const streamId = command.getUInt("streamid");
+            const clientInfo: VideoBroadcastViewer = {
+                clientId: command.getUInt("clid"),
+                clientName: command.getString("clname"),
+                clientUniqueId: command.getString("cluid"),
+                clientDatabaseId: command.getUInt("cldbid")
+            };
+
+            if(clientInfo.clientId === this.rtcConnection.getConnection().client.getClientId()) {
+                /* Just our local video preview */
+                return;
+            }
+
+            const broadcastType = this.rtcConnection.getTrackTypeFromSsrc(streamId);
+            if(!broadcastType) {
+                logError(LogCategory.NETWORKING, tr("Received stream join notify for invalid stream (ssrc: %o)"), streamId);
+                return;
+            }
+
+            let broadcast: LocalRtpVideoBroadcast;
+            switch (broadcastType) {
+                case "video":
+                    broadcast = this.broadcasts["camera"];
+                    break;
+
+                case "video-screen":
+                    broadcast = this.broadcasts["screen"];
+                    break;
+
+                case "audio":
+                case "audio-whisper":
+                default:
+                    logError(LogCategory.NETWORKING, tr("Received stream join notify for invalid stream type: %s"), broadcastType);
+                    return;
+            }
+
+            broadcast.handleClientJoined(clientInfo);
+        }));
+
+        this.listener.push(this.rtcConnection.getConnection().getCommandHandler().registerCommandHandler("notifystreamleft", command => {
+            const streamId = command.getUInt("streamid");
+            const clientId = command.getUInt("clid");
+
+            const broadcastType = this.rtcConnection.getTrackTypeFromSsrc(streamId);
+            if(!broadcastType) {
+                logError(LogCategory.NETWORKING, tr("Received stream leave notify for invalid stream (ssrc: %o)"), streamId);
+                return;
+            }
+
+            let broadcast: LocalRtpVideoBroadcast;
+            switch (broadcastType) {
+                case "video":
+                    broadcast = this.broadcasts["camera"];
+                    break;
+
+                case "video-screen":
+                    broadcast = this.broadcasts["screen"];
+                    break;
+
+                case "audio":
+                case "audio-whisper":
+                default:
+                    logError(LogCategory.NETWORKING, tr("Received stream leave notify for invalid stream type: %s"), broadcastType);
+                    return;
+            }
+
+            broadcast.handleClientLeave(clientId);
         }));
 
         this.listener.push(this.rtcConnection.getConnection().events.on("notify_connection_state_changed", event => {

@@ -291,7 +291,7 @@ class Controller {
             this.assignmentLoadEnqueued = false;
 
             let resultSet = false;
-            const unregisterCallback = this.handler.serverConnection.command_handler_boss().register_explicit_handler("notifyservergroupsbyclientid", command => {
+            const unregisterCallback = this.handler.serverConnection.getCommandHandler().registerCommandHandler("notifyservergroupsbyclientid", command => {
                 const payload = command.arguments;
                 const clientId = parseInt(payload[0].cldbid);
                 if(isNaN(clientId) || clientId !== this.clientDatabaseId) {

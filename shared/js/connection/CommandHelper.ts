@@ -24,13 +24,13 @@ export class CommandHelper extends AbstractCommandHandler {
     }
 
     initialize() {
-        this.connection.command_handler_boss().register_handler(this);
+        this.connection.getCommandHandler().registerHandler(this);
     }
 
     destroy() {
         if(this.connection) {
-            const hboss = this.connection.command_handler_boss();
-            hboss?.unregister_handler(this);
+            const hboss = this.connection.getCommandHandler();
+            hboss?.unregisterHandler(this);
         }
 
         this.infoByUniqueIdRequest = undefined;
@@ -173,7 +173,7 @@ export class CommandHelper extends AbstractCommandHandler {
                     return true;
                 }
             };
-            this.handler_boss.register_single_handler(single_handler);
+            this.handler_boss.registerSingleHandler(single_handler);
 
             let data = {};
             if(server_id !== undefined) {
@@ -189,7 +189,7 @@ export class CommandHelper extends AbstractCommandHandler {
                 }
                 reject(error);
             }).then(() => {
-                this.handler_boss.remove_single_handler(single_handler);
+                this.handler_boss.removeSingleHandler(single_handler);
             });
         });
     }
@@ -228,7 +228,7 @@ export class CommandHelper extends AbstractCommandHandler {
                     return true;
                 }
             };
-            this.handler_boss.register_single_handler(single_handler);
+            this.handler_boss.registerSingleHandler(single_handler);
 
             this.connection.send_command("playlistlist").catch(error => {
                 if(error instanceof CommandResult) {
@@ -239,7 +239,7 @@ export class CommandHelper extends AbstractCommandHandler {
                 }
                 reject(error);
             }).then(() => {
-                this.handler_boss.remove_single_handler(single_handler);
+                this.handler_boss.removeSingleHandler(single_handler);
             });
         });
     }
@@ -294,7 +294,7 @@ export class CommandHelper extends AbstractCommandHandler {
                     }
                 }
             };
-            this.handler_boss.register_single_handler(single_handler);
+            this.handler_boss.registerSingleHandler(single_handler);
 
             this.connection.send_command("playlistsonglist", {playlist_id: playlist_id}, { process_result: process_result }).catch(error => {
                 if(error instanceof CommandResult) {
@@ -305,7 +305,7 @@ export class CommandHelper extends AbstractCommandHandler {
                 }
                 reject(error);
             }).catch(() => {
-                this.handler_boss.remove_single_handler(single_handler);
+                this.handler_boss.removeSingleHandler(single_handler);
             });
         });
     }
@@ -332,7 +332,7 @@ export class CommandHelper extends AbstractCommandHandler {
                     return true;
                 }
             };
-            this.handler_boss.register_single_handler(single_handler);
+            this.handler_boss.registerSingleHandler(single_handler);
 
             this.connection.send_command("playlistclientlist", {playlist_id: playlist_id}).catch(error => {
                 if(error instanceof CommandResult && error.id == ErrorCode.DATABASE_EMPTY_RESULT) {
@@ -341,7 +341,7 @@ export class CommandHelper extends AbstractCommandHandler {
                 }
                 reject(error);
             }).then(() => {
-                this.handler_boss.remove_single_handler(single_handler);
+                this.handler_boss.removeSingleHandler(single_handler);
             });
         });
     }
@@ -378,10 +378,10 @@ export class CommandHelper extends AbstractCommandHandler {
                     return true;
                 }
             };
-            this.handler_boss.register_single_handler(single_handler);
+            this.handler_boss.registerSingleHandler(single_handler);
 
             this.connection.send_command("servergroupclientlist", {sgid: group_id}).catch(reject).then(() => {
-                this.handler_boss.remove_single_handler(single_handler);
+                this.handler_boss.removeSingleHandler(single_handler);
             });
         });
     }
@@ -422,10 +422,10 @@ export class CommandHelper extends AbstractCommandHandler {
                     return true;
                 }
             };
-            this.handler_boss.register_single_handler(single_handler);
+            this.handler_boss.registerSingleHandler(single_handler);
 
             this.connection.send_command("playlistinfo", { playlist_id: playlist_id }).catch(reject).then(() => {
-                this.handler_boss.remove_single_handler(single_handler);
+                this.handler_boss.removeSingleHandler(single_handler);
             });
         });
     }
@@ -451,10 +451,10 @@ export class CommandHelper extends AbstractCommandHandler {
                     return true;
                 }
             };
-            this.handler_boss.register_single_handler(single_handler);
+            this.handler_boss.registerSingleHandler(single_handler);
 
             this.connection.send_command("whoami").catch(error => {
-                this.handler_boss.remove_single_handler(single_handler);
+                this.handler_boss.removeSingleHandler(single_handler);
                 reject(error);
             });
         });

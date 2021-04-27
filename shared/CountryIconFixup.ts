@@ -3,7 +3,7 @@
 
 import * as path from "path";
 import * as fs from "fs-extra";
-import {getKnownCountries} from "./js/i18n/country";
+import {getKnownCountries} from "./js/i18n/CountryFlag";
 
 const kIconsPath = path.join(__dirname, "img", "country-flags");
 

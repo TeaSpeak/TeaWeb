@@ -2,7 +2,7 @@ import {ClientConnectionInfo, ClientEntry} from "../../tree/Client";
 import PermissionType from "../../permission/PermissionType";
 import {createInfoModal, createModal, Modal} from "../../ui/elements/Modal";
 import {copyToClipboard} from "../../utils/helpers";
-import * as i18nc from "../../i18n/country";
+import * as i18nc from "../../i18n/CountryFlag";
 import * as tooltip from "../../ui/elements/Tooltip";
 import moment from "moment";
 import {format_number, network} from "../../ui/frames/chat";

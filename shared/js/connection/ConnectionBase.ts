@@ -63,7 +63,7 @@ export abstract class AbstractServerConnection {
     abstract getVoiceConnection() : AbstractVoiceConnection;
     abstract getVideoConnection() : VideoConnection;
 
-    abstract command_handler_boss() : AbstractCommandHandlerBoss;
+    abstract getCommandHandler() : AbstractCommandHandlerBoss;
     abstract send_command(command: string, data?: any | any[], options?: CommandOptions) : Promise<CommandResult>;
 
     abstract remote_address() : ServerAddress; /* only valid when connected */
@@ -89,6 +89,36 @@ export abstract class AbstractServerConnection {
 export class ServerCommand {
     command: string;
     arguments: any[];
+    switches: string[];
+
+    constructor(command: string, payload: any[], switches: string[]) {
+        this.command = command;
+        this.arguments = payload;
+        this.switches = switches;
+    }
+
+    getString(key: string, index?: number) {
+        const value = this.arguments[index || 0][key];
+        if(typeof value !== "string") {
+            throw "missing " + key + " at index " + (index || 0);
+        }
+
+        return value;
+    }
+
+    getInt(key: string, index?: number) {
+        const value = this.getString(key, index);
+        const intValue = parseInt(value);
+        if(isNaN(intValue)) {
+            throw "key " + key + " isn't an integer (value: " + value + ")";
+        }
+
+        return intValue;
+    }
+
+    getUInt(key: string, index?: number) {
+        return this.getInt(key, index) >>> 0;
+    }
 }
 
 export interface SingleCommandHandler {

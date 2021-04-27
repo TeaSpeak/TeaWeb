@@ -260,13 +260,13 @@ export class PermissionManager extends AbstractCommandHandler {
 
         //FIXME? Dont register the handler like this?
         this.volatile_handler_boss = true;
-        client.serverConnection.command_handler_boss().register_handler(this);
+        client.serverConnection.getCommandHandler().registerHandler(this);
 
         this.handle = client;
     }
 
     destroy() {
-        this.handle.serverConnection && this.handle.serverConnection.command_handler_boss().unregister_handler(this);
+        this.handle.serverConnection && this.handle.serverConnection.getCommandHandler().unregisterHandler(this);
         this.needed_permission_change_listener = {};
 
         this.permissionList = undefined;
@@ -712,10 +712,10 @@ export class PermissionManager extends AbstractCommandHandler {
                     return true;
                 }
             };
-            this.handler_boss.register_single_handler(single_handler);
+            this.handler_boss.registerSingleHandler(single_handler);
 
             this.connection.send_command("permfind", permission_ids.map(e => { return {permid: e }})).catch(error => {
-                this.handler_boss.remove_single_handler(single_handler);
+                this.handler_boss.removeSingleHandler(single_handler);
 
                 if(error instanceof CommandResult && error.id == ErrorCode.DATABASE_EMPTY_RESULT) {
                     resolve([]);

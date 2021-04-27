@@ -20,14 +20,14 @@ export abstract class AbstractCommandHandler {
     abstract handle_command(command: ServerCommand) : boolean;
 }
 
-export type ExplicitCommandHandler = (command: ServerCommand, consumed: boolean) => void | boolean;
+export type CommandHandlerCallback = (command: ServerCommand, consumed: boolean) => void | boolean;
 export abstract class AbstractCommandHandlerBoss {
     readonly connection: AbstractServerConnection;
     protected command_handlers: AbstractCommandHandler[] = [];
     /* TODO: Timeout */
     protected single_command_handler: SingleCommandHandler[] = [];
 
-    protected explicitHandlers: {[key: string]:ExplicitCommandHandler[]} = {};
+    protected explicitHandlers: {[key: string]:CommandHandlerCallback[]} = {};
 
     protected constructor(connection: AbstractServerConnection) {
         this.connection = connection;
@@ -38,14 +38,14 @@ export abstract class AbstractCommandHandlerBoss {
         this.single_command_handler = undefined;
     }
 
-    register_explicit_handler(command: string, callback: ExplicitCommandHandler) : () => void {
+    registerCommandHandler(command: string, callback: CommandHandlerCallback) : () => void {
         this.explicitHandlers[command] = this.explicitHandlers[command] || [];
         this.explicitHandlers[command].push(callback);
 
         return () => this.explicitHandlers[command].remove(callback);
     }
 
-    unregister_explicit_handler(command: string, callback: ExplicitCommandHandler) {
+    unregisterCommandHandler(command: string, callback: CommandHandlerCallback) {
         if(!this.explicitHandlers[command])
             return false;
 
@@ -53,16 +53,17 @@ export abstract class AbstractCommandHandlerBoss {
         return true;
     }
 
-    register_handler(handler: AbstractCommandHandler) {
-        if(!handler.volatile_handler_boss && handler.handler_boss)
+    registerHandler(handler: AbstractCommandHandler) {
+        if(!handler.volatile_handler_boss && handler.handler_boss) {
             throw "handler already registered";
+        }
 
         this.command_handlers.remove(handler); /* just to be sure */
         this.command_handlers.push(handler);
         handler.handler_boss = this;
     }
 
-    unregister_handler(handler: AbstractCommandHandler) {
+    unregisterHandler(handler: AbstractCommandHandler) {
         if(!handler.volatile_handler_boss && handler.handler_boss !== this) {
             logWarn(LogCategory.NETWORKING, tr("Tried to unregister command handler which does not belong to the handler boss"));
             return;
@@ -73,13 +74,13 @@ export abstract class AbstractCommandHandlerBoss {
     }
 
 
-    register_single_handler(handler: SingleCommandHandler) {
+    registerSingleHandler(handler: SingleCommandHandler) {
         if(typeof handler.command === "string")
             handler.command = [handler.command];
         this.single_command_handler.push(handler);
     }
 
-    remove_single_handler(handler: SingleCommandHandler) {
+    removeSingleHandler(handler: SingleCommandHandler) {
         this.single_command_handler.remove(handler);
     }
 
@@ -87,7 +88,7 @@ export abstract class AbstractCommandHandlerBoss {
         return this.command_handlers;
     }
 
-    invoke_handle(command: ServerCommand) : boolean {
+    invokeCommand(command: ServerCommand) : boolean {
         let flag_consumed = false;
 
         for(const handler of this.command_handlers) {

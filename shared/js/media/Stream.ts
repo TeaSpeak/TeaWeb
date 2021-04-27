@@ -22,7 +22,7 @@ export async function requestMediaStreamWithConstraints(constraints: MediaTrackC
     const beginTimestamp = Date.now();
     try {
         logInfo(LogCategory.AUDIO, tr("Requesting a %s stream for device %s in group %s"), type, constraints.deviceId, constraints.groupId);
-        return await navigator.mediaDevices.getUserMedia(type === "audio" ? {audio: constraints} : {video: constraints});
+        return await navigator.mediaDevices.getUserMedia(type === "audio" ? { audio: constraints } : { video: constraints });
     } catch(error) {
         if('name' in error) {
             if(error.name === "NotAllowedError") {

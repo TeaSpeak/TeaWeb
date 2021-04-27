@@ -1,4 +1,3 @@
-import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
 import * as React from "react";
 import {RDPEntry} from "tc-shared/ui/tree/RendererDataProvider";
 

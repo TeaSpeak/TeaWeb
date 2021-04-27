@@ -395,9 +395,9 @@ export class ChannelConversationManager extends AbstractChatManager<ChannelConve
 
         /* TODO: Permission listener for text send power! */
 
-        this.listenerConnection.push(connection.serverConnection.command_handler_boss().register_explicit_handler("notifyconversationhistory", this.handleConversationHistory.bind(this)));
-        this.listenerConnection.push(connection.serverConnection.command_handler_boss().register_explicit_handler("notifyconversationindex", this.handleConversationIndex.bind(this)));
-        this.listenerConnection.push(connection.serverConnection.command_handler_boss().register_explicit_handler("notifyconversationmessagedelete", this.handleConversationMessageDelete.bind(this)));
+        this.listenerConnection.push(connection.serverConnection.getCommandHandler().registerCommandHandler("notifyconversationhistory", this.handleConversationHistory.bind(this)));
+        this.listenerConnection.push(connection.serverConnection.getCommandHandler().registerCommandHandler("notifyconversationindex", this.handleConversationIndex.bind(this)));
+        this.listenerConnection.push(connection.serverConnection.getCommandHandler().registerCommandHandler("notifyconversationmessagedelete", this.handleConversationMessageDelete.bind(this)));
 
         this.listenerConnection.push(this.connection.channelTree.events.on("notify_channel_list_received", () => {
             this.queryUnreadFlags();

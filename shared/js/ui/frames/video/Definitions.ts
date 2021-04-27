@@ -87,7 +87,8 @@ export interface ChannelVideoEvents {
     query_video_statistics: { videoId: string, broadcastType: VideoBroadcastType },
     query_spotlight: {},
     query_video_stream: { videoId: string, broadcastType: VideoBroadcastType },
-    query_subscribe_info: {}
+    query_subscribe_info: {},
+    query_viewer_count: {},
 
     notify_expended: { expended: boolean },
     notify_videos: {
@@ -107,10 +108,6 @@ export interface ChannelVideoEvents {
         videoId: string,
         statusIcon: ClientIcon
     },
-    notify_video_arrows: {
-        left: boolean,
-        right: boolean
-    },
     notify_spotlight: {
         videoId: string[]
     },
@@ -126,6 +123,10 @@ export interface ChannelVideoEvents {
     },
     notify_subscribe_info: {
         info: VideoSubscribeInfo
+    },
+    notify_viewer_count: {
+        camera: number | undefined,
+        screen: number | undefined,
     }
 }
 

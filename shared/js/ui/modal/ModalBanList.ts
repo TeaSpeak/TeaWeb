@@ -191,11 +191,11 @@ export function openBanList(client: ConnectionHandler) {
         width: '60em'
     });
 
-    client.serverConnection.command_handler_boss().register_single_handler(single_ban_handler);
-    client.serverConnection.command_handler_boss().register_single_handler(single_trigger_handler);
+    client.serverConnection.getCommandHandler().registerSingleHandler(single_ban_handler);
+    client.serverConnection.getCommandHandler().registerSingleHandler(single_trigger_handler);
     modal.close_listener.push(() => {
-        client.serverConnection.command_handler_boss().remove_single_handler(single_ban_handler);
-        client.serverConnection.command_handler_boss().remove_single_handler(single_trigger_handler);
+        client.serverConnection.getCommandHandler().removeSingleHandler(single_ban_handler);
+        client.serverConnection.getCommandHandler().removeSingleHandler(single_trigger_handler);
     });
 
     //TODO: Test without dividerfy!

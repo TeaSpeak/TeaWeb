@@ -124,7 +124,9 @@ $small_height: 10em;
     position: relative;
 
     height: $small_height;
-    width: 100%;
+
+    max-width: 100%;
+    min-width: 16em;
 
     flex-shrink: 0;
     flex-grow: 0;
@@ -135,9 +137,6 @@ $small_height: 10em;
 
     margin-left: .5em;
     margin-right: .5em;
-
-    /* TODO: Min with of two video +4em for one of the arrows */
-    min-width: 6em;
 
     .videos {
         display: flex;
@@ -244,6 +243,7 @@ $small_height: 10em;
     }
 }
 
+/* FIXME: Unify the overlays (Bottom left, Bottom right, and Top right) */
 .videoContainer, :global(.react-grid-item.react-grid-placeholder) {
     /* Note: don't use margin here since it might */
     position: relative;
@@ -401,10 +401,62 @@ $small_height: 10em;
             font-weight: normal!important;
 
             @include text-dotdotdot();
+        }
 
-            &.local {
+        &.local {
+            .name {
                 color: #147114;
             }
+        }
+    }
+
+    .videoViewerCount {
+        position: absolute;
+
+        top: 0;
+        right: 0;
+
+        display: flex;
+        flex-direction: row;
+
+        border-bottom-left-radius: .2em;
+        background-color: #35353580;
+
+        padding: .1em .3em;
+        cursor: pointer;
+
+        max-width: 70%;
+
+        .entry {
+            flex-shrink: 0;
+            align-self: center;
+
+            color: #999;
+
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+
+            &:not(:last-of-type) {
+                margin-right: .75em;
+            }
+
+            .value {
+                margin-right: .25em;
+            }
+        }
+
+        .icon {
+            flex-shrink: 0;
+            align-self: center;
+        }
+
+        .name {
+            align-self: center;
+            margin-left: .25em;
+            font-weight: normal!important;
+
+            @include text-dotdotdot();
         }
     }
 

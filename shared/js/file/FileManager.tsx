@@ -64,13 +64,13 @@ class FileCommandHandler extends AbstractCommandHandler {
         super(manager.connectionHandler.serverConnection);
         this.manager = manager;
 
-        this.connection.command_handler_boss().register_handler(this);
+        this.connection.getCommandHandler().registerHandler(this);
     }
 
     destroy() {
         if(this.connection) {
-            const hboss = this.connection.command_handler_boss();
-            if(hboss) hboss.unregister_handler(this);
+            const hboss = this.connection.getCommandHandler();
+            if(hboss) hboss.unregisterHandler(this);
         }
     }
 

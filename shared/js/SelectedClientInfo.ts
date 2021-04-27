@@ -7,7 +7,7 @@ import {
 } from "tc-shared/ui/frames/side/ClientInfoDefinitions";
 import {ClientEntry, ClientType, LocalClientEntry} from "tc-shared/tree/Client";
 import {Registry} from "tc-shared/events";
-import * as i18nc from "tc-shared/i18n/country";
+import * as i18nc from "./i18n/CountryFlag";
 
 export type CachedClientInfoCategory = "name" | "description" | "online-state" | "country" | "volume" | "status" | "forum-account" | "group-channel" | "groups-server" | "version";
 
@@ -231,7 +231,7 @@ export class SelectedClientInfo {
 
     private initializeClientInfo(client: ClientEntry) {
         this.currentClientStatus = {
-            type: client instanceof LocalClientEntry ? "self" : client.properties.client_type === ClientType.CLIENT_QUERY ? "query" : "voice",
+            type: client instanceof LocalClientEntry ? "self" : client.getClientType() === ClientType.CLIENT_QUERY ? "query" : "voice",
             name: client.properties.client_nickname,
             databaseId: client.properties.client_database_id,
             uniqueId: client.properties.client_unique_identifier,

@@ -1,5 +1,5 @@
 import {ConnectionHandler} from "../../../ConnectionHandler";
-import {EventHandler} from "../../../events";
+import {EventHandler} from "tc-events";
 import {LogCategory, logError} from "../../../log";
 import {tr} from "../../../i18n/localize";
 import {AbstractConversationUiEvents} from "./AbstractConversationDefinitions";

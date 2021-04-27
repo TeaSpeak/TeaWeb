@@ -447,6 +447,7 @@ class ChannelVideoController {
         this.events.on("query_videos", () => this.notifyVideoList());
         this.events.on("query_spotlight", () => this.notifySpotlight());
         this.events.on("query_subscribe_info", () => this.notifySubscribeInfo());
+        this.events.on("query_viewer_count", () => this.notifyViewerCount());
 
         this.events.on("query_video_info", event => {
             const controller = this.findVideoById(event.videoId);
@@ -492,6 +493,14 @@ class ChannelVideoController {
             }
         });
 
+        events.push(this.videoConnection.getLocalBroadcast("camera").getEvents().on([ "notify_clients_left", "notify_clients_joined", "notify_state_changed" ], () => {
+            this.notifyViewerCount();
+        }));
+
+        events.push(this.videoConnection.getLocalBroadcast("screen").getEvents().on([ "notify_clients_left", "notify_clients_joined", "notify_state_changed" ], () => {
+            this.notifyViewerCount();
+        }));
+
         const channelTree = this.connection.channelTree;
         events.push(channelTree.events.on("notify_tree_reset", () => {
             this.resetClientVideos();
@@ -512,6 +521,7 @@ class ChannelVideoController {
                         this.notifyVideoList();
                     }
                 }
+
                 if(event.newChannel.channelId === this.currentChannelId) {
                     this.createClientVideo(event.client);
                     this.notifyVideoList();
@@ -527,6 +537,7 @@ class ChannelVideoController {
             if(this.destroyClientVideo(event.client.clientId())) {
                 this.notifyVideoList();
             }
+
             if(event.client instanceof LocalClientEntry) {
                 this.resetClientVideos();
             }
@@ -541,6 +552,7 @@ class ChannelVideoController {
                 this.createClientVideo(event.client);
                 this.notifyVideoList();
             }
+
             if(event.client instanceof LocalClientEntry) {
                 this.updateLocalChannel(event.client);
             }
@@ -572,7 +584,7 @@ class ChannelVideoController {
     }
 
     private static shouldIgnoreClient(client: ClientEntry) {
-        return (client instanceof MusicClientEntry || client.properties.client_type_exact === ClientType.CLIENT_QUERY);
+        return (client instanceof MusicClientEntry || client.getClientType() === ClientType.CLIENT_QUERY);
     }
 
     private updateLocalChannel(localClient: ClientEntry) {
@@ -658,24 +670,40 @@ class ChannelVideoController {
 
         const channel = this.connection.channelTree.findChannel(this.currentChannelId);
         if(channel) {
-            const clients = channel.channelClientsOrdered();
-            for(const client of clients) {
+            const clients = channel.channelClientsOrdered().filter(client => {
                 if(client instanceof LocalClientEntry) {
-                    continue;
+                    return false;
                 }
 
                 if(!this.clientVideos[client.clientId()]) {
                     /* should not be possible (Is only possible for the local client) */
+                    return false;
+                }
+
+                return true;
+            });
+
+            /* Firstly add all clients with video */
+            for(const client of clients) {
+                const controller = this.clientVideos[client.clientId()];
+                if(!controller.isBroadcasting()) {
                     continue;
                 }
 
-                const controller = this.clientVideos[client.clientId()];
-                if(controller.isBroadcasting()) {
-                    videoStreamingCount++;
-                } else if(!settings.getValue(Settings.KEY_VIDEO_SHOW_ALL_CLIENTS)) {
-                    continue;
-                }
+                videoStreamingCount++;
                 videoIds.push(controller.videoId);
+            }
+
+            /* Secondly add all other clients (if wanted) */
+            if(settings.getValue(Settings.KEY_VIDEO_SHOW_ALL_CLIENTS)) {
+                for(const client of clients) {
+                    const controller = this.clientVideos[client.clientId()];
+                    if(controller.isBroadcasting()) {
+                        continue;
+                    }
+
+                    videoIds.push(controller.videoId);
+                }
             }
         }
 
@@ -718,6 +746,41 @@ class ChannelVideoController {
                 }
             }
         });
+    }
+
+    private notifyViewerCount() {
+        let cameraViewers, screenViewers;
+        {
+            let broadcast = this.videoConnection.getLocalBroadcast("camera");
+            switch (broadcast.getState().state) {
+                case "initializing":
+                case "broadcasting":
+                    cameraViewers = broadcast.getViewer().length;
+                    break;
+
+                case "stopped":
+                case "failed":
+                default:
+                    cameraViewers = undefined;
+                    break;
+            }
+        }
+        {
+            let broadcast = this.videoConnection.getLocalBroadcast("screen");
+            switch (broadcast.getState().state) {
+                case "initializing":
+                case "broadcasting":
+                    screenViewers = broadcast.getViewer().length;
+                    break;
+
+                case "stopped":
+                case "failed":
+                default:
+                    screenViewers = undefined;
+                    break;
+            }
+        }
+        this.events.fire_react("notify_viewer_count", { camera: cameraViewers, screen: screenViewers });
     }
 
     private updateVisibility(target: boolean) {

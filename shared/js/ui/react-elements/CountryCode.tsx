@@ -1,6 +1,6 @@
 import * as React from "react";
 import {joinClassList, useTr} from "tc-shared/ui/react-elements/Helper";
-import {getCountryFlag, getCountryName} from "tc-shared/i18n/country";
+import {getCountryFlag, getCountryName} from "../../i18n/CountryFlag";
 
 const cssStyle = require("./CountryIcon.scss");
 

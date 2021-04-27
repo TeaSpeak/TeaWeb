@@ -154,7 +154,7 @@ export class ClientInfoResolver {
         try {
             const requestDatabaseIds = Object.keys(this.requestDatabaseIds);
             if(requestDatabaseIds.length > 0) {
-                handlers.push(this.handler.serverConnection.command_handler_boss().register_explicit_handler("notifyclientgetnamefromdbid", command => {
+                handlers.push(this.handler.serverConnection.getCommandHandler().registerCommandHandler("notifyclientgetnamefromdbid", command => {
                     ClientInfoResolver.parseClientInfo(command.arguments).forEach(info => {
                         if(this.requestDatabaseIds[info.clientDatabaseId].fullFilled) {
                             return;
@@ -197,7 +197,7 @@ export class ClientInfoResolver {
 
             const requestUniqueIds = Object.keys(this.requestUniqueIds);
             if(requestUniqueIds.length > 0) {
-                handlers.push(this.handler.serverConnection.command_handler_boss().register_explicit_handler("notifyclientnamefromuid", command => {
+                handlers.push(this.handler.serverConnection.getCommandHandler().registerCommandHandler("notifyclientnamefromuid", command => {
                     ClientInfoResolver.parseClientInfo(command.arguments).forEach(info => {
                         if(this.requestUniqueIds[info.clientUniqueId].fullFilled) {
                             return;

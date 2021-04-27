@@ -487,7 +487,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             client = tree.findClient(parseInt(entry["clid"]));
 
             if(!client) {
-                if(parseInt(entry["client_type_exact"]) == ClientType.CLIENT_MUSIC) {
+                if(parseInt(entry["client_type_exact"]) == 4) {
                     client = new MusicClientEntry(parseInt(entry["clid"]), entry["client_nickname"]) as any;
                 } else {
                     client = new ClientEntry(parseInt(entry["clid"]), entry["client_nickname"]);
@@ -501,7 +501,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 tree.moveClient(client, channel);
             }
 
-            if(this.connection_handler.areQueriesShown() || client.properties.client_type != ClientType.CLIENT_QUERY) {
+            if(this.connection_handler.areQueriesShown() || client.getClientType() !== ClientType.CLIENT_QUERY) {
                 const own_channel = this.connection.client.getClient().currentChannel();
                 this.connection_handler.log.log(channel == own_channel ? "client.view.enter.own.channel" : "client.view.enter", {
                     channel_from: old_channel ? old_channel.log_data() : undefined,
@@ -584,7 +584,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             }
 
             const targetChannelId = parseInt(entry["ctid"]);
-            if(this.connection_handler.areQueriesShown() || client.properties.client_type != ClientType.CLIENT_QUERY) {
+            if(this.connection_handler.areQueriesShown() || client.getClientType() !== ClientType.CLIENT_QUERY) {
                 const own_channel = this.connection.client.getClient().currentChannel();
                 let channel_from = tree.findChannel(entry["cfid"]);
                 let channel_to = tree.findChannel(targetChannelId);
