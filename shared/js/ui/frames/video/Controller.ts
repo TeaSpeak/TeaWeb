@@ -23,6 +23,7 @@ import {Settings, settings} from "tc-shared/settings";
 import * as _ from "lodash";
 import PermissionType from "tc-shared/permission/PermissionType";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
+import {spawnVideoViewerInfo} from "tc-shared/ui/modal/video-viewers/Controller";
 
 const cssStyle = require("./Renderer.scss");
 
@@ -442,6 +443,8 @@ class ChannelVideoController {
 
             controller.dismissVideo(event.broadcastType);
         });
+
+        this.events.on("action_show_viewers", () => spawnVideoViewerInfo(this.connection));
 
         this.events.on("query_expended", () => this.events.fire_react("notify_expended", { expended: this.expended }));
         this.events.on("query_videos", () => this.notifyVideoList());

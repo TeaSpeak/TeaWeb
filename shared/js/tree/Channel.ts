@@ -213,7 +213,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     private subscribed: boolean;
     private subscriptionMode: ChannelSubscribeMode;
 
-    private client_list: ClientEntry[] = []; /* this list is sorted correctly! */
+    private clientList: ClientEntry[] = []; /* this list is sorted correctly! */
     private readonly clientPropertyChangedListener;
 
     constructor(channelTree: ChannelTree, channelId: number, channelName: string) {
@@ -255,8 +255,8 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         this.channelDescriptionCallback.forEach(callback => callback(false));
         this.channelDescriptionCallback = [];
 
-        this.client_list.forEach(e => this.unregisterClient(e, true));
-        this.client_list = [];
+        this.clientList.forEach(e => this.unregisterClient(e, true));
+        this.clientList = [];
 
         this.channel_previous = undefined;
         this.parent = undefined;
@@ -363,38 +363,44 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
     registerClient(client: ClientEntry) {
         client.events.on("notify_properties_updated", this.clientPropertyChangedListener);
-        this.client_list.push(client);
+        this.clientList.push(client);
         this.reorderClientList(false);
     }
 
     unregisterClient(client: ClientEntry, noEvent?: boolean) {
         client.events.off("notify_properties_updated", this.clientPropertyChangedListener);
-        if(!this.client_list.remove(client)) {
+        if(!this.clientList.remove(client)) {
             logWarn(LogCategory.CHANNEL, tr("Unregistered unknown client from channel %s"), this.channelName());
         }
     }
 
     private reorderClientList(fire_event: boolean) {
-        const original_list = this.client_list.slice(0);
+        const originalList = this.clientList.slice(0);
 
-        this.client_list.sort((a, b) => {
-            if(a.properties.client_talk_power < b.properties.client_talk_power)
+        this.clientList.sort((a, b) => {
+            if(a.properties.client_talk_power < b.properties.client_talk_power) {
                 return 1;
-            if(a.properties.client_talk_power > b.properties.client_talk_power)
-                return -1;
+            }
 
-            if(a.properties.client_nickname > b.properties.client_nickname)
-                return 1;
-            if(a.properties.client_nickname < b.properties.client_nickname)
+            if(a.properties.client_talk_power > b.properties.client_talk_power) {
                 return -1;
+            }
+
+            if(a.properties.client_nickname > b.properties.client_nickname) {
+                return 1;
+            }
+
+            if(a.properties.client_nickname < b.properties.client_nickname) {
+                return -1;
+            }
 
             return 0;
         });
 
         if(fire_event) {
             /* only fire if really something has changed ;) */
-            for(let index = 0; index < this.client_list.length; index++) {
-                if(this.client_list[index] !== original_list[index]) {
+            for(let index = 0; index < this.clientList.length; index++) {
+                if(this.clientList[index] !== originalList[index]) {
                     this.channelTree.events.fire("notify_channel_client_order_changed", { channel: this });
                     break;
                 }
@@ -420,7 +426,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     }
 
     clients(deep = false) : ClientEntry[] {
-        const result: ClientEntry[] = this.client_list.slice(0);
+        const result: ClientEntry[] = this.clientList.slice(0);
         if(!deep) return result;
 
         return this.children(true).map(e => e.clients(false)).reduce((prev, cur) => {
@@ -430,7 +436,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     }
 
     channelClientsOrdered() : ClientEntry[] {
-        return this.client_list;
+        return this.clientList;
     }
 
     calculate_family_index(enforce_recalculate: boolean = false) : number {
@@ -490,7 +496,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
         let trigger_close = true;
 
-        const collapse_expendable = !!this.child_channel_head || this.client_list.length > 0;
+        const collapse_expendable = !!this.child_channel_head || this.clientList.length > 0;
         const bold = text => contextmenu.get_provider().html_format_enabled() ? "<b>" + text + "</b>" : text;
         contextmenu.spawn_context_menu(x, y, {
                 type: contextmenu.MenuEntryType.ENTRY,

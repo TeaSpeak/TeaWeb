@@ -92,9 +92,8 @@ const VideoViewerCount = React.memo(() => {
     return (
         <div
             className={cssStyle.videoViewerCount}
-            onClick={() => {
-                /* TODO! */
-            }}
+            onClick={() => events.fire("action_show_viewers")}
+            onDoubleClick={event => event.preventDefault()}
         >
             {info}
         </div>

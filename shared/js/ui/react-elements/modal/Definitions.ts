@@ -26,6 +26,7 @@ import {ModalAboutVariables} from "tc-shared/ui/modal/about/Definitions";
 import {ModalServerBandwidthEvents} from "tc-shared/ui/modal/server-bandwidth/Definitions";
 import {ModalYesNoEvents, ModalYesNoVariables} from "tc-shared/ui/modal/yes-no/Definitions";
 import {ModalChannelInfoEvents, ModalChannelInfoVariables} from "tc-shared/ui/modal/channel-info/Definitions";
+import {ModalVideoViewersEvents, ModalVideoViewersVariables} from "tc-shared/ui/modal/video-viewers/Definitions";
 
 export type ModalType = "error" | "warning" | "info" | "none";
 export type ModalRenderType = "page" | "dialog";
@@ -239,5 +240,9 @@ export interface ModalConstructorArguments {
     ],
     "modal-server-bandwidth": [
         /* events */ IpcRegistryDescription<ModalServerBandwidthEvents>
+    ],
+    "modal-video-viewers": [
+        /* events */ IpcRegistryDescription<ModalVideoViewersEvents>,
+        /* variables */ IpcVariableDescriptor<ModalVideoViewersVariables>
     ]
 }

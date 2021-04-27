@@ -79,6 +79,7 @@ export interface ChannelVideoEvents {
     action_set_pip: { videoId: string | undefined, broadcastType: VideoBroadcastType },
     action_toggle_mute: { videoId: string, broadcastType: VideoBroadcastType | undefined, muted: boolean },
     action_dismiss: { videoId: string, broadcastType: VideoBroadcastType },
+    action_show_viewers: {},
 
     query_expended: {},
     query_videos: {},

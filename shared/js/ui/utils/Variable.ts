@@ -97,12 +97,7 @@ export abstract class UiVariableProvider<Variables extends UiVariableMap> {
     }
 
     async getVariable<T extends keyof Variables>(variable: T, customData?: any, ignoreCache?: boolean) : Promise<Variables[T]> {
-        const providers = this.variableProvider[variable as any];
-        if(!providers) {
-            throw tra("missing provider for {}", variable as string);
-        }
-
-        const result = providers(customData);
+        const result = this.resolveVariable(variable as any, customData);
         if(result instanceof Promise) {
             return await result;
         } else {
@@ -111,12 +106,7 @@ export abstract class UiVariableProvider<Variables extends UiVariableMap> {
     }
 
     getVariableSync<T extends keyof Variables>(variable: T, customData?: any, ignoreCache?: boolean) : Variables[T] {
-        const providers = this.variableProvider[variable as any];
-        if(!providers) {
-            throw tr("missing provider");
-        }
-
-        const result = providers(customData);
+        const result = this.resolveVariable(variable as any, customData);
         if(result instanceof Promise) {
             throw tr("tried to get an async variable synchronous");
         }
@@ -139,34 +129,36 @@ export abstract class UiVariableProvider<Variables extends UiVariableMap> {
             throw tr("variable is read only");
         }
 
-        const handleEditResult = result => {
-            if(typeof result === "undefined") {
-                /* change succeeded, no need to notify any variable since the consumer already has the newest value */
-            } else if(result === true || result === false) {
-                /* The new variable has been accepted/rejected and the variable should be updated on the remote side. */
-                /* TODO: Use cached value if the result is `false` */
-                this.sendVariable(variable, customData, true);
-            } else {
-                /* The new value hasn't been accepted. Instead a new value has been returned. */
-                this.doSendVariable(variable, customData, result);
-            }
-        }
-
-        const handleEditError = error => {
-            console.error("Failed to change variable %s: %o", variable, error);
-            this.sendVariable(variable, customData, true);
-        }
-
         try {
             let result = editor(newValue, customData);
             if(result instanceof Promise) {
-                return result.then(handleEditResult).catch(handleEditError);
+                /* Variable editor returns a promise. Await it and return a promise as well. */
+                return result.then(result => this.handleEditResult(variable, customData, result)).catch(error => this.handleEditError(variable, customData, error));
             } else {
-                handleEditResult(result);
+                /* We were able to instantly edit the variable. Handle result. */
+                this.handleEditResult(variable, customData, result);
             }
         } catch (error) {
-            handleEditError(error);
+            this.handleEditError(variable, customData, error);
         }
+    }
+
+    private handleEditResult(variable: string, customData: any, result: any) {
+        if(typeof result === "undefined") {
+            /* change succeeded, no need to notify any variable since the consumer already has the newest value */
+        } else if(result === true || result === false) {
+            /* The new variable has been accepted/rejected and the variable should be updated on the remote side. */
+            /* TODO: Use cached value if the result is `false` */
+            this.sendVariable(variable, customData, true);
+        } else {
+            /* The new value hasn't been accepted. Instead a new value has been returned. */
+            this.doSendVariable(variable, customData, result);
+        }
+    }
+
+    private handleEditError(variable: string, customData: any, error: any) {
+        console.error("Failed to change variable %s: %o", variable, error);
+        this.sendVariable(variable, customData, true);
     }
 
     protected abstract doSendVariable(variable: string, customData: any, value: any);

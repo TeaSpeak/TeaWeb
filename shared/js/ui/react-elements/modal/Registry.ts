@@ -144,3 +144,9 @@ registerModal({
     classLoader: async () => await import("tc-shared/ui/modal/server-bandwidth/Renderer"),
     popoutSupported: true
 });
+
+registerModal({
+    modalId: "modal-video-viewers",
+    classLoader: async () => await import("tc-shared/ui/modal/video-viewers/Renderer"),
+    popoutSupported: true
+});
