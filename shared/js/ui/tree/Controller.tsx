@@ -269,7 +269,7 @@ class ChannelTreeController {
     private handleConnectionStateChanged(event: ConnectionEvents["notify_connection_state_changed"]) {
         if(event.newState !== ConnectionState.CONNECTED) {
             this.channelTree.channelsInitialized = false;
-            this.sendChannelTreeEntriesFull([]);
+            this.sendChannelTreeEntries([]);
         }
         this.sendServerStatus(this.channelTree.server);
     }
@@ -284,7 +284,7 @@ class ChannelTreeController {
         }
 
         /* Quicker than sending info for every client & channel */
-        this.sendChannelTreeEntriesFull(undefined);
+        this.sendChannelTreeEntries(undefined);
     }
 
     private handleGroupsUpdated(event: GroupManagerEvents["notify_groups_updated"]) {
@@ -315,7 +315,7 @@ class ChannelTreeController {
         }
 
         /* Faster than just sending each stuff individual */
-        this.sendChannelTreeEntriesFull(undefined);
+        this.sendChannelTreeEntries(undefined);
     }
 
     /* general channel tree event handlers */
@@ -329,21 +329,27 @@ class ChannelTreeController {
         this.channelTree.channelsInitialized = true;
         this.channelTree.channels.forEach(channel => this.initializeChannelEvents(channel));
         this.channelTree.clients.forEach(channel => this.initializeClientEvents(channel));
-        this.sendChannelTreeEntriesFull(undefined);
+        this.sendChannelTreeEntries(undefined);
         this.sendSelectedEntry();
+    }
+
+    @EventHandler<ChannelTreeEvents>("notify_channel_client_order_changed")
+    private handleChannelOrderChanged() {
+        if(!this.channelTree.channelsInitialized) { return; }
+        this.sendChannelTreeEntries([]);
     }
 
     @EventHandler<ChannelTreeEvents>("notify_channel_created")
     private handleChannelCreated(event: ChannelTreeEvents["notify_channel_created"]) {
         if(!this.channelTree.channelsInitialized) { return; }
         this.initializeChannelEvents(event.channel);
-        this.sendChannelTreeEntriesFull([event.channel.uniqueEntryId]);
+        this.sendChannelTreeEntries([event.channel.uniqueEntryId]);
     }
 
     @EventHandler<ChannelTreeEvents>("notify_channel_moved")
     private handleChannelMoved(event: ChannelTreeEvents["notify_channel_moved"]) {
         if(!this.channelTree.channelsInitialized) { return; }
-        this.sendChannelTreeEntriesFull([]);
+        this.sendChannelTreeEntries([]);
 
         if(event.previousParent && !event.previousParent.child_channel_head) {
             /* the collapsed state arrow changed */
@@ -359,7 +365,7 @@ class ChannelTreeController {
     private handleChannelDeleted(event: ChannelTreeEvents["notify_channel_deleted"]) {
         if(!this.channelTree.channelsInitialized) { return; }
         this.finalizeEvents(event.channel);
-        this.sendChannelTreeEntriesFull([]);
+        this.sendChannelTreeEntries([]);
     }
 
     @EventHandler<ChannelTreeEvents>("notify_client_enter_view")
@@ -369,7 +375,7 @@ class ChannelTreeController {
         this.initializeClientEvents(event.client);
         this.sendChannelInfo(event.targetChannel);
         this.sendChannelStatusIcon(event.targetChannel);
-        this.sendChannelTreeEntriesFull([event.client.uniqueEntryId]);
+        this.sendChannelTreeEntries([ event.client.uniqueEntryId ]);
     }
 
     @EventHandler<ChannelTreeEvents>("notify_client_leave_view")
@@ -379,7 +385,7 @@ class ChannelTreeController {
         this.finalizeEvents(event.client);
         this.sendChannelInfo(event.sourceChannel);
         this.sendChannelStatusIcon(event.sourceChannel);
-        this.sendChannelTreeEntriesFull([]);
+        this.sendChannelTreeEntries([]);
     }
 
     @EventHandler<ChannelTreeEvents>("notify_client_moved")
@@ -391,7 +397,7 @@ class ChannelTreeController {
 
         this.sendChannelInfo(event.newChannel);
         this.sendChannelStatusIcon(event.newChannel);
-        this.sendChannelTreeEntriesFull([]);
+        this.sendChannelTreeEntries([]);
 
         this.sendClientTalkStatus(event.client);
     }
@@ -417,7 +423,7 @@ class ChannelTreeController {
         this.initializeTreeEntryEvents(channel, events);
         events.push(channel.events.on("notify_collapsed_state_changed", () => {
             this.sendChannelInfo(channel);
-            this.sendChannelTreeEntriesFull([]);
+            this.sendChannelTreeEntries([]);
         }));
 
         events.push(channel.events.on("notify_properties_updated", event => {
@@ -544,7 +550,7 @@ class ChannelTreeController {
      * @param fullInfoEntries If `undefined` full entry info will be send.
      *                        Else only infos for entries which are contained within the entry id array will be send.
      */
-    public sendChannelTreeEntriesFull(fullInfoEntries: number[] | undefined) {
+    public sendChannelTreeEntries(fullInfoEntries: number[] | undefined) {
         const entries = [] as FullChannelTreeEntry[];
 
         for(const entry of this.buildFlatChannelTree()) {
@@ -680,7 +686,7 @@ export function initializeChannelTreeController(events: Registry<ChannelTreeUIEv
         events.fire_react("notify_unread_state", { treeEntryId: event.treeEntryId, unread: entry.isUnread() });
     });
 
-    events.on("query_tree_entries", event => controller.sendChannelTreeEntriesFull(event.fullInfo ? undefined : []));
+    events.on("query_tree_entries", event => controller.sendChannelTreeEntries(event.fullInfo ? undefined : []));
     events.on("query_selected_entry", () => controller.sendSelectedEntry());
     events.on("query_channel_info", event => {
         const entry = channelTree.findEntryId(event.treeEntryId);

@@ -1,4 +1,8 @@
 # Changelog:
+* **27.04.21**
+    - Implemented support for showing the video feed watchers
+    - Updating the channel tree if the channel client order changes
+  
 * **24.04.21**
     - Removed the old server info modal and using the new React based and popoutable modal
     - Using the new React modal for the server info dialog. The modal now also has improved permission and error visualisation
