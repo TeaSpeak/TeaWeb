@@ -50,6 +50,7 @@ const ContentRendererServer = () => {
             handlerId={contentData.handlerId}
             messagesDeletable={true}
             noFirstMessageOverlay={false}
+            popoutable={true}
         />
     );
 };

@@ -106,38 +106,45 @@ export const ChannelTag = React.memo((props: {
     channelName: string,
     channelId: number,
     handlerId: string,
-    className?: string
-}) => (
-    <div
-        className={cssStyle.tag + (props.className ? ` ${props.className}` : ``)}
-        onContextMenu={event => {
-            event.preventDefault();
+    className?: string,
 
-            ipcChannel.sendMessage("contextmenu-channel", {
-                handlerId: props.handlerId,
-                channelId: props.channelId,
+    style?: EntryTagStyle
+}) => {
+    if(props.style === "text-only") {
+        return <React.Fragment>{props.channelName}</React.Fragment>;
+    }
+    return (
+        <div
+            className={cssStyle.tag + (props.className ? ` ${props.className}` : ``)}
+            onContextMenu={event => {
+                event.preventDefault();
 
-                pageX: event.pageX,
-                pageY: event.pageY
-            });
-        }}
-        draggable={true}
-        onDragStart={event => {
-            event.dataTransfer.effectAllowed = "all";
-            event.dataTransfer.dropEffect = "move";
-            event.dataTransfer.setDragImage(generateDragElement([{ icon: ClientIcon.ChannelGreen, name: props.channelName }]), 0, 6);
-            setupDragData(event.dataTransfer, props.handlerId, [
-                {
-                    type: "channel",
-                    channelId: props.channelId
-                }
-            ], "channel");
-            event.dataTransfer.setData("text/plain", props.channelName);
-        }}
-    >
-        {props.channelName}
-    </div>
-));
+                ipcChannel.sendMessage("contextmenu-channel", {
+                    handlerId: props.handlerId,
+                    channelId: props.channelId,
+
+                    pageX: event.pageX,
+                    pageY: event.pageY
+                });
+            }}
+            draggable={true}
+            onDragStart={event => {
+                event.dataTransfer.effectAllowed = "all";
+                event.dataTransfer.dropEffect = "move";
+                event.dataTransfer.setDragImage(generateDragElement([{ icon: ClientIcon.ChannelGreen, name: props.channelName }]), 0, 6);
+                setupDragData(event.dataTransfer, props.handlerId, [
+                    {
+                        type: "channel",
+                        channelId: props.channelId
+                    }
+                ], "channel");
+                event.dataTransfer.setData("text/plain", props.channelName);
+            }}
+        >
+            {props.channelName}
+        </div>
+    );
+});
 
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     name: "entry tags",

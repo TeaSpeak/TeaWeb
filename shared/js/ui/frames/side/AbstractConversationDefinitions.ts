@@ -119,6 +119,7 @@ export interface AbstractConversationUiEvents {
     action_send_message: { text: string, chatId: string },
     action_jump_to_present: { chatId: string },
     action_focus_chat: {},
+    action_popout_chat: {},
 
     query_selected_chat: {},
     /* will cause a notify_selected_chat */

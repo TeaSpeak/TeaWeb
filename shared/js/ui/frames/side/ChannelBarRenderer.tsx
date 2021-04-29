@@ -58,6 +58,7 @@ const ModeRendererConversation = React.memo(() => {
             handlerId={channelContext.handlerId}
             messagesDeletable={true}
             noFirstMessageOverlay={false}
+            popoutable={true}
         />
     );
 });

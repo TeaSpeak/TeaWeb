@@ -1,4 +1,8 @@
 # Changelog:
+* **29.04.21**
+    - Fixed a bug which caused chat messages to appear twice
+    - Adding support for poping out channel conversations
+  
 * **27.04.21**
     - Implemented support for showing the video feed watchers
     - Updating the channel tree if the channel client order changes

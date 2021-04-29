@@ -160,13 +160,13 @@ export class ServerConnection extends AbstractServerConnection {
         }));
 
         let timeoutRaised = false;
-        let timeoutPromise = new Promise(resolve => setTimeout(() => {
+        let timeoutPromise = new Promise<void>(resolve => setTimeout(() => {
             timeoutRaised = true;
             resolve();
         }, timeout));
 
         let cancelRaised = false;
-        let cancelPromise = new Promise(resolve => {
+        let cancelPromise = new Promise<void>(resolve => {
             this.connectCancelCallback = () => {
                 this.connectCancelCallback = undefined;
                 cancelRaised = true;

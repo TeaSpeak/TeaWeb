@@ -11,9 +11,9 @@ export default class implements ApplicationLoader {
                 console.log("Doing nothing");
 
                 for(let index of [1, 2, 3]) {
-                    await new Promise(resolve => {
+                    await new Promise<void>(resolve => {
                         const callback = () => {
-                            document.removeEventListener("click", resolve);
+                            document.removeEventListener("click", callback);
                             resolve();
                         };
 

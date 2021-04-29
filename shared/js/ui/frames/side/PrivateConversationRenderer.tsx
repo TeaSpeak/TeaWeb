@@ -220,7 +220,7 @@ export const PrivateConversationsPanel = (props: { events: Registry<PrivateConve
             <div className={cssStyle.dividerContainer}>
                 <OpenConversationsPanel />
                 <ContextDivider id={"seperator-conversation-list-messages"} direction={"horizontal"} defaultValue={25} separatorClassName={cssStyle.divider} />
-                <ConversationPanel events={props.events as any} handlerId={props.handlerId} noFirstMessageOverlay={true} messagesDeletable={false} />
+                <ConversationPanel events={props.events as any} handlerId={props.handlerId} noFirstMessageOverlay={true} messagesDeletable={false} popoutable={false} />
             </div>
         </EventContext.Provider>
     </HandlerIdContext.Provider>

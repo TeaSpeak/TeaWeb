@@ -44,6 +44,12 @@ registerModal({
 });
 
 registerModal({
+    modalId: "channel-chat",
+    classLoader: async () => await import("tc-shared/ui/modal/channel-chat/Renderer"),
+    popoutSupported: true
+});
+
+registerModal({
     modalId: "echo-test",
     classLoader: async () => await import("tc-shared/ui/modal/echo-test/Renderer"),
     popoutSupported: false /* TODO: Needs style fixing */

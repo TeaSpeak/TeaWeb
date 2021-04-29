@@ -535,7 +535,7 @@ class JavascriptLevelMeter implements LevelMeter {
 
     async initialize() {
         try {
-            await new Promise((resolve, reject) => {
+            await new Promise<void>((resolve, reject) => {
                 const timeout = setTimeout(reject, 5000);
                 getAudioBackend().executeWhenInitialized(() => {
                     clearTimeout(timeout);
