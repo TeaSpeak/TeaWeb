@@ -752,20 +752,44 @@ const PanelContainer = (props: { children }) => {
     );
 }
 
-export const ChannelVideoRenderer = (props: { handlerId: string, events: Registry<ChannelVideoEvents> }) => {
+const VisibilityHandler = React.memo((props: {
+    children
+}) => {
+    const events = useContext(EventContext);
+    const [ streamingCount, setStreamingCount ] = useState<number>(() => {
+        events.fire("query_videos");
+        return 0;
+    });
+    const [ expanded, setExpanded ] = useState<boolean>(() => {
+        events.fire("query_expended");
+        return false;
+    })
+
+    events.reactUse("notify_videos", event => setStreamingCount(event.videoActiveCount));
+    events.reactUse("notify_expended", event => setExpanded(event.expended));
+    return (
+        <div className={joinClassList(cssStyle.container, streamingCount === 0 && cssStyle.hidden, expanded && cssStyle.expended)}>
+            {props.children}
+        </div>
+    )
+});
+
+export const ChannelVideoRenderer = React.memo((props: { handlerId: string, events: Registry<ChannelVideoEvents> }) => {
     return (
         <EventContext.Provider value={props.events}>
             <HandlerIdContext.Provider value={props.handlerId}>
-                <PanelContainer>
-                    <VideoSubscribeContextProvider>
-                        <VideoBar />
-                        <ExpendArrow />
-                        <ErrorBoundary>
-                            <Spotlight />
-                        </ErrorBoundary>
-                    </VideoSubscribeContextProvider>
-                </PanelContainer>
+                <VisibilityHandler>
+                    <PanelContainer>
+                        <VideoSubscribeContextProvider>
+                            <VideoBar />
+                            <ExpendArrow />
+                            <ErrorBoundary>
+                                <Spotlight />
+                            </ErrorBoundary>
+                        </VideoSubscribeContextProvider>
+                    </PanelContainer>
+                </VisibilityHandler>
             </HandlerIdContext.Provider>
         </EventContext.Provider>
     );
-};
+});

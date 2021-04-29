@@ -82,6 +82,7 @@ export interface ChannelVideoEvents {
     action_show_viewers: {},
 
     query_expended: {},
+    query_visible: {},
     query_videos: {},
     query_video: { videoId: string },
     query_video_info: { videoId: string },
@@ -93,7 +94,8 @@ export interface ChannelVideoEvents {
 
     notify_expended: { expended: boolean },
     notify_videos: {
-        videoIds: string[]
+        videoIds: string[],
+        videoActiveCount: number,
     },
     notify_video: {
         videoId: string,

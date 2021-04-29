@@ -346,8 +346,6 @@ class LocalVideoController extends RemoteClientVideoController {
 }
 
 class ChannelVideoController {
-    callbackVisibilityChanged: (visible: boolean) => void;
-
     private readonly connection: ConnectionHandler;
     private readonly videoConnection: VideoConnection;
     private readonly events: Registry<ChannelVideoEvents>;
@@ -710,13 +708,13 @@ class ChannelVideoController {
             }
         }
 
-        this.updateVisibility(videoStreamingCount !== 0);
         if(this.expended) {
             this.currentSpotlights.forEach(entry => videoIds.remove(entry));
         }
 
         this.events.fire_react("notify_videos", {
-            videoIds: videoIds
+            videoIds: videoIds,
+            videoActiveCount: videoStreamingCount
         });
     }
 
@@ -785,21 +783,11 @@ class ChannelVideoController {
         }
         this.events.fire_react("notify_viewer_count", { camera: cameraViewers, screen: screenViewers });
     }
-
-    private updateVisibility(target: boolean) {
-        if(this.currentlyVisible === target) { return; }
-
-        this.currentlyVisible = target;
-        if(this.callbackVisibilityChanged) {
-            this.callbackVisibilityChanged(target);
-        }
-    }
 }
 
 export class ChannelVideoFrame {
     private readonly handle: ConnectionHandler;
     private readonly events: Registry<ChannelVideoEvents>;
-    private container: HTMLDivElement;
     private controller: ChannelVideoController;
 
     constructor(handle: ConnectionHandler) {
@@ -807,38 +795,15 @@ export class ChannelVideoFrame {
         this.events = new Registry<ChannelVideoEvents>();
         this.controller = new ChannelVideoController(this.events, handle);
         this.controller.initialize();
-
-        this.container = document.createElement("div");
-        this.container.classList.add(cssStyle.container, cssStyle.hidden);
-
-        ReactDOM.render(React.createElement(ChannelVideoRenderer, { handlerId: handle.handlerId, events: this.events }), this.container);
-
-        this.events.on("notify_expended", event => {
-            this.container.classList.toggle(cssStyle.expended, event.expended);
-        });
-        this.controller.callbackVisibilityChanged = flag => {
-            this.container.classList.toggle(cssStyle.hidden, !flag);
-            if(!flag) {
-                this.events.fire("action_toggle_expended", { expended: false })
-            }
-        };
     }
 
     destroy() {
         this.controller?.destroy();
         this.controller = undefined;
-
-        if(this.container) {
-            this.container.remove();
-            ReactDOM.unmountComponentAtNode(this.container);
-
-            this.container = undefined;
-        }
-
         this.events.destroy();
     }
 
-    getContainer() : HTMLDivElement {
-        return this.container;
+    getEvents() : Registry<ChannelVideoEvents> {
+        return this.events;
     }
 }

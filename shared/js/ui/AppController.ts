@@ -34,7 +34,7 @@ export class AppController {
     constructor() {
         this.uiEvents = new Registry<AppUiEvents>();
         this.uiEvents.on("query_channel_tree", () => this.notifyChannelTree());
-        this.uiEvents.on("query_video_container", () => this.notifyVideoContainer());
+        this.uiEvents.on("query_video", () => this.notifyVideoContainer());
 
         this.listener = [];
     }
@@ -126,8 +126,9 @@ export class AppController {
     }
 
     private notifyVideoContainer() {
-        this.uiEvents.fire_react("notify_video_container", {
-            container: this.currentConnection?.video_frame.getContainer()
+        this.uiEvents.fire_react("notify_video", {
+            events: this.currentConnection?.video_frame.getEvents(),
+            handlerId: this.currentConnection?.handlerId
         });
     }
 }

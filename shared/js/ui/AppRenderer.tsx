@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {ControlBar2} from "tc-shared/ui/frames/control-bar/Renderer";
 import {Registry} from "tc-shared/events";
 import {ControlBarEvents} from "tc-shared/ui/frames/control-bar/Definitions";
@@ -21,30 +21,22 @@ import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 import {ImagePreviewHook} from "tc-shared/ui/frames/ImagePreview";
 import {InternalModalHook} from "tc-shared/ui/react-elements/modal/internal";
 import {TooltipHook} from "tc-shared/ui/react-elements/Tooltip";
+import {ChannelVideoEvents} from "tc-shared/ui/frames/video/Definitions";
+import {ChannelVideoRenderer} from "tc-shared/ui/frames/video/Renderer";
 
 const cssStyle = require("./AppRenderer.scss");
 const VideoFrame = React.memo((props: { events: Registry<AppUiEvents> }) => {
-    const refElement = React.useRef<HTMLDivElement>();
-    const [ container, setContainer ] = useState<HTMLDivElement | undefined>(() => {
-        props.events.fire("query_video_container");
-        return undefined;
+    const [ data, setData ] = useState<{ events: Registry<ChannelVideoEvents> | undefined, handlerId: string | undefined }>(() => {
+        props.events.fire("query_video");
+        return { events: undefined, handlerId: undefined };
     });
-    props.events.reactUse("notify_video_container", event => setContainer(event.container));
+    props.events.reactUse("notify_video", event => setData({ handlerId: event.handlerId, events: event.events }));
 
-    useEffect(() => {
-        if(!refElement.current || !container) {
-            return;
-        }
-
-        refElement.current.replaceWith(container);
-        return () => container.replaceWith(refElement.current);
-    });
-
-    if(!container) {
+    if(!data.events) {
         return null;
     }
 
-    return <div ref={refElement} />;
+    return <ChannelVideoRenderer handlerId={data.handlerId} events={data.events} key={"video-" + data.handlerId} />;
 });
 
 const ChannelTree = React.memo((props: { events: Registry<AppUiEvents> }) => {

@@ -28,15 +28,6 @@ $small_height: 10em;
         }
     }
 
-    .heightProvider {
-        height: 100%; /* the footer size (version etc) */
-
-        .spotlight {
-            margin-left: 0;
-            margin-right: 0;
-        }
-    }
-
     &.expended {
         .panel {
             height: 100%; /* the footer size (version etc) */
@@ -46,6 +37,16 @@ $small_height: 10em;
 
         .expendArrow .icon {
             @include transform(rotate(90deg)!important);
+        }
+    }
+
+    /* Needs to be within the .container class else dosn't work */
+    .heightProvider {
+        height: 100%; /* the footer size (version etc) */
+
+        .spotlight {
+            margin-left: 0;
+            margin-right: 0;
         }
     }
 }
