@@ -3,7 +3,7 @@ import {ChannelBarMode, ChannelBarModeData, ChannelBarUiEvents} from "tc-shared/
 import * as React from "react";
 import {useContext, useState} from "react";
 import {ConversationPanel} from "tc-shared/ui/frames/side/AbstractConversationRenderer";
-import {useDependentState} from "tc-shared/ui/react-elements/Helper";
+import {useDependentState, useRegistry} from "tc-shared/ui/react-elements/Helper";
 import {ChannelDescriptionRenderer} from "tc-shared/ui/frames/side/ChannelDescriptionRenderer";
 import {ChannelFileBrowser} from "tc-shared/ui/frames/side/ChannelFileBrowserRenderer";
 
@@ -49,12 +49,13 @@ const ModeRenderer = () => {
 const ModeRendererConversation = React.memo(() => {
     const channelContext = useContext(ChannelContext);
     const data = useModeData("conversation", [ channelContext ]);
-    if(!data) { return null; }
+    const events = useRegistry(data?.events);
+    if(!data || !events) { return null; }
 
     return (
         <ConversationPanel
             key={"conversation"}
-            events={data.events}
+            events={events}
             handlerId={channelContext.handlerId}
             messagesDeletable={true}
             noFirstMessageOverlay={false}
@@ -66,20 +67,22 @@ const ModeRendererConversation = React.memo(() => {
 const ModeRendererDescription = React.memo(() => {
     const channelContext = useContext(ChannelContext);
     const data = useModeData("description", [ channelContext ]);
-    if(!data) { return null; }
+    const events = useRegistry(data?.events);
+    if(!data || !events) { return null; }
 
     return (
-        <ChannelDescriptionRenderer events={data.events} />
+        <ChannelDescriptionRenderer events={events} />
     );
 });
 
 const ModeRendererFileTransfer = React.memo(() => {
     const channelContext = useContext(ChannelContext);
     const data = useModeData("file-transfer", [ channelContext ]);
-    if(!data) { return null; }
+    const events = useRegistry(data?.events);
+    if(!data || !events) { return null; }
 
     return (
-        <ChannelFileBrowser events={data.events} />
+        <ChannelFileBrowser events={events} />
     );
 });
 

@@ -1,11 +1,8 @@
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
-import {ChannelVideoRenderer} from "tc-shared/ui/frames/video/Renderer";
 import {Registry} from "tc-shared/events";
 import {
     ChannelVideoEvents,
-    ChannelVideoStreamState,
+    ChannelVideoStreamState, getVideoStreamMap,
     kLocalVideoId,
     VideoStreamState
 } from "tc-shared/ui/frames/video/Definitions";
@@ -24,8 +21,7 @@ import * as _ from "lodash";
 import PermissionType from "tc-shared/permission/PermissionType";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {spawnVideoViewerInfo} from "tc-shared/ui/modal/video-viewers/Controller";
-
-const cssStyle = require("./Renderer.scss");
+import {guid} from "tc-shared/crypto/uid";
 
 let videoIdIndex = 0;
 interface ClientVideoController {
@@ -234,7 +230,12 @@ class RemoteClientVideoController implements ClientVideoController {
             if(!stream) {
                 state = { state: "failed", reason: tr("Missing video stream") };
             } else {
-                state = { state: "connected", stream: stream };
+                const streamUuid = guid();
+                const streamMap = getVideoStreamMap();
+                streamMap[streamUuid] = stream;
+                setTimeout(() => delete streamMap[streamUuid], 60 * 1000);
+
+                state = { state: "connected", streamObjectId: streamUuid };
             }
         }
 

@@ -1,5 +1,6 @@
 import {Dispatch, SetStateAction, useEffect, useMemo, useState} from "react";
 import {RegistryKey, RegistryValueType, settings, ValuedRegistryKey} from "tc-shared/settings";
+import {IpcRegistryDescription, Registry} from "tc-events";
 
 export function useDependentState<S>(
     factory: (prevState?: S) => S,
@@ -42,4 +43,12 @@ export function useGlobalSetting(key, defaultValue) {
     useEffect(() => settings.globalChangeListener(key, value => setValue(value)), []);
 
     return value;
+}
+
+export function useRegistry<T>(description: IpcRegistryDescription<T> | undefined) : Registry<T> | undefined;
+export function useRegistry<T>(description: IpcRegistryDescription<T>) : Registry<T>
+export function useRegistry(description) {
+    const events = useMemo(() => description ? Registry.fromIpcDescription(description) : undefined, [ description ]);
+    useEffect(() => () => events?.destroy(), [ description ]);
+    return events;
 }

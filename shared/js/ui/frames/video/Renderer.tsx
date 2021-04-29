@@ -5,7 +5,7 @@ import {ClientIcon} from "svg-sprites/client-icons";
 import {Registry} from "tc-shared/events";
 import {
     ChannelVideoEvents, ChannelVideoInfo,
-    ChannelVideoStreamState,
+    ChannelVideoStreamState, getVideoStreamMap,
     kLocalVideoId, makeVideoAutoplay,
     VideoStreamState,
     VideoSubscribeInfo
@@ -269,7 +269,7 @@ const MediaStreamVideoRenderer = React.memo((props: { stream: MediaStream | unde
     )
 });
 
-const VideoStreamPlayer = (props: { videoId: string, streamType: VideoBroadcastType, className?: string }) => {
+const VideoStreamPlayer = React.memo((props: { videoId: string, streamType: VideoBroadcastType, className?: string }) => {
     const events = useContext(EventContext);
     const [ state, setState ] = useState<VideoStreamState>(() => {
         events.fire("query_video_stream", { videoId: props.videoId, broadcastType: props.streamType });
@@ -301,9 +301,20 @@ const VideoStreamPlayer = (props: { videoId: string, streamType: VideoBroadcastT
             );
 
         case "connected":
+            const streamMap = getVideoStreamMap();
+            if(typeof streamMap[state.streamObjectId] === "undefined") {
+                return (
+                    <div className={cssStyle.text} key={"missing-stream-object"}>
+                        <div>
+                            <Translatable>Missing stream object</Translatable>
+                        </div>
+                    </div>
+                );
+            }
+
             return (
                 <MediaStreamVideoRenderer
-                    stream={state.stream}
+                    stream={streamMap[state.streamObjectId]}
                     className={props.className}
                     title={props.streamType === "camera" ? tr("Camera") : tr("Screen")}
                     key={"connected"}
@@ -324,7 +335,7 @@ const VideoStreamPlayer = (props: { videoId: string, streamType: VideoBroadcastT
                 </div>
             );
     }
-}
+});
 
 const VideoPlayer = React.memo((props: { videoId: string, cameraState: ChannelVideoStreamState, screenState: ChannelVideoStreamState }) => {
     const streamElements = [];

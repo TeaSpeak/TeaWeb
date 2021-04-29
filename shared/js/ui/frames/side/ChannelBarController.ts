@@ -181,7 +181,7 @@ export class ChannelBarController {
                 this.uiEvents.fire_react("notify_data", {
                     content: "conversation",
                     data: {
-                        events: this.channelConversations.getUiEvents()
+                        events: this.channelConversations.getUiEvents().generateIpcDescription()
                     }
                 });
                 break;
@@ -190,7 +190,7 @@ export class ChannelBarController {
                 this.uiEvents.fire_react("notify_data", {
                     content: "description",
                     data: {
-                        events: this.description.uiEvents
+                        events: this.description.uiEvents.generateIpcDescription()
                     }
                 });
                 break;
@@ -199,7 +199,7 @@ export class ChannelBarController {
                 this.uiEvents.fire_react("notify_data", {
                     content: "file-transfer",
                     data: {
-                        events: this.fileBrowser.uiEvents
+                        events: this.fileBrowser.uiEvents.generateIpcDescription()
                     }
                 });
                 break;

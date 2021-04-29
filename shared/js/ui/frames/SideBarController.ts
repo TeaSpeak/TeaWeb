@@ -73,15 +73,6 @@ export class SideBarController {
         this.privateConversations = undefined;
     }
 
-    renderInto(container: HTMLDivElement) {
-        /*
-        ReactDOM.render(React.createElement(SideBarRenderer, {
-            events: this.uiEvents,
-            eventsHeader: this.header["uiEvents"],
-        }), container);
-        */
-    }
-
     getMusicController() : MusicBotController {
         return this.musicPanel;
     }
@@ -116,7 +107,7 @@ export class SideBarController {
                 this.uiEvents.fire_react("notify_content_data", {
                     content: "channel",
                     data: {
-                        events: this.channelBar.uiEvents,
+                        events: this.channelBar.uiEvents.generateIpcDescription(),
                     }
                 });
                 break;
@@ -125,7 +116,7 @@ export class SideBarController {
                 this.uiEvents.fire_react("notify_content_data", {
                     content: "server",
                     data: this.currentConnection ? {
-                        chatEvents: this.channelBar.getChannelConversationController().getUiEvents(),
+                        chatEvents: this.channelBar.getChannelConversationController().getUiEvents().generateIpcDescription(),
                         handlerId: this.currentConnection.handlerId
                     } : undefined
                 });
@@ -140,7 +131,7 @@ export class SideBarController {
                 this.uiEvents.fire_react("notify_content_data", {
                     content: "private-chat",
                     data: {
-                        events: this.privateConversations["uiEvents"],
+                        events: this.privateConversations["uiEvents"].generateIpcDescription(),
                         handlerId: this.currentConnection.handlerId
                     }
                 });
@@ -155,7 +146,7 @@ export class SideBarController {
                 this.uiEvents.fire_react("notify_content_data", {
                     content: "client-info",
                     data: {
-                        events: this.clientInfo["uiEvents"],
+                        events: this.clientInfo["uiEvents"].generateIpcDescription(),
                     }
                 });
                 break;
@@ -169,8 +160,8 @@ export class SideBarController {
                 this.uiEvents.fire_react("notify_content_data", {
                     content: "music-manage",
                     data: {
-                        botEvents: this.musicPanel.getBotUiEvents(),
-                        playlistEvents: this.musicPanel.getPlaylistUiEvents()
+                        botEvents: this.musicPanel.getBotUiEvents().generateIpcDescription(),
+                        playlistEvents: this.musicPanel.getPlaylistUiEvents().generateIpcDescription()
                     }
                 });
                 break;

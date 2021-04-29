@@ -48,7 +48,7 @@ export type VideoStreamState = {
     reason?: string
 } | {
     state: "connected",
-    stream: MediaStream
+    streamObjectId: string
 };
 
 export type VideoSubscribeInfo = {
@@ -173,4 +173,15 @@ export function makeVideoAutoplay(video: HTMLVideoElement) : () => void {
         video.removeEventListener("pause", listenerPause);
         video.removeEventListener("ended", listenerEnded);
     };
+}
+
+const kVideoStreamMapName = "__teaspeak_video_streams__" + __build.timestamp + "_" + __build.version;
+export function getVideoStreamMap() : { [key: string]: MediaStream } {
+    let windowInstance = window;
+    while(windowInstance.opener) {
+        /* Are we sure about this while loop? */
+        windowInstance = windowInstance.opener;
+    }
+
+    return windowInstance[kVideoStreamMapName] || (windowInstance[kVideoStreamMapName] = {});
 }
