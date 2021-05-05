@@ -81,7 +81,7 @@ export class HandshakeHandler {
             client_version: "TeaWeb " + __build.version + " (" + navigator.userAgent + ")",
             client_version_sign: undefined,
 
-            client_default_channel: this.parameters.defaultChannel || "",
+            client_default_channel: typeof this.parameters.defaultChannel === "number" ? "/" + this.parameters.defaultChannel : this.parameters.defaultChannel || "",
             client_default_channel_password: this.parameters.defaultChannelPassword || "",
             client_default_token: this.parameters.token,
 
