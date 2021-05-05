@@ -373,6 +373,8 @@ export type InitializeUploadOptions = {
     channelPassword?: string;
 
     source: TransferSourceSupplier;
+
+    processCommandResult?: boolean
 };
 
 export type InitializeDownloadOptions = {
@@ -424,12 +426,14 @@ export class FileManager {
         clearInterval(this.transerUpdateIntervalId);
     }
 
-    requestFileList(path: string, channelId?: number, channelPassword?: string) : Promise<FileInfo[]> {
+    requestFileList(path: string, channelId?: number, channelPassword?: string, processResult?: boolean) : Promise<FileInfo[]> {
         return this.commandHandler.registerFileList(path, channelId | 0, (resolve, reject) => {
             this.connectionHandler.serverConnection.send_command("ftgetfilelist", {
                 path: path,
                 cid: channelId || "0",
                 cpw: channelPassword
+            }, {
+                process_result: typeof processResult !== "boolean" || processResult
             }).then(() => {
                 reject(tr("Missing server file list response"));
             }).catch(error => {
@@ -556,7 +560,7 @@ export class FileManager {
                     "clientftfid": transfer.clientTransferId,
                     "seekpos": 0,
                     "proto": 1
-                }, {process_result: false});
+                }, { process_result: false });
 
                 if(transfer.transferState() === FileTransferState.INITIALIZING) {
                     throw tr("missing transfer start notify");
@@ -598,7 +602,7 @@ export class FileManager {
                     "overwrite": true,
                     "resume": false,
                     "proto": 1
-                });
+                }, { process_result: options.processCommandResult });
 
                 if(transfer.transferState() === FileTransferState.INITIALIZING)
                     throw tr("missing transfer start notify");
@@ -718,15 +722,42 @@ export class FileManager {
     }
 
     private updateRegisteredTransfers() {
-        /* drop timeouted transfers */
+        /* drop timed out transfers */
         {
             const timeout = Date.now() - 10 * 1000;
-            const timeouted = this.registeredTransfers_.filter(e => e.transfer.lastStateUpdate < timeout).filter(e => e.transfer.isRunning());
-            timeouted.forEach(e => {
-                e.transfer.setFailed({
+            const timedOutTransfers = this.registeredTransfers_.filter(entry => {
+                if(entry.transfer.lastStateUpdate >= timeout) {
+                    return false;
+                }
+
+                switch (entry.transfer.transferState()) {
+                    case FileTransferState.PENDING:
+                        /* Transfer is locally pending because of some limits */
+                        return false;
+
+                    case FileTransferState.CONNECTING:
+                    case FileTransferState.INITIALIZING:
+                    case FileTransferState.RUNNING:
+                        /* These states can time out */
+                        return true;
+
+                    case FileTransferState.CANCELED:
+                    case FileTransferState.ERRORED:
+                    case FileTransferState.FINISHED:
+                        /* Transfer finished, we can't have a timeout */
+                        return false;
+
+                    default:
+                        /* Should never happen but just in case time it out */
+                        return true;
+                }
+            });
+
+            for(const entry of timedOutTransfers) {
+                entry.transfer.setFailed({
                     error: "timeout"
                 }, tr("Timed out"));
-            });
+            }
         }
 
         /* check if we could start a new transfer */
@@ -743,7 +774,7 @@ export class FileManager {
 
             if(runningTransfers.length !== 0) {
                 /* start a new transfer as soon the old has been finished */
-                Promise.race([runningTransfers.map(e => e.finishPromise)]).then(() => {
+                Promise.race([ runningTransfers.map(e => e.finishPromise) ]).then(() => {
                     this.scheduleTransferUpdate();
                 });
             }

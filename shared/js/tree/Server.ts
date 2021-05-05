@@ -5,7 +5,6 @@ import * as log from "../log";
 import {LogCategory, logError, logInfo, LogType} from "../log";
 import {Sound} from "../audio/Sounds";
 import {createServerModal} from "../ui/modal/ModalServerEdit";
-import {spawnIconSelect} from "../ui/modal/ModalIconSelect";
 import {spawnAvatarList} from "../ui/modal/ModalAvatarList";
 import {Registry} from "../events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
@@ -21,6 +20,7 @@ import {
     ServerConnectionInfoResult,
     ServerProperties
 } from "tc-shared/tree/ServerDefinitions";
+import {spawnIconManage} from "tc-shared/ui/modal/icon-viewer/Controller";
 
 /* TODO: Rework all imports */
 export * from "./ServerDefinitions";
@@ -180,7 +180,7 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-iconviewer",
                 name: tr("View icons"),
-                callback: () => spawnIconSelect(this.channelTree.client)
+                callback: () => spawnIconManage(this.channelTree.client, 0, undefined)
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: 'client-iconsview',

@@ -1,10 +1,13 @@
 import {UiVariableConsumer, UiVariableMap, UiVariableProvider} from "tc-shared/ui/utils/Variable";
 import {guid} from "tc-shared/crypto/uid";
 import {LogCategory, logWarn} from "tc-shared/log";
+import ReactDOM from "react-dom";
 
 export class IpcUiVariableProvider<Variables extends UiVariableMap> extends UiVariableProvider<Variables> {
     readonly ipcChannelId: string;
     private broadcastChannel: BroadcastChannel;
+
+    private enqueuedMessages: any[];
 
     constructor() {
         super();
@@ -27,7 +30,7 @@ export class IpcUiVariableProvider<Variables extends UiVariableMap> extends UiVa
     }
 
     protected doSendVariable(variable: string, customData: any, value: any) {
-        this.broadcastChannel.postMessage({
+        this.broadcastIpcMessage({
             type: "notify",
 
             variable,
@@ -48,7 +51,7 @@ export class IpcUiVariableProvider<Variables extends UiVariableMap> extends UiVa
                         error
                     });
                 } else {
-                    this.broadcastChannel.postMessage({
+                    this.broadcastIpcMessage({
                         type: "edit-result",
                         token,
                         error
@@ -73,6 +76,10 @@ export class IpcUiVariableProvider<Variables extends UiVariableMap> extends UiVa
             }
         } else if(message.type === "query") {
             this.sendVariable(message.variable, message.customData, true);
+        } else if(message.type === "bundled") {
+            for(const bundledMessage of message.messages) {
+                this.handleIpcMessage(bundledMessage, source, origin);
+            }
         }
     }
 
@@ -80,6 +87,28 @@ export class IpcUiVariableProvider<Variables extends UiVariableMap> extends UiVa
         return {
             ipcChannelId: this.ipcChannelId
         };
+    }
+
+    /**
+     * Send an IPC message.
+     * We bundle messages to improve performance when doing a lot of combined requests.
+     * @param message IPC message to send
+     * @private
+     */
+    private broadcastIpcMessage(message: any) {
+        if(Array.isArray(this.enqueuedMessages)) {
+            this.enqueuedMessages.push(message);
+            return;
+        }
+
+        this.enqueuedMessages = [ message ];
+        setImmediate(() => {
+            this.broadcastChannel.postMessage({
+                type: "bundled",
+                messages: this.enqueuedMessages
+            });
+            this.enqueuedMessages = undefined;
+        })
     }
 }
 
@@ -92,6 +121,8 @@ class IpcUiVariableConsumer<Variables extends UiVariableMap> extends UiVariableC
     readonly description: IpcVariableDescriptor<Variables>;
     private broadcastChannel: BroadcastChannel;
     private editListener: {[key: string]: { resolve: () => void, reject: (error) => void }};
+
+    private enqueuedMessages: any[];
 
     constructor(description: IpcVariableDescriptor<Variables>) {
         super();
@@ -121,7 +152,7 @@ class IpcUiVariableConsumer<Variables extends UiVariableMap> extends UiVariableC
         const token = "t" + ++editTokenIndex;
 
         return new Promise((resolve, reject) => {
-            this.broadcastChannel.postMessage({
+            this.sendIpcMessage({
                 type: "edit",
                 token,
                 variable,
@@ -137,14 +168,14 @@ class IpcUiVariableConsumer<Variables extends UiVariableMap> extends UiVariableC
     }
 
     protected doRequestVariable(variable: string, customData: any) {
-        this.broadcastChannel.postMessage({
+        this.sendIpcMessage({
             type: "query",
             variable,
             customData,
         });
     }
 
-    private handleIpcMessage(message: any, _source: MessageEventSource | null) {
+    private handleIpcMessage(message: any, source: MessageEventSource | null) {
         if(message.type === "notify") {
             this.notifyRemoteVariable(message.variable, message.customData, message.value);
         } else if(message.type === "edit-result") {
@@ -159,7 +190,36 @@ class IpcUiVariableConsumer<Variables extends UiVariableMap> extends UiVariableC
             } else {
                 payload.resolve();
             }
+        } else if(message.type === "bundled") {
+            ReactDOM.unstable_batchedUpdates(() => {
+                for(const bundledMessage of message.messages) {
+                    this.handleIpcMessage(bundledMessage, source);
+                }
+            });
         }
+    }
+
+    /**
+     * Send an IPC message.
+     * We bundle messages to improve performance when doing a lot of combined requests.
+     * The response will most likely also be bundled. This means that we're only updating react once.
+     * @param message IPC message to send
+     * @private
+     */
+    private sendIpcMessage(message: any) {
+        if(Array.isArray(this.enqueuedMessages)) {
+            this.enqueuedMessages.push(message);
+            return;
+        }
+
+        this.enqueuedMessages = [ message ];
+        setImmediate(() => {
+            this.broadcastChannel.postMessage({
+                type: "bundled",
+                messages: this.enqueuedMessages
+            });
+            this.enqueuedMessages = undefined;
+        })
     }
 }
 

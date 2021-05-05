@@ -17,7 +17,7 @@ import PermissionType from "tc-shared/permission/PermissionType";
 import {ChannelPropertyValidators} from "tc-shared/ui/modal/channel-edit/ControllerValidation";
 import {hashPassword} from "tc-shared/utils/helpers";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
-import {spawnIconSelect} from "tc-shared/ui/modal/ModalIconSelect";
+import {spawnIconManage} from "tc-shared/ui/modal/icon-viewer/Controller";
 
 export type ChannelEditCallback = (properties: Partial<ChannelProperties>, permissions: ChannelEditChangedPermission[]) => void;
 export type ChannelEditChangedPermission = { permission: PermissionType, value: number };
@@ -132,9 +132,9 @@ class ChannelEditController {
             this.notifyPermission(event.permission);
         });
         this.uiEvents.on("action_icon_select", () => {
-            spawnIconSelect(this.connection, id => {
-                this.uiEvents.fire("action_change_property", { property: "icon", value: { iconId: id } });
-            }, this.currentProperties.channel_icon_id);
+            spawnIconManage(this.connection, this.currentProperties.channel_icon_id, newIconId => {
+                this.uiEvents.fire("action_change_property", { property: "icon", value: { iconId: newIconId } });
+            });
         });
 
         this.listenerPermissions = [];

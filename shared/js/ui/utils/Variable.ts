@@ -145,7 +145,8 @@ export abstract class UiVariableProvider<Variables extends UiVariableMap> {
 
     private handleEditResult(variable: string, customData: any, result: any) {
         if(typeof result === "undefined") {
-            /* change succeeded, no need to notify any variable since the consumer already has the newest value */
+            /* Send the new variable since may other listeners needs to be notified */
+            this.sendVariable(variable, customData, true);
         } else if(result === true || result === false) {
             /* The new variable has been accepted/rejected and the variable should be updated on the remote side. */
             /* TODO: Use cached value if the result is `false` */

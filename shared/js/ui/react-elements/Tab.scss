@@ -21,8 +21,6 @@
         flex-direction: row;
         justify-content: stretch;
 
-        border-bottom: 1px solid #1d1d1d;
-
         .entry {
             padding: .5em;
 
@@ -32,10 +30,8 @@
             flex-shrink: 1;
 
             cursor: pointer;
-
-            &:hover {
-                color: #b6c4d6;
-            }
+            border-bottom: 1px solid #1d1d1d;
+            transition: $button_hover_animation_time;
 
             &.selected {
                 border-bottom: 3px solid #245184;
@@ -44,7 +40,9 @@
                 color: #245184;
             }
 
-            @include transition(color $button_hover_animation_time, border-bottom-color $button_hover_animation_time);
+            &:hover {
+                color: #5f95d3;
+            }
         }
     }
 

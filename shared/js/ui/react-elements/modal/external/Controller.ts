@@ -137,7 +137,8 @@ export class ExternalModalController implements ModalInstanceController {
                 defaultSize: this.modalOptions.defaultSize,
                 appParameters: {
                     "modal-channel": this.ipcChannel.channelId,
-                }
+                },
+                noOpener: typeof this.modalOptions.noOpener === "boolean" ? this.modalOptions.noOpener : true
             });
 
             if(result.status === "error-user-rejected") {

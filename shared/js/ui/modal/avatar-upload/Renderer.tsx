@@ -10,7 +10,7 @@ import {
 import {UiVariableConsumer} from "tc-shared/ui/utils/Variable";
 import {createIpcUiVariableConsumer, IpcVariableDescriptor} from "tc-shared/ui/utils/IpcVariable";
 import {Button} from "tc-shared/ui/react-elements/Button";
-import {requestFile} from "tc-shared/file/Utils";
+import {promptFile} from "tc-shared/file/Utils";
 import {network} from "tc-shared/ui/frames/chat";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {getOwnAvatarStorage} from "tc-shared/file/OwnAvatarStorage";
@@ -277,7 +277,7 @@ class ModalAvatarUpload extends AbstractModal {
 
         this.events.on("action_open_select", async () => {
             this.events.fire("action_file_cache_loading");
-            const files = await requestFile({
+            const files = await promptFile({
                 multiple: false,
                 accept: ".svg, .png, .jpg, .jpeg, gif"
             });

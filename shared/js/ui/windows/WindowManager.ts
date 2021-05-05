@@ -26,6 +26,9 @@ export interface WindowSpawnOptions {
 
     appParameters?: {[key: string]: string},
     defaultSize?: { width: number, height: number },
+
+    /* Don't share the same JavaScript environment (Default behaviour is currently "no" but this will change within the feature! */
+    noOpener?: boolean,
 }
 
 export interface WindowManager {

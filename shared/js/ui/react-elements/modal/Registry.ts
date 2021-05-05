@@ -156,3 +156,9 @@ registerModal({
     classLoader: async () => await import("tc-shared/ui/modal/video-viewers/Renderer"),
     popoutSupported: true
 });
+
+registerModal({
+    modalId: "modal-icon-viewer",
+    classLoader: async () => await import("tc-shared/ui/modal/icon-viewer/Renderer"),
+    popoutSupported: true
+});

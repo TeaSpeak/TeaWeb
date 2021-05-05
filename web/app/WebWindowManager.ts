@@ -150,8 +150,8 @@ export class WebWindowManager implements WindowManager {
         });
 
         const features = {
-            /* TODO: Configureable and enabled by default! */
-            noopener: "no",
+            /* We can't enable this yet since we're loosing control over the Window that way. */
+            //noopener: options.noOpener ? "yes" : "no",
 
             status: "no",
             location: "no",

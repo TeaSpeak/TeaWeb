@@ -28,6 +28,7 @@ import {ModalYesNoEvents, ModalYesNoVariables} from "tc-shared/ui/modal/yes-no/D
 import {ModalChannelInfoEvents, ModalChannelInfoVariables} from "tc-shared/ui/modal/channel-info/Definitions";
 import {ModalVideoViewersEvents, ModalVideoViewersVariables} from "tc-shared/ui/modal/video-viewers/Definitions";
 import {ModalChannelChatParameters} from "tc-shared/ui/modal/channel-chat/Definitions";
+import {ModalIconViewerEvents, ModalIconViewerVariables} from "tc-shared/ui/modal/icon-viewer/Definitions";
 
 export type ModalType = "error" | "warning" | "info" | "none";
 export type ModalRenderType = "page" | "dialog";
@@ -68,7 +69,13 @@ export interface ModalOptions {
      * The default popout state.
      * Default: `false`
      */
-    popedOut?: boolean
+    popedOut?: boolean,
+
+    /**
+     * Don't share the same JavaScript environment.
+     * Default: `true`
+     */
+    noOpener?: boolean
 }
 
 export interface ModalEvents {
@@ -137,8 +144,8 @@ export abstract class AbstractModal {
         currentModalProperties = undefined;
     }
 
-    abstract renderBody() : ReactElement;
-    abstract renderTitle() : string | React.ReactElement;
+    abstract renderBody() : React.ReactNode;
+    abstract renderTitle() : React.ReactNode;
 
     /* only valid for the "inline" modals */
     type() : ModalType { return "none"; }
@@ -248,5 +255,11 @@ export interface ModalConstructorArguments {
     "modal-video-viewers": [
         /* events */ IpcRegistryDescription<ModalVideoViewersEvents>,
         /* variables */ IpcVariableDescriptor<ModalVideoViewersVariables>
+    ],
+    "modal-icon-viewer": [
+        /* handlerId */ string,
+        /* events */ IpcRegistryDescription<ModalIconViewerEvents>,
+        /* variables */ IpcVariableDescriptor<ModalIconViewerVariables>,
+        /* select */ boolean
     ]
 }

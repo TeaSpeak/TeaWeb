@@ -9,7 +9,6 @@ import {formatMessage, formatMessageString} from "tc-shared/ui/frames/chat";
 import {tra} from "tc-shared/i18n/localize";
 import {PermissionType} from "tc-shared/permission/PermissionType";
 import {GroupedPermissions, PermissionValue} from "tc-shared/permission/PermissionManager";
-import {spawnIconSelect} from "tc-shared/ui/modal/ModalIconSelect";
 import {Settings, settings} from "tc-shared/settings";
 import {
     senseless_channel_group_permissions,
@@ -32,6 +31,7 @@ import {
 } from "tc-shared/ui/modal/permission/ModalDefinitions";
 import {EditorGroupedPermissions, PermissionEditorEvents} from "tc-shared/ui/modal/permission/EditorDefinitions";
 import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
+import {spawnIconManage} from "tc-shared/ui/modal/icon-viewer/Controller";
 
 export function spawnPermissionEditorModal(connection: ConnectionHandler, defaultTab: PermissionEditorTab = "groups-server", defaultTabValues?: DefaultTabValues) {
     const modalEvents = new Registry<PermissionModalEvents>();
@@ -927,17 +927,17 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
     });
 
     events.on("action_open_icon_select", event => {
-        spawnIconSelect(connection,
-            id => events.fire("action_set_permissions", {
+        spawnIconManage(connection, event.iconId, newIconId => {
+            events.fire("action_set_permissions", {
                 permissions: [{
                     mode: "value",
                     name: PermissionType.I_ICON_ID,
                     flagSkip: false,
                     flagNegate: false,
-                    value: id
+                    value: newIconId
                 }]
-            }),
-            event.iconId);
+            });
+        });
     });
 }
 

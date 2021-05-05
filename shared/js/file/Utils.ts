@@ -1,7 +1,4 @@
-export const downloadTextAsFile = (text: string, name: string) => {
-    const payloadBlob = new Blob([ text ], { type: "text/plain" });
-    const payloadUrl = URL.createObjectURL(payloadBlob);
-
+export const downloadUrl = (payloadUrl: string, name: string, cleanupCallback?: () => void) => {
     const element = document.createElement("a");
     element.text = "download";
     element.setAttribute("href", payloadUrl);
@@ -13,11 +10,19 @@ export const downloadTextAsFile = (text: string, name: string) => {
 
     setTimeout(() => {
         element.remove();
-        URL.revokeObjectURL(payloadUrl);
+        if(cleanupCallback) {
+            cleanupCallback();
+        }
     }, 0);
+}
+
+export const downloadTextAsFile = (text: string, name: string) => {
+    const payloadBlob = new Blob([ text ], { type: "text/plain" });
+    const payloadUrl = URL.createObjectURL(payloadBlob);
+    downloadUrl(payloadUrl, name, () => URL.revokeObjectURL(payloadUrl));
 };
 
-export const requestFile = async (options: {
+export const promptFile = async (options: {
     accept?: string,
     multiple?: boolean
 }): Promise<File[]> => {
@@ -49,7 +54,7 @@ export const requestFile = async (options: {
 }
 
 export const requestFileAsText = async (): Promise<string> => {
-    const files = await requestFile({ multiple: false });
+    const files = await promptFile({ multiple: false });
     if(files.length !== 1) {
         return undefined;
     }

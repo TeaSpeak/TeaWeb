@@ -27,7 +27,7 @@ export function imageType2MediaType(type: ImageType, file?: boolean) {
     }
 }
 
-export function responseImageType(encoded_data: string | ArrayBuffer, base64_encoded?: boolean) {
+export function responseImageType(encoded_data: string | ArrayBuffer, base64_encoded?: boolean) : ImageType {
     const ab2str10 = () => {
         const buf = new Uint8Array(encoded_data as ArrayBuffer);
         if(buf.byteLength < 10)

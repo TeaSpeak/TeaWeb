@@ -1,4 +1,9 @@
 # Changelog:
+* **05.05.21**
+    - Reworked the icon modal
+    - Fixed some minor icon and avatar related issues
+    - Improved icon modal performance
+  
 * **29.04.21**
     - Fixed a bug which caused chat messages to appear twice
     - Adding support for poping out channel conversations

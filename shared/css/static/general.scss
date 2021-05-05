@@ -1,7 +1,7 @@
 @import "mixin";
 :global {
 	/* Avatar/Icon loading animations */
-	.icon_loading {
+	.iconLoading, .icon_loading {
 		border: 2px solid #f3f3f3; /* Light grey */
 		border-top: 2px solid #3498db; /* Blue */
 		border-radius: 50%;
