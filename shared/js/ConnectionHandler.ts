@@ -39,6 +39,7 @@ import ipRegex from "ip-regex";
 import * as htmltags from "./ui/htmltags";
 import {ServerSettings} from "tc-shared/ServerSettings";
 import {ignorePromise} from "tc-shared/proto";
+import {InvokerInfo} from "tc-shared/tree/ChannelDefinitions";
 
 assertMainApplication();
 
@@ -66,6 +67,43 @@ export enum DisconnectReason {
     SERVER_HOSTMESSAGE,
     IDENTITY_TOO_LOW,
     UNKNOWN
+}
+
+export type ClientDisconnectInfo = {
+    reason: "handler-destroy" | "requested"
+} | {
+    reason: "connection-closed" | "connection-ping-timeout"
+} | {
+    reason: "connect-failure" | "connect-dns-fail" | "connect-identity-too-low"
+} | {
+    reason: "connect-identity-unsupported",
+    unsupportedReason: "ts3-server"
+} | {
+    /* Connect fail since client has been banned */
+    reason: "connect-banned",
+    message: string
+} | {
+    /* Connection got closed because the client got kicked */
+    reason: "client-kicked",
+    message: string,
+    invoker: InvokerInfo
+} | {
+    /* Connection got closed because the client got banned */
+    reason: "client-banned",
+    message: string,
+    length: number | 0,
+    invoker?: InvokerInfo,
+} | {
+    reason: "server-shutdown",
+    message: string,
+    /* TODO: Do we have an invoker here? */
+} | {
+    reason: "connect-host-message-disconnect",
+    message: string
+} | {
+    reason: "generic-connection-error",
+    message: string,
+    allowReconnect: boolean
 }
 
 export enum ConnectionState {
@@ -118,17 +156,6 @@ export interface LocalClientStatus {
 
     channel_subscribe_all: boolean;
     queries_visible: boolean;
-}
-
-export interface ConnectParametersOld {
-    nickname?: string;
-    channel?: {
-        target: string | number;
-        password?: string;
-    };
-    token?: string;
-    password?: {password: string, hashed: boolean};
-    auto_reconnect_attempt?: boolean;
 }
 
 export class ConnectionHandler {
@@ -528,6 +555,15 @@ export class ConnectionHandler {
 
         tag.href = build_url(document.location.origin + pathname, document.location.search, properties);
         return tag;
+    }
+
+    /**
+     * This method dispatches a connection disconnect.
+     * The method can be called out of every context and will properly terminate
+     * all resources related to the current connection.
+     */
+    handleDisconnectNew(reason: ClientDisconnectInfo) {
+        /* TODO: */
     }
 
     private _certificate_modal: Modal;

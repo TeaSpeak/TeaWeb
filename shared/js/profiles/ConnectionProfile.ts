@@ -71,8 +71,9 @@ export class ConnectionProfile {
 
     spawnIdentityHandshakeHandler(connection: AbstractServerConnection): HandshakeIdentityHandler | undefined {
         const identity = this.selectedIdentity();
-        if (!identity)
+        if (!identity) {
             return undefined;
+        }
         return identity.spawn_identity_handshake_handler(connection);
     }
 

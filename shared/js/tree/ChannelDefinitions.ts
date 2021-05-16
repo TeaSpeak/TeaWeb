@@ -13,3 +13,12 @@ export type ChannelDescriptionResult = {
     status: "error",
     message: string
 };
+
+/**
+ * The invoker info the server sends with all notifies if required
+ */
+export type InvokerInfo = {
+    invokerName: string,
+    invokerUniqueId: string,
+    invokerId: number,
+};

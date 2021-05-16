@@ -808,6 +808,13 @@ export class Settings {
         description: "Last used TeaSpeak Client version (TeaClient only)",
     }
 
+    /* When using a higher number clients crash due to a bug in NodeJS */
+    static readonly KEY_IPC_EVENT_BUNDLE_MAX_SIZE: ValuedRegistryKey<number> = {
+        key: "ipc_event_bundle_max_size",
+        valueType: "number",
+        defaultValue: 0
+    }
+
     static readonly FN_LOG_ENABLED: (category: string) => RegistryKey<boolean> = category => {
         return {
             key: "log." + category.toLowerCase() + ".enabled",

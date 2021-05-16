@@ -4,6 +4,7 @@ import {AbstractServerConnection} from "../connection/ConnectionBase";
 import {DisconnectReason} from "../ConnectionHandler";
 import {ConnectParameters} from "tc-shared/ui/modal/connect/Controller";
 import {getBackend} from "tc-shared/backend";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export interface HandshakeIdentityHandler {
     connection: AbstractServerConnection;
@@ -13,6 +14,18 @@ export interface HandshakeIdentityHandler {
 
     fillClientInitData(data: any);
 }
+
+export type ServerHandshakeError = {
+    reason: "identity-unsupported",
+}
+
+export type ServerHandshakeResult = {
+    status: "success",
+    /* TODO: May some other variables as well? */
+} | {
+    status: "failed",
+    error: ServerHandshakeError
+};
 
 export class HandshakeHandler {
     private connection: AbstractServerConnection;
@@ -114,7 +127,7 @@ export class HandshakeHandler {
         this.handshakeImpl.fillClientInitData(data);
         this.connection.send_command("clientinit", data).catch(error => {
             if(error instanceof CommandResult) {
-                if(error.id == 1028) {
+                if(error.id == ErrorCode.SERVER_INVALID_PASSWORD) {
                     this.connection.client.handleDisconnect(DisconnectReason.SERVER_REQUIRES_PASSWORD);
                 } else if(error.id == 783 || error.id == 519) {
                     error.extra_message = isNaN(parseInt(error.extra_message)) ? "8" : error.extra_message;
@@ -124,8 +137,9 @@ export class HandshakeHandler {
                 } else {
                     this.connection.client.handleDisconnect(DisconnectReason.CLIENT_KICKED, error);
                 }
-            } else
+            } else {
                 this.connection.disconnect();
+            }
         });
     }
 }

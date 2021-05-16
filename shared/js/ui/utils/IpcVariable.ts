@@ -2,16 +2,43 @@ import {UiVariableConsumer, UiVariableMap, UiVariableProvider} from "tc-shared/u
 import {guid} from "tc-shared/crypto/uid";
 import {LogCategory, logWarn} from "tc-shared/log";
 import ReactDOM from "react-dom";
+import {Settings, settings} from "tc-shared/settings";
+
+/*
+ * We need to globally bundle all IPC invoke events since
+ * calling setImmediate too often will cause a electron crash with
+ * "async hook stack has become corrupted (actual: 88, expected: 0)".
+ *
+ * WolverinDEV has never experience it by himself but @REDOSS had.
+ */
+let ipcInvokeCallbacks: (() => void)[];
+
+function registerInvokeCallback(callback: () => void) {
+    if(Array.isArray(ipcInvokeCallbacks)) {
+        ipcInvokeCallbacks.push(callback);
+    } else {
+        ipcInvokeCallbacks = [ callback ];
+        setImmediate(() => {
+            const callbacks = ipcInvokeCallbacks;
+            ipcInvokeCallbacks = undefined;
+            for(const callback of callbacks) {
+                callback();
+            }
+        });
+    }
+}
 
 export class IpcUiVariableProvider<Variables extends UiVariableMap> extends UiVariableProvider<Variables> {
     readonly ipcChannelId: string;
-    private broadcastChannel: BroadcastChannel;
+    private readonly bundleMaxSize: number;
 
+    private broadcastChannel: BroadcastChannel;
     private enqueuedMessages: any[];
 
     constructor() {
         super();
 
+        this.bundleMaxSize = settings.getValue(Settings.KEY_IPC_EVENT_BUNDLE_MAX_SIZE);
         this.ipcChannelId = "teaspeak-ipc-vars-" + guid();
         this.broadcastChannel = new BroadcastChannel(this.ipcChannelId);
         this.broadcastChannel.onmessage = event => this.handleIpcMessage(event.data, event.source, event.origin);
@@ -96,19 +123,33 @@ export class IpcUiVariableProvider<Variables extends UiVariableMap> extends UiVa
      * @private
      */
     private broadcastIpcMessage(message: any) {
+        if(this.bundleMaxSize <= 0) {
+            this.broadcastChannel.postMessage(message);
+            return;
+        }
+
         if(Array.isArray(this.enqueuedMessages)) {
             this.enqueuedMessages.push(message);
+            if(this.enqueuedMessages.length >= this.bundleMaxSize) {
+                this.sendEnqueuedMessages();
+            }
             return;
         }
 
         this.enqueuedMessages = [ message ];
-        setImmediate(() => {
-            this.broadcastChannel.postMessage({
-                type: "bundled",
-                messages: this.enqueuedMessages
-            });
-            this.enqueuedMessages = undefined;
-        })
+        registerInvokeCallback(() => this.sendEnqueuedMessages());
+    }
+
+    private sendEnqueuedMessages() {
+        if(!this.enqueuedMessages) {
+            return;
+        }
+
+        this.broadcastChannel.postMessage({
+            type: "bundled",
+            messages: this.enqueuedMessages
+        });
+        this.enqueuedMessages = undefined;
     }
 }
 
@@ -117,8 +158,11 @@ export type IpcVariableDescriptor<Variables extends UiVariableMap> = {
 }
 
 let editTokenIndex = 0;
+
 class IpcUiVariableConsumer<Variables extends UiVariableMap> extends UiVariableConsumer<Variables> {
     readonly description: IpcVariableDescriptor<Variables>;
+    private readonly bundleMaxSize: number;
+
     private broadcastChannel: BroadcastChannel;
     private editListener: {[key: string]: { resolve: () => void, reject: (error) => void }};
 
@@ -129,6 +173,7 @@ class IpcUiVariableConsumer<Variables extends UiVariableMap> extends UiVariableC
         this.description = description;
         this.editListener = {};
 
+        this.bundleMaxSize = settings.getValue(Settings.KEY_IPC_EVENT_BUNDLE_MAX_SIZE);
         this.broadcastChannel = new BroadcastChannel(this.description.ipcChannelId);
         this.broadcastChannel.onmessage = event => this.handleIpcMessage(event.data, event.source);
     }
@@ -207,19 +252,33 @@ class IpcUiVariableConsumer<Variables extends UiVariableMap> extends UiVariableC
      * @private
      */
     private sendIpcMessage(message: any) {
+        if(this.bundleMaxSize <= 0) {
+            this.broadcastChannel.postMessage(message);
+            return;
+        }
+
         if(Array.isArray(this.enqueuedMessages)) {
             this.enqueuedMessages.push(message);
+            if(this.enqueuedMessages.length >= this.bundleMaxSize) {
+                this.sendEnqueuedMessages();
+            }
             return;
         }
 
         this.enqueuedMessages = [ message ];
-        setImmediate(() => {
-            this.broadcastChannel.postMessage({
-                type: "bundled",
-                messages: this.enqueuedMessages
-            });
-            this.enqueuedMessages = undefined;
-        })
+        registerInvokeCallback(() => this.sendEnqueuedMessages());
+    }
+
+    private sendEnqueuedMessages() {
+        if(!this.enqueuedMessages) {
+            return;
+        }
+
+        this.broadcastChannel.postMessage({
+            type: "bundled",
+            messages: this.enqueuedMessages
+        });
+        this.enqueuedMessages = undefined;
     }
 }
 
