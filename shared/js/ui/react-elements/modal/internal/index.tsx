@@ -18,6 +18,7 @@ import {LogCategory, logError} from "tc-shared/log";
 import {Registry} from "tc-events";
 import {guid} from "tc-shared/crypto/uid";
 import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
+import ReactDOM from "react-dom";
 
 class InternalRendererInstance extends React.PureComponent<{
     instance: InternalModalInstance,
@@ -250,6 +251,15 @@ class InternalModalHookInner extends React.PureComponent<{}, {
     }
 }
 
+/*
 export const InternalModalHook = React.memo(() => (
     <InternalModalHookInner ref={internalModalContainer} />
 ));
+*/
+export const InternalModalHook = React.memo(() => {
+    /* FIXME: This is only a temporary solution but if we don't do like this we'll mess up stacking of modals! */
+    return ReactDOM.createPortal(
+        <InternalModalHookInner ref={internalModalContainer} />,
+        document.body
+    );
+});
