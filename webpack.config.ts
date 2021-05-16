@@ -46,9 +46,9 @@ const generateLocalBuildInfo = async (target: string): Promise<LocalBuildInfo> =
     {
         const gitRevision = fs.readFileSync(path.join(__dirname, ".git", "HEAD")).toString();
         if(gitRevision.indexOf("/") === -1) {
-            info.gitVersion = (gitRevision || "0000000").substr(0, 7);
+            info.gitVersion = (gitRevision || "00000000").substr(0, 8);
         } else {
-            info.gitVersion = fs.readFileSync(path.join(__dirname, ".git", gitRevision.substr(5).trim())).toString().substr(0, 7);
+            info.gitVersion = fs.readFileSync(path.join(__dirname, ".git", gitRevision.substr(5).trim())).toString().substr(0, 8);
         }
 
         try {
