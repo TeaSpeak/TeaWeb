@@ -372,6 +372,7 @@ export const config = async (env: any, target: "web" | "client"): Promise<Config
             liveReload: false,
             inline: false,
 
+            host: "0.0.0.0",
             https: process.env["serve_https"] === "1"
         },
     };

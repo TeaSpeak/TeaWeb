@@ -1061,11 +1061,17 @@ export class RTCConnection {
 
     private handleLocalIceCandidate(candidate: RTCIceCandidate | undefined) {
         if(candidate) {
+            /*
+             * Even if we're only offering local candidates we still should count them else we might
+             * get an candidate finish without any candidates (which should never happen).
+             * An example for this would be safari.
+             */
+            this.localCandidateCount++;
+
             if(candidate.address?.endsWith(".local")) {
                 logTrace(LogCategory.WEBRTC, tr("Skipping local fqdn ICE candidate %s"), candidate.toJSON().candidate);
                 return;
             }
-            this.localCandidateCount++;
 
             const json = candidate.toJSON();
             logTrace(LogCategory.WEBRTC, tr("Received local ICE candidate %s"), json.candidate);
