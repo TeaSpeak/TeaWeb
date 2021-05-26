@@ -2,7 +2,7 @@ dist: trusty
 
 language: node_js
 node_js:
-  - "15"
+  - "12"
 
 before_install:
 #  - sudo apt-get update
