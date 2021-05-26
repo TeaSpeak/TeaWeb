@@ -113,7 +113,7 @@ git_version() {
       # We're in development
       case "$1" in
         "short-tag" | "name" | "file-name" | "long-tag")
-          echo "0000000"
+          echo "00000000"
           ;;
 
         *)
