@@ -24,6 +24,8 @@ import {getGlobalAvatarManagerFactory} from "tc-shared/file/Avatars";
 import {ColloquialFormat, date_format, format_date_general, formatDayTime} from "tc-shared/utils/DateUtils";
 import {ClientTag} from "tc-shared/ui/tree/EntryTags";
 import {ChatBox} from "tc-shared/ui/react-elements/ChatBox";
+import {DetachButton} from "tc-shared/ui/react-elements/DetachButton";
+import {useTr} from "tc-shared/ui/react-elements/Helper";
 
 const cssStyle = require("./AbstractConversationRenderer.scss");
 
@@ -319,12 +321,14 @@ const PartnerTypingIndicator = (props: { events: Registry<AbstractConversationUi
     });
 
     props.events.reactUse("notify_chat_event", event => {
-        if(event.chatId !== props.chatId)
+        if(event.chatId !== props.chatId) {
             return;
+        }
 
         if(event.event.type === "message") {
-            if(!event.event.isOwnMessage)
+            if(!event.event.isOwnMessage) {
                 setTypingTimestamp(0);
+            }
         } else if(event.event.type === "partner-action" || event.event.type === "local-action") {
             setTypingTimestamp(0);
         }
@@ -774,11 +778,13 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
 
     @EventHandler<AbstractConversationUiEvents>("notify_chat_event")
     private handleChatEvent(event: AbstractConversationUiEvents["notify_chat_event"]) {
-        if(event.chatId !== this.currentChatId || this.state.isBrowsingHistory)
+        if(event.chatId !== this.currentChatId || this.state.isBrowsingHistory) {
             return;
+        }
 
-        if(event.event.type === "local-user-switch" && !this.showSwitchEvents)
+        if(event.event.type === "local-user-switch" && !this.showSwitchEvents) {
             return;
+        }
 
         this.chatEvents.push(event.event);
         this.sortEvents();
@@ -822,11 +828,6 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
             this.buildView();
             this.forceUpdate();
         }
-    }
-
-    @EventHandler<AbstractConversationUiEvents>("notify_panel_show")
-    private handlePanelShow() {
-        this.fixScroll();
     }
 
     @EventHandler<AbstractConversationUiEvents>("query_conversation_history")
@@ -882,7 +883,13 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
     }
 }
 
-export const ConversationPanel = React.memo((props: { events: Registry<AbstractConversationUiEvents>, handlerId: string, messagesDeletable: boolean, noFirstMessageOverlay: boolean }) => {
+export const ConversationPanel = React.memo((props: {
+    events: Registry<AbstractConversationUiEvents>,
+    handlerId: string,
+    messagesDeletable: boolean,
+    noFirstMessageOverlay: boolean,
+    popoutable: boolean
+}) => {
     const currentChat = useRef({ id: "unselected" });
     const chatEnabled = useRef(false);
 
@@ -915,11 +922,19 @@ export const ConversationPanel = React.memo((props: { events: Registry<AbstractC
         return refChatBox.current.events.on("notify_typing", () => props.events.fire("action_self_typing", { chatId: currentChat.current.id }));
     });
 
-    return <div className={cssStyle.panel}>
-        <ConversationMessages events={props.events} handlerId={props.handlerId} messagesDeletable={props.messagesDeletable} noFirstMessageOverlay={props.noFirstMessageOverlay} />
-        <ChatBox
-            ref={refChatBox}
-            onSubmit={text => props.events.fire("action_send_message", { chatId: currentChat.current.id, text: text }) }
-        />
-    </div>
+    return (
+        <DetachButton
+            disabled={!props.popoutable}
+            detached={false}
+            callbackToggle={() => props.events.fire("action_popout_chat")}
+            detachText={useTr("Open in a new window")}
+            className={cssStyle.panel}
+        >
+            <ConversationMessages events={props.events} handlerId={props.handlerId} messagesDeletable={props.messagesDeletable} noFirstMessageOverlay={props.noFirstMessageOverlay} />
+            <ChatBox
+                ref={refChatBox}
+                onSubmit={text => props.events.fire("action_send_message", { chatId: currentChat.current.id, text: text }) }
+            />
+        </DetachButton>
+    )
 });

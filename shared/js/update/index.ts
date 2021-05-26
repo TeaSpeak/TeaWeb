@@ -3,7 +3,6 @@ import {ChangeLog} from "../update/ChangeLog";
 import {spawnUpdatedModal} from "../ui/modal/whats-new/Controller";
 import { tr } from "tc-shared/i18n/localize";
 
-const kIsNewUserKey = "updater-set";
 let updaterUi: Updater;
 let updaterNative: Updater;
 
@@ -22,29 +21,23 @@ export function setNativeUpdater(updater: Updater) {
 }
 
 function getChangedChangeLog(updater: Updater) : ChangeLog | undefined {
-    if(updater.getCurrentVersion() === updater.getLastUsedVersion())
+    if(updater.getCurrentVersion() === updater.getLastUsedVersion()) {
         return undefined;
+    }
 
     const changes = updater.getChangeList(updater.getLastUsedVersion());
     return changes.changes.length > 0 ? changes : undefined;
 }
 
 export function checkForUpdatedApp() {
-    if(localStorage.getItem(kIsNewUserKey)) {
-        let changesUI = updaterUi ? getChangedChangeLog(updaterUi) : undefined;
-        let changesNative = updaterNative ? getChangedChangeLog(updaterNative) : undefined;
+    let changesUI = updaterUi ? getChangedChangeLog(updaterUi) : undefined;
+    let changedBackend = updaterNative ? getChangedChangeLog(updaterNative) : undefined;
+    if(changesUI !== undefined || changedBackend !== undefined) {
+        spawnUpdatedModal({
+            changesUI: changesUI,
+            changesClient: changedBackend
+        });
 
-        if(changesUI !== undefined || changesNative !== undefined) {
-            spawnUpdatedModal({
-                changesUI: changesUI,
-                changesClient: changesNative
-            });
-
-            updaterUi?.updateUsedVersion();
-            updaterNative?.updateUsedVersion();
-        }
-    } else {
-        localStorage.setItem(kIsNewUserKey, "1");
         updaterUi?.updateUsedVersion();
         updaterNative?.updateUsedVersion();
     }

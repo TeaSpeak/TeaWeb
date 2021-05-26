@@ -1,14 +1,12 @@
 /* setup jsrenderer */
 import "jsrender";
 import {tr} from "./i18n/localize";
-import {LogCategory, logTrace} from "tc-shared/log";
+import {LogCategory, logError, logTrace} from "tc-shared/log";
 
-if(__build.target === "web") {
-    (window as any).$ = require("jquery");
-    (window as any).jQuery = $;
+(window as any).$ = require("jquery");
+(window as any).jQuery = $;
 
-    require("jsrender")($);
-}
+require("jsrender")($);
 
 declare global {
     function setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
@@ -19,7 +17,19 @@ declare global {
         last?(): T;
 
         pop_front(): T | undefined;
+
+        /**
+         * @param entry The entry to toggle
+         * @returns `true` if the entry has been inserted and false if the entry has been deleted
+         */
         toggle(entry: T) : boolean;
+
+        /**
+         * @param entry The entry to toggle
+         * @param insert Whatever the entry should be in the array or not
+         * @returns `true` if the array has been modified
+         */
+        toggle(entry: T, insert: boolean);
     }
 
     interface JSON {
@@ -72,6 +82,18 @@ declare global {
         isSimilar(a: any, b: any): boolean;
     }
 }
+
+export type IfEquals<X, Y, A=X, B=never> =
+    (<T>() => T extends X ? 1 : 2) extends
+        (<T>() => T extends Y ? 1 : 2) ? A : B;
+
+export type WritableKeys<T> = {
+    [P in keyof T]-?: IfEquals<{ [Q in P]: T[P] }, { -readonly [Q in P]: T[P] }, P, never>
+}[keyof T];
+
+export type ReadonlyKeys<T> = {
+    [P in keyof T]: IfEquals<{ [Q in P]: T[P] }, { -readonly [Q in P]: T[P] }, never, P>
+}[keyof T];
 
 if(!Object.isSimilar) {
     Object.isSimilar = function (a, b) {
@@ -173,14 +195,16 @@ if (!Array.prototype.pop_front) {
 }
 
 if (!Array.prototype.toggle) {
-    Array.prototype.toggle = function<T>(element: T): boolean {
+    Array.prototype.toggle = function<T>(element: T, insert?: boolean): boolean {
         const index = this.findIndex(e => e === element);
-        if(index === -1) {
+        if((index !== -1) === insert) {
+            return false;
+        } else if(index === -1) {
             this.push(element);
             return true;
         } else {
             this.splice(index, 1);
-            return false;
+            return typeof insert === "boolean";
         }
     }
 }
@@ -202,21 +226,17 @@ if(typeof ($) !== "undefined") {
     if(!$.fn.renderTag) {
         $.fn.renderTag = function (this: JQuery, values?: any) : JQuery {
             let result;
-            if(this.render) {
-                result = $(this.render(values));
-            } else {
-                const template = jsrender.render[this.attr("id")];
-                if(!template) {
-                    console.error("Tried to render template %o, but template is not available!", this.attr("id"));
-                    throw "missing template " + this.attr("id");
-                }
-                /*
-                result = window.jsrender.templates("tmpl_permission_entry", $("#tmpl_permission_entry").html());
-                result = window.jsrender.templates("xxx", this.html());
-                */
-                result = template(values);
-                result = $(result);
+            const template = $.views.templates[this.attr("id")];
+            if(!template) {
+                console.error("Tried to render template %o, but template is not available!", this.attr("id"));
+                throw "missing template " + this.attr("id");
             }
+            /*
+            result = window.jsrender.templates("tmpl_permission_entry", $("#tmpl_permission_entry").html());
+            result = window.jsrender.templates("xxx", this.html());
+            */
+            result = template(values);
+            result = $(result);
             result.find("node").each((index, element) => {
                 $(element).replaceWith(values[$(element).attr("key")] || (values[0] || [])[$(element).attr("key")]);
             });
@@ -280,4 +300,151 @@ if(!Object.values) {
     Object.values = object => Object.keys(object).map(e => object[e]);
 }
 
-export = {};
+export function crashOnThrow<T>(promise: Promise<T> | (() => Promise<T>)) : Promise<T> {
+    if(typeof promise === "function") {
+        try {
+            promise = promise();
+        } catch (error) {
+            promise = Promise.reject(error);
+        }
+    }
+
+    return promise.catch(error => {
+        /* TODO: Crash screen of the app? */
+        logError(LogCategory.GENERAL, tr("Critical app error: %o"), error);
+
+        /* Lets make this promise stuck for ever */
+        return new Promise(() => {});
+    });
+}
+
+export function ignorePromise<T>(_promise: Promise<T>) {}
+
+export function NoThrow(target: any, methodName: string, descriptor: PropertyDescriptor) {
+    const crashApp = error => {
+        /* TODO: Crash screen of the app? */
+        logError(LogCategory.GENERAL, tr("Critical app error: %o"), error);
+    };
+
+    const promiseAccepted = { value: false };
+
+    const originalMethod: Function = descriptor.value;
+    descriptor.value = function () {
+        try {
+            const result = originalMethod.apply(this, arguments);
+            if(result instanceof Promise) {
+                promiseAccepted.value = true;
+                return result.catch(error => {
+                    crashApp(error);
+
+                    /* Lets make this promise stuck for ever since we're in a not well defined state */
+                    return new Promise(() => {});
+                });
+            }
+
+            return result;
+        } catch (error) {
+            crashApp(error);
+
+            if(!promiseAccepted.value) {
+                throw error;
+            } else {
+                /*
+                 * We don't know if we can return a promise or if just the object is expected.
+                 * Since we don't know that, we're just rethrowing the error for now.
+                 */
+                return new Promise(() => {});
+            }
+        }
+    };
+}
+
+const kCallOnceSymbol = Symbol("call-once-data");
+export function CallOnce(target: any, methodName: string, descriptor: PropertyDescriptor) {
+    const callOnceData = target[kCallOnceSymbol] || (target[kCallOnceSymbol] = {});
+
+    const originalMethod: Function = descriptor.value;
+    descriptor.value = function () {
+        if(callOnceData[methodName]) {
+            debugger;
+            throw "method " + methodName + " has already been called";
+        }
+
+        return originalMethod.apply(this, arguments);
+    };
+}
+
+const kNonNullSymbol = Symbol("non-null-data");
+export function NonNull(target: any, methodName: string, parameterIndex: number) {
+    const nonNullInfo = target[kNonNullSymbol] || (target[kNonNullSymbol] = {});
+    const methodInfo = nonNullInfo[methodName] || (nonNullInfo[methodName] = {});
+    if(!Array.isArray(methodInfo.indexes)) {
+        /* Initialize method info */
+        methodInfo.overloaded = false;
+        methodInfo.indexes = [];
+    }
+
+    methodInfo.indexes.push(parameterIndex);
+    setImmediate(() => {
+        if(methodInfo.overloaded || methodInfo.missingWarned) {
+            return;
+        }
+
+        methodInfo.missingWarned = true;
+        logError(LogCategory.GENERAL, "Method %s has been constrained but the @Constrained decoration is missing.");
+        debugger;
+    });
+}
+
+/**
+ * The class or method has been constrained
+ */
+export function ParameterConstrained(target: any, methodName: string, descriptor: PropertyDescriptor) {
+    const nonNullInfo = target[kNonNullSymbol];
+    if(!nonNullInfo) {
+        return;
+    }
+
+    const methodInfo = nonNullInfo[methodName] || (nonNullInfo[methodName] = {});
+    if(!methodInfo) {
+        return;
+    }
+
+    methodInfo.overloaded = true;
+    const originalMethod: Function = descriptor.value;
+    descriptor.value = function () {
+        for(let index = 0; index < methodInfo.indexes.length; index++) {
+            const argument = arguments[methodInfo.indexes[index]];
+            if(typeof argument === undefined || typeof  argument === null) {
+                throw "parameter " + methodInfo.indexes[index] + " should not be null or undefined";
+            }
+        }
+
+        return originalMethod.apply(this, arguments);
+    };
+}
+
+class TestClass {
+    @NoThrow
+    noThrow0() { }
+
+    @NoThrow
+    async noThrow1() {
+        await new Promise(resolve => setTimeout(resolve, 1));
+    }
+
+    @NoThrow
+    noThrow2() { throw "expected"; }
+
+    @NoThrow
+    async noThrow3() {
+        await new Promise(resolve => setTimeout(resolve, 1));
+        throw "expected";
+    }
+
+    @ParameterConstrained
+    nonNull0(@NonNull value: number) {
+
+    }
+}
+(window as any).TestClass = TestClass;

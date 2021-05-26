@@ -1,5 +1,6 @@
 import * as React from "react";
 import {Settings, settings} from "tc-shared/settings";
+import {LogCategory, logWarn} from "tc-shared/log";
 
 const cssStyle = require("./ContextDivider.scss");
 
@@ -19,11 +20,12 @@ export interface ContextDividerState {
     active: boolean;
 }
 
-export class ContextDivider extends React.Component<ContextDividerProperties, ContextDividerState> {
+export class ContextDivider extends React.PureComponent<ContextDividerProperties, ContextDividerState> {
     private readonly refSeparator = React.createRef<HTMLDivElement>();
     private readonly listenerMove;
     private readonly listenerUp;
 
+    private observer: MutationObserver;
     private value;
 
     constructor(props) {
@@ -117,14 +119,25 @@ export class ContextDivider extends React.Component<ContextDividerProperties, Co
     }
 
     componentDidMount(): void {
-        const separator = this.refSeparator.current;
-        if(!separator) return;
+        this.observer = new MutationObserver(() => {
+            this.tryApplySeparator();
+        });
 
-        this.applySeparator(separator.previousSibling as HTMLElement, separator.nextSibling as HTMLElement);
+        this.observer.observe(this.refSeparator.current.parentElement, {
+            attributes: false,
+            childList: true,
+            subtree: false,
+            characterData: false,
+        });
+
+        this.tryApplySeparator();
     }
 
     componentWillUnmount(): void {
         this.stopMovement();
+
+        this.observer.disconnect();
+        this.observer = undefined;
     }
 
     private startMovement(event: React.MouseEvent | React.TouchEvent) {
@@ -154,6 +167,13 @@ export class ContextDivider extends React.Component<ContextDividerProperties, Co
         settings.setValue(Settings.FN_SEPARATOR_STATE(this.props.id), JSON.stringify({
             value: this.value
         }));
+    }
+
+    private tryApplySeparator() {
+        const separator = this.refSeparator.current;
+        if(!separator) return;
+
+        this.applySeparator(separator.previousSibling as HTMLElement, separator.nextSibling as HTMLElement);
     }
 
     private applySeparator(previousElement: HTMLElement, nextElement: HTMLElement) {

@@ -121,6 +121,10 @@ export abstract class AbstractIconManager {
         return "v2-" + serverUniqueId + "-" + iconId;
     }
 
+    resolveIconInfo(icon: RemoteIconInfo) : RemoteIcon {
+        return this.resolveIcon(icon.iconId, icon.serverUniqueId, icon.handlerId);
+    }
+
     /**
      * @param iconId The requested icon
      * @param serverUniqueId The server unique id for the icon

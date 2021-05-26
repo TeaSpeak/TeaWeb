@@ -2,7 +2,7 @@ import "./shared";
 import * as loader from "../loader/loader";
 import {ApplicationLoader, Stage} from "../loader/loader";
 import {loadManifest, loadManifestTarget} from "../maifest";
-import {getUrlParameter} from "../loader/utils";
+import {getUrlParameter} from "../loader/Utils";
 
 export default class implements ApplicationLoader {
     execute() {
@@ -10,7 +10,7 @@ export default class implements ApplicationLoader {
             function: async taskId => {
                 await loadManifest();
 
-                const entryChunk = getUrlParameter("chunk");
+                const entryChunk = getUrlParameter("loader-chunk");
                 if(!entryChunk) {
                     loader.critical_error("Missing entry chunk parameter");
                     throw "Missing entry chunk parameter";
@@ -41,19 +41,6 @@ export default class implements ApplicationLoader {
                     container.setAttribute('id', "sounds");
                     body.append(container);
                 }
-            },
-            priority: 10
-        });
-
-        loader.register_task(loader.Stage.TEMPLATES, {
-            name: "templates",
-            function: async () => {
-                await loader.templates.load_multiple([
-                    "templates.html"
-                ], {
-                    cache_tag: "?22",
-                    max_parallel_requests: -1
-                });
             },
             priority: 10
         });

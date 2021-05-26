@@ -237,7 +237,7 @@ export class TeaSpeakHandshakeHandler extends AbstractHandshakeIdentityHandler {
     }
 
     executeHandshake() {
-        this.connection.command_handler_boss().register_handler(this.handler);
+        this.connection.getCommandHandler().registerHandler(this.handler);
         this.connection.send_command("handshakebegin", {
             intention: 0,
             authentication_method: this.identity.type(),
@@ -271,12 +271,12 @@ export class TeaSpeakHandshakeHandler extends AbstractHandshakeIdentityHandler {
     }
 
     protected trigger_fail(message: string) {
-        this.connection.command_handler_boss().unregister_handler(this.handler);
+        this.connection.getCommandHandler().unregisterHandler(this.handler);
         super.trigger_fail(message);
     }
 
     protected trigger_success() {
-        this.connection.command_handler_boss().unregister_handler(this.handler);
+        this.connection.getCommandHandler().unregisterHandler(this.handler);
         super.trigger_success();
     }
 
@@ -294,7 +294,8 @@ class IdentityPOWWorker {
     private _initialized = false;
 
     async initialize(key: string) {
-        this._worker = new Worker("tc-shared/workers/pow", { type: "module" });
+        // @ts-ignore
+        this._worker = new Worker(new URL("tc-shared/workers/pow", import.meta.url));
 
         /* initialize */
         await new Promise<void>((resolve, reject) => {

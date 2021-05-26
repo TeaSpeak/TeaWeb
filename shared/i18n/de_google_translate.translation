@@ -11613,7 +11613,7 @@
                 "google-translate"
             ],
             "key": {
-                "message": "The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br}Please select another profile or change the identify type."
+                "message": "The target server is a TeamSpeak 3 server!\nOnly TeamSpeak 3 based identities are able to connect.{:br}Please select another profile or change the identify type."
             }
         },
         {
@@ -11633,7 +11633,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "You've been disconnected, because your Identity level is too low.{:br:}You need at least a level of {0}"
+                "message": "You've been disconnected, because your Identity level is too low.\nYou need at least a level of {0}"
             }
         },
         {
@@ -11651,7 +11651,7 @@
                 "google-translate"
             ],
             "key": {
-                "message": "You've been banned from this server.{:br:}{0}"
+                "message": "You've been banned from this server.\n{0}"
             }
         },
         {
@@ -12440,7 +12440,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br:}Please select another profile or change the identify type."
+                "message": "The target server is a TeamSpeak 3 server!\nOnly TeamSpeak 3 based identities are able to connect.\nPlease select another profile or change the identify type."
             }
         },
         {
@@ -12509,7 +12509,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "The profile data is invalid.{:br:}This might cause data loss."
+                "message": "The profile data is invalid.\nThis might cause data loss."
             }
         },
         {
@@ -13587,7 +13587,7 @@
                 "google-translate"
             ],
             "key": {
-                "message": "Failed to change the microphone to the target microphone{:br:}{}"
+                "message": "Failed to change the microphone to the target microphone\n{}"
             }
         },
         {
@@ -13654,7 +13654,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "Failed to change the speaker device to the target speaker{:br:}{}"
+                "message": "Failed to change the speaker device to the target speaker\n{}"
             }
         },
         {
@@ -13873,7 +13873,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "Failed to logout from forum account.{:br:}Error: {}"
+                "message": "Failed to logout from forum account.\nError: {}"
             }
         },
         {
@@ -14043,7 +14043,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "Failed to delete ban. {:br:}Error: {}"
+                "message": "Failed to delete ban. \nError: {}"
             }
         },
         {
@@ -14235,7 +14235,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "Failed to edited ban. {:br:}Error: {}"
+                "message": "Failed to edited ban. \nError: {}"
             }
         },
         {
@@ -14275,7 +14275,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "Failed to add ban. {:br:}Error: {}"
+                "message": "Failed to add ban. \nError: {}"
             }
         },
         {
@@ -14344,7 +14344,7 @@
                 "google-translate"
             ],
             "key": {
-                "message": "You've been kicked from this server.{:br:}{0}"
+                "message": "You've been kicked from this server.\n{0}"
             }
         },
         {
@@ -14378,12 +14378,12 @@
             }
         },
         {
-            "translated": "Mikrofonstart fehlgeschlagen.{:br:} Fehler: {}",
+            "translated": "Mikrofonstart fehlgeschlagen.\n Fehler: {}",
             "flags": [
                 "google-translate"
             ],
             "key": {
-                "message": "Microphone start failed.{:br:}Error: {}"
+                "message": "Microphone start failed.\nError: {}"
             }
         },
         {
@@ -14433,7 +14433,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "Failed to delete avatar.{:br:}Error: {0}"
+                "message": "Failed to delete avatar.\nError: {0}"
             }
         },
         {
@@ -14443,7 +14443,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "Failed to delete avatar.{:br:}Lookup the console for more details"
+                "message": "Failed to delete avatar.\nLookup the console for more details"
             }
         },
         {
@@ -14481,7 +14481,7 @@
                 "google-translate"
             ],
             "key": {
-                "message": "Failed to initialize avatar upload.{:br:}Missing permission {0}"
+                "message": "Failed to initialize avatar upload.\nMissing permission {0}"
             }
         },
         {
@@ -14490,7 +14490,7 @@
                 "google-translate"
             ],
             "key": {
-                "message": "Failed to initialize avatar upload.{:br:}Error: {0}"
+                "message": "Failed to initialize avatar upload.\nError: {0}"
             }
         },
         {
@@ -14499,7 +14499,7 @@
                 "google-translate"
             ],
             "key": {
-                "message": "Failed to initialize avatar upload.{:br:}Lookup the console for more details"
+                "message": "Failed to initialize avatar upload.\nLookup the console for more details"
             }
         },
         {
@@ -14527,7 +14527,7 @@
                 "google-translate"
             ],
             "key": {
-                "message": "Failed to upload avatar.{:br:}Error: {0}"
+                "message": "Failed to upload avatar.\nError: {0}"
             }
         },
         {
@@ -14547,7 +14547,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "Failed to update avatar flag.{:br:}Error: {0}"
+                "message": "Failed to update avatar flag.\nError: {0}"
             }
         },
         {
@@ -14557,7 +14557,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "Failed to update avatar flag.{:br:}Lookup the console for more details"
+                "message": "Failed to update avatar flag.\nLookup the console for more details"
             }
         },
         {
@@ -15704,7 +15704,7 @@
                 "google-translate"
             ],
             "key": {
-                "message": "Failed to delete conversation message{:br:}Error: {}"
+                "message": "Failed to delete conversation message\nError: {}"
             }
         },
         {
@@ -16665,7 +16665,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "Failed to delete account{:br:}Message: {}"
+                "message": "Failed to delete account\nMessage: {}"
             }
         },
         {
@@ -16685,7 +16685,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "Failed to rename account{:br:}Message: {}"
+                "message": "Failed to rename account\nMessage: {}"
             }
         },
         {
@@ -16705,7 +16705,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "Failed to change password{:br:}Message: {}"
+                "message": "Failed to change password\nMessage: {}"
             }
         },
         {
@@ -16745,7 +16745,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "Failed to refresh server properties.{:br:}Error: {}"
+                "message": "Failed to refresh server properties.\nError: {}"
             }
         },
         {
@@ -16939,7 +16939,7 @@
                 "google-translate"
             ],
             "key": {
-                "message": "Failed to create group:{:br:}"
+                "message": "Failed to create group:\n"
             }
         },
         {
@@ -17007,7 +17007,7 @@
                 "in-use-system"
             ],
             "key": {
-                "message": "Failed to rename group:{:br:}"
+                "message": "Failed to rename group:\n"
             }
         },
         {
@@ -17082,7 +17082,7 @@
                 "google-translate"
             ],
             "key": {
-                "message": "Failed to delete group:{:br:}"
+                "message": "Failed to delete group:\n"
             }
         },
         {
@@ -21832,7 +21832,7 @@
         },
         {
             "key": {
-                "message": "You've been kicked from the server by {0}:{:br:}{1}"
+                "message": "You've been kicked from the server by {0}:\n{1}"
             },
             "translated": "Sie wurden von {0} vom Server geworfen: {: br:} {1}",
             "flags": [
@@ -21842,7 +21842,7 @@
         },
         {
             "key": {
-                "message": "You've been kicked from the server:{:br:}{1}"
+                "message": "You've been kicked from the server:\n{1}"
             },
             "translated": "Sie wurden vom Server geworfen: {: br:} {1}",
             "flags": [
@@ -22657,7 +22657,7 @@
         },
         {
             "key": {
-                "message": "Failed to change vad type{:br:}{}"
+                "message": "Failed to change vad type\n{}"
             },
             "translated": "Fehler beim Ändern des VAD-Typs {: br:} {}",
             "flags": [
@@ -22704,7 +22704,7 @@
         },
         {
             "key": {
-                "message": "Failed to change PPT key:{:br:}{}"
+                "message": "Failed to change PPT key:\n{}"
             },
             "translated": "Fehler beim Ändern des PPT-Schlüssels: {: br:} {}",
             "flags": [
@@ -22731,7 +22731,7 @@
         },
         {
             "key": {
-                "message": "Failed to change PPT delay state:{:br:}{}"
+                "message": "Failed to change PPT delay state:\n{}"
             },
             "translated": "Fehler beim Ändern des PPT-Verzögerungsstatus: {: br:} {}",
             "flags": [
@@ -22758,7 +22758,7 @@
         },
         {
             "key": {
-                "message": "Failed to change PPT delay:{:br:}{}"
+                "message": "Failed to change PPT delay:\n{}"
             },
             "translated": "Fehler beim Ändern der PPT-Verzögerung: {: br:} {}",
             "flags": [

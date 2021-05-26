@@ -1,10 +1,10 @@
-export = api => {
+export default api => {
     api.cache(false);
     const presets = [
         [
             "@babel/preset-env",
             {
-                "corejs": { "version":3 },
+                "corejs": {"version": 3},
                 "useBuiltIns": "usage",
                 "targets": {
                     "edge": "17",
@@ -16,10 +16,12 @@ export = api => {
             }
         ]
     ];
+
     const plugins = [
         ["@babel/transform-runtime"],
         ["@babel/plugin-transform-modules-commonjs"]
     ];
+
     return {
         presets,
         plugins

@@ -2,20 +2,20 @@ import * as hljs from "highlight.js/lib/core";
 
 import * as loader from "tc-loader";
 import {ElementRenderer} from "vendor/xbbcode/renderer/base";
-import {TagElement} from "vendor/xbbcode/elements";
+import {BBCodeTagElement} from "vendor/xbbcode/elements";
 import * as React from "react";
 import {tra} from "tc-shared/i18n/localize";
 import * as DOMPurify from "dompurify";
 import {copyToClipboard} from "tc-shared/utils/helpers";
 import {rendererReact, rendererText} from "tc-shared/text/bbcode/renderer";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
-
-import '!style-loader!css-loader!highlight.js/styles/darcula.css';
 import {Settings, settings} from "tc-shared/settings";
 import {LogCategory, logWarn} from "tc-shared/log";
 
+import '!style-loader!css-loader!highlight.js/styles/darcula.css';
+
 const registerLanguage = (name, language: Promise<any>) => {
-    language.then(lan => hljs.registerLanguage(name, lan)).catch(error => {
+    language.then(lan => hljs.registerLanguage(name, lan.default)).catch(error => {
         logWarn(LogCategory.CHAT, tr("Failed to load language %s (%o)"), name, error);
     });
 };
@@ -92,12 +92,12 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
             return;
         }
         /* override default parser */
-        rendererReact.registerCustomRenderer(new class extends ElementRenderer<TagElement, React.ReactNode> {
+        rendererReact.registerCustomRenderer(new class extends ElementRenderer<BBCodeTagElement, React.ReactNode> {
             tags(): string | string[] {
                 return ["code", "icode", "i-code"];
             }
 
-            render(element: TagElement): React.ReactNode {
+            render(element: BBCodeTagElement): React.ReactNode {
                 const klass = element.tagNormalized != 'code' ? cssStyle.inlineCode : cssStyle.code;
                 const language = (element.options || "").replace("\"", "'").toLowerCase();
 

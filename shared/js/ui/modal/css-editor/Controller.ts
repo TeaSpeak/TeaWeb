@@ -5,6 +5,8 @@ import {Registry} from "../../../events";
 import {LogCategory, logWarn} from "../../../log";
 import {tr} from "tc-shared/i18n/localize";
 import {spawnModal} from "tc-shared/ui/react-elements/modal";
+import {getStorageAdapter} from "tc-shared/StorageAdapter";
+import {ignorePromise} from "tc-shared/proto";
 
 interface CustomVariable {
     name: string;
@@ -16,15 +18,17 @@ class CssVariableManager {
     private customVariables: { [key: string]: CustomVariable } = {};
     private htmlTag: HTMLStyleElement;
 
-    private loadLocalStorage() {
+    private async loadLocalStorage() {
         try {
-            const payloadString = localStorage.getItem("css-custom-variables");
-            if (typeof payloadString === "undefined" || !payloadString)
+            const payloadString = await getStorageAdapter().get("css-custom-variables");
+            if (typeof payloadString === "undefined" || !payloadString) {
                 return;
+            }
 
             const payload = JSON.parse(payloadString);
-            if (payload.version !== 1)
+            if (payload.version !== 1) {
                 throw "invalid payload version";
+            }
 
             this.customVariables = payload["customVariables"];
         } catch (error) {
@@ -32,11 +36,11 @@ class CssVariableManager {
         }
     }
 
-    initialize() {
+    async initialize() {
         this.htmlTag = document.createElement("style");
         document.body.appendChild(this.htmlTag);
 
-        this.loadLocalStorage();
+        await this.loadLocalStorage();
         this.updateCustomVariables(false);
     }
 
@@ -151,17 +155,25 @@ class CssVariableManager {
     }
 
     private updateCustomVariables(updateConfig: boolean) {
-        let text = "html:root {\n";
-        for (const variable of Object.values(this.customVariables))
-            text += "    " + variable.name + ": " + variable.value + ";\n";
-        text += "}";
-        this.htmlTag.textContent = text;
+        const variables = Object.values(this.customVariables);
+        if(variables.length === 0) {
+            this.htmlTag.textContent = "/* No custom CSS variables defined */";
+        } else {
+            let text = "";
+            text += "/* Custom set CSS variables */\n";
+            text = "html:root {\n";
+            for (const variable of variables) {
+                text += "    " + variable.name + ": " + variable.value + ";\n";
+            }
+            text += "}";
+            this.htmlTag.textContent = text;
+        }
 
         if (updateConfig) {
-            localStorage.setItem("css-custom-variables", JSON.stringify({
+            ignorePromise(getStorageAdapter().set("css-custom-variables", JSON.stringify({
                 version: 1,
                 customVariables: this.customVariables
-            }));
+            })));
         }
     }
 }
@@ -173,7 +185,7 @@ export function spawnModalCssVariableEditor() {
     cssVariableEditorController(events);
 
     const modal = spawnModal("css-editor", [ events.generateIpcDescription() ], { popedOut: true });
-    modal.show();
+    ignorePromise(modal.show());
 }
 
 function cssVariableEditorController(events: Registry<CssEditorEvents>) {
@@ -227,6 +239,6 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     name: "CSS Variable setup",
     function: async () => {
         cssVariableManager = new CssVariableManager();
-        cssVariableManager.initialize();
+        await cssVariableManager.initialize();
     }
 });

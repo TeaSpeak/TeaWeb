@@ -194,7 +194,7 @@ if(process_args.length < 1) {
     process.exit(1);
 }
 
-const input_files = ["../dist/translations.json", "generated/translations_html.json"].map(e => path.join(__dirname, e));
+const input_files = ["../dist/translations.json"].map(e => path.join(__dirname, e));
 const output_file = process_args[1] || path.join(__dirname, "i18n", process_args[0] + "_google_translate.translation");
 
 (async () => {

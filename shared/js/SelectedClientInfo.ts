@@ -7,7 +7,7 @@ import {
 } from "tc-shared/ui/frames/side/ClientInfoDefinitions";
 import {ClientEntry, ClientType, LocalClientEntry} from "tc-shared/tree/Client";
 import {Registry} from "tc-shared/events";
-import * as i18nc from "tc-shared/i18n/country";
+import * as i18nc from "./i18n/CountryFlag";
 
 export type CachedClientInfoCategory = "name" | "description" | "online-state" | "country" | "volume" | "status" | "forum-account" | "group-channel" | "groups-server" | "version";
 
@@ -25,7 +25,10 @@ export type CachedClientInfo = {
     volume: { volume: number, muted: boolean },
     status: ClientStatusInfo,
     forumAccount: ClientForumInfo | undefined,
+
     channelGroup: number,
+    channelGroupInheritedChannel: number,
+
     serverGroups: number[],
     version: ClientVersionInfo
 }
@@ -127,8 +130,8 @@ export class SelectedClientInfo {
                 this.events.fire("notify_cache_changed", { category: "description" });
             }
 
-            if('client_channel_group_id' in event.updated_properties) {
-                this.currentClientStatus.channelGroup = event.client_properties.client_channel_group_id;
+            if('client_channel_group_id' in event.updated_properties || 'client_channel_group_inherited_channel_id' in event.updated_properties) {
+                this.updateChannelGroup(client);
                 this.events.fire("notify_cache_changed", { category: "group-channel" });
             }
 
@@ -195,7 +198,7 @@ export class SelectedClientInfo {
     private updateCachedCountry(client: ClientEntry) {
         this.currentClientStatus.country = {
             flag: client.properties.client_country,
-            name: i18nc.country_name(client.properties.client_country.toUpperCase()),
+            name: i18nc.getCountryName(client.properties.client_country.toUpperCase()),
         };
     }
 
@@ -218,17 +221,29 @@ export class SelectedClientInfo {
         }
     }
 
+    private updateChannelGroup(client: ClientEntry) {
+        this.currentClientStatus.channelGroup = client.properties.client_channel_group_id;
+        this.currentClientStatus.channelGroupInheritedChannel = client.properties.client_channel_group_inherited_channel_id;
+        if(this.currentClientStatus.channelGroupInheritedChannel === client.currentChannel().channelId) {
+            this.currentClientStatus.channelGroupInheritedChannel = 0;
+        }
+    }
+
     private initializeClientInfo(client: ClientEntry) {
         this.currentClientStatus = {
-            type: client instanceof LocalClientEntry ? "self" : client.properties.client_type === ClientType.CLIENT_QUERY ? "query" : "voice",
+            type: client instanceof LocalClientEntry ? "self" : client.getClientType() === ClientType.CLIENT_QUERY ? "query" : "voice",
             name: client.properties.client_nickname,
             databaseId: client.properties.client_database_id,
             uniqueId: client.properties.client_unique_identifier,
             clientId: client.clientId(),
 
             description: client.properties.client_description,
-            channelGroup: client.properties.client_channel_group_id,
+
+            channelGroup: 0,
+            channelGroupInheritedChannel: 0,
+
             serverGroups: client.assignedServerGroupIds(),
+
             country: undefined,
             forumAccount: undefined,
             joinTimestamp: client.properties.client_lastconnected,
@@ -240,6 +255,7 @@ export class SelectedClientInfo {
                 version: client.properties.client_version
             }
         };
+        this.updateChannelGroup(client);
         this.updateCachedClientStatus(client);
         this.updateCachedCountry(client);
         this.updateCachedVolume(client);

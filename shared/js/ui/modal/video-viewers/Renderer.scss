@@ -1,0 +1,165 @@
+@import "../../../../css/static/mixin";
+@import "../../../../css/static/properties";
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    user-select: none;
+    padding: 1em;
+
+    width: 25em;
+    height: 40em;
+
+    min-width: 10em;
+    min-height: 10em;
+
+    &.windowed {
+        height: 100%;
+        width: 100%;
+    }
+}
+
+.viewerSummary {
+    margin-bottom: .25em;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+
+    .left {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        min-width: 2em;
+
+        color: #557edc;
+        text-transform: uppercase;
+
+        @include text-dotdotdot();
+    }
+
+    .right {
+        flex-shrink: 0;
+        flex-grow: 0;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+
+        .entry {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+
+            > * {
+                align-self: center;
+            }
+
+            .icon {
+                margin-left: .25em;
+            }
+
+            &:not(:last-of-type) {
+                margin-bottom: .25em;
+            }
+        }
+    }
+}
+
+.viewerList {
+    flex-grow: 1;
+    flex-shrink: 1;
+
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    min-height: 6em;
+
+    background-color: #28292b;
+    border: 1px #161616 solid;
+    border-radius: 0.2em;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: .25em .5em;
+
+    @include chat-scrollbar();
+
+    .overlay {
+        position: absolute;
+
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        .text {
+            text-align: center;
+            font-size: 1.6em;
+            color: var(--modal-permission-loading);
+        }
+    }
+}
+
+.viewerEntry {
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+
+    > * {
+        align-self: center;
+    }
+
+    .statusIcon {
+        flex-shrink: 0;
+        flex-grow: 0;
+
+        margin-right: .25em;
+    }
+
+    .nameContainer {
+        flex-shrink: 1;
+        flex-grow: 1;
+
+        min-width: 2em;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+
+        .name {
+            align-self: center;
+
+            color: #999;
+            @include text-dotdotdot();
+        }
+    }
+
+    .videoStatus {
+        flex-shrink: 0;
+        flex-grow: 0;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+
+        min-width: 2.5em;
+
+        .subscribeIcon {
+
+            &:not(:last-of-type) {
+                margin-right: .25em;
+            }
+        }
+    }
+}

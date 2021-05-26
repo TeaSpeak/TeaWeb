@@ -1,7 +1,7 @@
 import {MenuBarDriver, MenuBarEntry} from "tc-shared/ui/frames/menu-bar";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {MenuBarRenderer} from "tc-backend/web/ui/menu-bar/Renderer";
+import {MenuBarRenderer} from "./Renderer";
 
 const cssStyle = require("./Renderer.scss");
 

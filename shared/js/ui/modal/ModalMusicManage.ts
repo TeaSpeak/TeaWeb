@@ -6,7 +6,7 @@ import {CommandResult} from "../../connection/ServerConnectionDeclaration";
 import {LogCategory, logError, logWarn} from "../../log";
 import {tr, tra} from "../../i18n/localize";
 import * as tooltip from "../../ui/elements/Tooltip";
-import * as i18nc from "../../i18n/country";
+import * as i18nc from "../../i18n/CountryFlag";
 import {find} from "../../permission/PermissionManager";
 import * as htmltags from "../../ui/htmltags";
 import {ErrorCode} from "../../connection/ErrorCode";
@@ -799,7 +799,7 @@ function build_settings_container(event_registry: Registry<music_manage>, tag: J
                             e.classList.remove(klass);
                 });
                 flag.addClass("flag-" + input.toLowerCase());
-                flag.attr("title", i18nc.country_name(input, tr("Unknown country")));
+                flag.attr("title", i18nc.getCountryName(input, tr("Unknown country")));
             };
 
             event_registry.on("query_bot_status", event => {
@@ -1619,7 +1619,7 @@ function build_permission_container(event_registry: Registry<music_manage>, tag:
                         last_sync_value = event.value;
                     } else if (event.status === "error") {
                         if (typeof last_sync_value === "number") input.val(last_sync_value);
-                        createErrorModal(tr("Failed to change permission"), tra("Failed to change permission:{:br:}{}", event.error_msg)).open();
+                        createErrorModal(tr("Failed to change permission"), tra("Failed to change permission:\n{}", event.error_msg)).open();
                     }
                 });
 
@@ -1977,7 +1977,7 @@ function build_permission_container(event_registry: Registry<music_manage>, tag:
                     last_sync_value = event.value;
                 } else if (event.status === "error") {
                     if (typeof last_sync_value === "number") input.val(last_sync_value);
-                    createErrorModal(tr("Failed to change permission"), tra("Failed to change permission:{:br:}{}", event.error_msg)).open();
+                    createErrorModal(tr("Failed to change permission"), tra("Failed to change permission:\n{}", event.error_msg)).open();
                 }
                 hide_indicator = false;
                 update_indicator();

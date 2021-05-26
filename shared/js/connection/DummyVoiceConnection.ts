@@ -2,13 +2,15 @@ import {
     AbstractVoiceConnection,
     VoiceConnectionStatus, WhisperSessionInitializer
 } from "../connection/VoiceConnection";
-import {RecorderProfile} from "../voice/RecorderProfile";
+import {RecorderProfile, RecorderProfileOwner} from "../voice/RecorderProfile";
 import {AbstractServerConnection, ConnectionStatistics} from "../connection/ConnectionBase";
 import {VoiceClient} from "../voice/VoiceClient";
 import {VoicePlayerEvents, VoicePlayerLatencySettings, VoicePlayerState} from "../voice/VoicePlayer";
 import {WhisperSession, WhisperTarget} from "../voice/VoiceWhisper";
 import {Registry} from "../events";
 import { tr } from "tc-shared/i18n/localize";
+import {AbstractInput} from "tc-shared/voice/RecorderBase";
+import {crashOnThrow} from "tc-shared/proto";
 
 class DummyVoiceClient implements VoiceClient {
     readonly events: Registry<VoicePlayerEvents>;
@@ -54,9 +56,11 @@ class DummyVoiceClient implements VoiceClient {
 export class DummyVoiceConnection extends AbstractVoiceConnection {
     private recorder: RecorderProfile;
     private voiceClients: DummyVoiceClient[] = [];
+    private triggerUnmountEvent: boolean;
 
     constructor(connection: AbstractServerConnection) {
         super(connection);
+        this.triggerUnmountEvent = true;
     }
 
     async acquireVoiceRecorder(recorder: RecorderProfile | undefined): Promise<void> {
@@ -64,21 +68,29 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
             return;
         }
 
-        if(this.recorder) {
-            this.recorder.callback_unmount = undefined;
-            await this.recorder.unmount();
-        }
-
-        await recorder?.unmount();
         const oldRecorder = this.recorder;
-        this.recorder = recorder;
+        await crashOnThrow(async () => {
+            this.triggerUnmountEvent = false;
+            await this.recorder?.ownRecorder(undefined);
+            this.triggerUnmountEvent = true;
 
-        if(this.recorder) {
-            this.recorder.callback_unmount = () => {
-                this.recorder = undefined;
-                this.events.fire("notify_recorder_changed");
-            }
-        }
+            this.recorder = recorder;
+
+            const voiceConnection = this;
+            await this.recorder?.ownRecorder(new class extends RecorderProfileOwner {
+                protected handleRecorderInput(input: AbstractInput) { }
+
+                protected handleUnmount() {
+                    if(!voiceConnection.triggerUnmountEvent) {
+                        return;
+                    }
+
+                    const oldRecorder = voiceConnection.recorder;
+                    voiceConnection.recorder = undefined;
+                    voiceConnection.events.fire("notify_recorder_changed", { oldRecorder: oldRecorder, newRecorder: undefined })
+                }
+            });
+        });
 
         this.events.fire("notify_recorder_changed", {
             oldRecorder,

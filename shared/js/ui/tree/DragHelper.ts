@@ -9,6 +9,7 @@ import {
 } from "svg-sprites/client-icons";
 import {LogCategory, logDebug} from "tc-shared/log";
 import {ChannelTreeDragData, ChannelTreeDragEntry} from "tc-shared/ui/tree/Definitions";
+import {tra} from "tc-shared/i18n/localize";
 
 let spriteImage: HTMLImageElement;
 

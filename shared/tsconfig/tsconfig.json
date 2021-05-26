@@ -5,6 +5,7 @@
     "module": "commonjs",
     "sourceMap": true,
     "experimentalDecorators": true,
+    "esModuleInterop": true,
     "plugins": [ /* ttypescript */
       {
         "transform": "../../tools/trgen/ttsc_transformer.js",

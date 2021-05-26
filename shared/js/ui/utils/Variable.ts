@@ -1,5 +1,8 @@
 import {useEffect, useState} from "react";
 import * as _ from "lodash";
+import {ReadonlyKeys, WritableKeys} from "tc-shared/proto";
+import {useDependentState} from "tc-shared/ui/react-elements/Helper";
+import {tra} from "tc-shared/i18n/localize";
 
 /*
  * To deliver optimized performance, we only promisify the values we need.
@@ -9,18 +12,6 @@ import * as _ from "lodash";
 
 export type UiVariable = Transferable | undefined | null | number | string | object;
 export type UiVariableMap = { [key: string]: any }; //UiVariable | Readonly<UiVariable>
-
-type IfEquals<X, Y, A=X, B=never> =
-    (<T>() => T extends X ? 1 : 2) extends
-        (<T>() => T extends Y ? 1 : 2) ? A : B;
-
-type WritableKeys<T> = {
-    [P in keyof T]-?: IfEquals<{ [Q in P]: T[P] }, { -readonly [Q in P]: T[P] }, P, never>
-}[keyof T];
-
-type ReadonlyKeys<T> = {
-    [P in keyof T]: IfEquals<{ [Q in P]: T[P] }, { -readonly [Q in P]: T[P] }, never, P>
-}[keyof T];
 
 export type ReadonlyVariables<Variables extends UiVariableMap> = Pick<Variables, ReadonlyKeys<Variables>>
 export type WriteableVariables<Variables extends UiVariableMap> = Pick<Variables, WritableKeys<Variables>>
@@ -36,12 +27,27 @@ type UiVariableEditorPromise<Variables extends UiVariableMap, T extends keyof Va
 export abstract class UiVariableProvider<Variables extends UiVariableMap> {
     private variableProvider: {[key: string]: (customData: any) => any | Promise<any>} = {};
     private variableEditor: {[key: string]: (newValue, customData: any) => any | Promise<any>} = {};
+    private artificialDelay: number;
 
-    protected constructor() { }
+    protected constructor() {
+        this.artificialDelay = 0;
+    }
 
     destroy() { }
 
+    getArtificialDelay() : number {
+        return this.artificialDelay;
+    }
+
+    setArtificialDelay(value: number) {
+        this.artificialDelay = value;
+    }
+
     setVariableProvider<T extends keyof Variables>(variable: T, provider: (customData: any) => Variables[T] | Promise<Variables[T]>) {
+        this.variableProvider[variable as any] = provider;
+    }
+
+    setVariableProviderAsync<T extends keyof Variables>(variable: T, provider: (customData: any) => Promise<Variables[T]>) {
         this.variableProvider[variable as any] = provider;
     }
 
@@ -66,28 +72,32 @@ export abstract class UiVariableProvider<Variables extends UiVariableMap> {
     sendVariable<T extends keyof Variables>(variable: T, customData?: any, forceSend?: boolean) : void | Promise<void> {
         const providers = this.variableProvider[variable as any];
         if(!providers) {
-            throw tra("missing provider for {}", variable);
+            throw tra("missing provider for {}", variable as string);
         }
 
         const result = providers(customData);
-        if(result instanceof Promise) {
-            return result
-                .then(result => this.doSendVariable(variable as any, customData, result))
-                .catch(error => {
-                    console.error(error);
-                });
+
+        const handleResult = result => {
+            if(result instanceof Promise) {
+                return result
+                    .then(result => this.doSendVariable(variable as any, customData, result))
+                    .catch(error => {
+                        console.error(error);
+                    });
+            } else {
+                this.doSendVariable(variable as any, customData, result);
+            }
+        };
+
+        if(this.artificialDelay > 0) {
+            return new Promise(resolve => setTimeout(resolve, this.artificialDelay)).then(() => handleResult(result));
         } else {
-            this.doSendVariable(variable as any, customData, result);
+            return handleResult(result);
         }
     }
 
     async getVariable<T extends keyof Variables>(variable: T, customData?: any, ignoreCache?: boolean) : Promise<Variables[T]> {
-        const providers = this.variableProvider[variable as any];
-        if(!providers) {
-            throw tra("missing provider for {}", variable);
-        }
-
-        const result = providers(customData);
+        const result = this.resolveVariable(variable as any, customData);
         if(result instanceof Promise) {
             return await result;
         } else {
@@ -96,12 +106,7 @@ export abstract class UiVariableProvider<Variables extends UiVariableMap> {
     }
 
     getVariableSync<T extends keyof Variables>(variable: T, customData?: any, ignoreCache?: boolean) : Variables[T] {
-        const providers = this.variableProvider[variable as any];
-        if(!providers) {
-            throw tr("missing provider");
-        }
-
-        const result = providers(customData);
+        const result = this.resolveVariable(variable as any, customData);
         if(result instanceof Promise) {
             throw tr("tried to get an async variable synchronous");
         }
@@ -124,34 +129,37 @@ export abstract class UiVariableProvider<Variables extends UiVariableMap> {
             throw tr("variable is read only");
         }
 
-        const handleEditResult = result => {
-            if(typeof result === "undefined") {
-                /* change succeeded, no need to notify any variable since the consumer already has the newest value */
-            } else if(result === true || result === false) {
-                /* The new variable has been accepted/rejected and the variable should be updated on the remote side. */
-                /* TODO: Use cached value if the result is `false` */
-                this.sendVariable(variable, customData, true);
-            } else {
-                /* The new value hasn't been accepted. Instead a new value has been returned. */
-                this.doSendVariable(variable, customData, result);
-            }
-        }
-
-        const handleEditError = error => {
-            console.error("Failed to change variable %s: %o", variable, error);
-            this.sendVariable(variable, customData, true);
-        }
-
         try {
             let result = editor(newValue, customData);
             if(result instanceof Promise) {
-                return result.then(handleEditResult).catch(handleEditError);
+                /* Variable editor returns a promise. Await it and return a promise as well. */
+                return result.then(result => this.handleEditResult(variable, customData, result)).catch(error => this.handleEditError(variable, customData, error));
             } else {
-                handleEditResult(result);
+                /* We were able to instantly edit the variable. Handle result. */
+                this.handleEditResult(variable, customData, result);
             }
         } catch (error) {
-            handleEditError(error);
+            this.handleEditError(variable, customData, error);
         }
+    }
+
+    private handleEditResult(variable: string, customData: any, result: any) {
+        if(typeof result === "undefined") {
+            /* Send the new variable since may other listeners needs to be notified */
+            this.sendVariable(variable, customData, true);
+        } else if(result === true || result === false) {
+            /* The new variable has been accepted/rejected and the variable should be updated on the remote side. */
+            /* TODO: Use cached value if the result is `false` */
+            this.sendVariable(variable, customData, true);
+        } else {
+            /* The new value hasn't been accepted. Instead a new value has been returned. */
+            this.doSendVariable(variable, customData, result);
+        }
+    }
+
+    private handleEditError(variable: string, customData: any, error: any) {
+        console.error("Failed to change variable %s: %o", variable, error);
+        this.sendVariable(variable, customData, true);
     }
 
     protected abstract doSendVariable(variable: string, customData: any, value: any);
@@ -239,6 +247,14 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
         }
     }
 
+    setVariable<T extends keyof WriteableVariables<Variables>>(
+        variable: T,
+        customData: any,
+        newValue: Variables[T]
+    ) {
+        this.doEditVariable(variable as any, customData, newValue);
+    }
+
     useVariable<T extends keyof WriteableVariables<Variables>>(
         variable: T,
         customData?: any,
@@ -247,7 +263,7 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
         const haveDefaultValue = arguments.length >= 3;
         const cacheEntry = this.getOrCreateVariable(variable as string, customData);
 
-        const [ localValue, setLocalValue ] = useState<LocalVariableValue>(() => {
+        const [ localValue, setLocalValue ] = useDependentState<LocalVariableValue>(() => {
             /* Variable constructor */
             cacheEntry.useCount++;
 
@@ -266,7 +282,7 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
                     status: "unset"
                 };
             }
-        });
+        }, [ variable, customData ]);
 
         const [, setRemoteVersion ] = useState(0);
 
@@ -274,7 +290,7 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
             /* Initial rendered */
             if(cacheEntry.status === "loaded" && localValue.status !== "set") {
                 /* Update the local value to the current state */
-                setLocalValue(cacheEntry.currentValue);
+                setLocalValue({ status: "set", value: cacheEntry.currentValue });
             }
 
             let listener;
@@ -291,7 +307,7 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
                 cacheEntry.updateListener.remove(listener);
                 this.derefVariable(cacheEntry);
             };
-        }, []);
+        }, [ variable, customData ]);
 
         if(cacheEntry.status === "loading") {
             return {
@@ -379,10 +395,10 @@ export abstract class UiVariableConsumer<Variables extends UiVariableMap> {
                 cacheEntry.updateListener.remove(listener);
                 this.derefVariable(cacheEntry);
             };
-        }, []);
+        }, [ variable, customData ]);
 
         if(arguments.length >= 3) {
-            return cacheEntry.status === "loaded" ? cacheEntry.currentValue : defaultValue;
+            return cacheEntry.status === "loaded" || cacheEntry.status === "applying" ? cacheEntry.currentValue : defaultValue;
         } else {
             return {
                 status: cacheEntry.status,

@@ -20,7 +20,9 @@ class PopoutConversationRenderer extends AbstractModal {
             handlerId={this.userData.handlerId}
             events={this.events}
             messagesDeletable={this.userData.messagesDeletable}
-            noFirstMessageOverlay={this.userData.noFirstMessageOverlay} />;
+            noFirstMessageOverlay={this.userData.noFirstMessageOverlay}
+            popoutable={false}
+        />;
     }
 
     renderTitle() {

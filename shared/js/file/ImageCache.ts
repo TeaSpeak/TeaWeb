@@ -27,7 +27,7 @@ export function imageType2MediaType(type: ImageType, file?: boolean) {
     }
 }
 
-export function responseImageType(encoded_data: string | ArrayBuffer, base64_encoded?: boolean) {
+export function responseImageType(encoded_data: string | ArrayBuffer, base64_encoded?: boolean) : ImageType {
     const ab2str10 = () => {
         const buf = new Uint8Array(encoded_data as ArrayBuffer);
         if(buf.byteLength < 10)
@@ -147,12 +147,17 @@ export class ImageCache {
         if(!cacheInstance) { return; }
 
         const new_headers = new Headers();
-        for(const key of value.headers.keys())
+        for(const key of value.headers.keys()) {
             new_headers.set(key, value.headers.get(key));
-        if(type)
+        }
+
+        if(type) {
             new_headers.set("Content-type", type);
-        for(const key of Object.keys(headers || {}))
+        }
+
+        for(const key of Object.keys(headers || {})) {
             new_headers.set(key, headers[key]);
+        }
 
         await cacheInstance.put("https://_local_cache/cache_request_" + key, new Response(value.body, {
             headers: new_headers

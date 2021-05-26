@@ -1,0 +1,46 @@
+@import "../../../css/static/mixin";
+@import "../../../css/static/properties";
+
+.container {
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+        .containerButton {
+            top: 1em;
+        }
+    }
+}
+
+.containerButton {
+    position: absolute;
+    z-index: 10;
+
+    top: -3em;
+    right: 1em;
+
+    @include transition(all ease-in-out $button_hover_animation_time);
+
+    &.disabled {
+        display: none;
+    }
+}
+
+.button {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    border-radius: 50%;
+    background-color: #0000004f;
+
+    padding: .6em;
+
+    cursor: pointer;
+
+    @include transition(all ease-in-out $button_hover_animation_time);
+
+    &:hover {
+        background-color: #0000008f;
+    }
+}

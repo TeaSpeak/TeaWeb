@@ -1,17 +1,15 @@
 import {ChannelTree} from "./ChannelTree";
 import {ClientEntry, ClientEvents} from "./Client";
 import * as log from "../log";
-import {LogCategory, logInfo, LogType, logWarn} from "../log";
+import {LogCategory, logError, logInfo, LogType, logWarn} from "../log";
 import {PermissionType} from "../permission/PermissionType";
 import {settings, Settings} from "../settings";
 import * as contextmenu from "../ui/elements/ContextMenu";
 import {MenuEntryType} from "../ui/elements/ContextMenu";
-import {Sound} from "../sound/Sounds";
+import {Sound} from "../audio/Sounds";
 import {createErrorModal, createInfoModal, createInputModal} from "../ui/elements/Modal";
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
-import * as htmltags from "../ui/htmltags";
 import {hashPassword} from "../utils/helpers";
-import {openChannelInfo} from "../ui/modal/ModalChannelInfo";
 import {formatMessage} from "../ui/frames/chat";
 
 import {Registry} from "../events";
@@ -19,10 +17,13 @@ import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 import {spawnFileTransferModal} from "../ui/modal/transfer/ModalFileTransfer";
 import {ErrorCode} from "../connection/ErrorCode";
 import {ClientIcon} from "svg-sprites/client-icons";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 import {EventChannelData} from "tc-shared/connectionlog/Definitions";
 import {spawnChannelEditNew} from "tc-shared/ui/modal/channel-edit/Controller";
 import {spawnInviteGenerator} from "tc-shared/ui/modal/invite/Controller";
+import {NoThrow} from "tc-shared/proto";
+import {ChannelDescriptionResult} from "tc-shared/tree/ChannelDefinitions";
+import {spawnChannelInfo} from "tc-shared/ui/modal/channel-info/Controller";
 
 export enum ChannelType {
     PERMANENT,
@@ -204,15 +205,15 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     private _destroyed = false;
 
     private cachedPasswordHash: string;
-    private channelDescriptionCached: boolean;
+    private channelDescriptionCacheTimestamp: number;
     private channelDescriptionCallback: ((success: boolean) => void)[];
-    private channelDescriptionPromise: Promise<string>;
+    private channelDescriptionPromise: Promise<ChannelDescriptionResult>;
 
     private collapsed: boolean;
     private subscribed: boolean;
     private subscriptionMode: ChannelSubscribeMode;
 
-    private client_list: ClientEntry[] = []; /* this list is sorted correctly! */
+    private clientList: ClientEntry[] = []; /* this list is sorted correctly! */
     private readonly clientPropertyChangedListener;
 
     constructor(channelTree: ChannelTree, channelId: number, channelName: string) {
@@ -244,7 +245,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         this.collapsed = this.channelTree.client.settings.getValue(Settings.FN_SERVER_CHANNEL_COLLAPSED(this.channelId));
         this.subscriptionMode = this.channelTree.client.settings.getValue(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId), ChannelSubscribeMode.INHERITED);
 
-        this.channelDescriptionCached = false;
+        this.channelDescriptionCacheTimestamp = 0;
         this.channelDescriptionCallback = [];
     }
 
@@ -254,8 +255,8 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         this.channelDescriptionCallback.forEach(callback => callback(false));
         this.channelDescriptionCallback = [];
 
-        this.client_list.forEach(e => this.unregisterClient(e, true));
-        this.client_list = [];
+        this.clientList.forEach(e => this.unregisterClient(e, true));
+        this.clientList = [];
 
         this.channel_previous = undefined;
         this.parent = undefined;
@@ -281,79 +282,125 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         return this.parsed_channel_name.text;
     }
 
-    async getChannelDescription() : Promise<string> {
-        if(this.channelDescriptionPromise) {
-            return this.channelDescriptionPromise;
+    clearDescriptionCache() {
+        this.channelDescriptionPromise = undefined;
+        this.channelDescriptionCacheTimestamp = 0;
+    }
+
+    @NoThrow
+    async getChannelDescription(ignoreCache: boolean) : Promise<ChannelDescriptionResult> {
+        if(ignoreCache || Date.now() - 120 * 1000 > this.channelDescriptionCacheTimestamp) {
+            this.channelDescriptionPromise = this.doGetChannelDescriptionNew();
         }
 
-        const promise = this.doGetChannelDescription();
-        this.channelDescriptionPromise = promise;
-        promise
-            .then(() => this.channelDescriptionPromise = undefined)
-            .catch(() => this.channelDescriptionPromise = undefined);
-        return promise;
+        return await this.channelDescriptionPromise;
+    }
+
+    @NoThrow
+    private async doGetChannelDescriptionNew() : Promise<ChannelDescriptionResult> {
+        try {
+            await this.channelTree.client.serverConnection.send_command("channelgetdescription", {
+                cid: this.channelId
+            }, {
+                process_result: false
+            });
+        } catch (error) {
+            if(error instanceof CommandResult) {
+                if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+                    return {
+                        status: "no-permissions",
+                        failedPermission: this.channelTree.client.permissions.getFailedPermission(error)
+                    }
+                } else {
+                    return {
+                        status: "error",
+                        message: error.formattedMessage()
+                    }
+                }
+            } else if(typeof error === "string") {
+                return {
+                    status: "error",
+                    message: error
+                }
+            } else {
+                logError(LogCategory.CHANNEL, tr("Failed to query channel description for channel %d: %o"), this.channelId, error);
+                return {
+                    status: "error",
+                    message: tr("lookup the console")
+                };
+            }
+        }
+
+        if(!this.channelDescriptionCacheTimestamp) {
+            /* since the channel description is a low command it will not be processed later */
+            const result = await new Promise(resolve => {
+                this.channelDescriptionCallback.push(resolve);
+                setTimeout(() => {
+                    this.channelDescriptionCallback.remove(resolve);
+                    resolve(false);
+                }, 5000);
+            });
+
+            if(!result) {
+                return { status: "error", message: tr("description query failed") };
+            }
+        }
+
+        if(!this.properties.channel_description) {
+            return { status: "empty" };
+        }
+
+        return {
+            status: "success",
+            description: this.properties.channel_description,
+            handlerId: this.channelTree.client.handlerId
+        };
     }
 
     isDescriptionCached() {
-        return this.channelDescriptionCached;
-    }
-
-    private async doGetChannelDescription() {
-        if(!this.channelDescriptionCached) {
-            await this.channelTree.client.serverConnection.send_command("channelgetdescription", {
-                cid: this.channelId
-            });
-
-            if(!this.channelDescriptionCached) {
-                /* since the channel description is a low command it will not be processed in sync */
-                await new Promise((resolve, reject) => {
-                    this.channelDescriptionCallback.push(succeeded => {
-                        if(succeeded) {
-                            resolve();
-                        } else {
-                            reject(tr("failed to receive description"));
-                        }
-                    })
-                });
-            }
-        }
-        return this.properties.channel_description;
+        return this.channelDescriptionCacheTimestamp > Date.now() - 120 * 1000;
     }
 
     registerClient(client: ClientEntry) {
         client.events.on("notify_properties_updated", this.clientPropertyChangedListener);
-        this.client_list.push(client);
+        this.clientList.push(client);
         this.reorderClientList(false);
     }
 
     unregisterClient(client: ClientEntry, noEvent?: boolean) {
         client.events.off("notify_properties_updated", this.clientPropertyChangedListener);
-        if(!this.client_list.remove(client)) {
+        if(!this.clientList.remove(client)) {
             logWarn(LogCategory.CHANNEL, tr("Unregistered unknown client from channel %s"), this.channelName());
         }
     }
 
     private reorderClientList(fire_event: boolean) {
-        const original_list = this.client_list.slice(0);
+        const originalList = this.clientList.slice(0);
 
-        this.client_list.sort((a, b) => {
-            if(a.properties.client_talk_power < b.properties.client_talk_power)
+        this.clientList.sort((a, b) => {
+            if(a.properties.client_talk_power < b.properties.client_talk_power) {
                 return 1;
-            if(a.properties.client_talk_power > b.properties.client_talk_power)
-                return -1;
+            }
 
-            if(a.properties.client_nickname > b.properties.client_nickname)
-                return 1;
-            if(a.properties.client_nickname < b.properties.client_nickname)
+            if(a.properties.client_talk_power > b.properties.client_talk_power) {
                 return -1;
+            }
+
+            if(a.properties.client_nickname > b.properties.client_nickname) {
+                return 1;
+            }
+
+            if(a.properties.client_nickname < b.properties.client_nickname) {
+                return -1;
+            }
 
             return 0;
         });
 
         if(fire_event) {
             /* only fire if really something has changed ;) */
-            for(let index = 0; index < this.client_list.length; index++) {
-                if(this.client_list[index] !== original_list[index]) {
+            for(let index = 0; index < this.clientList.length; index++) {
+                if(this.clientList[index] !== originalList[index]) {
                     this.channelTree.events.fire("notify_channel_client_order_changed", { channel: this });
                     break;
                 }
@@ -379,7 +426,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     }
 
     clients(deep = false) : ClientEntry[] {
-        const result: ClientEntry[] = this.client_list.slice(0);
+        const result: ClientEntry[] = this.clientList.slice(0);
         if(!deep) return result;
 
         return this.children(true).map(e => e.clients(false)).reduce((prev, cur) => {
@@ -389,7 +436,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     }
 
     channelClientsOrdered() : ClientEntry[] {
-        return this.client_list;
+        return this.clientList;
     }
 
     calculate_family_index(enforce_recalculate: boolean = false) : number {
@@ -449,7 +496,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
         let trigger_close = true;
 
-        const collapse_expendable = !!this.child_channel_head || this.client_list.length > 0;
+        const collapse_expendable = !!this.child_channel_head || this.clientList.length > 0;
         const bold = text => contextmenu.get_provider().html_format_enabled() ? "<b>" + text + "</b>" : text;
         contextmenu.spawn_context_menu(x, y, {
                 type: contextmenu.MenuEntryType.ENTRY,
@@ -480,7 +527,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 name: tr("Show channel info"),
                 callback: () => {
                     trigger_close = false;
-                    openChannelInfo(this);
+                    spawnChannelInfo(this);
                 },
                 icon_class: "client-about"
             }, {
@@ -620,20 +667,21 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     }
 
     updateVariables(...variables: {key: string, value: string}[]) {
-        /* devel-block(log-channel-property-updates) */
-        let group = log.group(log.LogType.DEBUG, LogCategory.CHANNEL_PROPERTIES, tr("Update properties (%i) of %s (%i)"), variables.length, this.channelName(), this.getChannelId());
+        let group;
+        if(__build.mode === "debug") {
+            group = log.group(log.LogType.DEBUG, LogCategory.CHANNEL_PROPERTIES, tr("Update properties (%i) of %s (%i)"), variables.length, this.channelName(), this.getChannelId());
 
-        {
-            const entries = [];
-            for(const variable of variables)
-                entries.push({
-                    key: variable.key,
-                    value: variable.value,
-                    type: typeof (this.properties[variable.key])
-                });
-            log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Clannel update properties", entries);
+            {
+                const entries = [];
+                for(const variable of variables)
+                    entries.push({
+                        key: variable.key,
+                        value: variable.value,
+                        type: typeof (this.properties[variable.key])
+                    });
+                log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Clannel update properties", entries);
+            }
         }
-        /* devel-block-end */
 
         /* TODO: Validate values. Example: channel_conversation_mode */
 
@@ -644,7 +692,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
             const hasUpdate = JSON.map_field_to(this.properties, value, variable.key);
 
             if(key == "channel_description") {
-                this.channelDescriptionCached = true;
+                this.channelDescriptionCacheTimestamp = Date.now();
                 this.channelDescriptionCallback.forEach(callback => callback(true));
                 this.channelDescriptionCallback = [];
             }
@@ -664,9 +712,9 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 }
             }
         }
-        /* devel-block(log-channel-property-updates) */
-        group.end();
-        /* devel-block-end */
+
+        group?.end();
+
         {
             let properties = {};
             for(const property of variables)
@@ -675,22 +723,18 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         }
     }
 
-    generate_bbcode() {
+    generateBBCode() {
         return "[url=channel://" + this.channelId + "/" + encodeURIComponent(this.properties.channel_name) + "]" + this.formattedChannelName() + "[/url]";
     }
 
-    generate_tag(braces: boolean = false) : JQuery {
-        return $(htmltags.generate_channel({
-            channel_name: this.properties.channel_name,
-            channel_id: this.channelId,
-            add_braces: braces
-        }));
-    }
-
-    channelType() : ChannelType {
-        if(this.properties.channel_flag_permanent == true) return ChannelType.PERMANENT;
-        if(this.properties.channel_flag_semi_permanent == true) return ChannelType.SEMI_PERMANENT;
-        return ChannelType.TEMPORARY;
+    getChannelType() : ChannelType {
+        if(this.properties.channel_flag_permanent == true) {
+            return ChannelType.PERMANENT;
+        } else if(this.properties.channel_flag_semi_permanent == true) {
+            return ChannelType.SEMI_PERMANENT;
+        } else {
+            return ChannelType.TEMPORARY;
+        }
     }
 
     async joinChannel(ignorePasswordFlag?: boolean) : Promise<boolean> {
@@ -876,11 +920,11 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     }
 
     handleDescriptionChanged() {
-        if(!this.channelDescriptionCached) {
+        if(!this.channelDescriptionCacheTimestamp) {
             return;
         }
 
-        this.channelDescriptionCached = false;
+        this.channelDescriptionCacheTimestamp = 0;
         this.properties.channel_description = undefined;
         this.events.fire("notify_description_changed");
     }

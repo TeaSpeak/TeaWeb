@@ -2,119 +2,28 @@ import {ChannelTree} from "./ChannelTree";
 import {Settings, settings} from "../settings";
 import * as contextmenu from "../ui/elements/ContextMenu";
 import * as log from "../log";
-import {LogCategory, logInfo, LogType} from "../log";
-import {Sound} from "../sound/Sounds";
-import * as bookmarks from "../bookmarks";
-import {openServerInfo} from "../ui/modal/ModalServerInfo";
+import {LogCategory, logError, logInfo, LogType} from "../log";
+import {Sound} from "../audio/Sounds";
 import {createServerModal} from "../ui/modal/ModalServerEdit";
-import {spawnIconSelect} from "../ui/modal/ModalIconSelect";
 import {spawnAvatarList} from "../ui/modal/ModalAvatarList";
 import {Registry} from "../events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 import {spawnInviteGenerator} from "tc-shared/ui/modal/invite/Controller";
+import {HostBannerInfo, HostBannerInfoMode} from "tc-shared/ui/frames/HostBannerDefinitions";
+import {spawnServerInfoNew} from "tc-shared/ui/modal/server-info/Controller";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {
+    kServerConnectionInfoFields, ServerAudioEncryptionMode,
+    ServerConnectionInfo,
+    ServerConnectionInfoResult,
+    ServerProperties
+} from "tc-shared/tree/ServerDefinitions";
+import {spawnIconManage} from "tc-shared/ui/modal/icon-viewer/Controller";
 
-export class ServerProperties {
-    virtualserver_host: string = "";
-    virtualserver_port: number = 0;
-
-    virtualserver_name: string = "";
-    virtualserver_name_phonetic: string = "";
-    virtualserver_icon_id: number = 0;
-    virtualserver_version: string = "unknown";
-    virtualserver_platform: string = "unknown";
-    virtualserver_unique_identifier: string = "";
-
-    virtualserver_clientsonline: number = 0;
-    virtualserver_queryclientsonline: number = 0;
-    virtualserver_channelsonline: number = 0;
-    virtualserver_uptime: number = 0;
-    virtualserver_created: number = 0;
-    virtualserver_maxclients: number = 0;
-    virtualserver_reserved_slots: number = 0;
-
-    virtualserver_password: string = "";
-    virtualserver_flag_password: boolean = false;
-
-    virtualserver_ask_for_privilegekey: boolean = false;
-
-    virtualserver_welcomemessage: string = "";
-
-    virtualserver_hostmessage: string = "";
-    virtualserver_hostmessage_mode: number = 0;
-
-    virtualserver_hostbanner_url: string = "";
-    virtualserver_hostbanner_gfx_url: string = "";
-    virtualserver_hostbanner_gfx_interval: number = 0;
-    virtualserver_hostbanner_mode: number = 0;
-
-    virtualserver_hostbutton_tooltip: string = "";
-    virtualserver_hostbutton_url: string = "";
-    virtualserver_hostbutton_gfx_url: string = "";
-
-    virtualserver_codec_encryption_mode: number = 0;
-
-    virtualserver_default_music_group: number = 0;
-    virtualserver_default_server_group: number = 0;
-    virtualserver_default_channel_group: number = 0;
-    virtualserver_default_channel_admin_group: number = 0;
-
-    //Special requested properties
-    virtualserver_default_client_description: string = "";
-    virtualserver_default_channel_description: string = "";
-    virtualserver_default_channel_topic: string = "";
-
-    virtualserver_antiflood_points_tick_reduce: number = 0;
-    virtualserver_antiflood_points_needed_command_block: number = 0;
-    virtualserver_antiflood_points_needed_ip_block: number = 0;
-
-    virtualserver_country_code: string = "XX";
-
-    virtualserver_complain_autoban_count: number = 0;
-    virtualserver_complain_autoban_time: number = 0;
-    virtualserver_complain_remove_time: number = 0;
-
-    virtualserver_needed_identity_security_level: number = 8;
-    virtualserver_weblist_enabled: boolean = false;
-    virtualserver_min_clients_in_channel_before_forced_silence: number = 0;
-    virtualserver_channel_temp_delete_delay_default: number = 60;
-    virtualserver_priority_speaker_dimm_modificator: number = -18;
-
-    virtualserver_max_upload_total_bandwidth: number = 0;
-    virtualserver_upload_quota: number = 0;
-    virtualserver_max_download_total_bandwidth: number = 0;
-    virtualserver_download_quota: number = 0;
-
-    virtualserver_month_bytes_downloaded: number = 0;
-    virtualserver_month_bytes_uploaded: number = 0;
-    virtualserver_total_bytes_downloaded: number = 0;
-    virtualserver_total_bytes_uploaded: number = 0;
-}
-
-export interface ServerConnectionInfo {
-    connection_filetransfer_bandwidth_sent: number;
-    connection_filetransfer_bandwidth_received: number;
-
-    connection_filetransfer_bytes_sent_total: number;
-    connection_filetransfer_bytes_received_total: number;
-
-    connection_filetransfer_bytes_sent_month: number;
-    connection_filetransfer_bytes_received_month: number;
-
-    connection_packets_sent_total: number;
-    connection_bytes_sent_total: number;
-    connection_packets_received_total: number;
-    connection_bytes_received_total: number;
-
-    connection_bandwidth_sent_last_second_total: number;
-    connection_bandwidth_sent_last_minute_total: number;
-    connection_bandwidth_received_last_second_total: number;
-    connection_bandwidth_received_last_minute_total: number;
-
-    connection_connected_time: number;
-    connection_packetloss_total: number;
-    connection_ping: number;
-}
+/* TODO: Rework all imports */
+export * from "./ServerDefinitions";
 
 export interface ServerAddress {
     host: string;
@@ -148,11 +57,24 @@ export function parseServerAddress(address: string) : ServerAddress | undefined 
     }
 }
 
+export function stringifyServerAddress(address: ServerAddress) : string {
+    let result = address.host;
+    if(address.port !== 9987) {
+        if(address.host.indexOf(":") === -1) {
+            result += ":" + address.port;
+        } else {
+            result = "[" + result + "]:" + address.port;
+        }
+    }
+    return result;
+}
+
 export interface ServerEvents extends ChannelTreeEntryEvents {
     notify_properties_updated: {
         updated_properties: Partial<ServerProperties>;
         server_properties: ServerProperties
-    }
+    },
+    notify_host_banner_updated: {},
 }
 
 export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
@@ -166,6 +88,10 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
     private info_request_promise_resolve: any = undefined;
     private info_request_promise_reject: any = undefined;
 
+    private requestInfoPromise: Promise<ServerConnectionInfoResult>;
+    private requestInfoPromiseTimestamp: number;
+
+    /* TODO: Remove this? */
     private _info_connection_promise: Promise<ServerConnectionInfo>;
     private _info_connection_promise_timestamp: number;
     private _info_connection_promise_resolve: any;
@@ -184,6 +110,17 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
         this.channelTree = tree;
         this.remote_address = Object.assign({}, address); /* copy the address because it might get changed due to the DNS resolve */
         this.properties.virtualserver_name = name;
+
+        this.events.on("notify_properties_updated", event => {
+            if(
+                "virtualserver_hostbanner_url" in event.updated_properties ||
+                "virtualserver_hostbanner_mode" in event.updated_properties ||
+                "virtualserver_hostbanner_gfx_url" in event.updated_properties ||
+                "virtualserver_hostbanner_gfx_interval" in event.updated_properties
+            ) {
+                this.events.fire("notify_host_banner_updated");
+            }
+        });
     }
 
     destroy() {
@@ -201,9 +138,7 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
             {
                 type: contextmenu.MenuEntryType.ENTRY,
                 name: tr("Show server info"),
-                callback: () => {
-                    openServerInfo(this);
-                },
+                callback: () => spawnServerInfoNew(this.channelTree.client),
                 icon_class: "client-about"
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
@@ -245,7 +180,7 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-iconviewer",
                 name: tr("View icons"),
-                callback: () => spawnIconSelect(this.channelTree.client)
+                callback: () => spawnIconManage(this.channelTree.client, 0, undefined)
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: 'client-iconsview',
@@ -293,7 +228,6 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
         }
 
         let updatedProperties: Partial<ServerProperties> = {};
-        let update_bookmarks = false;
         for(let variable of variables) {
             if(!JSON.map_field_to(this.properties, variable.value, variable.key)) {
                 /* The value has not been updated */
@@ -303,7 +237,6 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
             updatedProperties[variable.key] = variable.value;
             if(variable.key == "virtualserver_icon_id") {
                 this.properties.virtualserver_icon_id = variable.value as any >>> 0;
-                update_bookmarks = true;
             }
         }
 
@@ -311,19 +244,6 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
             updated_properties: updatedProperties,
             server_properties: this.properties
         });
-
-        if(update_bookmarks) {
-            const bmarks = bookmarks.bookmarks_flat()
-                .filter(e => e.server_properties.server_address === this.remote_address.host && e.server_properties.server_port == this.remote_address.port)
-                .filter(e => e.last_icon_id !== this.properties.virtualserver_icon_id || e.last_icon_server_id !== this.properties.virtualserver_unique_identifier);
-            if(bmarks.length > 0) {
-                bmarks.forEach(e => {
-                    e.last_icon_id = this.properties.virtualserver_icon_id;
-                    e.last_icon_server_id = this.properties.virtualserver_unique_identifier;
-                });
-                bookmarks.save_bookmark();
-            }
-        }
 
         group.end();
         if(is_self_notify && this.info_request_promise_resolve) {
@@ -354,11 +274,13 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
 
     /* max 1s ago, so we could update every second */
     request_connection_info() : Promise<ServerConnectionInfo> {
-        if(Date.now() - 900 < this._info_connection_promise_timestamp && this._info_connection_promise)
+        if(Date.now() - 900 < this._info_connection_promise_timestamp && this._info_connection_promise) {
             return this._info_connection_promise;
+        }
 
-        if(this._info_connection_promise_reject)
+        if(this._info_connection_promise_reject) {
             this._info_connection_promise_resolve("timeout");
+        }
 
         let _local_reject; /* to ensure we're using the right resolve! */
         this._info_connection_promise = new Promise<ServerConnectionInfo>((resolve, reject) => {
@@ -368,8 +290,59 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
         });
 
         this._info_connection_promise_timestamp = Date.now();
-        this.channelTree.client.serverConnection.send_command("serverrequestconnectioninfo", {}, {process_result: false}).catch(error => _local_reject(error));
+        this.channelTree.client.serverConnection.send_command("serverrequestconnectioninfo", {}, { process_result: false }).catch(error => _local_reject(error));
         return this._info_connection_promise;
+    }
+
+    requestConnectionInfo() : Promise<ServerConnectionInfoResult> {
+        if(this.requestInfoPromise && Date.now() - 900 < this.requestInfoPromiseTimestamp) {
+            return this.requestInfoPromise;
+        }
+
+        this.requestInfoPromiseTimestamp = Date.now();
+        return this.requestInfoPromise = this.doRequestConnectionInfo();
+    }
+
+    private async doRequestConnectionInfo() : Promise<ServerConnectionInfoResult> {
+        const connection = this.channelTree.client.serverConnection;
+
+        let result: ServerConnectionInfoResult = { status: "error", message: "missing notify" };
+        const handlerUnregister = connection.getCommandHandler().registerCommandHandler("notifyserverconnectioninfo", command => {
+            const payload = command.arguments[0];
+
+            const info = {} as any;
+            for(const key of Object.keys(kServerConnectionInfoFields)) {
+                if(!(key in payload)) {
+                    result = { status: "error", message: "missing key " + key };
+                    return;
+                }
+
+                info[key] = parseFloat(payload[key]);
+            }
+
+            result = { status: "success", resultCached: false, result: info };
+            return false;
+        });
+
+        try {
+            await connection.send_command("serverrequestconnectioninfo", {}, { process_result: false });
+        } catch (error) {
+            if(error instanceof CommandResult) {
+                if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+                    result = { status: "no-permission", failedPermission: this.channelTree.client.permissions.getFailedPermission(error) };
+                } else {
+                    result = { status: "error", message: error.formattedMessage() };
+                }
+            } else if(typeof error === "string") {
+                result = { status: "error", message: error };
+            } else {
+                logError(LogCategory.NETWORKING, tr("Failed to request the server connection info: %o"), error);
+                result = { status: "error", message: tr("lookup the console") };
+            }
+        } finally {
+            handlerUnregister();
+        }
+        return result;
     }
 
     set_connection_info(info: ServerConnectionInfo) {
@@ -395,5 +368,51 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
         this._info_connection_promise_reject = undefined;
         this._info_connection_promise_resolve = undefined;
         this._info_connection_promise_timestamp = undefined;
+    }
+
+    generateHostBannerInfo() : HostBannerInfo {
+        if(!this.properties.virtualserver_hostbanner_gfx_url) {
+            return { status: "none" };
+        }
+
+        let mode: HostBannerInfoMode;
+        switch (this.properties.virtualserver_hostbanner_mode) {
+            case 0:
+                mode = "original";
+                break;
+
+            case 1:
+                mode = "resize";
+                break;
+
+            case 2:
+            default:
+                mode = "resize-ratio";
+                break;
+        }
+
+        return {
+            status: "set",
+
+            linkUrl: this.properties.virtualserver_hostbanner_url,
+            mode: mode,
+
+            imageUrl: this.properties.virtualserver_hostbanner_gfx_url,
+            updateInterval: this.properties.virtualserver_hostbanner_gfx_interval,
+        };
+    }
+
+    getAudioEncryptionMode() : ServerAudioEncryptionMode {
+        switch (this.properties.virtualserver_codec_encryption_mode) {
+            case 0:
+                return "globally-off";
+
+            default:
+            case 1:
+                return "individual";
+
+            case 2:
+                return "globally-on";
+        }
     }
 }

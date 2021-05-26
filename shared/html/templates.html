@@ -5,29 +5,6 @@
         <title>TeaSpeak-Web client templates</title>
     </head>
     <body>
-        <script class="jsrender-template" id="tmpl_main" type="text/html">
-            <div class="overlay-image-preview hidden" id="overlay-image-preview">
-                <div class="container-menu-bar">
-                    <div class="entry button-open-in-window">
-                        <div class="container-icon">
-                            <img src="img/icon_image_preview_browse.svg">
-                        </div>
-                    </div>
-                    <!-- Why would you like to download images?
-                    <div class="entry button-download">
-                        <div class="icon_em client-download"></div>
-                    </div>
-                    -->
-                    <div class="entry button-close">
-                        <div class="icon_em client-close_button"></div>
-                    </div>
-                </div>
-                <div class="container-image">
-                    <img src=""  alt="image"/>
-                </div>
-            </div>
-        </script>
-
         <div class="template-group-modals">
             <script class="jsrender-template" id="tmpl_modal" type="text/html">
                 <div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
@@ -35,7 +12,7 @@
                         <div class="modal-content" style="{{if full_size}}flex-grow: 1{{/if}}">
                             <div class="modal-header {{if header_class}}{{:header_class}}{{/if}}">
                                 <div class="container-icon">
-                                    <img src="img/favicon/teacup.png">
+                                    <img src="img/modal_icon_old.png">
                                 </div>
                                 <node key="modal_header"></node>
                                 <div class="container-close">
@@ -105,123 +82,682 @@
                     </div>
                 </div>
             </script>
+        </div>
 
-            <script class="jsrender-template" id="tmpl_modal_yesno" type="text/html">
-                <div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <div class="container-icon">
-                                    <img src="img/favicon/teacup.png">
+        <!-- Template for the settings -->
+        <script class="jsrender-template" id="tmpl_settings" type="text/html">
+            <div class="inner-container">
+                <div class="left">
+                    <div class="entry group">{{tr "General Settings" /}}</div>
+                    <div class="entry" container="general-application">{{tr "Application" /}}</div>
+                    <div class="entry" container="general-language">{{tr "Language" /}}</div>
+                    <!-- <div class="entry" container="general-updates">{{tr "Updates" /}}</div> -->
+                    <div class="entry" container="general-chat">{{tr "Chat" /}}</div>
+                    <div class="entry" container="general-keymap">{{tr "Keymap" /}}</div>
+                    <div class="entry" container="general-notifications">{{tr "Notifications" /}}</div>
+
+                    <div class="entry group">{{tr "Audio" /}}</div>
+                    <div class="entry" container="audio-microphone">{{tr "Microphone" /}}</div>
+                    <div class="entry" container="audio-speaker">{{tr "Speaker" /}}</div>
+                    <div class="entry" container="audio-sounds">{{tr "Sounds" /}}</div>
+
+                    <div class="entry group">{{tr "Identity" /}}</div>
+                    <div class="entry" container="identity-profiles">{{tr "Profiles" /}}</div>
+                    <div class="entry" container="identity-forum">{{tr "TeaForo connection" /}}</div>
+                </div>
+                <div class="container-seperator vertical" seperator-id="seperator-settings"></div>
+                <div class="right">
+                    <div class="container general-application">
+                        <label>
+                            <div class="checkbox">
+                                <input type="checkbox" class="option-hostbanner-background">
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr 'Disabled backrounds within the hostbanner' /}}</a>
+                        </label>
+                        <div class="container-font-size">
+                            <a>{{tr "Font size" /}}</a>
+                            <select class="input-boxed option-font-size">
+                                <option value="-1" style="display: none;">Custom</option>
+                                <option value="10">Extra Small (10px)</option>
+                                <option value="12">Small (12px)</option>
+                                <option value="14">Normal (14px)</option>
+                                <option value="16">Large (16px)</option>
+                                <option value="18">Extra Large (18px)</option>
+                            </select>
+                        </div>
+                        <label>
+                            <div class="checkbox">
+                                <input type="checkbox" class="option-all-permissions">
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "Show all permissions in permission editor. Even if their assignment don't make sense." /}}</a>
+                        </label>
+                    </div>
+                    <div class="container general-language">
+                        <div class="container-selected">
+                            <a>{{tr "Current language:" /}}</a>
+                            <div class="selected-language">
+                                <div class="country flag-de"></div>
+                                {{tr "German" /}}
+                            </div>
+                        </div>
+                        <div class="container-list">
+                            <div class="entries"></div>
+                            <div class="buttons">
+                                <div class="restart-note">
+                                    <button class="btn btn-danger button-restart">{{tr "Restart" /}}</button>
+                                    <a>{{tr "Attention: Changing the client language require a client restart!" /}}</a>
                                 </div>
-                                <node key="modal_header"></node>
-                                <div class="container-close">
-                                    <div class="button-modal-close icon_em client-close_button"></div>
+                                <div class="spacer"></div>
+                                <button class="btn btn-success button-add-repository">{{tr "Add repository" /}}</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container general-updates">{{tr "GU" /}}</div>
+                    <div class="container general-keymap"></div>
+                    <div class="container general-notifications"></div>
+                    <div class="container general-chat">
+                        <label>
+                            <div class="checkbox">
+                                <input type="checkbox" class="option-fixed-timestamps">
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr 'Fixed chat timestamp (Disables "2 seconds ago"... etc)' /}}</a>
+                        </label>
+                        <label>
+                            <div class="checkbox">
+                                <input type="checkbox" class="option-colloquial-timestamps">
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr 'Colloquial chat timestamp (Enables "Yesterday at ..." or "Today at ...")' /}}</a>
+                        </label>
+                        <label>
+                            <div class="checkbox">
+                                <input type="checkbox" class="option-instant-channel-switch">
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "Switch to channel chat on select" /}}</a>
+                        </label>
+                        <label>
+                            <div class="checkbox">
+                                <input type="checkbox" class="option-instant-client-switch">
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "Switch to client info on client select" /}}</a>
+                        </label>
+
+                        <!-- format -->
+                        <label>
+                            <div class="checkbox">
+                                <input type="checkbox" class="option-colored-emojies">
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "Colored emojies within chat" /}}</a>
+                        </label>
+                        <label>
+                            <div class="checkbox">
+                                <input type="checkbox" class="option-url-tagging">
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "Automatically detect valid URL's and tag them with [url]" /}}</a>
+                        </label>
+                        <label>
+                            <div class="checkbox">
+                                <input type="checkbox" class="option-support-markdown">
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "Enables markdown input support for chat. " /}}</a>
+                        </label>
+                        <label>
+                            <div class="checkbox">
+                                <input type="checkbox" class="option-support-bbcode">
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "Enable the BBCode syntax for your chat." /}}</a>
+                        </label>
+                        <div class="container-icon-size">
+                            <div>{{tr "Chat-icon size:" /}}<a class="value">100%</a></div>
+                            <div class="container-slider">
+                                <div class="filler" style="width: 30%"></div>
+                                <div class="thumb container-tooltip" style="left: 30%">
+                                    <div class="tooltip">
+                                        <a>86%</a>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="modal-body modal-body-yesno">
-                                <node key="question"></node>
+                        </div>
+                    </div>
+
+                    <div class="container audio-microphone">
+                        {{include tmpl="tmpl_settings-microphone" /}}
+                    </div>
+                    <div class="container audio-speaker">
+                        <div class="left">
+                            <div class="header">
+                                <a>{{tr "Select your Speaker Device" /}}</a>
+                                <button class="btn btn-info button-update">{{tr "Update" /}}</button>
+                            </div>
+                            <div class="body">
+                                <div class="container-devices">
+                                </div>
                                 <div class="buttons">
-                                    <button type="button" class="btn btn-danger button-no">{{>text_no}}</button>
-                                    <button type="button" class="btn btn-raised btn-success button-yes">{{>text_yes}}
+                                    <a class="container-error"></a>
+                                    <div class="spacer"></div>
+                                    <button class="btn btn-success button-test-sound">{{tr "Play test Sound" /}}
                                     </button>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </script>
-        </div>
-
-        <!-- Template for the connect modal -->
-        <script class="jsrender-template" id="tmpl_connect" type="text/html">
-            <div class="container-connect-input">
-                <div class="row container-address-password">
-                    <div class="form-group container-address">
-                        <label>{{tr "Server Address" /}}</label>
-                        <input type="text" class="form-control" aria-describedby="input-connect-address-help"
-                               placeholder="ts.teaspeak.de" autocomplete="off">
-                        <div class="invalid-feedback">{{tr "Please enter a valid server address" /}}</div>
-                    </div>
-                    <div class="form-group container-password">
-                        <label class="bmd-label-floating">{{tr "Server password" /}}</label>
-                        <form autocomplete="off" onsubmit="return false;">
-                            <input id="input-connect-password-{{>password_id}}" type="password" class="form-control"
-                                   autocomplete="off">
-                        </form>
-                    </div>
-                </div>
-                <div class="row container-profile-name">
-                    <div class="form-group container-nickname">
-                        <label>{{tr "Nickname" /}}</label>
-                        <input type="text" class="form-control" aria-describedby="input-connect-nickname-help"
-                               placeholder="Another TeaSpeak user">
-                        <div class="invalid-feedback">{{tr "Please enter a valid server nickname" /}}</div>
-                        <!-- <small id="input-connect-nickname-help" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
-                    </div>
-                    <div class="container-profile-manage">
-                        <div class="form-group container-select-profile">
-                            <label for="select-connect-profile">{{tr "Connect Profile" /}}</label>
-                            <select class="form-control" id="select-connect-profile"> </select>
-                            <div class="invalid-feedback">{{tr "Selected profile is invalid. Select another one or fix the profile." /}}
+                        <div class="right">
+                            <div class="header">
+                                <a>{{tr "Speaker Settings" /}}</a>
+                            </div>
+                            <div class="body">
+                                <div class="container-volume-master">
+                                    <a>{{tr "Master Volume" /}} <span class="container-value"></span></a>
+                                    <div class="container-slider">
+                                        <div class="filler" style="width: 30%"></div>
+                                        <div class="thumb container-tooltip" style="left: 30%">
+                                            <div class="tooltip">
+                                                <a>86%</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="container-volume-soundpack">
+                                    <a>{{tr "Soundpack Volume" /}} <span class="container-value"></span></a>
+                                    <div class="container-slider">
+                                        <div class="filler" style="width: 30%"></div>
+                                        <div class="thumb container-tooltip" style="left: 30%">
+                                            <div class="tooltip">
+                                                <a>86%</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <button type="button" class="btn btn-raised button-manage-profiles">{{tr "Profiles" /}}
-                            </button>
+                    </div>
+                    <div class="container audio-sounds">
+                        <div class="left">
+                            <div class="header">
+                                <a>{{tr "Sound list" /}}</a>
+                            </div>
+                            <div class="body">
+                                <div class="container-sounds">
+                                </div>
+                                <div class="container-filter">
+                                    <div class="form-group">
+                                        <label class="bmd-label-floating">{{tr "Search for a sound" /}}</label>
+                                        <input type="text" class="form-control input-sounds-filter">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="right">
+                            <div class="header">
+                                <a>{{tr "Sound settings" /}}</a>
+                            </div>
+                            <div class="body">
+                                <label>
+                                    <div class="checkbox">
+                                        <input type="checkbox" class="option-overlap-same">
+                                        <div class="mark"></div>
+                                    </div>
+                                    <a>{{tr "Overlap same sounds" /}}</a>
+                                </label>
+                                <label>
+                                    <div class="checkbox">
+                                        <input type="checkbox" class="option-mute-output">
+                                        <div class="mark"></div>
+                                    </div>
+                                    <a>{{tr "Mute sounds when output is muted" /}}</a>
+                                </label>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="container-buttons">
-                    <button type="button" class="btn btn-raised button-toggle-last-servers"><a>{{tr "Show last servers"
-                        /}}</a>
-                        <div class="arrow down"></div>
-                    </button>
 
-                    <div class="container-buttons-connect">
-                        {{if default_connect_new_tab}}
-                        <button type="button" class="btn btn-raised btn-success button-connect button-left">{{tr
-                            "Connect in same tab" /}}
-                        </button>
-                        <button type="button" class="btn btn-raised btn-success button-connect-new-tab button-right">
-                            {{tr "Connect" /}}
-                        </button>
-                        {{else}}
-                        {{if multi_tab}}
-                        <button type="button" class="btn btn-raised btn-success button-connect-new-tab button-left">{{tr
-                            "Connect in a new tab" /}}
-                        </button>
-                        {{/if}}
-                        <button type="button" class="btn btn-raised btn-success button-connect button-right">{{tr
-                            "Connect" /}}
-                        </button>
-                        {{/if}}
+                    <div class="container identity-profiles">
+                        {{include tmpl="tmpl_settings-profiles" /}}
                     </div>
-                </div>
-            </div>
-            <div class="container-last-servers">
-                <hr>
-                <div class="table">
-                    <div class="head">
-                        <div class="column delete">Nr</div>
-                        <div class="column name">{{tr "Name" /}}</div>
-                        <div class="column address">{{tr "Address" /}}</div>
-                        <div class="column password">{{tr "Password" /}}</div>
-                        <div class="column country-name">{{tr "Country" /}}</div>
-                        <div class="column clients">{{tr "Clients" /}}</div>
-                        <div class="column connections">{{tr "Connections" /}}</div>
-                    </div>
-                    <div class="body">
-                        <div class="body-empty">
-                            <a>{{tr "No connections yet made" /}}</a>
+                    <div class="container identity-forum">
+                        <div class="fill">
+                            <div class="header">
+                                <a>{{tr "TeaSpeak forum connection" /}}</a>
+                                <div class="spacer"></div>
+                                <button class="btn btn-danger show-connected button-logout">{{tr "Logout" /}}</button>
+                            </div>
+                            <div class="body">
+                                <div class="container-connected show-connected">
+                                    <a>You're successfully connected with your forum account</a>
+                                    <div><a>Username: </a><a class="forum-username"></a></div>
+                                    <div><a>Premium: </a><a class="forum-premium"></a></div>
+                                </div>
+                                <div class="container-disconnected show-disconnected">
+                                    <a>{{tr "You're not connected with the TeaSpeak forum." /}}</a>
+                                    <div class="container-login">
+                                        <a>{{tr "Login the the TeaSpeak forum:" /}}</a>
+                                        <a class="container-error">Login to the forum failed.</a>
+                                        <div class="form-group">
+                                            <label class="bmd-label-floating">{{tr "Username" /}}</label>
+                                            <input class="form-control input-username">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="bmd-label-floating">{{tr "Password" /}}</label>
+                                            <input class="form-control input-password" type="password">
+                                        </div>
+                                        <div class="container-button">
+                                            <div class="g-recaptcha"></div>
+                                            <button class="btn btn-success button-login">{{tr "Login" /}}</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </script>
 
+        <script class="jsrender-template" id="tmpl_settings-profiles" type="text/html">
+            <div class="container-settings-identity-profile">
+                <div class="left highlight-profile-list highlightable">
+                    <div class="header">
+                        <a>{{tr "Your Profiles" /}}</a>
+                        <button class="btn btn-info button-create">{{tr "Create new" /}}</button>
+                    </div>
+                    <div class="body">
+                        <div class="container-profiles">
+                            <div class="overlay overlay-error"><a class="error">error: error</a></div>
+                            <div class="overlay overlay-timeout">
+                                <a>{{tr "Timeout while loading" /}}</a><br>
+                                <button class="btn btn-blue button-reload-list">{{tr "Reload" /}}</button>
+                            </div>
+                            <div class="overlay overlay-empty">
+                                <a>{{tr "You've not profiles yet" /}}</a>
+                            </div>
+                        </div>
+                        <div class="buttons">
+                            <button class="btn btn-danger button-delete">{{tr "Delete selected" /}}</button>
+                            <div class="spacer"></div>
+                            <button class="btn btn-success button-set-default">{{tr "Select as Default" /}}
+                            </button>
+                        </div>
+                        <div class="buttons-small">
+                            <button class="btn btn-danger button-delete">{{tr "Delete" /}}</button>
+                            <div class="spacer"></div>
+                            <button class="btn btn-success button-set-default">{{tr "Default" /}}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="right">
+                    <div class="header">
+                        <a>{{tr "Profile Settings" /}}</a>
+                        <div class="spacer"></div>
+                        <div class="container-avatar"></div>
+                        <button class="btn btn-info button-change-avatar">{{tr "Change Avatar" /}}</button>
+                        <!-- AVATAR -->
+                    </div>
+                    <div class="body">
+                        <div class="container-general highlight-profile-settings highlightable">
+                            <div class="form-group">
+                                <label>{{tr "Profile Name" /}}</label>
+                                <input class="form-control profile-name">
+                                <div class="invalid-feedback">{{tr "Profile name is invalid" /}}</div>
+                            </div>
+                            <div class="form-group">
+                                <label>{{tr "Default Nickname" /}}</label>
+                                <input class="form-control profile-default-name"
+                                       placeholder="Another TeaSpeak user">
+                            </div>
+                            <div class="form-group">
+                                <label>{{tr "Identity Type" /}}</label>
+                                <select class="form-control profile-identity-type">
+                                    <option value="error" style="display: none">error: error</option>
+                                    <option value="unset" style="display: none">{{tr "Unset" /}}</option>
+                                    <option value="teaforo">{{tr "Forum Account" /}}</option>
+                                    <option value="teamspeak">{{tr "TeamSpeak Identity" /}}</option>
+                                    <option value="nickname">{{tr "Nickname (Debug only!)" /}}</option>
+                                </select>
+                                <div class="invalid-feedback">{{tr "Invalid identity type" /}}</div>
+                            </div>
+                        </div>
+                        <div class="container-teamspeak">
+                            <div class="container-valid">
+                                <div class="form-group">
+                                    <label>{{tr "Unique-ID" /}}</label>
+                                    <input class="form-control unique-id" readonly>
+                                </div>
+                                <div class="container-level">
+                                    <div class="form-group">
+                                        <label>{{tr "Level" /}}</label>
+                                        <input class="form-control current-level" readonly>
+                                    </div>
+                                    <button class="btn button-improve">{{tr "Improve" /}}</button>
+                                </div>
+                            </div>
+                            <div class="container-invalid">
+                                {{tr "You have'nt generated/imported an identity." /}}<br>
+                                {{tr "Generate a new one or import one." /}}
+                            </div>
+                            <div class="buttons">
+                                <button class="btn btn-danger button-new">{{tr "Generate new" /}}</button>
 
-        <!-- Template for channel create & edit-->
+                                <div>
+                                    <button class="btn btn-danger button-import">{{tr "Import identity" /}}
+                                    </button>
+                                    <button class="btn btn-success button-export">{{tr "Export identity" /}}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="container-teaforo">
+                            <div class="container-valid">
+                                {{tr "You're using your forum account as identification" /}}
+                            </div>
+                            <div class="container-invalid">
+                                <a>{{tr "You cant use your TeaSpeak forum account. You're not connected with your forum Account!" /}}</a>
+                                <button class="btn btn-success button-setup">{{tr "Setup your connection" /}}
+                                </button>
+                            </div>
+                        </div>
+                        <div class="container-nickname">
+                            <div class="form-group">
+                                <label>{{tr "Nickname" /}}</label>
+                                <input class="form-control nickname">
+                                <div class="invalid-feedback">{{tr "Invalid nickname. Name must be at least 5 characters" /}}
+                                </div>
+                            </div>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="container-highlight-dummy highlight-identity-settings highlightable"></div>
+                    </div>
+                </div>
+                <div class="help-background"></div>
+                <div class="container-help-text window-resize-listener">
+                    <a class="help-text">Hello nice to see you. This is even working with new lines etc....</a>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_settings-sound_entry" type="text/html">
+            <div class="entry">
+                <div class="column sound-name">
+                    <div class="icon client-play button-playback"></div>
+                    {{>name}}
+                </div>
+                <div class="column sound-activated">
+                    <div class="switch">
+                        <label>
+                            <input type="checkbox" {{if activated}}checked{{/if}}>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_settings-teamspeak_import" type="text/html">
+            <div>
+                <div class="container-status"><a></a></div>
+                <fieldset class="">
+                    <div class="container-text">
+                        <label>
+                            <div class="radio-button">
+                                <input type="radio" name="type" value="text"/>
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "Import from text" /}}</a>
+                        </label>
+                        <div class="form-group">
+                            <label>{{tr "Identity Data" /}}</label>
+                            <input class="form-control input-identity-text" placeholder="{{tr 'Please paste your identity data here' /}}"/>
+                        </div>
+                    </div>
+                    <div class="container-file">
+                        <label>
+                            <div class="radio-button">
+                                <input type="radio" name="type" value="file"/>
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "Import from file" /}}</a>
+                        </label>
+                        <button class="btn btn-brown button-load-file">{{tr "Select file" /}}</button>
+                        <a class="current-file">{{tr "No file selected" /}}</a>
+                    </div>
+                </fieldset>
+                <input type="file" class="file-selector"/>
+                <div class="footer">
+                    <button class="btn btn-success button-import">{{tr "Import" /}}</button>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_settings-teamspeak_improve" type="text/html">
+            <div>
+                <div class="options">
+                    <div class="title">{{tr "Identity: "/}} {{>identity_name}}</div>
+                    <div class="row">
+                        <div class="form-group identity-unique-id">
+                            <label>{{tr "Unique ID:" /}}</label>
+                            <input class="form-control" value="" readonly>
+                        </div>
+                        <div class="form-group identity-level">
+                            <label>{{tr "Current level: " /}}</label>
+                            <input class="form-control" value="loading" readonly>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group identity-target-level">
+                            <div class="bmd-label-static">
+                                <div class="container-tooltip">
+                                    <img src="img/icon_tooltip.svg"/>
+                                    <div class="tooltip">
+                                        <a>
+                                            {{tr "The number of threads used to improve your identity" /}}<br>
+                                            {{tr "The optimal value is equal to the amount of kernel threads." /}}
+                                        </a>
+                                    </div>
+                                </div>
+                                {{tr "Target level: " /}}
+                            </div>
+                            <input class="form-control" value="0" type="number" min="0" max="160">
+                        </div>
+                        <div class="form-group threads">
+                            <div class="bmd-label-static">
+                                <div class="container-tooltip">
+                                    <img src="img/icon_tooltip.svg"/>
+                                    <div class="tooltip">
+                                        <a>{{tr "A value of zero means unlimited. Improve until you abort" /}}</a>
+                                    </div>
+                                </div>
+                                {{tr "Threads: " /}}
+                            </div>
+                            <input class="form-control" value="2" type="number" min="1" max="32">
+                        </div>
+                    </div>
+                </div>
+                <div class="status">
+                    <div class="row">
+                        <div class="form-group hash-rate">
+                            <label>{{tr "Hashes/second:" /}}</label>
+                            <input class="form-control" value="0" readonly>
+                        </div>
+                        <div class="form-group time-elapsed">
+                            <label>{{tr "Elapsed time:" /}}</label>
+                            <input class="form-control" value="00:00" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="buttons">
+                    <button class="btn btn-danger btn-raised button-close">{{tr "Close" /}}</button>
+                    <button class="btn btn-success btn-raised button-start-stop">{{tr "Start" /}}</button>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="settings-profile-list-entry" type="text/html">
+            <div class="entry profile {{if id == 'default'}}default{{/if}}">
+                <div class="name">{{>profile_name}}</div>
+                <!-- <div class="button button-delete"><div class="icon client-delete"></div></div> -->
+                <div title="{{tr 'Profile is valid' /}}" class="icon client-delete status status-invalid"></div>
+                <div title="{{tr 'Profile is invalid' /}}" class="icon client-apply status status-valid"></div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="settings-translations-list-entry" type="text/html">
+            {{if type == "repository" }}
+            <div class="entry repository" repository="{{:id}}">
+                <div class="name">{{> name}}</div>
+                <div class="button button-delete">
+                    <div class="icon client-delete"></div>
+                </div>
+                <div class="button button-info">
+                    <div class="icon client-about"></div>
+                </div>
+            </div>
+            {{else type == "default" }}
+            <div class="entry default {{if selected}}selected{{/if}}">
+                <div class="country flag-gb" title="{{>fallback_country_name}}"></div>
+                <div class="name">{{tr "English (Default / Fallback)" /}}</div>
+            </div>
+            {{else}}
+            <div class="entry translation {{if selected}}selected{{/if}}" parent-repository="{{:id}}">
+                <div class="country flag-{{:country_code}}"
+                     title="{{>country_name}}"></div>
+                <div class="name">{{> name}}</div>
+                <div class="button button-info">
+                    <div class="icon client-about"></div>
+                </div>
+            </div>
+            {{/if}}
+        </script>
+
+        <script class="jsrender-template" id="settings-translations-list-entry-info" type="text/html">
+            <div class="entry-info-container">
+                {{if type == "repository" }}
+                <!--
+                        unique_id: string;
+                        url: string;
+                        name?: string;
+                        contact?: string;
+                        translations?: RepositoryTranslation[];
+                        load_timestamp?: number;
+                -->
+                <div class="property property-name">
+                    <div class="key">Name:</div>
+                    <div class="value">{{>name}}</div>
+                </div>
+                <div class="property property-url">
+                    <div class="key">URL:</div>
+                    <div class="value">{{>url}}</div>
+                </div>
+                <div class="property property-contact">
+                    <div class="key">Contact:</div>
+                    <div class="value">{{>contact}}</div>
+                </div>
+                <div class="property property-translations">
+                    <div class="key">Translations:</div>
+                    <div class="value">{{:translations.length}}</div>
+                </div>
+                {{else}}
+                <!--
+                    name: string;
+                    contributors: Contributor[];
+                -->
+                <div class="property property-name">
+                    <div class="key">Name:</div>
+                    <div class="value">{{>name}}</div>
+                </div>
+                <div class="property property-url">
+                    <div class="key">URL:</div>
+                    <div class="value">{{>url}}</div>
+                </div>
+                <div class="property property-repository">
+                    <div class="key">{{tr "Repository:" /}}</div>
+                    <div class="value">
+                        <p>{{>repository_name}}</p>
+                        <div class="button button-info">
+                            <div class="icon client-about"></div>
+                        </div>
+                    </div>
+                </div>
+                {{if !contributors }}
+                {{else contributors.length == 1}}
+                <div class="property property-contributor">
+                    <div class="key">Contributor:</div>
+                    <div class="value">
+                        {{>contributors[0].name}}
+                        {{if contributors[0].email}}
+                        &nbsp&lt;{{>contributors[0].email}}&gt;
+                        {{/if}}
+                    </div>
+                </div>
+                {{else}}
+                <div class="property property-contributors">
+                    <div class="key">Contributors:</div>
+                    <div class="value">
+                        {{for contributors}}
+                        <div class="contributor">
+                            {{>name}}
+                            {{if email}}
+                            &nbsp&lt;{{>email}}&gt;
+                            {{/if}}
+                        </div>
+                        {{/for}}
+                    </div>
+                </div>
+                {{/if}}
+                {{/if}}
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_change_latency" type="text/html">
+            <div> <!-- for the renderer -->
+                <div class="info">
+                    <div>{{tr "Change latency for client "/}} <node key="client"></node></div>
+                </div>
+                <div class="container-min">
+                    <div class="container-value">
+                        {{tr "Min buffer: "/}}
+                        <a class="value">20ms</a>
+                    </div>
+                    <div class="container-slider">
+                        <div class="filler" style="width: 30%"></div>
+                        <div class="thumb container-tooltip" style="left: 30%">
+                            <div class="tooltip">
+                                <a>86%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="container-max">
+                    <div class="container-value">
+                        {{tr "Max buffer: "/}}
+                        <a class="value">20ms</a>
+                    </div>
+                    <div class="container-slider">
+                        <div class="filler" style="width: 30%"></div>
+                        <div class="thumb container-tooltip" style="left: 30%">
+                            <div class="tooltip">
+                                <a>86%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="buttons">
+                    <button class="btn btn-blue button-reset">{{tr "Reset" /}}</button>
+                    {{if have_flush}}
+                    <button class="btn btn-blue button-flush">{{tr "Flush buffer" /}}</button>
+                    {{/if}}
+                    <div class="spacer"></div>
+                    <button class="btn btn-danger button-cancel">{{tr "Cancel" /}}</button>
+                    <button class="btn btn-success button-close">{{tr "Close" /}}</button>
+                </div>
+            </div>
+        </script>
+
         <script class="jsrender-template" id="tmpl_server_edit" type="text/html">
             <div> <!-- Only for rendering -->
                 <div class="container-general">
@@ -818,706 +1354,6 @@
             </div>
         </script>
 
-        <!-- Template for the settings -->
-        <script class="jsrender-template" id="tmpl_settings" type="text/html">
-            <div class="inner-container">
-                <div class="left">
-                    <div class="entry group">{{tr "General Settings" /}}</div>
-                    <div class="entry" container="general-application">{{tr "Application" /}}</div>
-                    <div class="entry" container="general-language">{{tr "Language" /}}</div>
-                    <!-- <div class="entry" container="general-updates">{{tr "Updates" /}}</div> -->
-                    <div class="entry" container="general-chat">{{tr "Chat" /}}</div>
-                    <div class="entry" container="general-keymap">{{tr "Keymap" /}}</div>
-                    <div class="entry" container="general-notifications">{{tr "Notifications" /}}</div>
-
-                    <div class="entry group">{{tr "Audio" /}}</div>
-                    <div class="entry" container="audio-microphone">{{tr "Microphone" /}}</div>
-                    <div class="entry" container="audio-speaker">{{tr "Speaker" /}}</div>
-                    <div class="entry" container="audio-sounds">{{tr "Sounds" /}}</div>
-
-                    <div class="entry group">{{tr "Identity" /}}</div>
-                    <div class="entry" container="identity-profiles">{{tr "Profiles" /}}</div>
-                    <div class="entry" container="identity-forum">{{tr "TeaForo connection" /}}</div>
-                </div>
-                <div class="container-seperator vertical" seperator-id="seperator-settings"></div>
-                <div class="right">
-                    <div class="container general-application">
-                        <label>
-                            <div class="checkbox">
-                                <input type="checkbox" class="option-hostbanner-background">
-                                <div class="mark"></div>
-                            </div>
-                            <a>{{tr 'Disabled backrounds within the hostbanner' /}}</a>
-                        </label>
-                        <div class="container-font-size">
-                            <a>{{tr "Font size" /}}</a>
-                            <select class="input-boxed option-font-size">
-                                <option value="-1" style="display: none;">Custom</option>
-                                <option value="10">Extra Small (10px)</option>
-                                <option value="12">Small (12px)</option>
-                                <option value="14">Normal (14px)</option>
-                                <option value="16">Large (16px)</option>
-                                <option value="18">Extra Large (18px)</option>
-                            </select>
-                        </div>
-                        <label>
-                            <div class="checkbox">
-                                <input type="checkbox" class="option-all-permissions">
-                                <div class="mark"></div>
-                            </div>
-                            <a>{{tr "Show all permissions in permission editor. Even if their assignment don't make sense." /}}</a>
-                        </label>
-                    </div>
-                    <div class="container general-language">
-                        <div class="container-selected">
-                            <a>{{tr "Current language:" /}}</a>
-                            <div class="selected-language">
-                                <div class="country flag-de"></div>
-                                {{tr "German" /}}
-                            </div>
-                        </div>
-                        <div class="container-list">
-                            <div class="entries"></div>
-                            <div class="buttons">
-                                <div class="restart-note">
-                                    <button class="btn btn-danger button-restart">{{tr "Restart" /}}</button>
-                                    <a>{{tr "Attention: Changing the client language require a client restart!" /}}</a>
-                                </div>
-                                <div class="spacer"></div>
-                                <button class="btn btn-success button-add-repository">{{tr "Add repository" /}}</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container general-updates">{{tr "GU" /}}</div>
-                    <div class="container general-keymap"></div>
-                    <div class="container general-notifications"></div>
-                    <div class="container general-chat">
-                        <label>
-                            <div class="checkbox">
-                                <input type="checkbox" class="option-fixed-timestamps">
-                                <div class="mark"></div>
-                            </div>
-                            <a>{{tr 'Fixed chat timestamp (Disables "2 seconds ago"... etc)' /}}</a>
-                        </label>
-                        <label>
-                            <div class="checkbox">
-                                <input type="checkbox" class="option-colloquial-timestamps">
-                                <div class="mark"></div>
-                            </div>
-                            <a>{{tr 'Colloquial chat timestamp (Enables "Yesterday at ..." or "Today at ...")' /}}</a>
-                        </label>
-                        <label>
-                            <div class="checkbox">
-                                <input type="checkbox" class="option-instant-channel-switch">
-                                <div class="mark"></div>
-                            </div>
-                            <a>{{tr "Switch to channel chat on select" /}}</a>
-                        </label>
-                        <label>
-                            <div class="checkbox">
-                                <input type="checkbox" class="option-instant-client-switch">
-                                <div class="mark"></div>
-                            </div>
-                            <a>{{tr "Switch to client info on client select" /}}</a>
-                        </label>
-
-                        <!-- format -->
-                        <label>
-                            <div class="checkbox">
-                                <input type="checkbox" class="option-colored-emojies">
-                                <div class="mark"></div>
-                            </div>
-                            <a>{{tr "Colored emojies within chat" /}}</a>
-                        </label>
-                        <label>
-                            <div class="checkbox">
-                                <input type="checkbox" class="option-url-tagging">
-                                <div class="mark"></div>
-                            </div>
-                            <a>{{tr "Automatically detect valid URL's and tag them with [url]" /}}</a>
-                        </label>
-                        <label>
-                            <div class="checkbox">
-                                <input type="checkbox" class="option-support-markdown">
-                                <div class="mark"></div>
-                            </div>
-                            <a>{{tr "Enables markdown input support for chat. " /}}</a>
-                        </label>
-                        <label>
-                            <div class="checkbox">
-                                <input type="checkbox" class="option-support-bbcode">
-                                <div class="mark"></div>
-                            </div>
-                            <a>{{tr "Enable the BBCode syntax for your chat." /}}</a>
-                        </label>
-                        <div class="container-icon-size">
-                            <div>{{tr "Chat-icon size:" /}}<a class="value">100%</a></div>
-                            <div class="container-slider">
-                                <div class="filler" style="width: 30%"></div>
-                                <div class="thumb container-tooltip" style="left: 30%">
-                                    <div class="tooltip">
-                                        <a>86%</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="container audio-microphone">
-                        {{include tmpl="tmpl_settings-microphone" /}}
-                    </div>
-                    <div class="container audio-speaker">
-                        <div class="left">
-                            <div class="header">
-                                <a>{{tr "Select your Speaker Device" /}}</a>
-                                <button class="btn btn-info button-update">{{tr "Update" /}}</button>
-                            </div>
-                            <div class="body">
-                                <div class="container-devices">
-                                </div>
-                                <div class="buttons">
-                                    <a class="container-error"></a>
-                                    <div class="spacer"></div>
-                                    <button class="btn btn-success button-test-sound">{{tr "Play test Sound" /}}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="right">
-                            <div class="header">
-                                <a>{{tr "Speaker Settings" /}}</a>
-                            </div>
-                            <div class="body">
-                                <div class="container-volume-master">
-                                    <a>{{tr "Master Volume" /}} <span class="container-value"></span></a>
-                                    <div class="container-slider">
-                                        <div class="filler" style="width: 30%"></div>
-                                        <div class="thumb container-tooltip" style="left: 30%">
-                                            <div class="tooltip">
-                                                <a>86%</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="container-volume-soundpack">
-                                    <a>{{tr "Soundpack Volume" /}} <span class="container-value"></span></a>
-                                    <div class="container-slider">
-                                        <div class="filler" style="width: 30%"></div>
-                                        <div class="thumb container-tooltip" style="left: 30%">
-                                            <div class="tooltip">
-                                                <a>86%</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container audio-sounds">
-                        <div class="left">
-                            <div class="header">
-                                <a>{{tr "Sound list" /}}</a>
-                            </div>
-                            <div class="body">
-                                <div class="container-sounds">
-                                </div>
-                                <div class="container-filter">
-                                    <div class="form-group">
-                                        <label class="bmd-label-floating">{{tr "Search for a sound" /}}</label>
-                                        <input type="text" class="form-control input-sounds-filter">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="right">
-                            <div class="header">
-                                <a>{{tr "Sound settings" /}}</a>
-                            </div>
-                            <div class="body">
-                                <label>
-                                    <div class="checkbox">
-                                        <input type="checkbox" class="option-overlap-same">
-                                        <div class="mark"></div>
-                                    </div>
-                                    <a>{{tr "Overlap same sounds" /}}</a>
-                                </label>
-                                <label>
-                                    <div class="checkbox">
-                                        <input type="checkbox" class="option-mute-output">
-                                        <div class="mark"></div>
-                                    </div>
-                                    <a>{{tr "Mute sounds when output is muted" /}}</a>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="container identity-profiles">
-                        {{include tmpl="tmpl_settings-profiles" /}}
-                    </div>
-                    <div class="container identity-forum">
-                        <div class="fill">
-                            <div class="header">
-                                <a>{{tr "TeaSpeak forum connection" /}}</a>
-                                <div class="spacer"></div>
-                                <button class="btn btn-danger show-connected button-logout">{{tr "Logout" /}}</button>
-                            </div>
-                            <div class="body">
-                                <div class="container-connected show-connected">
-                                    <a>You're successfully connected with your forum account</a>
-                                    <div><a>Username: </a><a class="forum-username"></a></div>
-                                    <div><a>Premium: </a><a class="forum-premium"></a></div>
-                                </div>
-                                <div class="container-disconnected show-disconnected">
-                                    <a>{{tr "You're not connected with the TeaSpeak forum." /}}</a>
-                                    <div class="container-login">
-                                        <a>{{tr "Login the the TeaSpeak forum:" /}}</a>
-                                        <a class="container-error">Login to the forum failed.</a>
-                                        <div class="form-group">
-                                            <label class="bmd-label-floating">{{tr "Username" /}}</label>
-                                            <input class="form-control input-username">
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="bmd-label-floating">{{tr "Password" /}}</label>
-                                            <input class="form-control input-password" type="password">
-                                        </div>
-                                        <div class="container-button">
-                                            <div class="g-recaptcha"></div>
-                                            <button class="btn btn-success button-login">{{tr "Login" /}}</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </script>
-
-
-        <script class="jsrender-template" id="tmpl_settings-profiles" type="text/html">
-            <div class="container-settings-identity-profile">
-                <div class="left highlight-profile-list highlightable">
-                    <div class="header">
-                        <a>{{tr "Your Profiles" /}}</a>
-                        <button class="btn btn-info button-create">{{tr "Create new" /}}</button>
-                    </div>
-                    <div class="body">
-                        <div class="container-profiles">
-                            <div class="overlay overlay-error"><a class="error">error: error</a></div>
-                            <div class="overlay overlay-timeout">
-                                <a>{{tr "Timeout while loading" /}}</a><br>
-                                <button class="btn btn-blue button-reload-list">{{tr "Reload" /}}</button>
-                            </div>
-                            <div class="overlay overlay-empty">
-                                <a>{{tr "You've not profiles yet" /}}</a>
-                            </div>
-                        </div>
-                        <div class="buttons">
-                            <button class="btn btn-danger button-delete">{{tr "Delete selected" /}}</button>
-                            <div class="spacer"></div>
-                            <button class="btn btn-success button-set-default">{{tr "Select as Default" /}}
-                            </button>
-                        </div>
-                        <div class="buttons-small">
-                            <button class="btn btn-danger button-delete">{{tr "Delete" /}}</button>
-                            <div class="spacer"></div>
-                            <button class="btn btn-success button-set-default">{{tr "Default" /}}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="right">
-                    <div class="header">
-                        <a>{{tr "Profile Settings" /}}</a>
-                        <div class="spacer"></div>
-                        <div class="container-avatar"></div>
-                        <button class="btn btn-info button-change-avatar">{{tr "Change Avatar" /}}</button>
-                        <!-- AVATAR -->
-                    </div>
-                    <div class="body">
-                        <div class="container-general highlight-profile-settings highlightable">
-                            <div class="form-group">
-                                <label>{{tr "Profile Name" /}}</label>
-                                <input class="form-control profile-name">
-                                <div class="invalid-feedback">{{tr "Profile name is invalid" /}}</div>
-                            </div>
-                            <div class="form-group">
-                                <label>{{tr "Default Nickname" /}}</label>
-                                <input class="form-control profile-default-name"
-                                       placeholder="Another TeaSpeak user">
-                            </div>
-                            <div class="form-group">
-                                <label>{{tr "Identity Type" /}}</label>
-                                <select class="form-control profile-identity-type">
-                                    <option value="error" style="display: none">error: error</option>
-                                    <option value="unset" style="display: none">{{tr "Unset" /}}</option>
-                                    <option value="teaforo">{{tr "Forum Account" /}}</option>
-                                    <option value="teamspeak">{{tr "TeamSpeak Identity" /}}</option>
-                                    <option value="nickname">{{tr "Nickname (Debug only!)" /}}</option>
-                                </select>
-                                <div class="invalid-feedback">{{tr "Invalid identity type" /}}</div>
-                            </div>
-                        </div>
-                        <div class="container-teamspeak">
-                            <div class="container-valid">
-                                <div class="form-group">
-                                    <label>{{tr "Unique-ID" /}}</label>
-                                    <input class="form-control unique-id" readonly>
-                                </div>
-                                <div class="container-level">
-                                    <div class="form-group">
-                                        <label>{{tr "Level" /}}</label>
-                                        <input class="form-control current-level" readonly>
-                                    </div>
-                                    <button class="btn button-improve">{{tr "Improve" /}}</button>
-                                </div>
-                            </div>
-                            <div class="container-invalid">
-                                {{tr "You have'nt generated/imported an identity." /}}<br>
-                                {{tr "Generate a new one or import one." /}}
-                            </div>
-                            <div class="buttons">
-                                <button class="btn btn-danger button-new">{{tr "Generate new" /}}</button>
-
-                                <div>
-                                    <button class="btn btn-danger button-import">{{tr "Import identity" /}}
-                                    </button>
-                                    <button class="btn btn-success button-export">{{tr "Export identity" /}}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="container-teaforo">
-                            <div class="container-valid">
-                                {{tr "You're using your forum account as identification" /}}
-                            </div>
-                            <div class="container-invalid">
-                                <a>{{tr "You cant use your TeaSpeak forum account. You're not connected with your forum Account!" /}}</a>
-                                <button class="btn btn-success button-setup">{{tr "Setup your connection" /}}
-                                </button>
-                            </div>
-                        </div>
-                        <div class="container-nickname">
-                            <div class="form-group">
-                                <label>{{tr "Nickname" /}}</label>
-                                <input class="form-control nickname">
-                                <div class="invalid-feedback">{{tr "Invalid nickname. Name must be at least 5 characters" /}}
-                                </div>
-                            </div>
-                            <div class="invalid-feedback"></div>
-                        </div>
-                        <div class="container-highlight-dummy highlight-identity-settings highlightable"></div>
-                    </div>
-                </div>
-                <div class="help-background"></div>
-                <div class="container-help-text window-resize-listener">
-                    <a class="help-text">Hello nice to see you. This is even working with new lines etc....</a>
-                </div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_settings-sound_entry" type="text/html">
-            <div class="entry">
-                <div class="column sound-name">
-                    <div class="icon client-play button-playback"></div>
-                    {{>name}}
-                </div>
-                <div class="column sound-activated">
-                    <div class="switch">
-                        <label>
-                            <input type="checkbox" {{if activated}}checked{{/if}}>
-                        </label>
-                    </div>
-                </div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_settings-teamspeak_import" type="text/html">
-            <div>
-                <div class="container-status"><a></a></div>
-                <fieldset class="">
-                    <div class="container-text">
-                        <label>
-                            <div class="radio-button">
-                                <input type="radio" name="type" value="text"/>
-                                <div class="mark"></div>
-                            </div>
-                            <a>{{tr "Import from text" /}}</a>
-                        </label>
-                        <div class="form-group">
-                            <label>{{tr "Identity Data" /}}</label>
-                            <input class="form-control input-identity-text" placeholder="{{tr 'Please paste your identity data here' /}}"/>
-                        </div>
-                    </div>
-                    <div class="container-file">
-                        <label>
-                            <div class="radio-button">
-                                <input type="radio" name="type" value="file"/>
-                                <div class="mark"></div>
-                            </div>
-                            <a>{{tr "Import from file" /}}</a>
-                        </label>
-                        <button class="btn btn-brown button-load-file">{{tr "Select file" /}}</button>
-                        <a class="current-file">{{tr "No file selected" /}}</a>
-                    </div>
-                </fieldset>
-                <input type="file" class="file-selector"/>
-                <div class="footer">
-                    <button class="btn btn-success button-import">{{tr "Import" /}}</button>
-                </div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_settings-teamspeak_improve" type="text/html">
-            <div>
-                <div class="options">
-                    <div class="title">{{tr "Identity: "/}} {{>identity_name}}</div>
-                    <div class="row">
-                        <div class="form-group identity-unique-id">
-                            <label>{{tr "Unique ID:" /}}</label>
-                            <input class="form-control" value="" readonly>
-                        </div>
-                        <div class="form-group identity-level">
-                            <label>{{tr "Current level: " /}}</label>
-                            <input class="form-control" value="loading" readonly>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group identity-target-level">
-                            <div class="bmd-label-static">
-                                <div class="container-tooltip">
-                                    <img src="img/icon_tooltip.svg"/>
-                                    <div class="tooltip">
-                                        <a>
-                                            {{tr "The number of threads used to improve your identity" /}}<br>
-                                            {{tr "The optimal value is equal to the amount of kernel threads." /}}
-                                        </a>
-                                    </div>
-                                </div>
-                                {{tr "Target level: " /}}
-                            </div>
-                            <input class="form-control" value="0" type="number" min="0" max="160">
-                        </div>
-                        <div class="form-group threads">
-                            <div class="bmd-label-static">
-                                <div class="container-tooltip">
-                                    <img src="img/icon_tooltip.svg"/>
-                                    <div class="tooltip">
-                                        <a>{{tr "A value of zero means unlimited. Improve until you abort" /}}</a>
-                                    </div>
-                                </div>
-                                {{tr "Threads: " /}}
-                            </div>
-                            <input class="form-control" value="2" type="number" min="1" max="32">
-                        </div>
-                    </div>
-                </div>
-                <div class="status">
-                    <div class="row">
-                        <div class="form-group hash-rate">
-                            <label>{{tr "Hashes/second:" /}}</label>
-                            <input class="form-control" value="0" readonly>
-                        </div>
-                        <div class="form-group time-elapsed">
-                            <label>{{tr "Elapsed time:" /}}</label>
-                            <input class="form-control" value="00:00" readonly>
-                        </div>
-                    </div>
-                </div>
-                <div class="buttons">
-                    <button class="btn btn-danger btn-raised button-close">{{tr "Close" /}}</button>
-                    <button class="btn btn-success btn-raised button-start-stop">{{tr "Start" /}}</button>
-                </div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="settings-profile-list-entry" type="text/html">
-            <div class="entry profile {{if id == 'default'}}default{{/if}}">
-                <div class="name">{{>profile_name}}</div>
-                <!-- <div class="button button-delete"><div class="icon client-delete"></div></div> -->
-                <div title="{{tr 'Profile is valid' /}}" class="icon client-delete status status-invalid"></div>
-                <div title="{{tr 'Profile is invalid' /}}" class="icon client-apply status status-valid"></div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="settings-translations-list-entry" type="text/html">
-            {{if type == "repository" }}
-            <div class="entry repository" repository="{{:id}}">
-                <div class="name">{{> name}}</div>
-                <div class="button button-delete">
-                    <div class="icon client-delete"></div>
-                </div>
-                <div class="button button-info">
-                    <div class="icon client-about"></div>
-                </div>
-            </div>
-            {{else type == "default" }}
-            <div class="entry default {{if selected}}selected{{/if}}">
-                <div class="country flag-gb" title="{{>fallback_country_name}}"></div>
-                <div class="name">{{tr "English (Default / Fallback)" /}}</div>
-            </div>
-            {{else}}
-            <div class="entry translation {{if selected}}selected{{/if}}" parent-repository="{{:id}}">
-                <div class="country flag-{{:country_code}}"
-                     title="{{>country_name}}"></div>
-                <div class="name">{{> name}}</div>
-                <div class="button button-info">
-                    <div class="icon client-about"></div>
-                </div>
-            </div>
-            {{/if}}
-        </script>
-
-        <script class="jsrender-template" id="settings-translations-list-entry-info" type="text/html">
-            <div class="entry-info-container">
-                {{if type == "repository" }}
-                <!--
-                        unique_id: string;
-                        url: string;
-                        name?: string;
-                        contact?: string;
-                        translations?: RepositoryTranslation[];
-                        load_timestamp?: number;
-                -->
-                <div class="property property-name">
-                    <div class="key">Name:</div>
-                    <div class="value">{{>name}}</div>
-                </div>
-                <div class="property property-url">
-                    <div class="key">URL:</div>
-                    <div class="value">{{>url}}</div>
-                </div>
-                <div class="property property-contact">
-                    <div class="key">Contact:</div>
-                    <div class="value">{{>contact}}</div>
-                </div>
-                <div class="property property-translations">
-                    <div class="key">Translations:</div>
-                    <div class="value">{{:translations.length}}</div>
-                </div>
-                {{else}}
-                <!--
-                    name: string;
-                    contributors: Contributor[];
-                -->
-                <div class="property property-name">
-                    <div class="key">Name:</div>
-                    <div class="value">{{>name}}</div>
-                </div>
-                <div class="property property-url">
-                    <div class="key">URL:</div>
-                    <div class="value">{{>url}}</div>
-                </div>
-                <div class="property property-repository">
-                    <div class="key">{{tr "Repository:" /}}</div>
-                    <div class="value">
-                        <p>{{>repository_name}}</p>
-                        <div class="button button-info">
-                            <div class="icon client-about"></div>
-                        </div>
-                    </div>
-                </div>
-                {{if !contributors }}
-                {{else contributors.length == 1}}
-                <div class="property property-contributor">
-                    <div class="key">Contributor:</div>
-                    <div class="value">
-                        {{>contributors[0].name}}
-                        {{if contributors[0].email}}
-                        &nbsp&lt;{{>contributors[0].email}}&gt;
-                        {{/if}}
-                    </div>
-                </div>
-                {{else}}
-                <div class="property property-contributors">
-                    <div class="key">Contributors:</div>
-                    <div class="value">
-                        {{for contributors}}
-                        <div class="contributor">
-                            {{>name}}
-                            {{if email}}
-                            &nbsp&lt;{{>email}}&gt;
-                            {{/if}}
-                        </div>
-                        {{/for}}
-                    </div>
-                </div>
-                {{/if}}
-                {{/if}}
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_change_latency" type="text/html">
-            <div> <!-- for the renderer -->
-                <div class="info">
-                    <div>{{tr "Change latency for client "/}} <node key="client"></node></div>
-                </div>
-                <div class="container-min">
-                    <div class="container-value">
-                        {{tr "Min buffer: "/}}
-                        <a class="value">20ms</a>
-                    </div>
-                    <div class="container-slider">
-                        <div class="filler" style="width: 30%"></div>
-                        <div class="thumb container-tooltip" style="left: 30%">
-                            <div class="tooltip">
-                                <a>86%</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="container-max">
-                    <div class="container-value">
-                        {{tr "Max buffer: "/}}
-                        <a class="value">20ms</a>
-                    </div>
-                    <div class="container-slider">
-                        <div class="filler" style="width: 30%"></div>
-                        <div class="thumb container-tooltip" style="left: 30%">
-                            <div class="tooltip">
-                                <a>86%</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="buttons">
-                    <button class="btn btn-blue button-reset">{{tr "Reset" /}}</button>
-                    {{if have_flush}}
-                    <button class="btn btn-blue button-flush">{{tr "Flush buffer" /}}</button>
-                    {{/if}}
-                    <div class="spacer"></div>
-                    <button class="btn btn-danger button-cancel">{{tr "Cancel" /}}</button>
-                    <button class="btn btn-success button-close">{{tr "Close" /}}</button>
-                </div>
-            </div>
-        </script>
-
-        <!-- Permission overview -->
-        <script class="jsrender-template" id="tmpl_server_group_assignment" type="text/html">
-            <div class="group-assignment-list">
-                <a>{{tr "Changing groups of" /}}
-                    <node key="client"/>
-                </a>
-                <div class="group-list">
-                    {{for groups}}
-                    <div class="group-entry">
-                        <label class="checkbox {{if default}}disabled{{/if}}">
-                            <input type="checkbox" group-id="{{:id}}" {{if default}}default disabled="true" {{/if}}>
-                            <div class="mark"></div>
-                        </label>
-                        <node key="icon_{{>id}}"></node>
-                        <a>{{>name}} ({{>id}})</a>
-                    </div>
-                    {{/for}}
-                </div>
-            </div>
-            <div class="container-buttons">
-                <div class="btn btn-danger button-remove-all">{{tr "Remove all groups" /}}</div>
-                <div class="btn btn-success button-close">{{tr "Close" /}}</div>
-            </div>
-        </script>
-
         <!-- General management templates -->
         <script class="jsrender-template" id="tmpl_ban_list" type="text/html">
         <div> <!-- required for jquery -->
@@ -1888,54 +1724,6 @@
             </div>
         </script>
 
-        <script class="jsrender-template" id="tmpl_poke_popup" type="text/html">
-            <div class="container-poke">
-                <div class="container-servers"></div>
-                <div class="buttons">
-                    <div class="spacer"></div>
-                    <button class="btn btn-raised btn-primary button-close">{{tr "Close" /}}</button>
-                </div>
-            </div>
-        </script>
-        <script class="jsrender-template" id="tmpl_invite" type="text/html">
-            <div class="general-properties">
-                <div class="form-group property-type">
-                    <label>{{tr "Link type:" /}}</label>
-                    <select class="form-control">
-                        <option value="tea-web">{{tr "TeaWeb" /}}</option>
-                        <option value="tea-client">{{tr "TeaClient" /}}</option>
-                        <option value="teamspeak">{{tr "TeamSpeak" /}}</option>
-                    </select>
-                </div>
-                <div class="container-settings">
-                    <label>
-                        <div class="checkbox flag-direct-connect">
-                            <input type="checkbox">
-                            <div class="mark"></div>
-                        </div>
-
-                        <a>{{tr "Connect directly" /}}</a>
-                    </label>
-                    <label>
-                        <div class="checkbox flag-resolved-address">
-                            <input type="checkbox">
-                            <div class="mark"></div>
-                        </div>
-
-                        <a>{{tr "Use resolved address" /}}</a>
-                    </label>
-                </div>
-            </div>
-            <textarea class="text-output" readonly></textarea>
-            <div class="buttons">
-                <button class="btn btn-primary button-copy">
-                    <div class="icon client-copy"></div>
-                    {{tr "Copy" /}}
-                </button>
-                <button class="btn btn-primary button-close">{{tr "Close" /}}</button>
-            </div>
-        </script>
-
         <script class="jsrender-template" id="tmpl_query_create" type="text/html">
             <div class="query-create">
                 <a>{{tr "Set the login name for your Server Query account." /}}</a>
@@ -2035,255 +1823,6 @@
             </div>
         </script>
 
-        <script class="jsrender-template" id="tmpl_manage_bookmarks" type="text/html">
-            <div>
-                <div class="left">
-                    <div class="title" title="{{tr 'Your bookmarks' /}}">{{tr "Your bookmarks" /}}</div>
-                    <div class="container-bookmarks">
-                    </div>
-                    <div class="buttons">
-                        <button class="btn btn-danger button-delete" title="{{tr 'Delete' /}}">{{tr "Delete" /}}</button>
-                        <button class="btn btn-purple button-add-folder" title="{{tr 'Add Folder' /}}">{{tr "Add Folder" /}}</button>
-                        <button class="btn btn-success button-add-bookmark" title="{{tr 'Add Bookmark' /}}">{{tr "Add Bookmark" /}}</button>
-                    </div>
-                </div>
-                <div class="container-seperator vertical" seperator-id="seperator-bookmarks"></div>
-                <div class="right">
-                    <div class="header">
-                        <div class="container-name">{{tr "Your bookmarks" /}}</div>
-                        <div class="container-address"></div>
-                    </div>
-                    <div class="container-settings" data-simplebar data-simplebar-auto-hide="false">
-                        <div class="group">
-                            <div class="row">
-                                <div class="key">{{tr "Bookmark Name" /}}</div>
-                                <div class="value">
-                                    <div class="input-boxed">
-                                        <input class="input-bookmark-name">
-                                        <!--
-                                        <div class="container-tooltip">
-                                            <img src="img/icon_tooltip.svg"/>
-                                            <div class="tooltip">
-                                                <a>{{tr "The displayed name of this bookmark." /}}</a>
-                                            </div>
-                                        </div>
-                                        -->
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="key">{{tr "Connect Profile" /}}</div>
-                                <div class="value">
-                                    <div class="input-boxed">
-                                        <select class="input-connect-profile">
-                                        </select>
-                                        <!--
-                                        <div class="container-tooltip">
-                                            <img src="img/icon_tooltip.svg"/>
-                                            <div class="tooltip">
-                                                <a>{{tr "The profile which you're connection with when you're using the bookmark." /}}</a>
-                                            </div>
-                                        </div>
-                                        -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="group">
-                            <div class="row">
-                                <div class="key">{{tr "Server Address" /}}</div>
-                                <div class="value">
-                                    <div class="input-boxed">
-                                        <input class="input-server-address">
-                                        <!--
-                                        <div class="container-tooltip">
-                                            <img src="img/icon_tooltip.svg"/>
-                                            <div class="tooltip">
-                                                <a>{{tr "The server address of the bookmark. The port is separated via a colon" /}}</a>
-                                            </div>
-                                        </div>
-                                        -->
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="key">{{tr "Server Password" /}}</div>
-                                <div class="value">
-                                    <div class="input-boxed">
-                                        <input type="password" class="input-server-password">
-                                        <!--
-                                        <div class="container-tooltip">
-                                            <img src="img/icon_tooltip.svg"/>
-                                            <div class="tooltip">
-                                                <a>{{tr "The server port of the bookmark" /}}</a>
-                                            </div>
-                                        </div>
-                                        -->
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="key">{{tr "Default Channel" /}}</div>
-                                <div class="value">
-                                    <div class="input-boxed">
-                                        <input class="input-default-channel" placeholder="{{tr 'Not yet implemented' /}}" disabled>
-                                        <!--
-                                        <div class="container-tooltip">
-                                            <img src="img/icon_tooltip.svg"/>
-                                            <div class="tooltip">
-                                                <a>{{tr "The server port of the bookmark" /}}</a>
-                                            </div>
-                                        </div>
-                                        -->
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="key">{{tr "Channel Password" /}}</div>
-                                <div class="value">
-                                    <div class="input-boxed">
-                                        <input type="password" class="input-default-channel-password" placeholder="{{tr 'Not yet implemented' /}}" disabled>
-                                        <!--
-                                        <div class="container-tooltip">
-                                            <img src="img/icon_tooltip.svg"/>
-                                            <div class="tooltip">
-                                                <a>{{tr "The server port of the bookmark" /}}</a>
-                                            </div>
-                                        </div>
-                                        -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="group info">
-                            <div class="container-image">
-                                <img src="img/serveredit_1.png">
-                            </div>
-                            <div class="container-properties">
-                                <div class="row">
-                                    <a class="key">{{tr "Server name" /}}</a>
-                                    <div class="value server-name">
-                                        error: name
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <a class="key">{{tr "Server region" /}}</a>
-                                    <div class="value server-region">
-                                        error: region
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <a class="key">{{tr "Last ping" /}}</a>
-                                    <div class="value server-ping">
-                                        error: ping
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <a class="key">{{tr "Last client count" /}}</a>
-                                    <div class="value server-client-count">
-                                        error: last client
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <a class="key">{{tr "Your connection" /}}</a>
-                                    <div class="value server-connection-count">
-                                        error: connection count
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="buttons">
-                        <button class="btn btn-blue button-duplicate">{{tr "Duplicate" /}}</button>
-                        <button class="btn btn-success button-connect-tab">{{tr "Connect in a new tab" /}}</button>
-                        <button class="btn btn-success button-connect">{{tr "Connect" /}}</button>
-                    </div>
-                </div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_icon_select" type="text/html">
-            <div class="container-icons">
-                <div class="left">
-                    <div class="header">{{tr "Remote" /}}</div>
-                    <div class="content">
-                        <div class="container-icons-list">
-                            <div class="container-icons-remote {{if enable_select || enable_delete}}icon-select{{/if}}"></div>
-                            <div class="container-loading">
-                                <a>{{tr "loading..." /}}</a>
-                            </div>
-                            <div class="container-no-permissions">
-                                <a>{{tr "You dont have permissions the view the icons" /}}</a>
-                            </div>
-                            <div class="container-error">
-                                <a class="error-message">{{ŧr "An error occurred" /}}</a>
-                            </div>
-                        </div>
-                        <div class="container-buttons">
-                            {{if enable_upload}}
-                            <button class="btn btn-success button-upload">{{tr "Upload" /}}</button>
-                            {{/if}}
-                            {{if enable_delete}}
-                            <button class="btn btn-danger button-delete">{{tr "Delete" /}}</button>
-                            {{/if}}
-                        </div>
-                    </div>
-                </div>
-                <div class="right">
-                    <div class="header">{{tr "Local" /}}</div>
-                    <div class="content">
-                        <div class="container-icons-list">
-                            <div class="container-icons-local {{if enable_select}}icon-select{{/if}}"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="container-buttons">
-                <button class="btn btn-primary btn-raised button-reload">{{tr "Reload" /}}</button>
-                <div class="spacer"></div>
-                {{if enable_select}}
-                <button class="btn btn-success btn-raised button-select-no-icon">{{tr "Remove icon" /}}</button>
-                <button class="btn btn-success btn-raised button-select"><a>{{tr "Select " /}}</a>
-                    <div class="selected-item-container"></div>
-                </button>
-                {{/if}}
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_icon_upload" type="text/html">
-            <div class="container-select">
-                <div class="container-icons"></div>
-                <div class="container-buttons">
-                    <div class="buttons-manage">
-                        <button class="btn btn-primary btn-raised button-add">{{tr "Add icon" /}}</button>
-                        <button class="btn btn-danger button-remove">{{tr "Remove selected" /}}</button>
-                    </div>
-                    <button class="btn btn-primary btn-raised button-upload"></button>
-
-                    <input type="file" class="input-file-upload" accept="image/*" multiple/>
-                </div>
-            </div>
-            <div class="container-upload">
-                <div class="container-error">
-                    <div class="error-message">You're not connected. Failed to upload icons</div>
-                    <button type="button" class="btn btn-danger btn-raised button-upload-abort">{{tr "abort" /}}
-                    </button>
-                </div>
-                <div class="container-process"></div>
-                <div class="container-info">
-                    <div class="container-info-uploaded">{{tr "Uploaded icons (total | successfully | error): "
-                        /}}
-                    </div>
-                    <div class="uploaded-statistics"></div>
-                </div>
-                <div class="container-success">
-                    <div class="message">Uploaded 10 icons successfully</div>
-                    <button type="button" class="btn btn-success btn-raised button-upload-abort">{{tr "okey" /}}
-                    </button>
-                </div>
-            </div>
-        </script>
-
         <script class="jsrender-template" id="tmpl_avatar_list" type="text/html">
             <div class="modal-avatar-list">
                 <div class="container-list">
@@ -2343,104 +1882,6 @@
                         <a>{{tr "Please select a user" /}}</a>
                     </div>
                 </div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_avatar_upload" type="text/html">
-            <div class="modal-avatar-upload">
-                <div class="container-upload">
-                    <div class="bmd-form-group">
-                        <button type="button" class="btn btn-primary btn-raised button-select">{{tr "Select avatar"
-                            /}}
-                        </button>
-                        <p>
-                            {{tr "Supported image types: SVG, PNG, JPEG" /}}<br>
-                            {{tr "Supported image sizes: any" /}}
-                        </p>
-                        <input type="file" class="file-inputs" accept=".svg, .png, .jpg, .jpeg">
-                    </div>
-                    <div class="bmd-form-group">
-                        <button type="button" class="btn btn-success button-upload">{{tr "Upload avatar" /}}</button>
-                        <button type="button" class="btn btn-warning button-delete">{{tr "Delete avatar" /}}</button>
-                        <button type="button" class="btn btn-danger button-cancel">{{tr "Cancel" /}}</button>
-                    </div>
-                </div>
-                <div class="container-preview">
-                    <a class="title">{{tr "Preview" /}}</a>
-                    <div class="previews">
-                        <div class="preview preview-client-info">
-                            <div class="container-avatar">
-                                <div class="avatar">
-                                    <img src="#">
-                                </div>
-                            </div>
-                            <a>{{tr "Client info" /}}</a>
-                        </div>
-                        <div class="preview preview-chat">
-                            <div class="container-avatar">
-                                <div class="avatar">
-                                    <img src="#">
-                                </div>
-                            </div>
-                            <a>{{tr "Chat avatar" /}}</a>
-                        </div>
-                        <div class="preview preview-chat-entry">
-                            <div class="container-avatar">
-                                <div class="avatar">
-                                    <img src="#">
-                                </div>
-                            </div>
-                            <a>{{tr "Chat list avatar" /}}</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_about" type="text/html">
-            <div class="container-left">
-                <div class="container-logo">
-                    <img src="https://teaspeak.de/img/teaspeak_cup_animated.png" alt="teacup-animated" />
-                </div>
-                <div class="copyright">Copyright (c) 2017-2020 TeaSpeak<br>(Markus Hadenfeldt)</div>
-                <div class="versions">
-                    {{if client}}
-                    <div class="version version-native">
-                        <a>TeaClient:</a><a class="value version-client">{{>version_client}}</a>
-                    </div>
-                    <div class="version version-web">
-                        <a>UI:</a><a class="value">{{>version_ui}}</a>
-                    </div>
-                    {{else}}
-                    <div class="version version-web">
-                        <a>TeaWeb:</a><a class="value">{{>version_client}}</a>
-                    </div>
-                    {{/if}}
-                </div>
-            </div>
-            <div class="container-right">
-                {{if client}}
-                <h1>TeaSpeak-Client build <span class="version-client">{{>version_client}}</span><!-- ({{>version_timestamp}}) --></h1>
-                {{else}}
-                <h1>TeaSpeak-Web build {{>version_client}} <!-- ({{>version_timestamp}}) --></h1>
-                <!-- We currently dont have a timestamp for the web client -->
-                {{/if}}
-                <h2>{{tr "Special thanks" /}}</h2>
-                <p>
-                    "Яedeemer" (Janni K.)<br>
-                    Chromatic-Solutions (Sofian) for the lovely dark design
-                </p>
-                <h2>{{tr "Contact" /}}</h2>
-                <p>
-                    {{tr "E-Mail:" /}} <a href="mailto:{{if client}}client{{else}}web{{/if}}.support@teaspeak.de">{{if client}}client{{else}}web{{/if}}.support@teaspeak.de</a><br>
-                    {{tr "WWW:" /}} <a href="https://teaspeak.de" target="_blank">https://teaspeak.de</a><br>
-                    {{tr "Community:" /}} <a href="https://teaspeak.de" target="_blank">https://forum.teaspeak.de</a>
-                </p>
-                <h2>{{tr "License" /}}</h2>
-                <p>
-                    The {{if client}}TeaClient{{else}}TeaWeb{{/if}} application is licensed by MPL-2.0<br>
-                    More information here: <a href="https://github.com/TeaSpeak/TeaWeb/blob/master/LICENSE.TXT" target="_blank">https://github.com/TeaSpeak/TeaWeb/blob/master/LICENSE.TXT</a>
-                </p>
             </div>
         </script>
 
@@ -2722,255 +2163,6 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_channel_info" type="text/html">
-            <div> <!-- Important for the renderer -->
-                <div class="row">
-                    <div class="column channel-type">
-                        <a class="title">{{tr "Channel Type" /}}</a>
-                        <div class="value">error: channel type</div>
-                    </div>
-                    <div class="column chat-mode">
-                        <a class="title">{{tr "Chat mode" /}}</a>
-                        <div class="value">error: chat mode</div>
-                    </div>
-                    <div class="column current-clients">
-                        <a class="title">{{tr "Current clients" /}}</a>
-                        <div class="value">error: current clients</div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="column audio-codec">
-                        <a class="title">{{tr "Audio Codec" /}}</a>
-                        <div class="value">error: audio codec</div>
-                    </div>
-                    <div class="column audio-encrypted">
-                        <a class="title">{{tr "Audio encrypted" /}}</a>
-                        <div class="value">error: audio encrypted</div>
-                    </div>
-                    <div class="column flag-password">
-                        <a class="title">{{tr "Password protected" /}}</a>
-                        <div class="value">error: password protected</div>
-                    </div>
-                </div>
-                <div class="row topic"> <!-- only visible if set! -->
-                    <div class="column">
-                        <a class="title">{{tr "Topic" /}}</a>
-                        <div class="value">error: channel topic</div>
-                    </div>
-                </div>
-                <div class="container-description"> <!-- only visible if set -->
-                    <a class="title">
-                        {{tr "Description" /}}
-                        <div class="button-copy">
-                            <div class="icon client-copy"></div>
-                        </div>
-                    </a>
-                    <div class="value">
-                        error: channel description
-                    </div>
-                    <div class="no-value">{{tr "Channel has no description" /}}</div>
-                </div>
-                <div class="container-buttons">
-                    <button class="btn btn-success button-update">{{tr "Refresh" /}}</button>
-                </div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_server_info" type="text/html">
-            <div> <!-- required for the renderer -->
-                <div class="container-top hostbanner">
-                </div>
-                <div class="container-body">
-                    <div class="group">
-                        <div class="container-image">
-                            <img src="img/serveredit_1.png">
-                        </div>
-                        <div class="container-properties">
-                            <div class="row">
-                                <a class="key">{{tr "Server name" /}}</a>
-                                <div class="value server-name">
-                                    error: name
-                                </div>
-                            </div>
-                            <div class="row">
-                                <a class="key">{{tr "Server region" /}}</a>
-                                <div class="value server-region">
-                                    error: region
-                                </div>
-                            </div>
-                            <div class="row">
-                                <a class="key">{{tr "Slots" /}}</a>
-                                <div class="value server-slots">
-                                    error: slots
-                                </div>
-                            </div>
-                            <div class="row">
-                                <a class="key">{{tr "First run" /}}</a>
-                                <div class="value server-first-run">
-                                    error: first run
-                                </div>
-                            </div>
-                            <div class="row">
-                                <a class="key">{{tr "Uptime" /}}</a>
-                                <div class="value server-uptime">
-                                    error: uptime
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="group reverse">
-                        <div class="container-image">
-                            <img src="img/serveredit_2.png">
-                        </div>
-                        <div class="container-properties">
-                            <div class="row">
-                                <a class="key">{{tr "IP Address" /}}</a>
-                                <div class="value server-ip">
-                                    error: ip
-                                </div>
-                            </div>
-                            <div class="row">
-                                <a class="key">{{tr "Version" /}}</a>
-                                <div class="value server-version">
-                                    <div class="container-tooltip">
-                                        <img src="img/icon_tooltip.svg"/>
-                                        <div class="tooltip">
-                                            <a></a>
-                                        </div>
-                                    </div>
-                                    <a></a>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <a class="key">{{tr "Platform" /}}</a>
-                                <div class="value server-platform">
-                                    error: platform
-                                </div>
-                            </div>
-                            <div class="container-network">
-                                <div class="container-button">
-                                    <button class="btn btn-purple button-show-bandwidth">{{tr "Show Bandwidth" /}}</button>
-                                </div>
-                                <div class="right">
-                                    <div class="row">
-                                        <a class="key">{{tr "Average ping" /}}</a>
-                                        <div class="value server-ping">
-                                            error: average ping
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <a class="key">{{tr "Average packet loss" /}}</a>
-                                        <div class="value server-packet-loss">
-                                            error: average packet loss
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="group">
-                        <div class="container-image">
-                            <img src="img/serveredit_3.png">
-                        </div>
-                        <div class="container-properties">
-                            <div class="row">
-                                <a class="key">{{tr "Global unique ID" /}}</a>
-                                <div class="value server-unique-id">
-                                    error: unique id
-                                </div>
-                            </div>
-                            <div class="row">
-                                <a class="key">{{tr "Current Channels" /}}</a>
-                                <div class="value server-channel-count">
-                                    error: channel count
-                                </div>
-                            </div>
-                            <div class="row">
-                                <a class="key">{{tr "Voice data encryption" /}}</a>
-                                <div class="value server-voice-encryption">
-                                    error: voice encryption
-                                </div>
-                            </div>
-                            <div class="row">
-                                <a class="key">{{tr "Minimal security level" /}}</a>
-                                <div class="value server-min-security-level">
-                                    error: security level
-                                </div>
-                            </div>
-                            <div class="row">
-                                <a class="key">{{tr "Complains until ban" /}}</a>
-                                <div class="value server-complains">
-                                    error: complains
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="container-buttons">
-                    <button class="btn btn-success button-update">{{tr "Refresh" /}}</button>
-                    <button class="btn btn-danger button-close">{{tr "Close" /}}</button>
-                </div>
-            </div>
-        </script>
-        <script class="jsrender-template" id="tmpl_server_info_bandwidth" type="text/html">
-            <div> <!-- required for the renderer -->
-                <div class="top">
-                    <div class="container-image">
-                        <img src="img/serveredit_3.png"> <!-- TODO Get the right image! -->
-                    </div>
-                    <div class="container-stats">
-                        <div class="statistic statistic-packets">
-                            <a>{{tr "Transmitted packets" /}}</a>
-                            <div class="values">
-                                <a class="upload" title="{{tr 'Upload bandwidth' /}}">error: upload</a>
-                                <a class="download" title="{{tr 'Download bandwidth' /}}">error: download</a>
-                            </div>
-                        </div>
-                        <div class="statistic statistic-bytes">
-                            <a>{{tr "Transmitted bytes" /}}</a>
-                            <div class="values">
-                                <a class="upload" title="{{tr 'Upload bandwidth' /}}">error: upload</a>
-                                <a class="download" title="{{tr 'Download bandwidth' /}}">error: download</a>
-                            </div>
-                        </div>
-                        <div class="statistic statistic-ft-bytes">
-                            <a>{{tr "Transferred file transfer bytes" /}}</a>
-                            <div class="values">
-                                <a class="upload" title="{{tr 'Upload bandwidth' /}}">error: upload</a>
-                                <a class="download" title="{{tr 'Download bandwidth' /}}">error: download</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="bottom">
-                    <div class="statistic statistic-bandwidth">
-                        <a class="title">{{tr "Current bandwidth" /}}</a>
-                        <div class="body">
-                            <div class="container-canvas">
-                                <canvas></canvas>
-                            </div>
-                            <div class="values">
-                                <a class="upload" title="{{tr 'Upload bandwidth' /}}">N Bytes/s</a>
-                                <a class="download" title="{{tr 'Download bandwidth' /}}">N Bytes/s</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="statistic statistic-ft-bandwidth">
-                        <a class="title">{{tr "Current file transfer bandwidth" /}}</a>
-                        <div class="body">
-                            <div class="container-canvas">
-                                <canvas></canvas>
-                            </div>
-                            <div class="values">
-                                <a class="upload" title="{{tr 'Upload bandwidth' /}}">N Bytes/s</a>
-                                <a class="download" title="{{tr 'Download bandwidth' /}}">N Bytes/s</a>
                             </div>
                         </div>
                     </div>

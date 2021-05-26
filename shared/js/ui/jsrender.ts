@@ -1,7 +1,27 @@
 import * as loader from "tc-loader";
-import * as moment from "moment";
+import moment from "moment";
 import {LogCategory, logError, logTrace} from "../log";
 import {tr} from "tc-shared/i18n/localize";
+import TemplateFile from "../../html/templates.html";
+import TemplateMusicManage from "../../html/templates/modal/musicmanage.html";
+import TemplateNewComer from "../../html/templates/modal/newcomer.html";
+
+function initializeHtml(html: string) {
+    const hangingPoint = document.getElementById("templates");
+
+    const node = document.createElement("html");
+    node.innerHTML = html;
+    for(const element of node.getElementsByClassName("jsrender-template")) {
+        if(!$.templates(element.id, element.innerHTML)) {
+            logError(LogCategory.GENERAL, tr("Failed to setup cache for js renderer template %s!"), element.id);
+        } else {
+            logTrace(LogCategory.GENERAL, tr("Successfully loaded jsrender template %s"), element.id);
+
+            const elem = document.createElement("div");
+            elem.id = element.id;
+            hangingPoint?.appendChild(elem);        }
+    }
+}
 
 export function setupJSRender() : boolean {
     if(!$.views) {
@@ -25,11 +45,8 @@ export function setupJSRender() : boolean {
         return /* @tr-ignore */ tr(args[0]);
     });
 
-    $(".jsrender-template").each((idx, _entry) => {
-        if(!$.templates(_entry.id, _entry.innerHTML)) {
-            logError(LogCategory.GENERAL, tr("Failed to setup cache for js renderer template %s!"), _entry.id);
-        } else
-            logTrace(LogCategory.GENERAL, tr("Successfully loaded jsrender template %s"), _entry.id);
-    });
+    initializeHtml(TemplateFile);
+    initializeHtml(TemplateMusicManage);
+    initializeHtml(TemplateNewComer);
     return true;
 }

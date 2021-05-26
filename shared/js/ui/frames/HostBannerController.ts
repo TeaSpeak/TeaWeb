@@ -1,6 +1,6 @@
 import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
+import {HostBannerUiEvents} from "tc-shared/ui/frames/HostBannerDefinitions";
 import {Registry} from "tc-shared/events";
-import {HostBannerInfoMode, HostBannerUiEvents} from "tc-shared/ui/frames/HostBannerDefinitions";
 
 export class HostBannerController {
     readonly uiEvents: Registry<HostBannerUiEvents>;
@@ -38,15 +38,8 @@ export class HostBannerController {
     }
 
     protected initializeConnectionHandler(handler: ConnectionHandler) {
-        this.listenerConnection.push(handler.channelTree.server.events.on("notify_properties_updated", event => {
-            if(
-                "virtualserver_hostbanner_url" in event.updated_properties ||
-                "virtualserver_hostbanner_mode" in event.updated_properties ||
-                "virtualserver_hostbanner_gfx_url" in event.updated_properties ||
-                "virtualserver_hostbanner_gfx_interval" in event.updated_properties
-            ) {
-                this.notifyHostBanner();
-            }
+        this.listenerConnection.push(handler.channelTree.server.events.on("notify_host_banner_updated", () => {
+            this.notifyHostBanner();
         }));
 
         this.listenerConnection.push(handler.events().on("notify_connection_state_changed", event => {
@@ -58,39 +51,11 @@ export class HostBannerController {
 
     private notifyHostBanner() {
         if(this.currentConnection?.connected) {
-            const properties = this.currentConnection.channelTree.server.properties;
-            if(properties.virtualserver_hostbanner_gfx_url) {
-                let mode: HostBannerInfoMode;
-                switch (properties.virtualserver_hostbanner_mode) {
-                    case 0:
-                        mode = "original";
-                        break;
-
-                    case 1:
-                        mode = "resize";
-                        break;
-
-                    case 2:
-                    default:
-                        mode = "resize-ratio";
-                        break;
-                }
-
-                this.uiEvents.fire_react("notify_host_banner", {
-                    banner: {
-                        status: "set",
-
-                        linkUrl: properties.virtualserver_hostbanner_url,
-                        mode: mode,
-
-                        imageUrl: properties.virtualserver_hostbanner_gfx_url,
-                        updateInterval: properties.virtualserver_hostbanner_gfx_interval,
-                    }
-                });
-                return;
-            }
+            this.uiEvents.fire_react("notify_host_banner", {
+                banner: this.currentConnection.channelTree.server.generateHostBannerInfo()
+            });
+        } else {
+            this.uiEvents.fire_react("notify_host_banner", { banner: { status: "none" }});
         }
-
-        this.uiEvents.fire_react("notify_host_banner", { banner: { status: "none" }});
     }
 }

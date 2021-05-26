@@ -4,6 +4,7 @@ import {Registry} from "tc-shared/events";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import _ = require("lodash");
+import {tra} from "tc-shared/i18n/localize";
 
 export type PlaylistEntry = {
     type: "song",
@@ -169,11 +170,11 @@ export abstract class SubscribedPlaylist {
      *
      * @param forceQuery Forcibly query even we're subscribed and already aware of all songs.
      */
-    abstract async querySongs(forceQuery: boolean) : Promise<void>;
+    abstract querySongs(forceQuery: boolean) : Promise<void>;
 
-    abstract async addSong(url: string, urlLoader: "any" | "youtube" | "ffmpeg" | "channel", targetSongId: number | 0, mode?: "before" | "after" | "last") : Promise<void>;
-    abstract async deleteEntry(entryId: number) : Promise<void>;
-    abstract async reorderEntry(entryId: number, targetEntryId: number, mode: "before" | "after") : Promise<void>;
+    abstract addSong(url: string, urlLoader: "any" | "youtube" | "ffmpeg" | "channel", targetSongId: number | 0, mode?: "before" | "after" | "last") : Promise<void>;
+    abstract deleteEntry(entryId: number) : Promise<void>;
+    abstract reorderEntry(entryId: number, targetEntryId: number, mode: "before" | "after") : Promise<void>;
 
     getStatus() : Readonly<SubscribedPlaylistStatus> {
         return this.status;
@@ -200,7 +201,7 @@ class InternalSubscribedPlaylist extends SubscribedPlaylist {
         this.listenerConnection = [];
 
         const serverConnection = this.handle.connection.serverConnection;
-        this.listenerConnection.push(serverConnection.command_handler_boss().register_explicit_handler("notifyplaylistsongadd", command => {
+        this.listenerConnection.push(serverConnection.getCommandHandler().registerCommandHandler("notifyplaylistsongadd", command => {
             const playlistId = parseInt(command.arguments[0]["playlist_id"]);
             if(isNaN(playlistId)) {
                 logWarn(LogCategory.NETWORKING, tr("Received a playlist song add notify with an invalid playlist id (%o)"), command.arguments[0]["playlist_id"]);
@@ -219,7 +220,7 @@ class InternalSubscribedPlaylist extends SubscribedPlaylist {
             });
         }));
 
-        this.listenerConnection.push(serverConnection.command_handler_boss().register_explicit_handler("notifyplaylistsongremove", command => {
+        this.listenerConnection.push(serverConnection.getCommandHandler().registerCommandHandler("notifyplaylistsongremove", command => {
             const playlistId = parseInt(command.arguments[0]["playlist_id"]);
             if(isNaN(playlistId)) {
                 logWarn(LogCategory.NETWORKING, tr("Received a playlist song remove notify with an invalid playlist id (%o)"), command.arguments[0]["playlist_id"]);
@@ -242,7 +243,7 @@ class InternalSubscribedPlaylist extends SubscribedPlaylist {
             });
         }));
 
-        this.listenerConnection.push(serverConnection.command_handler_boss().register_explicit_handler("notifyplaylistsongreorder", command => {
+        this.listenerConnection.push(serverConnection.getCommandHandler().registerCommandHandler("notifyplaylistsongreorder", command => {
             const playlistId = parseInt(command.arguments[0]["playlist_id"]);
             if(isNaN(playlistId)) {
                 logWarn(LogCategory.NETWORKING, tr("Received a playlist song reorder notify with an invalid playlist id (%o)"), command.arguments[0]["playlist_id"]);
@@ -282,7 +283,7 @@ class InternalSubscribedPlaylist extends SubscribedPlaylist {
             });
         }));
 
-        this.listenerConnection.push(serverConnection.command_handler_boss().register_explicit_handler("notifyplaylistsongloaded", command => {
+        this.listenerConnection.push(serverConnection.getCommandHandler().registerCommandHandler("notifyplaylistsongloaded", command => {
             const playlistId = parseInt(command.arguments[0]["playlist_id"]);
             if(isNaN(playlistId)) {
                 logWarn(LogCategory.NETWORKING, tr("Received a playlist song loaded notify with an invalid playlist id (%o)"), command.arguments[0]["playlist_id"]);
@@ -469,7 +470,7 @@ export class PlaylistManager {
         this.connection = connection;
         this.listenerConnection = [];
 
-        this.listenerConnection.push(connection.serverConnection.command_handler_boss().register_explicit_handler("notifyplaylistsonglist", command => {
+        this.listenerConnection.push(connection.serverConnection.getCommandHandler().registerCommandHandler("notifyplaylistsonglist", command => {
             const playlistId = parseInt(command.arguments[0]["playlist_id"]);
             if(isNaN(playlistId)) {
                 logWarn(LogCategory.NETWORKING, tr("Received playlist song list notify with an invalid playlist id (%o)"), command.arguments[0]["playlist_id"]);

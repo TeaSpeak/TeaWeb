@@ -69,8 +69,17 @@ export interface VideoClient {
     showPip(broadcastType: VideoBroadcastType) : Promise<void>;
 }
 
+export type VideoBroadcastViewer = {
+    clientId: number,
+    clientName: string,
+    clientUniqueId: string,
+    clientDatabaseId: number,
+};
+
 export interface LocalVideoBroadcastEvents {
     notify_state_changed: { oldState: LocalVideoBroadcastState, newState: LocalVideoBroadcastState },
+    notify_clients_joined: { clients: VideoBroadcastViewer[] },
+    notify_clients_left: { clientIds: number[] },
 }
 
 export type LocalVideoBroadcastState = {
@@ -148,6 +157,8 @@ export interface LocalVideoBroadcast {
     getConstraints() : VideoBroadcastConfig | undefined;
 
     stopBroadcasting();
+
+    getViewer() : VideoBroadcastViewer[];
 }
 
 export interface VideoConnection {

@@ -1,0 +1,10 @@
+.countryContainer {
+    display: inline-flex;
+    flex-direction: row;
+    justify-content: flex-start;
+
+    .icon {
+        align-self: center;
+        margin-right: .25em;
+    }
+}

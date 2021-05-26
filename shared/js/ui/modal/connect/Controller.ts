@@ -17,10 +17,10 @@ import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {parseServerAddress} from "tc-shared/tree/Server";
 import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
-import * as ipRegex from "ip-regex";
 import {UiVariableProvider} from "tc-shared/ui/utils/Variable";
 import {createIpcUiVariableProvider} from "tc-shared/ui/utils/IpcVariable";
 import {spawnModal} from "tc-shared/ui/react-elements/modal";
+import ipRegex from "ip-regex";
 
 const kRegexDomain = /^(localhost|((([a-zA-Z0-9_-]{0,63}\.){0,253})?[a-zA-Z0-9_-]{0,63}\.[a-zA-Z]{2,64}))$/i;
 

@@ -35,6 +35,10 @@
     a[href], a[href]:visited {
         color: var(--footer-text)!important;
     }
+
+    .source {
+        margin-left: .5em;
+    }
 }
 
 .rtcStatus {

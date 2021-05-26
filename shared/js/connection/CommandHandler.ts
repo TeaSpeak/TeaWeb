@@ -1,6 +1,6 @@
 import {LogCategory, logError, logInfo, logWarn} from "../log";
 import {AbstractServerConnection, CommandOptions, ServerCommand} from "../connection/ConnectionBase";
-import {Sound} from "../sound/Sounds";
+import {Sound} from "../audio/Sounds";
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {createErrorModal, createInfoModal, createInputModal, createModal} from "../ui/elements/Modal";
 import {
@@ -13,7 +13,6 @@ import {
 } from "../tree/Client";
 import {ConnectionHandler, ConnectionState, DisconnectReason, ViewReasonId} from "../ConnectionHandler";
 import {formatMessage} from "../ui/frames/chat";
-import {spawnPoke} from "../ui/modal/ModalPoke";
 import {AbstractCommandHandler, AbstractCommandHandlerBoss} from "../connection/AbstractCommandHandler";
 import {batch_updates, BatchUpdateType, flush_batched_updates} from "../ui/react-elements/ReactComponentBase";
 import {OutOfViewClient} from "../ui/frames/side/PrivateConversationController";
@@ -23,6 +22,7 @@ import {ErrorCode} from "../connection/ErrorCode";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {ChannelEntry} from "tc-shared/tree/Channel";
 import {EventClient} from "tc-shared/connectionlog/Definitions";
+import {spawnPokeModal} from "tc-shared/ui/modal/poke/Controller";
 
 export class ServerConnectionCommandBoss extends AbstractCommandHandlerBoss {
     constructor(connection: AbstractServerConnection) {
@@ -487,7 +487,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             client = tree.findClient(parseInt(entry["clid"]));
 
             if(!client) {
-                if(parseInt(entry["client_type_exact"]) == ClientType.CLIENT_MUSIC) {
+                if(parseInt(entry["client_type_exact"]) == 4) {
                     client = new MusicClientEntry(parseInt(entry["clid"]), entry["client_nickname"]) as any;
                 } else {
                     client = new ClientEntry(parseInt(entry["clid"]), entry["client_nickname"]);
@@ -501,7 +501,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 tree.moveClient(client, channel);
             }
 
-            if(this.connection_handler.areQueriesShown() || client.properties.client_type != ClientType.CLIENT_QUERY) {
+            if(this.connection_handler.areQueriesShown() || client.getClientType() !== ClientType.CLIENT_QUERY) {
                 const own_channel = this.connection.client.getClient().currentChannel();
                 this.connection_handler.log.log(channel == own_channel ? "client.view.enter.own.channel" : "client.view.enter", {
                     channel_from: old_channel ? old_channel.log_data() : undefined,
@@ -584,7 +584,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             }
 
             const targetChannelId = parseInt(entry["ctid"]);
-            if(this.connection_handler.areQueriesShown() || client.properties.client_type != ClientType.CLIENT_QUERY) {
+            if(this.connection_handler.areQueriesShown() || client.getClientType() !== ClientType.CLIENT_QUERY) {
                 const own_channel = this.connection.client.getClient().currentChannel();
                 let channel_from = tree.findChannel(entry["cfid"]);
                 let channel_to = tree.findChannel(targetChannelId);
@@ -667,7 +667,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 entry.getVoiceClient()?.abortReplay();
             }
         } else {
-            client.speaking = false;
+            client.getVoiceClient()?.abortReplay();
         }
 
         const own_channel = this.connection.client.getClient().currentChannel();
@@ -982,10 +982,11 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
     handleNotifyClientPoke(json) {
         json = json[0];
-        spawnPoke(this.connection_handler, {
-            id: parseInt(json["invokerid"]),
-            name: json["invokername"],
-            unique_id: json["invokeruid"]
+
+        spawnPokeModal(this.connection_handler, {
+            clientId: parseInt(json["invokerid"]),
+            clientName: json["invokername"],
+            clientUniqueId: json["invokeruid"]
         }, json["msg"]);
 
         this.connection_handler.log.log("client.poke.received", {

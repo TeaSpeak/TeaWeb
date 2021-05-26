@@ -5,7 +5,7 @@ import {Button} from "tc-shared/ui/react-elements/Button";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import {ClientEntry, MusicClientEntry} from "tc-shared/tree/Client";
-import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
+import {InternalModal} from "tc-shared/ui/react-elements/modal/Definitions";
 
 const cssStyle = require("./ModalChangeVolume.scss");
 

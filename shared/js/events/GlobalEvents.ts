@@ -1,8 +1,8 @@
 import {ConnectionHandler} from "../ConnectionHandler";
 import {Registry} from "../events";
 import {VideoBroadcastType} from "tc-shared/connection/VideoConnection";
+import {PermissionEditorTab} from "tc-shared/ui/modal/permission/ModalDefinitions";
 
-export type PermissionEditorTab = "groups-server" | "groups-channel" | "channel" | "client" | "client-channel";
 export interface ClientGlobalControlEvents {
     /* open a basic window */
     action_open_window: {

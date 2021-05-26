@@ -10,7 +10,6 @@ import {
     VideoPreviewStatus,
     VideoSourceState
 } from "tc-shared/ui/modal/video-source/Definitions";
-import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {BoxedInputField, Select} from "tc-shared/ui/react-elements/InputField";
 import {Button} from "tc-shared/ui/react-elements/Button";
@@ -20,6 +19,7 @@ import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
 import {Tab, TabEntry} from "tc-shared/ui/react-elements/Tab";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {ScreenCaptureDevice} from "tc-shared/video/VideoSource";
+import {InternalModal} from "tc-shared/ui/react-elements/modal/Definitions";
 
 const cssStyle = require("./Renderer.scss");
 const ModalEvents = React.createContext<Registry<ModalVideoSourceEvents>>(undefined);

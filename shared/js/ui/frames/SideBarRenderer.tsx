@@ -11,6 +11,7 @@ import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
 import {MusicBotRenderer} from "tc-shared/ui/frames/side/MusicBotRenderer";
 import {ConversationPanel} from "tc-shared/ui/frames/side/AbstractConversationRenderer";
 import React = require("react");
+import {useRegistry} from "tc-shared/ui/react-elements/Helper";
 
 const cssStyle = require("./SideBarRenderer.scss");
 
@@ -29,38 +30,45 @@ function useContentData<T extends SideBarType>(type: T) : SideBarTypeData[T] {
 
 const ContentRendererChannel = () => {
     const contentData = useContentData("channel");
-    if(!contentData) { return null; }
+    const events = useRegistry(contentData?.events);
+
+    if(!contentData || !events) { return null; }
 
     return (
         <ChannelBarRenderer
             key={"channel"}
-            events={contentData.events}
+            events={events}
         />
     );
 };
 
 const ContentRendererServer = () => {
     const contentData = useContentData("server");
-    if(!contentData) { return null; }
+    const events = useRegistry(contentData?.chatEvents);
+
+    if(!contentData || !events) { return null; }
 
     return (
         <ConversationPanel
             key={"server"}
-            events={contentData.chatEvents}
+            events={events}
             handlerId={contentData.handlerId}
             messagesDeletable={true}
             noFirstMessageOverlay={false}
+            popoutable={true}
         />
     );
 };
 
 const ContentRendererPrivateConversation = () => {
     const contentData = useContentData("private-chat");
-    if(!contentData) { return null; }
+    const events = useRegistry(contentData?.events);
+
+    if(!contentData || !events) { return null; }
 
     return (
         <PrivateConversationsPanel
-            events={contentData.events}
+            events={events}
             handlerId={contentData.handlerId}
         />
     );
@@ -68,23 +76,26 @@ const ContentRendererPrivateConversation = () => {
 
 const ContentRendererClientInfo = () => {
     const contentData = useContentData("client-info");
-    if(!contentData) { return null; }
+    const events = useRegistry(contentData?.events);
+    if(!contentData || !events) { return null; }
 
     return (
         <ClientInfoRenderer
-            events={contentData.events}
+            events={events}
         />
     );
 };
 
 const ContentRendererMusicManage = () => {
     const contentData = useContentData("music-manage");
-    if(!contentData) { return null; }
+    const botEvents = useRegistry(contentData?.botEvents);
+    const playlistEvents = useRegistry(contentData?.playlistEvents);
+    if(!contentData || !botEvents || !playlistEvents) { return null; }
 
     return (
         <MusicBotRenderer
-            botEvents={contentData.botEvents}
-            playlistEvents={contentData.playlistEvents}
+            botEvents={botEvents}
+            playlistEvents={playlistEvents}
         />
     );
 };

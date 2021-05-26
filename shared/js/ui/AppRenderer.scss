@@ -11,72 +11,73 @@
     width: 100%;
 
     padding: 5px;
+}
 
-    /* TODO: Move this into the control bar? */
-    .controlBar {
-        z-index: 200;
+/* TODO: Move this into the control bar? */
+.controlBar {
+    z-index: 200;
 
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
 
-        flex-shrink: 0;
-        flex-grow: 0;
+    flex-shrink: 0;
+    flex-grow: 0;
 
-        border-radius: 5px;
+    border-radius: 5px;
 
-        height: 2em;
-        width: 100%;
-    }
+    height: 2em;
+    width: 100%;
+}
 
-    .mainContainer {
-        display: flex;
-        flex-direction: column;
-        justify-content: stretch;
+.mainContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
 
-        position: relative;
+    position: relative;
 
-        flex-shrink: 1;
+    flex-shrink: 1;
 
-        height: 100%;
-        min-height: 400px;
+    height: 100%;
+    min-height: 400px;
 
-        margin-top: 5px;
-    }
+    margin-top: 5px;
+}
 
-    .channelTreeAndSidebar {
-        display: flex;
-        flex-direction: row;
-        justify-content: stretch;
+.channelTreeAndSidebar {
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
 
-        min-height: 27em;
-    }
+    background: var(--app-background);
+    min-height: 27em;
+}
 
-    .channelTree {
-        display: flex;
-        flex-direction: column;
-        justify-content: stretch;
+.channelTree {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
 
-        background: var(--channel-tree-background);
-        min-width: 200px;
-        min-height: 100px;
+    background: var(--channel-tree-background);
+    min-width: 200px;
+    min-height: 100px;
 
-        overflow: hidden;
-        border-radius: 5px;
-    }
+    overflow: hidden;
+    border-radius: 5px;
+}
 
-    .sideBar {
-        min-width: 350px;
-    }
+.sideBar {
+    min-width: 350px;
+}
 
-    .containerLog {
-        display: flex;
-        flex-direction: row;
-        justify-content: stretch;
+.containerLog {
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
 
-        flex-shrink: 1;
-        flex-grow: 1;
+    flex-shrink: 1;
+    flex-grow: 1;
 
-        min-height: 0;
-    }
+    min-height: 0;
 }

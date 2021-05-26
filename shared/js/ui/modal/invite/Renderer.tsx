@@ -14,7 +14,7 @@ import {copyToClipboard} from "tc-shared/utils/helpers";
 import {ControlledBoxedInputField, ControlledSelect} from "tc-shared/ui/react-elements/InputField";
 import {useTr} from "tc-shared/ui/react-elements/Helper";
 import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
-import * as moment from 'moment';
+import moment from 'moment';
 
 const cssStyle = require("./Renderer.scss");
 
@@ -405,12 +405,3 @@ class ModalInvite extends AbstractModal {
     }
 }
 export = ModalInvite;
-
-/*
-const modal = spawnModal("global-settings-editor", [ events.generateIpcDescription() ], { popoutable: true, popedOut: false });
-modal.show();
-modal.getEvents().on("destroy", () => {
-    events.fire("notify_destroy");
-    events.destroy();
-});
- */

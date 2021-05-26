@@ -1,10 +1,6 @@
 @import "../../../css/static/properties";
 @import "../../../css/static/mixin";
 
-html:root {
-    --hostbanner-background: #2e2e2e;
-}
-
 .container {
     position: relative;
     overflow: hidden;
@@ -14,6 +10,7 @@ html:root {
     justify-content: stretch;
 
     flex-shrink: 0;
+    user-select: none;
 
     .withBackground {
         background-color: var(--hostbanner-background);
@@ -35,7 +32,10 @@ html:root {
     min-height: 0;
 
     text-align: center;
-    cursor: pointer;
+
+    &.clickable {
+        cursor: pointer;
+    }
 
     /* We're disabling the transition since it only works on appearing not on disappearing */
     /* @include transition(height 0.5s ease-in-out); */
@@ -56,19 +56,6 @@ html:root {
     }
 
     &.mode-resize {
-        /* do adjust and ignore ration */
-        display: flex;
-
-        height: 100%;
-        width: 100%;
-
-        > img {
-            width: 100%;
-            height: 100%;
-        }
-    }
-
-    &.mode-resize-ratio {
         display: flex;
         flex-direction: row;
         justify-content: space-around;
@@ -82,6 +69,23 @@ html:root {
 
             /* better adoptable mode */
             width: min-content;
+        }
+    }
+
+    &.mode-resize-ratio {
+        display: flex;
+
+        height: 100%;
+        width: 100%;
+
+        > img {
+            object-fit: contain;
+
+            max-height: 100%;
+            max-width: 100%;
+
+            min-width: 100%;
+            min-height: 100%;
         }
     }
 }

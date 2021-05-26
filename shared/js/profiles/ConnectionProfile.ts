@@ -10,6 +10,16 @@ import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {LogCategory, logDebug, logError} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
+import {getStorageAdapter} from "tc-shared/StorageAdapter";
+import {ignorePromise} from "tc-shared/proto";
+import {assertMainApplication} from "tc-shared/ui/utils";
+
+/*
+ * We're loading & saving profiles with the StorageAdapter.
+ * We should only access it once. As well why would a renderer want to have access to the
+ * connect profiles manager?
+ */
+assertMainApplication();
 
 export class ConnectionProfile {
     id: string;
@@ -61,8 +71,9 @@ export class ConnectionProfile {
 
     spawnIdentityHandshakeHandler(connection: AbstractServerConnection): HandshakeIdentityHandler | undefined {
         const identity = this.selectedIdentity();
-        if (!identity)
+        if (!identity) {
             return undefined;
+        }
         return identity.spawn_identity_handshake_handler(connection);
     }
 
@@ -130,7 +141,7 @@ let availableProfiles_: ConnectionProfile[] = [];
 async function loadConnectProfiles() {
     availableProfiles_ = [];
 
-    const profiles_json = localStorage.getItem("profiles");
+    const profiles_json = await getStorageAdapter().get("profiles");
     let profiles_data: ProfilesData = (() => {
         try {
             return profiles_json ? JSON.parse(profiles_json) : {version: 0} as any;
@@ -216,7 +227,7 @@ export function save() {
         version: 1,
         profiles: profiles
     });
-    localStorage.setItem("profiles", data);
+    ignorePromise(getStorageAdapter().set("profiles", data));
 }
 
 export function mark_need_save() {

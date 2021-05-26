@@ -31,6 +31,7 @@ import {
     setupDragData
 } from "tc-shared/ui/tree/DragHelper";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
+import {CallOnce} from "tc-shared/proto";
 
 function isEquivalent(a, b) {
     const typeA = typeof a;
@@ -757,24 +758,16 @@ export abstract class RDPEntry {
     unread: boolean = false;
 
     private renderedInstance: React.ReactElement;
-    private destroyed = false;
 
     protected constructor(handle: RDPChannelTree, entryId: number) {
         this.handle = handle;
         this.entryId = entryId;
     }
 
+    @CallOnce
     destroy() {
-        if(this.destroyed) {
-            throw "can not destry an entry twice";
-        }
-
         this.renderedInstance = undefined;
-        this.destroyed = true;
     }
-
-    /* returns true if this element does not longer exists, but it's still rendered */
-    isDestroyed() { return this.destroyed; }
 
     getEvents() : Registry<ChannelTreeUIEvents> { return this.handle.events; }
     getHandlerId() : string { return this.handle.handlerId; }

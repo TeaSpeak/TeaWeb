@@ -1,4 +1,5 @@
 import {LogCategory, logDebug} from "tc-shared/log";
+import {CallOnce} from "tc-shared/proto";
 
 export type Entry = {
     timestamp: number;
@@ -10,21 +11,21 @@ export type Entry = {
 }
 
 export type Style = {
-    background_color: string;
+    backgroundColor: string;
 
-    separator_color: string;
-    separator_count: number;
-    separator_width: number;
+    separatorColor: string;
+    separatorCount: number;
+    separatorWidth: number;
 
     upload: {
         fill: string;
         stroke: string;
-        strike_width: number;
+        strokeWidth: number;
     },
     download: {
         fill: string;
         stroke: string;
-        strike_width: number;
+        strokeWidth: number;
     }
 }
 
@@ -41,58 +42,61 @@ export type TimeSpan = {
     }
 }
 
-/* Great explanation of Bezier curves: http://en.wikipedia.org/wiki/Bezier_curve#Quadratic_curves
- *
- * Assuming A was the last point in the line plotted and B is the new point,
- * we draw a curve with control points P and Q as below.
- *
- * A---P
- *     |
- *     |
- *     |
- *     Q---B
- *
- * Importantly, A and P are at the same y coordinate, as are B and Q. This is
- * so adjacent curves appear to flow as one.
- */
 export class Graph {
-    private static _loops: (() => any)[] = [];
+    private static animateCallbacks: (() => any)[] = [];
+    private static registerAnimateCallback(callback: () => void) {
+        this.animateCallbacks.push(callback);
+        if(this.animateCallbacks.length === 1) {
+            const animateLoop = () => {
+                Graph.animateCallbacks.forEach(l => l());
+                if(Graph.animateCallbacks.length > 0) {
+                    requestAnimationFrame(animateLoop);
+                } else {
+                    logDebug(LogCategory.GENERAL, tr("NetGraph static terminate"));
+                }
+            };
+            animateLoop();
+        }
+    }
 
-    readonly canvas: HTMLCanvasElement;
+    private static removerAnimateCallback(callback: () => void) {
+        this.animateCallbacks.remove(callback);
+    }
+
     public style: Style = {
-        background_color: "#28292b",
-        //background_color: "red",
+        backgroundColor: "#28292b",
 
-        separator_color: "#283036",
-        //separator_color: 'blue',
-        separator_count: 10,
-        separator_width: 1,
+        separatorColor: "#283036",
+        separatorCount: 10,
+        separatorWidth: 1,
 
 
         upload: {
             fill: "#2d3f4d",
             stroke: "#336e9f",
-            strike_width: 2,
+            strokeWidth: 2,
         },
 
         download: {
             fill: "#532c26",
             stroke: "#a9321c",
-            strike_width: 2,
+            strokeWidth: 2,
         }
     };
 
-    private _canvas_context: CanvasRenderingContext2D;
-    private _entries: Entry[] = [];
-    private _entry_max = {
+    private canvas: HTMLCanvasElement;
+    private canvasContext: CanvasRenderingContext2D;
+
+    private entries: Entry[] = [];
+    private entriesMax = {
         upload: 1,
         download: 1,
     };
-    private _max_space = 1.12;
-    private _max_gap = 5;
-    private _animate_loop;
+    private maxSpace = 1.12;
+    private maxGap = 5;
+    private animateLoop;
 
-    _time_span: TimeSpan = {
+    timeSpan: TimeSpan = {
         origin: {
             begin: 0,
             end: 1,
@@ -105,138 +109,157 @@ export class Graph {
         }
     };
 
-    private _detailed_shown = false;
-    callback_detailed_info: (upload: number, download: number, timestamp: number, event: MouseEvent) => any;
-    callback_detailed_hide: () => any;
+    private detailShown = false;
+    callbackDetailedInfo: (upload: number, download: number, timestamp: number, event: MouseEvent) => any;
+    callbackDetailedHide: () => any;
 
-    constructor(canvas: HTMLCanvasElement) {
-        this.canvas = canvas;
-        this._animate_loop = () => this.draw();
-        this.recalculate_cache(); /* initialize cache */
+    constructor() {
+        this.animateLoop = () => this.draw();
+        this.recalculateCache(); /* initialize cache */
     }
 
-    initialize() {
-        this._canvas_context = this.canvas.getContext("2d");
+    @CallOnce
+    initialize() { }
 
-        Graph._loops.push(this._animate_loop);
-        if(Graph._loops.length == 1) {
-            const static_loop = () => {
-                Graph._loops.forEach(l => l());
-                if(Graph._loops.length > 0) {
-                    requestAnimationFrame(static_loop);
-                } else {
-                    logDebug(LogCategory.GENERAL, tr("NetGraph static terminate"));
-                }
-            };
-            static_loop();
+    @CallOnce
+    finalize() {
+        this.initializeCanvas(undefined);
+    }
+
+    initializeCanvas(canvas: HTMLCanvasElement | undefined) {
+        if(this.canvas) {
+            this.canvas.onmousemove = undefined;
+            this.canvas.onmouseleave = undefined;
+
+            this.canvas = undefined;
+            this.canvasContext = undefined;
+            Graph.removerAnimateCallback(this.animateLoop);
         }
 
-        this.canvas.onmousemove = this.on_mouse_move.bind(this);
-        this.canvas.onmouseleave = this.on_mouse_leave.bind(this);
+        if(!canvas) {
+            return;
+        }
+
+        this.canvas = canvas;
+        this.canvasContext = this.canvas.getContext("2d");
+
+        Graph.registerAnimateCallback(this.animateLoop);
+        this.canvas.onmousemove = this.onMouseMove.bind(this);
+        this.canvas.onmouseleave = this.onMouseLeave.bind(this);
     }
 
-    terminate() {
-        Graph._loops.remove(this._animate_loop);
-    }
+    maxGapSize(value?: number) : number { return typeof(value) === "number" ? (this.maxGap = value) : this.maxGap; }
 
-    max_gap_size(value?: number) : number { return typeof(value) === "number" ? (this._max_gap = value) : this._max_gap; }
-
-    private recalculate_cache(time_span?: boolean) {
-        this._entries = this._entries.sort((a, b) => a.timestamp - b.timestamp);
-        this._entry_max = {
+    private recalculateCache(timespan?: boolean) {
+        this.entries = this.entries.sort((a, b) => a.timestamp - b.timestamp);
+        this.entriesMax = {
             download: 1,
             upload: 1
         };
-        if(time_span) {
-            this._time_span = {
+        if(timespan) {
+            this.timeSpan = {
                 origin: {
                     begin: 0,
                     end: 0,
                     time: 0
                 },
                 target: {
-                    begin: this._entries.length > 0 ? this._entries[0].timestamp : 0,
-                    end: this._entries.length > 0 ? this._entries.last().timestamp : 0,
+                    begin: this.entries.length > 0 ? this.entries[0].timestamp : 0,
+                    end: this.entries.length > 0 ? this.entries.last().timestamp : 0,
                     time: 0
                 }
             };
         }
 
-        for(const entry of this._entries) {
-            if(typeof(entry.upload) === "number")
-                this._entry_max.upload = Math.max(this._entry_max.upload, entry.upload);
+        for(const entry of this.entries) {
+            if(typeof(entry.upload) === "number") {
+                this.entriesMax.upload = Math.max(this.entriesMax.upload, entry.upload);
+            }
 
-            if(typeof(entry.download) === "number")
-                this._entry_max.download = Math.max(this._entry_max.download, entry.download);
+            if(typeof(entry.download) === "number") {
+                this.entriesMax.download = Math.max(this.entriesMax.download, entry.download);
+            }
         }
 
-        this._entry_max.upload *= this._max_space;
-        this._entry_max.download *= this._max_space;
+        this.entriesMax.upload *= this.maxSpace;
+        this.entriesMax.download *= this.maxSpace;
     }
 
-    insert_entry(entry: Entry) {
-        if(this._entries.length > 0 && entry.timestamp < this._entries.last().timestamp)
+    entryCount() : number {
+        return this.entries.length;
+    }
+
+    pushEntry(entry: Entry) {
+        if(this.entries.length > 0 && entry.timestamp < this.entries.last().timestamp) {
             throw "invalid timestamp";
+        }
 
-        this._entries.push(entry);
+        this.entries.push(entry);
 
-        if(typeof(entry.upload) === "number")
-            this._entry_max.upload = Math.max(this._entry_max.upload, entry.upload * this._max_space);
+        if(typeof entry.upload === "number") {
+            this.entriesMax.upload = Math.max(this.entriesMax.upload, entry.upload * this.maxSpace);
+        }
 
-        if(typeof(entry.download) === "number")
-            this._entry_max.download = Math.max(this._entry_max.download, entry.download * this._max_space);
+        if(typeof entry.download === "number") {
+            this.entriesMax.download = Math.max(this.entriesMax.download, entry.download * this.maxSpace);
+        }
     }
 
-    insert_entries(entries: Entry[]) {
-        this._entries.push(...entries);
-        this.recalculate_cache();
+    insertEntries(entries: Entry[]) {
+        this.entries.push(...entries);
+        this.recalculateCache();
         this.cleanup();
     }
 
     resize() {
         this.canvas.style.height = "100%";
         this.canvas.style.width = "100%";
-        const cstyle = getComputedStyle(this.canvas);
 
+        /* TODO: Do this within the next animate loop. We don't have to do this right here! */
+        const cstyle = getComputedStyle(this.canvas);
         this.canvas.width = parseInt(cstyle.width);
         this.canvas.height = parseInt(cstyle.height);
     }
 
     cleanup() {
-        const time = this.calculate_time_span();
+        const time = this.calculateTimespan();
 
         let index = 0;
-        for(;index < this._entries.length; index++) {
-            if(this._entries[index].timestamp < time.begin)
+        for(;index < this.entries.length; index++) {
+            if(this.entries[index].timestamp < time.begin) {
                 continue;
+            }
 
-            if(index == 0)
+            if(index == 0) {
                 return;
+            }
             break;
         }
 
         /* keep the last entry as a reference point to the left */
         if(index > 1) {
-            this._entries.splice(0, index - 1);
-            this.recalculate_cache();
+            this.entries.splice(0, index - 1);
+            this.recalculateCache();
         }
     }
 
-    calculate_time_span() : { begin: number; end: number } {
+    calculateTimespan() : { begin: number; end: number } {
         const time = Date.now();
-        if(time >= this._time_span.target.time)
-            return this._time_span.target;
+        if(time >= this.timeSpan.target.time) {
+            return this.timeSpan.target;
+        }
 
-        if(time <= this._time_span.origin.time)
-            return this._time_span.origin;
+        if(time <= this.timeSpan.origin.time) {
+            return this.timeSpan.origin;
+        }
 
-        const ob = this._time_span.origin.begin;
-        const oe = this._time_span.origin.end;
-        const ot = this._time_span.origin.time;
+        const ob = this.timeSpan.origin.begin;
+        const oe = this.timeSpan.origin.end;
+        const ot = this.timeSpan.origin.time;
 
-        const tb = this._time_span.target.begin;
-        const te = this._time_span.target.end;
-        const tt = this._time_span.target.time;
+        const tb = this.timeSpan.target.begin;
+        const te = this.timeSpan.target.end;
+        const tt = this.timeSpan.target.time;
 
         const offset = (time - ot) / (tt - ot);
         return {
@@ -245,8 +268,8 @@ export class Graph {
         };
     }
 
-    draw() {
-        let ctx = this._canvas_context;
+    private draw() {
+        let ctx = this.canvasContext;
 
         const height = this.canvas.height;
         const width = this.canvas.width;
@@ -257,21 +280,21 @@ export class Graph {
         ctx.filter = "";
         ctx.lineCap = "square";
 
-        ctx.fillStyle = this.style.background_color;
+        ctx.fillStyle = this.style.backgroundColor;
         ctx.fillRect(0, 0, width, height);
 
         /* first of all print the separators */
         {
-            const sw = this.style.separator_width;
-            const swh = this.style.separator_width / 2;
+            const sw = this.style.separatorWidth;
+            const swh = this.style.separatorWidth / 2;
 
             ctx.lineWidth = sw;
-            ctx.strokeStyle = this.style.separator_color;
+            ctx.strokeStyle = this.style.separatorColor;
 
             ctx.beginPath();
             /* horizontal */
             {
-                const dw = width / this.style.separator_count;
+                const dw = width / this.style.separatorCount;
                 let dx = dw / 2;
                 while(dx < width) {
                     ctx.moveTo(Math.floor(dx - swh) + .5, .5);
@@ -297,14 +320,14 @@ export class Graph {
 
         /* draw the lines */
         {
-            const t = this.calculate_time_span();
+            const t = this.calculateTimespan();
             const tb = t.begin; /* time begin */
             const dt = t.end - t.begin; /* delta time */
             const dtw = width / dt; /* delta time width */
 
-            const draw_graph = (type: "upload" | "download", direction: number, max: number) => {
+            const drawGraph = (type: "upload" | "download", direction: number, max: number) => {
                 const hy = Math.floor(height / 2); /* half y */
-                const by = hy - direction * this.style[type].strike_width; /* the "base" line */
+                const by = hy - direction * this.style[type].strokeWidth; /* the "base" line */
 
                 const marked_points: ({x: number, y: number})[] = [];
 
@@ -314,12 +337,13 @@ export class Graph {
                 let x, y, lx = 0, ly = by; /* last x, last y */
 
                 const floor = a => a; //Math.floor;
-                for(const entry of this._entries) {
+                for(const entry of this.entries) {
                     x = floor((entry.timestamp - tb) * dtw);
-                    if(typeof entry[type] === "number")
-                        y = floor(hy - direction * Math.max(hy * (entry[type] / max), this.style[type].strike_width));
-                    else
-                        y = hy - direction * this.style[type].strike_width;
+                    if(typeof entry[type] === "number") {
+                        y = floor(hy - direction * Math.max(hy * (entry[type] / max), this.style[type].strokeWidth));
+                    } else {
+                        y = hy - direction * this.style[type].strokeWidth;
+                    }
 
                     if(entry.timestamp < tb) {
                         lx = x;
@@ -328,7 +352,7 @@ export class Graph {
                         continue;
                     }
 
-                    if(x - lx > this._max_gap && this._max_gap > 0) {
+                    if(x - lx > this.maxGap && this.maxGap > 0) {
                         ctx.lineTo(lx, by);
                         ctx.lineTo(x, by);
                         ctx.lineTo(x, y);
@@ -347,7 +371,7 @@ export class Graph {
                 }
 
                 ctx.strokeStyle = this.style[type].stroke;
-                ctx.lineWidth = this.style[type].strike_width;
+                ctx.lineWidth = this.style[type].strokeWidth;
                 ctx.lineJoin = "miter";
                 ctx.stroke();
 
@@ -375,29 +399,30 @@ export class Graph {
                 }
             };
 
-            const shared_max = Math.max(this._entry_max.upload, this._entry_max.download);
-            draw_graph("upload", 1, shared_max);
-            draw_graph("download", -1, shared_max);
+            const shared_max = Math.max(this.entriesMax.upload, this.entriesMax.download);
+            drawGraph("upload", 1, shared_max);
+            drawGraph("download", -1, shared_max);
         }
     }
 
-    private on_mouse_move(event: MouseEvent) {
+    private onMouseMove(event: MouseEvent) {
         const offset = event.offsetX;
         const max_offset = this.canvas.width;
 
         if(offset < 0) return;
         if(offset > max_offset) return;
 
-        const time_span = this.calculate_time_span();
+        const time_span = this.calculateTimespan();
         const time = time_span.begin + (time_span.end - time_span.begin) * (offset / max_offset);
         let index = 0;
-        for(;index < this._entries.length; index++) {
-            if(this._entries[index].timestamp > time)
+        for(;index < this.entries.length; index++) {
+            if(this.entries[index].timestamp > time) {
                 break;
+            }
         }
 
-        const entry_before = this._entries[index - 1]; /* In JS negative array access is allowed and returns undefined */
-        const entry_next = this._entries[index]; /* In JS negative array access is allowed and returns undefined */
+        const entry_before = this.entries[index - 1]; /* In JS negative array access is allowed and returns undefined */
+        const entry_next = this.entries[index]; /* In JS negative array access is allowed and returns undefined */
         let entry: Entry;
         if(!entry_before || !entry_next) {
             entry = entry_before || entry_next;
@@ -411,24 +436,28 @@ export class Graph {
         }
 
         if(!entry) {
-            this.on_mouse_leave(event);
+            this.onMouseLeave(event);
         } else {
-            this._entries.forEach(e => e.highlight = false);
-            this._detailed_shown = true;
+            this.entries.forEach(e => e.highlight = false);
+            this.detailShown = true;
             entry.highlight = true;
 
-            if(this.callback_detailed_info)
-                this.callback_detailed_info(entry.upload, entry.download, entry.timestamp, event);
+            if(this.callbackDetailedInfo) {
+                this.callbackDetailedInfo(entry.upload, entry.download, entry.timestamp, event);
+            }
         }
 
     }
 
-    private on_mouse_leave(event: MouseEvent) {
-        if(!this._detailed_shown) return;
-        this._detailed_shown = false;
+    private onMouseLeave(_event: MouseEvent) {
+        if(!this.detailShown) {
+            return;
+        }
+        this.detailShown = false;
 
-        this._entries.forEach(e => e.highlight = false);
-        if(this.callback_detailed_hide)
-            this.callback_detailed_hide();
+        this.entries.forEach(e => e.highlight = false);
+        if(this.callbackDetailedHide) {
+            this.callbackDetailedHide();
+        }
     }
 }

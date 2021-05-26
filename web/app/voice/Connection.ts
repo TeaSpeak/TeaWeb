@@ -1,10 +1,9 @@
-import * as aplayer from "../audio/player";
 import {
     AbstractVoiceConnection,
     VoiceConnectionStatus,
     WhisperSessionInitializer
 } from "tc-shared/connection/VoiceConnection";
-import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
+import {ConnectionRecorderProfileOwner, RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {VoiceClient} from "tc-shared/voice/VoiceClient";
 import {
     kUnknownWhisperClientUniqueId,
@@ -17,18 +16,18 @@ import {AbstractServerConnection, ConnectionStatistics} from "tc-shared/connecti
 import {VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 import {LogCategory, logDebug, logError, logInfo, logTrace, logWarn} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
-import {RtpVoiceClient} from "tc-backend/web/voice/VoiceClient";
-import {InputConsumerType} from "tc-shared/voice/RecorderBase";
-import {RtpWhisperSession} from "tc-backend/web/voice/WhisperClient";
+import {AbstractInput, InputConsumerType} from "tc-shared/voice/RecorderBase";
+import {getAudioBackend} from "tc-shared/audio/Player";
+import {RtpVoiceClient} from "./VoiceClient";
+import {RtpWhisperSession} from "./WhisperClient";
+import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import {CallOnce, crashOnThrow, ignorePromise} from "tc-shared/proto";
 
 type CancelableWhisperTarget = WhisperTarget & { canceled: boolean };
 export class RtpVoiceConnection extends AbstractVoiceConnection {
     private readonly rtcConnection: RTCConnection;
 
-    private readonly listenerRtcAudioAssignment;
-    private readonly listenerRtcStateChanged;
-    private listenerClientMoved;
-    private listenerSpeakerStateChanged;
+    private listenerCallbacks: (() => void)[];
 
     private connectionState: VoiceConnectionStatus;
     private localFailedReason: string;
@@ -36,9 +35,11 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
     private localAudioDestination: MediaStreamAudioDestinationNode;
     private currentAudioSourceNode: AudioNode;
     private currentAudioSource: RecorderProfile;
+    private ignoreRecorderUnmount: boolean;
+    private currentAudioListener: (() => void)[];
 
     private speakerMuted: boolean;
-    private voiceClients: RtpVoiceClient[] = [];
+    private voiceClients: {[T: number]: RtpVoiceClient} = {};
 
     private whisperSessionInitializer: WhisperSessionInitializer | undefined;
     private whisperSessions: RtpWhisperSession[] = [];
@@ -56,38 +57,45 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
         this.voiceClientStateChangedEventListener = this.handleVoiceClientStateChange.bind(this);
         this.whisperSessionStateChangedEventListener = this.handleWhisperSessionStateChange.bind(this);
 
-        this.rtcConnection.getEvents().on("notify_audio_assignment_changed",
-            this.listenerRtcAudioAssignment = event => this.handleAudioAssignmentChanged(event));
+        this.listenerCallbacks = [];
+        this.listenerCallbacks.push(
+            this.rtcConnection.getEvents().on("notify_audio_assignment_changed", event => this.handleAudioAssignmentChanged(event))
+        );
 
-        this.rtcConnection.getEvents().on("notify_state_changed",
-            this.listenerRtcStateChanged = event => this.handleRtcConnectionStateChanged(event));
+        this.listenerCallbacks.push(
+            this.rtcConnection.getEvents().on("notify_state_changed", event => this.handleRtcConnectionStateChanged(event))
+        );
 
-        this.listenerSpeakerStateChanged = connection.client.events().on("notify_state_updated", event => {
-            if(event.state === "speaker") {
-                this.updateSpeakerState();
-            }
-        });
-
-        this.listenerClientMoved = this.rtcConnection.getConnection().command_handler_boss().register_explicit_handler("notifyclientmoved", event => {
-            const localClientId = this.rtcConnection.getConnection().client.getClientId();
-            for(const data of event.arguments) {
-                if(parseInt(data["clid"]) === localClientId) {
-                    this.rtcConnection.startAudioBroadcast().catch(error => {
-                        logError(LogCategory.VOICE, tr("Failed to start voice audio broadcasting after channel switch: %o"), error);
-                        this.localFailedReason = tr("Failed to start audio broadcasting");
-                        this.setConnectionState(VoiceConnectionStatus.Failed);
-                    }).catch(() => {
-                        this.setConnectionState(VoiceConnectionStatus.Connected);
-                    });
+        this.listenerCallbacks.push(
+            connection.client.events().on("notify_state_updated", event => {
+                if(event.state === "speaker") {
+                    this.updateSpeakerState();
                 }
-            }
-        });
+            })
+        );
+
+        this.listenerCallbacks.push(
+            this.rtcConnection.getConnection().getCommandHandler().registerCommandHandler("notifyclientmoved", event => {
+                const localClientId = this.rtcConnection.getConnection().client.getClientId();
+                for(const data of event.arguments) {
+                    if(parseInt(data["clid"]) === localClientId) {
+                        this.rtcConnection.startAudioBroadcast().catch(error => {
+                            logError(LogCategory.VOICE, tr("Failed to start voice audio broadcasting after channel switch: %o"), error);
+                            this.localFailedReason = tr("Failed to start audio broadcasting");
+                            this.setConnectionState(VoiceConnectionStatus.Failed);
+                        }).catch(() => {
+                            this.setConnectionState(VoiceConnectionStatus.Connected);
+                        });
+                    }
+                }
+            })
+        );
 
         this.speakerMuted = connection.client.isSpeakerMuted() || connection.client.isSpeakerDisabled();
 
         this.setConnectionState(VoiceConnectionStatus.Disconnected);
-        aplayer.on_ready(() => {
-            this.localAudioDestination = aplayer.context().createMediaStreamDestination();
+        getAudioBackend().executeWhenInitialized(() => {
+            this.localAudioDestination = getAudioBackend().getAudioContext().createMediaStreamDestination();
             if(this.currentAudioSourceNode) {
                 this.currentAudioSourceNode.connect(this.localAudioDestination);
             }
@@ -96,37 +104,32 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
         this.setWhisperSessionInitializer(undefined);
     }
 
+    @CallOnce
     destroy() {
-        if(this.listenerClientMoved) {
-            this.listenerClientMoved();
-            this.listenerClientMoved = undefined;
-        }
+        this.listenerCallbacks?.forEach(callback => callback());
+        this.listenerCallbacks = undefined;
 
-        if(this.listenerSpeakerStateChanged) {
-            this.listenerSpeakerStateChanged();
-            this.listenerSpeakerStateChanged = undefined;
-        }
-
-        this.rtcConnection.getEvents().off("notify_audio_assignment_changed", this.listenerRtcAudioAssignment);
-        this.rtcConnection.getEvents().off("notify_state_changed", this.listenerRtcStateChanged);
-
-        this.acquireVoiceRecorder(undefined, true).catch(error => {
+        this.ignoreRecorderUnmount = true;
+        this.acquireVoiceRecorder(undefined).catch(error => {
             logWarn(LogCategory.VOICE, tr("Failed to release voice recorder: %o"), error);
-        }).then(() => {
-            for(const client of Object.values(this.voiceClients))  {
-                client.abortReplay();
-            }
-            this.voiceClients = undefined;
-            this.currentAudioSource = undefined;
         });
-        if(Object.keys(this.voiceClients).length !== 0) {
-            logWarn(LogCategory.AUDIO, tr("Voice connection will be destroyed, but some voice clients are still left (%d)."), Object.keys(this.voiceClients).length);
+
+        for(const key of Object.keys(this.voiceClients)) {
+            const client = this.voiceClients[key];
+            delete this.voiceClients[key];
+
+            client.abortReplay();
+            client.destroy();
         }
-        /*
-        const whisperSessions = Object.keys(this.whisperSessions);
-        whisperSessions.forEach(session => this.whisperSessions[session].destroy());
-        this.whisperSessions = {};
-        */
+
+        this.currentAudioSource = undefined;
+
+        for(const client of this.whisperSessions) {
+            client.getVoicePlayer()?.abortReplay();
+            client.destroy();
+        }
+        this.whisperSessions = [];
+
         this.events.destroy();
     }
 
@@ -147,52 +150,73 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
             return;
         }
 
+        this.currentAudioListener?.forEach(callback => callback());
+        this.currentAudioListener = undefined;
+
         if(this.currentAudioSource) {
             this.currentAudioSourceNode?.disconnect(this.localAudioDestination);
             this.currentAudioSourceNode = undefined;
 
-            this.currentAudioSource.callback_unmount = undefined;
-            await this.currentAudioSource.unmount();
+            this.ignoreRecorderUnmount = true;
+            await this.currentAudioSource.ownRecorder(undefined);
+            this.ignoreRecorderUnmount = false;
         }
 
-        /* unmount our target recorder */
-        await recorder?.unmount();
-
-        this.handleRecorderStop();
         const oldRecorder = recorder;
         this.currentAudioSource = recorder;
 
         if(recorder) {
-            recorder.current_handler = this.connection.client;
+            const rtpConnection = this;
+            await recorder.ownRecorder(new class extends ConnectionRecorderProfileOwner {
+                getConnection(): ConnectionHandler {
+                    return rtpConnection.connection.client;
+                }
 
-            recorder.callback_unmount = this.handleRecorderUnmount.bind(this);
-            recorder.callback_start = this.handleRecorderStart.bind(this);
-            recorder.callback_stop = this.handleRecorderStop.bind(this);
+                protected handleRecorderInput(input: AbstractInput) {
+                    input.setConsumer({
+                        type: InputConsumerType.NODE,
+                        callbackDisconnect: node => {
+                            if(rtpConnection.currentAudioSourceNode !== node) {
+                                /* We're not connected */
+                                return;
+                            }
 
-            recorder.callback_input_initialized = async input => {
-                await input.setConsumer({
-                    type: InputConsumerType.NODE,
-                    callbackDisconnect: node => {
-                        this.currentAudioSourceNode = undefined;
-                        node.disconnect(this.localAudioDestination);
-                    },
-                    callbackNode: node => {
-                        this.currentAudioSourceNode = node;
-                        if(this.localAudioDestination) {
-                            node.connect(this.localAudioDestination);
+                            rtpConnection.currentAudioSourceNode = undefined;
+                            if(rtpConnection.localAudioDestination) {
+                                node.disconnect(rtpConnection.localAudioDestination);
+                            }
+                        },
+                        callbackNode: node => {
+                            if(rtpConnection.currentAudioSourceNode === node) {
+                                return;
+                            }
+
+                            if(rtpConnection.localAudioDestination) {
+                                rtpConnection.currentAudioSourceNode?.disconnect(rtpConnection.localAudioDestination);
+                            }
+
+                            rtpConnection.currentAudioSourceNode = node;
+                            if(rtpConnection.localAudioDestination) {
+                                node.connect(rtpConnection.localAudioDestination);
+                            }
                         }
-                    }
-                });
-            };
-            if(recorder.input) {
-                recorder.callback_input_initialized(recorder.input);
-            }
+                    });
+                }
 
-            if(!recorder.input || recorder.input.isFiltered()) {
-                this.handleRecorderStop();
-            } else {
-                this.handleRecorderStart();
-            }
+                protected handleUnmount() {
+                    rtpConnection.handleRecorderUnmount();
+                }
+            });
+
+            this.currentAudioListener = [];
+            this.currentAudioListener.push(recorder.events.on("notify_voice_start", () => this.handleRecorderStart()));
+            this.currentAudioListener.push(recorder.events.on("notify_voice_end", () => this.handleRecorderStop(tr("recorder event"))));
+        }
+
+        if(this.currentAudioSource?.isInputActive()) {
+            this.handleRecorderStart();
+        } else {
+            this.handleRecorderStop(tr("recorder change"));
         }
 
         this.events.fire("notify_recorder_changed", {
@@ -201,27 +225,13 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
         });
     }
 
-    private handleRecorderStop() {
+    private handleRecorderStop(reason: string) {
         const chandler = this.connection.client;
-        const ch = chandler.getClient();
-        if(ch) ch.speaking = false;
+        chandler.getClient()?.setSpeaking(false);
 
-        if(!chandler.connected) {
-            return false;
-        }
-
-        if(chandler.isMicrophoneMuted()) {
-            return false;
-        }
-
-        logInfo(LogCategory.VOICE, tr("Local voice ended"));
-
-        this.rtcConnection.setTrackSource("audio", null).catch(error => {
-            logError(LogCategory.AUDIO, tr("Failed to set current audio track: %o"), error);
-        });
-
-        this.rtcConnection.setTrackSource("audio-whisper", null).catch(error => {
-            logError(LogCategory.AUDIO, tr("Failed to set current audio track: %o"), error);
+        logInfo(LogCategory.VOICE, tr("Received local voice end signal (%s)"), reason);
+        this.rtcConnection.clearTrackSources(["audio", "audio-whisper"]).catch(error => {
+            logError(LogCategory.AUDIO, tr("Failed to stop/remove audio RTC tracks: %o"), error);
         });
     }
 
@@ -234,19 +244,19 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
 
         logInfo(LogCategory.VOICE, tr("Local voice started"));
 
-        const ch = chandler.getClient();
-        if(ch) { ch.speaking = true; }
+        chandler.getClient()?.setSpeaking(true);
 
-        this.rtcConnection.setTrackSource(this.whisperTarget ? "audio-whisper" : "audio", this.localAudioDestination.stream.getAudioTracks()[0])
-            .catch(error => {
-                logError(LogCategory.AUDIO, tr("Failed to set current audio track: %o"), error);
-            });
+        const audioTrack = this.localAudioDestination.stream.getAudioTracks()[0];
+        const audioTarget = this.whisperTarget ? "audio-whisper" : "audio";
+        this.rtcConnection.setTrackSource(audioTarget, audioTrack).catch(error => {
+            logError(LogCategory.AUDIO, tr("Failed to set current audio track: %o"), error);
+        });
     }
 
     private handleRecorderUnmount() {
         logInfo(LogCategory.VOICE, "Lost recorder!");
         this.currentAudioSource = undefined;
-        this.acquireVoiceRecorder(undefined, true); /* we can ignore the promise because we should finish this directly */
+        ignorePromise(crashOnThrow(this.acquireVoiceRecorder(undefined, true)));
     }
 
     isReplayingVoice(): boolean {
@@ -359,7 +369,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
             return;
         }
 
-        this.handleRecorderStop();
+        this.handleRecorderStop(tr("whisper start"));
         if(this.currentAudioSource?.input && !this.currentAudioSource.input.isFiltered()) {
             this.handleRecorderStart();
         }
@@ -379,7 +389,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
             });
         }
 
-        this.handleRecorderStop();
+        this.handleRecorderStop(tr("whisper stop"));
         if(this.currentAudioSource?.input && !this.currentAudioSource.input.isFiltered()) {
             this.handleRecorderStart();
         }
@@ -538,7 +548,7 @@ export class RtpVoiceConnection extends AbstractVoiceConnection {
         if(this.speakerMuted === newState) { return; }
 
         this.speakerMuted = newState;
-        this.voiceClients.forEach(client => client.setGloballyMuted(this.speakerMuted));
+        Object.values(this.voiceClients).forEach(client => client.setGloballyMuted(this.speakerMuted));
         this.whisperSessions.forEach(session => session.setGloballyMuted(this.speakerMuted));
     }
 

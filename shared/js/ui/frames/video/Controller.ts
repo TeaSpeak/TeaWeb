@@ -1,11 +1,8 @@
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
-import {ChannelVideoRenderer} from "tc-shared/ui/frames/video/Renderer";
 import {Registry} from "tc-shared/events";
 import {
     ChannelVideoEvents,
-    ChannelVideoStreamState,
+    ChannelVideoStreamState, getVideoStreamMap,
     kLocalVideoId,
     VideoStreamState
 } from "tc-shared/ui/frames/video/Definitions";
@@ -18,13 +15,13 @@ import {
 } from "tc-shared/connection/VideoConnection";
 import {ClientEntry, ClientType, LocalClientEntry, MusicClientEntry} from "tc-shared/tree/Client";
 import {LogCategory, logError, logWarn} from "tc-shared/log";
-import {tr} from "tc-shared/i18n/localize";
+import {tr, tra} from "tc-shared/i18n/localize";
 import {Settings, settings} from "tc-shared/settings";
 import * as _ from "lodash";
 import PermissionType from "tc-shared/permission/PermissionType";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
-
-const cssStyle = require("./Renderer.scss");
+import {spawnVideoViewerInfo} from "tc-shared/ui/modal/video-viewers/Controller";
+import {guid} from "tc-shared/crypto/uid";
 
 let videoIdIndex = 0;
 interface ClientVideoController {
@@ -134,6 +131,11 @@ class RemoteClientVideoController implements ClientVideoController {
             return;
         }
 
+        if(videoClient.getVideoState(type) === VideoBroadcastState.Stopped) {
+            /* There is no video we could join */
+            return;
+        }
+
         videoClient.joinBroadcast(type).catch(error => {
             logError(LogCategory.VIDEO, tr("Failed to join video broadcast: %o"), error);
             /* TODO: Propagate error? */
@@ -228,7 +230,12 @@ class RemoteClientVideoController implements ClientVideoController {
             if(!stream) {
                 state = { state: "failed", reason: tr("Missing video stream") };
             } else {
-                state = { state: "connected", stream: stream };
+                const streamUuid = guid();
+                const streamMap = getVideoStreamMap();
+                streamMap[streamUuid] = stream;
+                setTimeout(() => delete streamMap[streamUuid], 60 * 1000);
+
+                state = { state: "connected", streamObjectId: streamUuid };
             }
         }
 
@@ -337,18 +344,9 @@ class LocalVideoController extends RemoteClientVideoController {
                 }
         }
     }
-
-    /*
-    protected getBroadcastStream(target: VideoBroadcastType) : MediaStream | undefined {
-        const videoConnection = this.client.channelTree.client.serverConnection.getVideoConnection();
-        return videoConnection.getBroadcastingSource(target)?.getStream();
-    }
-    */
 }
 
 class ChannelVideoController {
-    callbackVisibilityChanged: (visible: boolean) => void;
-
     private readonly connection: ConnectionHandler;
     private readonly videoConnection: VideoConnection;
     private readonly events: Registry<ChannelVideoEvents>;
@@ -361,7 +359,7 @@ class ChannelVideoController {
     private localVideoController: LocalVideoController;
     private clientVideos: {[key: number]: RemoteClientVideoController} = {};
 
-    private currentSpotlight: string;
+    private currentSpotlights: string[];
 
     constructor(events: Registry<ChannelVideoEvents>, connection: ConnectionHandler) {
         this.events = events;
@@ -373,6 +371,8 @@ class ChannelVideoController {
             this.localVideoController = new LocalVideoController(connection.getClient(), this.events);
             this.localVideoController.callbackBroadcastStateChanged = () => this.notifyVideoList();
         });
+
+        this.currentSpotlights = [];
         this.currentlyVisible = false;
         this.expended = false;
     }
@@ -402,9 +402,9 @@ class ChannelVideoController {
             this.events.fire_react("notify_expended", { expended: this.expended });
         });
 
-        this.events.on("action_set_spotlight", event => {
-            this.setSpotlight(event.videoId);
-            if(!this.isExpended()) {
+        this.events.on("action_toggle_spotlight", event => {
+            this.toggleSpotlight(event.videoIds, event.enabled);
+            if(event.expend && !this.isExpended()) {
                 this.events.fire("action_toggle_expended", { expended: true });
             }
         });
@@ -443,10 +443,13 @@ class ChannelVideoController {
             controller.dismissVideo(event.broadcastType);
         });
 
+        this.events.on("action_show_viewers", () => spawnVideoViewerInfo(this.connection));
+
         this.events.on("query_expended", () => this.events.fire_react("notify_expended", { expended: this.expended }));
         this.events.on("query_videos", () => this.notifyVideoList());
         this.events.on("query_spotlight", () => this.notifySpotlight());
         this.events.on("query_subscribe_info", () => this.notifySubscribeInfo());
+        this.events.on("query_viewer_count", () => this.notifyViewerCount());
 
         this.events.on("query_video_info", event => {
             const controller = this.findVideoById(event.videoId);
@@ -492,6 +495,14 @@ class ChannelVideoController {
             }
         });
 
+        events.push(this.videoConnection.getLocalBroadcast("camera").getEvents().on([ "notify_clients_left", "notify_clients_joined", "notify_state_changed" ], () => {
+            this.notifyViewerCount();
+        }));
+
+        events.push(this.videoConnection.getLocalBroadcast("screen").getEvents().on([ "notify_clients_left", "notify_clients_joined", "notify_state_changed" ], () => {
+            this.notifyViewerCount();
+        }));
+
         const channelTree = this.connection.channelTree;
         events.push(channelTree.events.on("notify_tree_reset", () => {
             this.resetClientVideos();
@@ -512,6 +523,7 @@ class ChannelVideoController {
                         this.notifyVideoList();
                     }
                 }
+
                 if(event.newChannel.channelId === this.currentChannelId) {
                     this.createClientVideo(event.client);
                     this.notifyVideoList();
@@ -527,6 +539,7 @@ class ChannelVideoController {
             if(this.destroyClientVideo(event.client.clientId())) {
                 this.notifyVideoList();
             }
+
             if(event.client instanceof LocalClientEntry) {
                 this.resetClientVideos();
             }
@@ -541,6 +554,7 @@ class ChannelVideoController {
                 this.createClientVideo(event.client);
                 this.notifyVideoList();
             }
+
             if(event.client instanceof LocalClientEntry) {
                 this.updateLocalChannel(event.client);
             }
@@ -561,18 +575,18 @@ class ChannelVideoController {
         events.push(settings.globalChangeListener(Settings.KEY_VIDEO_FORCE_SHOW_OWN_VIDEO, () => this.notifyVideoList()));
     }
 
-    setSpotlight(videoId: string | undefined) {
-        if(this.currentSpotlight === videoId) { return; }
+    toggleSpotlight(videoId: string[], enabled: boolean) {
+        const updated = videoId.map(entry => this.currentSpotlights.toggle(entry, enabled)).find(updated => updated);
+        if(!updated) {
+            return;
+        }
 
-        /* TODO: test if the video event exists? */
-
-        this.currentSpotlight = videoId;
-        this.notifySpotlight()
+        this.notifySpotlight();
         this.notifyVideoList();
     }
 
     private static shouldIgnoreClient(client: ClientEntry) {
-        return (client instanceof MusicClientEntry || client.properties.client_type_exact === ClientType.CLIENT_QUERY);
+        return (client instanceof MusicClientEntry || client.getClientType() === ClientType.CLIENT_QUERY);
     }
 
     private updateLocalChannel(localClient: ClientEntry) {
@@ -604,7 +618,7 @@ class ChannelVideoController {
     }
 
     private resetClientVideos() {
-        this.currentSpotlight = undefined;
+        this.currentSpotlights = [];
         for(const clientId of Object.keys(this.clientVideos)) {
             this.destroyClientVideo(parseInt(clientId));
         }
@@ -621,10 +635,7 @@ class ChannelVideoController {
             video.destroy();
             delete this.clientVideos[clientId];
 
-            if(video.videoId === this.currentSpotlight) {
-                this.currentSpotlight = undefined;
-                this.notifySpotlight();
-            }
+            this.toggleSpotlight([ video.videoId ], false);
             return true;
         } else {
             return false;
@@ -642,7 +653,7 @@ class ChannelVideoController {
     }
 
     private notifySpotlight() {
-        this.events.fire_react("notify_spotlight", { videoId: this.currentSpotlight });
+        this.events.fire_react("notify_spotlight", { videoId: this.currentSpotlights });
     }
 
     private notifyVideoList() {
@@ -661,34 +672,50 @@ class ChannelVideoController {
 
         const channel = this.connection.channelTree.findChannel(this.currentChannelId);
         if(channel) {
-            const clients = channel.channelClientsOrdered();
-            for(const client of clients) {
+            const clients = channel.channelClientsOrdered().filter(client => {
                 if(client instanceof LocalClientEntry) {
-                    continue;
+                    return false;
                 }
 
                 if(!this.clientVideos[client.clientId()]) {
                     /* should not be possible (Is only possible for the local client) */
+                    return false;
+                }
+
+                return true;
+            });
+
+            /* Firstly add all clients with video */
+            for(const client of clients) {
+                const controller = this.clientVideos[client.clientId()];
+                if(!controller.isBroadcasting()) {
                     continue;
                 }
 
-                const controller = this.clientVideos[client.clientId()];
-                if(controller.isBroadcasting()) {
-                    videoStreamingCount++;
-                } else if(!settings.getValue(Settings.KEY_VIDEO_SHOW_ALL_CLIENTS)) {
-                    continue;
-                }
+                videoStreamingCount++;
                 videoIds.push(controller.videoId);
+            }
+
+            /* Secondly add all other clients (if wanted) */
+            if(settings.getValue(Settings.KEY_VIDEO_SHOW_ALL_CLIENTS)) {
+                for(const client of clients) {
+                    const controller = this.clientVideos[client.clientId()];
+                    if(controller.isBroadcasting()) {
+                        continue;
+                    }
+
+                    videoIds.push(controller.videoId);
+                }
             }
         }
 
-        this.updateVisibility(videoStreamingCount !== 0);
         if(this.expended) {
-            videoIds.remove(this.currentSpotlight);
+            this.currentSpotlights.forEach(entry => videoIds.remove(entry));
         }
 
         this.events.fire_react("notify_videos", {
-            videoIds: videoIds
+            videoIds: videoIds,
+            videoActiveCount: videoStreamingCount
         });
     }
 
@@ -723,20 +750,45 @@ class ChannelVideoController {
         });
     }
 
-    private updateVisibility(target: boolean) {
-        if(this.currentlyVisible === target) { return; }
+    private notifyViewerCount() {
+        let cameraViewers, screenViewers;
+        {
+            let broadcast = this.videoConnection.getLocalBroadcast("camera");
+            switch (broadcast.getState().state) {
+                case "initializing":
+                case "broadcasting":
+                    cameraViewers = broadcast.getViewer().length;
+                    break;
 
-        this.currentlyVisible = target;
-        if(this.callbackVisibilityChanged) {
-            this.callbackVisibilityChanged(target);
+                case "stopped":
+                case "failed":
+                default:
+                    cameraViewers = undefined;
+                    break;
+            }
         }
+        {
+            let broadcast = this.videoConnection.getLocalBroadcast("screen");
+            switch (broadcast.getState().state) {
+                case "initializing":
+                case "broadcasting":
+                    screenViewers = broadcast.getViewer().length;
+                    break;
+
+                case "stopped":
+                case "failed":
+                default:
+                    screenViewers = undefined;
+                    break;
+            }
+        }
+        this.events.fire_react("notify_viewer_count", { camera: cameraViewers, screen: screenViewers });
     }
 }
 
 export class ChannelVideoFrame {
     private readonly handle: ConnectionHandler;
     private readonly events: Registry<ChannelVideoEvents>;
-    private container: HTMLDivElement;
     private controller: ChannelVideoController;
 
     constructor(handle: ConnectionHandler) {
@@ -744,36 +796,15 @@ export class ChannelVideoFrame {
         this.events = new Registry<ChannelVideoEvents>();
         this.controller = new ChannelVideoController(this.events, handle);
         this.controller.initialize();
-
-        this.container = document.createElement("div");
-        this.container.classList.add(cssStyle.container, cssStyle.hidden);
-
-        ReactDOM.render(React.createElement(ChannelVideoRenderer, { handlerId: handle.handlerId, events: this.events }), this.container);
-
-        this.events.on("notify_expended", event => this.container.classList.toggle(cssStyle.expended, event.expended));
-        this.controller.callbackVisibilityChanged = flag => {
-            this.container.classList.toggle(cssStyle.hidden, !flag);
-            if(!flag) {
-                this.events.fire("action_toggle_expended", { expended: false })
-            }
-        };
     }
 
     destroy() {
         this.controller?.destroy();
         this.controller = undefined;
-
-        if(this.container) {
-            this.container.remove();
-            ReactDOM.unmountComponentAtNode(this.container);
-
-            this.container = undefined;
-        }
-
         this.events.destroy();
     }
 
-    getContainer() : HTMLDivElement {
-        return this.container;
+    getEvents() : Registry<ChannelVideoEvents> {
+        return this.events;
     }
 }

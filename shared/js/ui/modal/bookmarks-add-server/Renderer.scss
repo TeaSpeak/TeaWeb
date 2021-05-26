@@ -1,0 +1,61 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    padding: .5em;
+    height: 100%;
+}
+
+.bookmarkInfo {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    margin-bottom: 1em;
+
+    .text {
+        &.addServer {}
+
+        &.serverName {
+
+        }
+
+        &.bookmarkName {
+            margin-top: .5em;
+            color: #557edc;
+        }
+    }
+
+    .editableBookmarkName {
+        margin-bottom: .5em;
+    }
+
+    .channelIcon {
+        width: 1em;
+        height: 1em;
+    }
+
+    .channelTooltipOuter {
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        margin-left: .5em;
+        align-self: center;
+    }
+
+    .channelLabel {
+        display: flex;
+        flex-direction: row;
+    }
+}
+
+.buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    margin-top: auto;
+}

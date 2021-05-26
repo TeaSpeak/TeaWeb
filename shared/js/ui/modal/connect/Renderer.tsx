@@ -11,12 +11,12 @@ import {Button} from "tc-shared/ui/react-elements/Button";
 import {ControlledFlatInputField, ControlledSelect, FlatInputField} from "tc-shared/ui/react-elements/InputField";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
-import * as i18n from "../../../i18n/country";
 import {getIconManager} from "tc-shared/file/Icons";
 import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {UiVariableConsumer} from "tc-shared/ui/utils/Variable";
 import {createIpcUiVariableConsumer, IpcVariableDescriptor} from "tc-shared/ui/utils/IpcVariable";
 import {AbstractModal} from "tc-shared/ui/react-elements/ModalDefinitions";
+import {CountryCode} from "tc-shared/ui/react-elements/CountryCode";
 
 const EventContext = React.createContext<Registry<ConnectUiEvents>>(undefined);
 const VariablesContext = React.createContext<UiVariableConsumer<ConnectUiVariables>>(undefined);
@@ -241,15 +241,6 @@ const ButtonContainer = () => (
     </div>
 );
 
-const CountryIcon = (props: { country: string }) => {
-    return (
-        <div className={cssStyle.countryContainer}>
-            <div className={"country flag-" + props.country} />
-            {i18n.country_name(props.country, useTr("Global"))}
-        </div>
-    )
-}
-
 const HistoryTableEntryConnectCount = React.memo((props: { entry: ConnectHistoryEntry }) => {
     const targetType = props.entry.uniqueServerId === kUnknownHistoryServerUniqueId ? "address" : "server-unique-id";
     const target = targetType === "address" ? props.entry.targetAddress : props.entry.uniqueServerId;
@@ -313,7 +304,7 @@ const HistoryTableEntry = React.memo((props: { entry: ConnectHistoryEntry, selec
                 {info ? info.password ? tr("Yes") : tr("No") : ""}
             </div>
             <div className={cssStyle.column + " " + cssStyle.country}>
-                {info ? <CountryIcon country={info.country || "xx"} key={"country"} /> : null}
+                {info ? <CountryCode alphaCode={info.country || "xx"} key={"country"} /> : null}
             </div>
             <div className={cssStyle.column + " " + cssStyle.clients}>
                 {info && info.maxClients !== -1 ? `${info.clients}/${info.maxClients}` : ""}
@@ -420,10 +411,6 @@ class ConnectModal extends AbstractModal {
 
     renderTitle(): string | React.ReactElement {
         return <Translatable>Connect to a server</Translatable>;
-    }
-
-    color(): "none" | "blue" {
-        return "blue";
     }
 
     verticalAlignment(): "top" | "center" | "bottom" {

@@ -11,7 +11,7 @@ import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
-import {traj} from "tc-shared/i18n/localize";
+import {trJQuery} from "tc-shared/i18n/localize";
 import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {LocalClientEntry} from "tc-shared/tree/Client";
 import {ServerCommand} from "tc-shared/connection/ConnectionBase";
@@ -281,7 +281,7 @@ export class ChannelConversation extends AbstractChat<ChannelConversationEvents>
                 error = error.extra_message || error.message;
             }
 
-            createErrorModal(tr("Failed to delete message"), traj("Failed to delete conversation message{:br:}Error: {}", error)).open();
+            createErrorModal(tr("Failed to delete message"), trJQuery("Failed to delete conversation message{:br:}Error: {}", error)).open();
         });
     }
 
@@ -395,9 +395,9 @@ export class ChannelConversationManager extends AbstractChatManager<ChannelConve
 
         /* TODO: Permission listener for text send power! */
 
-        this.listenerConnection.push(connection.serverConnection.command_handler_boss().register_explicit_handler("notifyconversationhistory", this.handleConversationHistory.bind(this)));
-        this.listenerConnection.push(connection.serverConnection.command_handler_boss().register_explicit_handler("notifyconversationindex", this.handleConversationIndex.bind(this)));
-        this.listenerConnection.push(connection.serverConnection.command_handler_boss().register_explicit_handler("notifyconversationmessagedelete", this.handleConversationMessageDelete.bind(this)));
+        this.listenerConnection.push(connection.serverConnection.getCommandHandler().registerCommandHandler("notifyconversationhistory", this.handleConversationHistory.bind(this)));
+        this.listenerConnection.push(connection.serverConnection.getCommandHandler().registerCommandHandler("notifyconversationindex", this.handleConversationIndex.bind(this)));
+        this.listenerConnection.push(connection.serverConnection.getCommandHandler().registerCommandHandler("notifyconversationmessagedelete", this.handleConversationMessageDelete.bind(this)));
 
         this.listenerConnection.push(this.connection.channelTree.events.on("notify_channel_list_received", () => {
             this.queryUnreadFlags();

@@ -1,19 +1,12 @@
 import * as loader from "tc-loader";
-import {Stage} from "tc-loader";
-import * as bipc from "./ipc/BrowserIPC";
-import * as sound from "./sound/Sounds";
-import * as i18n from "./i18n/localize";
-import {tra} from "./i18n/localize";
+import {initializeI18N, tra} from "./i18n/localize";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
-import * as aplayer from "tc-backend/audio/player";
-import * as ppt from "tc-backend/ppt";
 import * as global_ev_handler from "./events/ClientGlobalControlHandler";
 import {AppParameters, settings, Settings, UrlParameterBuilder, UrlParameterParser} from "tc-shared/settings";
 import {LogCategory, logDebug, logError, logInfo, logWarn} from "tc-shared/log";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
 import {RecorderProfile, setDefaultRecorder} from "tc-shared/voice/RecorderProfile";
-import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {openModalNewcomer} from "tc-shared/ui/modal/ModalNewcomer";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
@@ -27,12 +20,17 @@ import {server_connections} from "tc-shared/ConnectionManager";
 import {spawnConnectModalNew} from "tc-shared/ui/modal/connect/Controller";
 import {initializeKeyControl} from "./KeyControl";
 import {assertMainApplication} from "tc-shared/ui/utils";
+import {clientServiceInvite} from "tc-shared/clientservice";
+import {ActionResult} from "tc-services";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {bookmarks} from "tc-shared/Bookmarks";
+import {getAudioBackend, OutputDevice} from "tc-shared/audio/Player";
 
 /* required import for init */
 import "svg-sprites/client-icons";
 import "../css/load-css"
 import "./proto";
-import "./video-viewer/Controller";
 import "./profiles/ConnectionProfile";
 import "./update/UpdaterWeb";
 import "./file/LocalIcons";
@@ -45,38 +43,52 @@ import "./media/Video";
 import "./ui/AppController";
 import "./ui/frames/menu-bar/MainMenu";
 import "./ui/modal/connect/Controller";
+import "./ui/modal/video-viewer/Controller";
+import "./ui/modal/avatar-upload/Controller";
 import "./ui/elements/ContextDivider";
 import "./ui/elements/Tab";
 import "./clientservice";
 import "./text/bbcode/InviteController";
-import {clientServiceInvite} from "tc-shared/clientservice";
-import {ActionResult} from "tc-services";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import "./text/bbcode/YoutubeController";
+import {initializeSounds, setSoundMasterVolume} from "./audio/Sounds";
+import {getInstanceConnectHandler, setupIpcHandler} from "./ipc/BrowserIPC";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
 
 assertMainApplication();
 
 let preventWelcomeUI = false;
 async function initialize() {
     try {
-        await i18n.initialize();
+        await initializeI18N();
     } catch(error) {
         console.error(tr("Failed to initialized the translation system!\nError: %o"), error);
         loader.critical_error("Failed to setup the translation system");
         return;
     }
 
-    bipc.setupIpcHandler();
+    setupIpcHandler();
 }
 
 async function initializeApp() {
     global_ev_handler.initialize(global_client_actions);
+    getAudioBackend().setMasterVolume(settings.getValue(Settings.KEY_SOUND_MASTER) / 100);
+    getAudioBackend().executeWhenInitialized(() => {
+        const defaultDeviceId = getAudioBackend().getDefaultDeviceId();
+        let targetDeviceId = settings.getValue(Settings.KEY_SPEAKER_DEVICE_ID, OutputDevice.DefaultDeviceId);
+        if(targetDeviceId === OutputDevice.DefaultDeviceId) {
+            targetDeviceId = defaultDeviceId;
+        }
 
-    if(!aplayer.initialize()) {
-        console.warn(tr("Failed to initialize audio controller!"));
-    }
-
-    aplayer.on_ready(() => aplayer.set_master_volume(settings.getValue(Settings.KEY_SOUND_MASTER) / 100));
+        getAudioBackend().setCurrentDevice(targetDeviceId).catch(error => {
+            logWarn(LogCategory.AUDIO, tr("Failed to set last used output speaker device: %o"), error);
+            if(targetDeviceId !== defaultDeviceId) {
+                getAudioBackend().setCurrentDevice(defaultDeviceId).catch(error => {
+                    logError(LogCategory.AUDIO, tr("Failed to set output device to default device: %o"), error);
+                    createErrorModal(tr("Failed to initialize output device"), tr("Failed to initialize output device.")).open();
+                });
+            }
+        });
+    });
 
     const recorder = new RecorderProfile("default");
     try {
@@ -87,18 +99,10 @@ async function initializeApp() {
     }
     setDefaultRecorder(recorder);
 
-    sound.initialize().then(() => {
+    initializeSounds().then(() => {
         logInfo(LogCategory.AUDIO, tr("Sounds initialized"));
     });
-    sound.set_master_volume(settings.getValue(Settings.KEY_SOUND_MASTER_SOUNDS) / 100);
-
-    try {
-        await ppt.initialize();
-    } catch(error) {
-        logError(LogCategory.GENERAL, tr("Failed to initialize ppt!\nError: %o"), error);
-        loader.critical_error(tr("Failed to initialize ppt!"));
-        return;
-    }
+    setSoundMasterVolume(settings.getValue(Settings.KEY_SOUND_MASTER_SOUNDS) / 100);
 }
 
 /* The native client has received a connect request. */
@@ -173,7 +177,6 @@ type ConnectRequestResult = {
  * @param parameters General connect parameters from the connect URL
  */
 async function doHandleConnectRequest(serverAddress: string, serverUniqueId: string | undefined, parameters: UrlParameterParser) : Promise<ConnectRequestResult> {
-
     let targetServerConnection: ConnectionHandler;
     let isCurrentServerConnection: boolean;
 
@@ -198,18 +201,19 @@ async function doHandleConnectRequest(serverAddress: string, serverUniqueId: str
         return { status: "profile-invalid" };
     }
 
-    if(!aplayer.initialized()) {
+    if(!getAudioBackend().isInitialized()) {
         /* Trick the client into clicking somewhere on the site to initialize audio */
-        const resultPromise = new Promise<boolean>(resolve => {
-            spawnYesNo(tra("Connect to {}", serverAddress), tra("Would you like to connect to {}?", serverAddress), resolve).open();
+        const result = await promptYesNo({
+            title: tra("Connect to {}", serverAddress),
+            question: tra("Would you like to connect to {}?", serverAddress)
         });
 
-        if(!(await resultPromise)) {
+        if(!result) {
             /* Well... the client don't want to... */
             return { status: "client-aborted" };
         }
 
-        await new Promise(resolve => aplayer.on_ready(resolve));
+        await new Promise<void>(resolve => getAudioBackend().executeWhenInitialized(resolve));
     }
 
     const clientNickname = parameters.getValue(AppParameters.KEY_CONNECT_NICKNAME, undefined);
@@ -401,15 +405,6 @@ const task_teaweb_starter: loader.Task = {
         try {
             await initializeApp();
             main();
-            if(!aplayer.initialized()) {
-                logInfo(LogCategory.VOICE, tr("Initialize audio controller later!"));
-                if(!aplayer.initializeFromGesture) {
-                    console.error(tr("Missing aplayer.initializeFromGesture"));
-                } else {
-                    $(document).one('click', () => aplayer.initializeFromGesture());
-                }
-            }
-
             loader.config.abortAnimationOnFinish = settings.getValue(Settings.KEY_LOADER_ANIMATION_ABORT);
         } catch (ex) {
             console.error(ex.stack);
@@ -444,24 +439,20 @@ const task_connect_handler: loader.Task = {
             }
         };
 
-        const chandler = bipc.getInstanceConnectHandler();
+        const chandler = getInstanceConnectHandler();
         if(chandler && AppParameters.getValue(AppParameters.KEY_CONNECT_NO_SINGLE_INSTANCE)) {
             try {
-                await chandler.post_connect_request(connectData, () => new Promise<boolean>(resolve => {
-                    spawnYesNo(tr("Another TeaWeb instance is already running"), tra("Another TeaWeb instance is already running.{:br:}Would you like to connect there?"), response => {
-                        resolve(response);
-                    }, {
-                        closeable: false
-                    }).open();
-                }));
+                await chandler.post_connect_request(connectData, async () => {
+                    return await promptYesNo({
+                        title: tr("Another TeaWeb instance is already running"),
+                        question: tra("Another TeaWeb instance is already running.\nWould you like to connect there?")
+                    });
+                });
                 logInfo(LogCategory.CLIENT, tr("Executed connect successfully in another browser window. Closing this window"));
 
-                const message =
-                    "You're connecting to {0} within the other TeaWeb instance.{:br:}" +
-                    "You could now close this page.";
                 createInfoModal(
                     tr("Connecting successfully within other instance"),
-                    formatMessage(/* @tr-ignore */ tr(message), connectData.address),
+                    formatMessage(tr("You're connecting to {0} within the other TeaWeb instance.\nYou could now close this page."), connectData.address),
                     {
                         closeable: false,
                         footer: undefined
@@ -487,6 +478,8 @@ const task_connect_handler: loader.Task = {
         }
 
         preventWelcomeUI = true;
+        preventExecuteAutoConnect = true;
+
         loader.register_task(loader.Stage.LOADED, {
             priority: 0,
             function: async () => {
@@ -494,6 +487,7 @@ const task_connect_handler: loader.Task = {
             },
             name: tr("default url connect")
         });
+
         loader.register_task(loader.Stage.LOADED, task_teaweb_starter);
     },
     priority: 10
@@ -551,17 +545,15 @@ loader.register_task(loader.Stage.LOADED, {
     priority: 2000
 });
 
-/* TODO: Remove this after the image preview has been rewritten into react */
-loader.register_task(Stage.JAVASCRIPT_INITIALIZING,{
-    name: "app init",
+let preventExecuteAutoConnect = false;
+loader.register_task(loader.Stage.LOADED, {
+    priority: 0,
     function: async () => {
-        try {
-            $("body").append($("#tmpl_main").renderTag());
-        } catch(error) {
-            logError(LogCategory.GENERAL, error);
-            loader.critical_error(tr("Failed to setup main page!"));
+        if(preventExecuteAutoConnect) {
             return;
         }
+
+        bookmarks.executeAutoConnect();
     },
-    priority: 100
+    name: tr("bookmark auto connect")
 });

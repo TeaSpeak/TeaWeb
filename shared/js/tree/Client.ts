@@ -4,7 +4,7 @@ import {ChannelTree} from "./ChannelTree";
 import * as log from "../log";
 import {LogCategory, logDebug, logError, logInfo, LogType} from "../log";
 import {Settings, settings} from "../settings";
-import {Sound} from "../sound/Sounds";
+import {Sound} from "../audio/Sounds";
 import {Group, GroupManager, GroupTarget, GroupType} from "../permission/GroupManager";
 import PermissionType from "../permission/PermissionType";
 import {createErrorModal, createInputModal} from "../ui/elements/Modal";
@@ -12,38 +12,38 @@ import * as htmltags from "../ui/htmltags";
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {ChannelEntry} from "./Channel";
 import {ConnectionHandler, ViewReasonId} from "../ConnectionHandler";
-import {createServerGroupAssignmentModal} from "../ui/modal/ModalGroupAssignment";
 import {openClientInfo} from "../ui/modal/ModalClientInfo";
 import {spawnBanClient} from "../ui/modal/ModalBanClient";
 import {spawnChangeLatency} from "../ui/modal/ModalChangeLatency";
-import {formatMessage} from "../ui/frames/chat";
-import {spawnYesNo} from "../ui/modal/ModalYesNo";
 import * as hex from "../crypto/hex";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 import {spawnClientVolumeChange, spawnMusicBotVolumeChange} from "../ui/modal/ModalChangeVolumeNew";
-import {spawnPermissionEditorModal} from "../ui/modal/permission/ModalPermissionEditor";
-import {W2GPluginCmdHandler} from "../video-viewer/W2GPlugin";
+import {spawnPermissionEditorModal} from "../ui/modal/permission/ModalController";
 import {global_client_actions} from "../events/GlobalEvents";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {VoiceClient} from "../voice/VoiceClient";
 import {VoicePlayerEvents, VoicePlayerState} from "../voice/VoicePlayer";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
 import {VideoClient} from "tc-shared/connection/VideoConnection";
-import { tr } from "tc-shared/i18n/localize";
+import {tr, tra} from "tc-shared/i18n/localize";
 import {EventClient} from "tc-shared/connectionlog/Definitions";
+import {W2GPluginCmdHandler} from "tc-shared/ui/modal/video-viewer/W2GPlugin";
+import {spawnServerGroupAssignments} from "tc-shared/ui/modal/group-assignment/Controller";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
 
+/* Must be the same as the TeaSpeak servers enum values */
 export enum ClientType {
-    CLIENT_VOICE,
-    CLIENT_QUERY,
-    CLIENT_INTERNAL,
-    CLIENT_WEB,
-    CLIENT_MUSIC,
-    CLIENT_UNDEFINED
+    CLIENT_VOICE = 0,
+    CLIENT_QUERY = 1,
+    CLIENT_WEB = 3,
+    CLIENT_MUSIC = 4,
+    CLIENT_TEASPEAK = 5,
+    CLIENT_UNDEFINED = 5
 }
 
 export class ClientProperties {
     client_type: ClientType = ClientType.CLIENT_VOICE; //TeamSpeaks type
-    client_type_exact: ClientType = ClientType.CLIENT_VOICE;
+    client_type_exact: ClientType = ClientType.CLIENT_UNDEFINED;
 
     client_database_id: number = 0;
     client_version: string = "";
@@ -147,7 +147,7 @@ export class ClientConnectionInfo {
 
 export interface ClientEvents extends ChannelTreeEntryEvents {
     notify_properties_updated: {
-        updated_properties: {[Key in keyof ClientProperties]: ClientProperties[Key]};
+        updated_properties: Partial<ClientProperties>;
         client_properties: ClientProperties
     },
     notify_mute_state_change: { muted: boolean }
@@ -260,12 +260,13 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
         switch (event.newState) {
             case VoicePlayerState.PLAYING:
             case VoicePlayerState.STOPPING:
-                this.speaking = true;
+                this.setSpeaking(true);
                 break;
 
             case VoicePlayerState.STOPPED:
             case VoicePlayerState.INITIALIZING:
-                this.speaking = false;
+            default:
+                this.setSpeaking(false);
                 break;
         }
     }
@@ -465,37 +466,17 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
                     type: contextmenu.MenuEntryType.ENTRY,
                     icon_class: "client-permission_client",
                     name: tr("Client channel permissions"),
-                    callback: () => spawnPermissionEditorModal(this.channelTree.client, "client-channel", { clientDatabaseId: this.properties.client_database_id })
+                    callback: () => spawnPermissionEditorModal(this.channelTree.client, "client-channel", {
+                        clientDatabaseId: this.properties.client_database_id,
+                        channelId: this.currentChannel()?.channelId
+                    })
                 }
             ]
         }];
     }
 
     open_assignment_modal() {
-        createServerGroupAssignmentModal(this as any, (groups, flag) => {
-            if(groups.length == 0) return Promise.resolve(true);
-
-            if(groups.length == 1) {
-                if(flag) {
-                    return this.channelTree.client.serverConnection.send_command("servergroupaddclient", {
-                        sgid: groups[0],
-                        cldbid: this.properties.client_database_id
-                    }).then(() => true);
-                } else
-                    return this.channelTree.client.serverConnection.send_command("servergroupdelclient", {
-                        sgid: groups[0],
-                        cldbid: this.properties.client_database_id
-                    }).then(() => true);
-            } else {
-                const data = groups.map(e => { return {sgid: e}; });
-                data[0]["cldbid"] = this.properties.client_database_id;
-
-                if(flag) {
-                    return this.channelTree.client.serverConnection.send_command("clientaddservergroup", data, {flagset: ["continueonerror"]}).then(() => true);
-                } else
-                    return this.channelTree.client.serverConnection.send_command("clientdelservergroup", data, {flagset: ["continueonerror"]}).then(() => true);
-            }
-        });
+        spawnServerGroupAssignments(this.channelTree.client, this.properties.client_database_id);
     }
 
     open_text_chat() {
@@ -718,32 +699,41 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
         return ClientEntry.chatTag(this.clientId(), this.clientNickName(), this.clientUid(), braces);
     }
 
-    set speaking(flag) {
-        if(flag === this._speaking) return;
-        this._speaking = flag;
-        this.events.fire("notify_speak_state_change", { speaking: flag });
+    /** @deprecated Don't use this any more! */
+    set speaking(flag: boolean) {
+        this.setSpeaking(!!flag);
     }
 
     isSpeaking() { return this._speaking; }
+
+    protected setSpeaking(flag: boolean) {
+        if(this._speaking === flag) {
+            return;
+        }
+
+        this._speaking = flag;
+        this.events.fire("notify_speak_state_change", { speaking: flag });
+    }
 
     updateVariables(...variables: {key: string, value: string}[]) {
 
         let reorder_channel = false;
         let update_avatar = false;
 
-        /* devel-block(log-client-property-updates) */
-        let group = log.group(log.LogType.DEBUG, LogCategory.CLIENT, tr("Update properties (%i) of %s (%i)"), variables.length, this.clientNickName(), this.clientId());
-        {
-            const entries = [];
-            for(const variable of variables)
-                entries.push({
-                    key: variable.key,
-                    value: variable.value,
-                    type: typeof (this.properties[variable.key])
-                });
-            log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Client update properties", entries);
+        let group;
+        if(__build.mode === "debug") {
+            group = log.group(log.LogType.DEBUG, LogCategory.CLIENT, tr("Update properties (%i) of %s (%i)"), variables.length, this.clientNickName(), this.clientId());
+            {
+                const entries = [];
+                for(const variable of variables)
+                    entries.push({
+                        key: variable.key,
+                        value: variable.value,
+                        type: typeof (this.properties[variable.key])
+                    });
+                log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Client update properties", entries);
+            }
         }
-        /* devel-block-end */
 
         for(const variable of variables) {
             const old_value = this._properties[variable.key];
@@ -788,9 +778,7 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
             this.channelTree.client?.fileManager?.avatars.updateCache(this.avatarId(), this.properties.client_flag_avatar);
         }
 
-        /* devel-block(log-client-property-updates) */
-        group.end();
-        /* devel-block-end */
+        group?.end();
 
         {
             let properties = {};
@@ -925,6 +913,44 @@ export class ClientEntry<Events extends ClientEvents = ClientEvents> extends Cha
     getAudioVolume() {
         return this.voiceVolume;
     }
+
+    getClientType() : ClientType {
+        if(this.properties.client_type_exact === ClientType.CLIENT_UNDEFINED) {
+            /* We're on a TS3 server */
+            switch(this.properties.client_type) {
+                case 0:
+                    return ClientType.CLIENT_VOICE;
+
+                case 1:
+                    return ClientType.CLIENT_QUERY;
+
+                default:
+                    return ClientType.CLIENT_UNDEFINED;
+            }
+        } else {
+            switch(this.properties.client_type_exact) {
+                case 0:
+                    return ClientType.CLIENT_VOICE;
+
+                case 1:
+                    return ClientType.CLIENT_QUERY;
+
+                case 3:
+                    return ClientType.CLIENT_WEB;
+
+                case 4:
+                    return ClientType.CLIENT_MUSIC;
+
+                case 5:
+                    return ClientType.CLIENT_TEASPEAK;
+
+                case 2:
+                    /* 2 is the internal client type which should never be visible for the target user */
+                default:
+                    return ClientType.CLIENT_UNDEFINED;
+            }
+        }
+    }
 }
 
 export class LocalClientEntry extends ClientEntry {
@@ -933,6 +959,10 @@ export class LocalClientEntry extends ClientEntry {
     constructor(handle: ConnectionHandler) {
         super(0, "local client");
         this.handle = handle;
+    }
+
+    setSpeaking(flag: boolean) {
+        super.setSpeaking(flag);
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined): void {
@@ -1244,13 +1274,17 @@ export class MusicClientEntry extends ClientEntry<MusicClientEvents> {
                 icon_class: "client-delete",
                 disabled: false,
                 callback: () => {
-                    const tag = $.spawn("div").append(formatMessage(tr("Do you really want to delete {0}"), this.createChatTag(false)));
-                    spawnYesNo(tr("Are you sure?"), $.spawn("div").append(tag), result => {
-                        if(result) {
-                            this.channelTree.client.serverConnection.send_command("musicbotdelete", {
-                                bot_id: this.properties.client_database_id
-                            }).then(() => {});
+                    promptYesNo({
+                        title: tr("Are you sure?"),
+                        question: tra("Do you really want to delete {0}", this.clientNickName())
+                    }).then(result => {
+                        if(!result) {
+                            return;
                         }
+
+                        this.channelTree.client.serverConnection.send_command("musicbotdelete", {
+                            bot_id: this.properties.client_database_id
+                        }).then(() => {});
                     });
                 },
                 type: contextmenu.MenuEntryType.ENTRY

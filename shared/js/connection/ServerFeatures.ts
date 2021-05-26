@@ -3,7 +3,7 @@ import {Registry} from "../events";
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {ErrorCode} from "../connection/ErrorCode";
 import {LogCategory, logDebug, logTrace, logWarn} from "../log";
-import {ExplicitCommandHandler} from "../connection/AbstractCommandHandler";
+import {CommandHandlerCallback} from "../connection/AbstractCommandHandler";
 import { tr } from "tc-shared/i18n/localize";
 
 export type ServerFeatureSupport = "unsupported" | "supported" | "experimental" | "deprecated";
@@ -28,7 +28,7 @@ export interface ServerFeatureEvents {
 export class ServerFeatures {
     readonly events: Registry<ServerFeatureEvents>;
     private readonly connection: ConnectionHandler;
-    private readonly explicitCommandHandler: ExplicitCommandHandler;
+    private readonly explicitCommandHandler: CommandHandlerCallback;
     private readonly stateChangeListener: () => void;
 
     private featureAwait: Promise<boolean>;
@@ -41,7 +41,7 @@ export class ServerFeatures {
         this.events = new Registry<ServerFeatureEvents>();
         this.connection = connection;
 
-        this.connection.getServerConnection().command_handler_boss().register_explicit_handler("notifyfeaturesupport", this.explicitCommandHandler = command => {
+        this.connection.getServerConnection().getCommandHandler().registerCommandHandler("notifyfeaturesupport", this.explicitCommandHandler = command => {
             for(const set of command.arguments) {
                 let support: ServerFeatureSupport;
                 switch (parseInt(set["support"])) {
@@ -96,7 +96,7 @@ export class ServerFeatures {
 
     destroy() {
         this.stateChangeListener();
-        this.connection.getServerConnection()?.command_handler_boss()?.unregister_explicit_handler("notifyfeaturesupport", this.explicitCommandHandler);
+        this.connection.getServerConnection()?.getCommandHandler()?.unregisterCommandHandler("notifyfeaturesupport", this.explicitCommandHandler);
 
         if(this.featureAwaitCallback) {
             this.featureAwaitCallback(false);

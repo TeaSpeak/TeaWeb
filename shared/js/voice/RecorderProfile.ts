@@ -1,15 +1,15 @@
-import * as log from "../log";
 import {LogCategory, logDebug, logError, logWarn} from "../log";
 import {AbstractInput, FilterMode} from "../voice/RecorderBase";
-import {KeyDescriptor, KeyHook} from "../PPTListener";
+import {getKeyBoard, KeyDescriptor, KeyHook} from "../PPTListener";
 import {Settings, settings} from "../settings";
 import {ConnectionHandler} from "../ConnectionHandler";
-import * as aplayer from "tc-backend/audio/player";
-import * as ppt from "tc-backend/ppt";
-import {getRecorderBackend, IDevice} from "../audio/recorder";
+import {getRecorderBackend, InputDevice} from "../audio/Recorder";
 import {FilterType, StateFilter, ThresholdFilter} from "../voice/Filter";
-import { tr } from "tc-shared/i18n/localize";
+import {tr} from "tc-shared/i18n/localize";
 import {Registry} from "tc-shared/events";
+import {getAudioBackend} from "tc-shared/audio/Player";
+import {Mutex} from "tc-shared/Mutex";
+import {NoThrow} from "tc-shared/proto";
 
 export type VadType = "threshold" | "push_to_talk" | "active";
 export interface RecorderProfileConfig {
@@ -51,6 +51,33 @@ export function setDefaultRecorder(recorder: RecorderProfile) {
 
 export interface RecorderProfileEvents {
     notify_device_changed: { },
+
+    notify_voice_start: { },
+    notify_voice_end: { },
+
+    /* attention: this notify will only be called when the audio input hasn't been initialized! */
+    notify_input_initialized: { },
+}
+
+export abstract class RecorderProfileOwner {
+    /**
+     * This method will be called from the recorder profile.
+     */
+    protected abstract handleUnmount();
+
+    /**
+     * This callback will be called when the recorder audio input has
+     * been initialized.
+     * Note: This method might be called within ownRecorder().
+     *       If this method has been called, handleUnmount will be called.
+     *
+     * @param input The target input.
+     */
+    protected abstract handleRecorderInput(input: AbstractInput);
+}
+
+export abstract class ConnectionRecorderProfileOwner extends RecorderProfileOwner {
+    abstract getConnection() : ConnectionHandler;
 }
 
 export class RecorderProfile {
@@ -59,16 +86,14 @@ export class RecorderProfile {
     readonly volatile; /* not saving profile */
 
     config: RecorderProfileConfig;
-    input: AbstractInput;
+    /* TODO! */
+    /* private */input: AbstractInput;
 
+    private currentOwner: RecorderProfileOwner;
+    private currentOwnerMutex: Mutex<void>;
+
+    /* FIXME: Remove this! */
     current_handler: ConnectionHandler;
-
-    /* attention: this callback will only be called when the audio input hasn't been initialized! */
-    callback_input_initialized: (input: AbstractInput) => void;
-    callback_start: () => any;
-    callback_stop: () => any;
-
-    callback_unmount: () => any; /* called if somebody else takes the ownership */
 
     private readonly pptHook: KeyHook;
     private pptTimeout: number;
@@ -83,25 +108,26 @@ export class RecorderProfile {
         this.events = new Registry<RecorderProfileEvents>();
         this.name = name;
         this.volatile = typeof(volatile) === "boolean" ? volatile : false;
+        this.currentOwnerMutex = new Mutex<void>(void 0);
 
         this.pptHook = {
-            callback_release: () => {
-                if(this.pptTimeout)
+            callbackRelease: () => {
+                if(this.pptTimeout) {
                     clearTimeout(this.pptTimeout);
+                }
 
                 this.pptTimeout = setTimeout(() => {
                     this.registeredFilter["ppt-gate"]?.setState(true);
                 }, Math.max(this.config.vad_push_to_talk.delay, 0));
             },
 
-            callback_press: () => {
-                if(this.pptTimeout)
+            callbackPress: () => {
+                if(this.pptTimeout) {
                     clearTimeout(this.pptTimeout);
+                }
 
                 this.registeredFilter["ppt-gate"]?.setState(false);
             },
-
-            cancel: false
         } as KeyHook;
         this.pptHookRegistered = false;
     }
@@ -125,7 +151,7 @@ export class RecorderProfile {
             /* default values */
             this.config = {
                 version: 1,
-                device_id: IDevice.DefaultDeviceId,
+                device_id: InputDevice.DefaultDeviceId,
                 volume: 100,
 
                 vad_threshold: {
@@ -145,7 +171,7 @@ export class RecorderProfile {
             Object.assign(this.config, config || {});
         }
 
-        aplayer.on_ready(async () => {
+        getAudioBackend().executeWhenInitialized(async () => {
             await getRecorderBackend().getDeviceList().awaitInitialized();
 
             await this.initializeInput();
@@ -157,15 +183,13 @@ export class RecorderProfile {
         this.input = getRecorderBackend().createInput();
 
         this.input.events.on("notify_voice_start", () => {
-            logDebug(LogCategory.VOICE, "Voice start");
-            if(this.callback_start)
-                this.callback_start();
+            logDebug(LogCategory.VOICE, tr("Voice recorder %s: Voice started."), this.name);
+            this.events.fire("notify_voice_start");
         });
 
         this.input.events.on("notify_voice_end", () => {
-            logDebug(LogCategory.VOICE, "Voice end");
-            if(this.callback_stop)
-                this.callback_stop();
+            logDebug(LogCategory.VOICE, tr("Voice recorder %s: Voice stopped."), this.name);
+            this.events.fire("notify_voice_end");
         });
 
         this.input.setFilterMode(FilterMode.Block);
@@ -175,17 +199,14 @@ export class RecorderProfile {
         this.registeredFilter["threshold"] = this.input.createFilter(FilterType.THRESHOLD, 100);
         this.registeredFilter["threshold"].setEnabled(false);
 
-        if(this.callback_input_initialized) {
-            this.callback_input_initialized(this.input);
-        }
-
+        this.events.fire("notify_input_initialized");
 
         /* apply initial config values */
         this.input.setVolume(this.config.volume / 100);
         if(this.config.device_id) {
             await this.input.setDeviceId(this.config.device_id);
         } else {
-            await this.input.setDeviceId(IDevice.DefaultDeviceId);
+            await this.input.setDeviceId(InputDevice.DefaultDeviceId);
         }
     }
 
@@ -201,15 +222,12 @@ export class RecorderProfile {
         }
 
         if(this.pptHookRegistered) {
-            ppt.unregister_key_hook(this.pptHook);
+            getKeyBoard().unregisterHook(this.pptHook);
             this.pptHookRegistered = false;
         }
 
-        for(const key of ["key_alt", "key_ctrl", "key_shift", "key_windows", "key_code"]) {
-            this.pptHook[key] = this.config.vad_push_to_talk[key];
-        }
-
-        ppt.register_key_hook(this.pptHook);
+        Object.assign(this.pptHook, this.getPushToTalkKey());
+        getKeyBoard().registerHook(this.pptHook);
         this.pptHookRegistered = true;
 
         this.registeredFilter["ppt-gate"]?.setState(true);
@@ -227,7 +245,7 @@ export class RecorderProfile {
         this.registeredFilter["ppt-gate"].setEnabled(false);
 
         if(this.pptHookRegistered) {
-            ppt.unregister_key_hook(this.pptHook);
+            getKeyBoard().unregisterHook(this.pptHook);
             this.pptHookRegistered = false;
         }
 
@@ -236,18 +254,23 @@ export class RecorderProfile {
             filter.setEnabled(true);
             filter.setThreshold(this.config.vad_threshold.threshold);
 
-            filter.setMarginFrames(10); /* 500ms */
-            filter.setAttackSmooth(.25);
-            filter.setReleaseSmooth(.9);
+            const releaseDelayMs = settings.getValue(Settings.KEY_MICROPHONE_THRESHOLD_RELEASE_DELAY);
+            if(__build.target === "web") {
+                /* One frame is 20ms */
+                filter.setMarginFrames(Math.ceil(releaseDelayMs / 20));
+            } else {
+                /* the client calculates it wrongly... */
+                filter.setMarginFrames(releaseDelayMs * 960);
+            }
+            filter.setAttackSmooth(settings.getValue(Settings.KEY_MICROPHONE_THRESHOLD_ATTACK_SMOOTH));
+            filter.setReleaseSmooth(settings.getValue(Settings.KEY_MICROPHONE_THRESHOLD_RELEASE_SMOOTH));
         } else if(this.config.vad_type === "push_to_talk") {
             const filter = this.registeredFilter["ppt-gate"];
             filter.setEnabled(true);
             filter.setState(true); /* by default set filtered */
 
-            for(const key of ["key_alt", "key_ctrl", "key_shift", "key_windows", "key_code"])
-                this.pptHook[key] = this.config.vad_push_to_talk[key];
-
-            ppt.register_key_hook(this.pptHook);
+            Object.assign(this.pptHook, this.getPushToTalkKey());
+            getKeyBoard().registerHook(this.pptHook);
             this.pptHookRegistered = true;
         } else if(this.config.vad_type === "active") {
             /* we don't have to initialize any filters */
@@ -256,26 +279,47 @@ export class RecorderProfile {
         this.input.setFilterMode(FilterMode.Filter);
     }
 
-    async unmount() : Promise<void> {
-        if(this.callback_unmount) {
-            this.callback_unmount();
-        }
-
-        if(this.input) {
-            try {
-                await this.input.setConsumer(undefined);
-            } catch(error) {
-                logWarn(LogCategory.VOICE, tr("Failed to unmount input consumer for profile (%o)"), error);
+    /**
+     * Own the recorder.
+     */
+    @NoThrow
+    async ownRecorder(target: RecorderProfileOwner | undefined) {
+        await this.currentOwnerMutex.execute(async () => {
+            if(this.currentOwner) {
+                try {
+                    this.currentOwner["handleUnmount"]();
+                } catch (error) {
+                    logError(LogCategory.AUDIO, tr("Failed to invoke unmount method on the current owner: %o"), error);
+                }
+                this.currentOwner = undefined;
             }
 
-            /* this.input.setFilterMode(FilterMode.Block); */
-        }
+            this.currentOwner = target;
+            if(this.input) {
+                await this.input.setConsumer(undefined);
+            }
 
-        this.callback_input_initialized = undefined;
-        this.callback_start = undefined;
-        this.callback_stop = undefined;
-        this.callback_unmount = undefined;
-        this.current_handler = undefined;
+            if(this.currentOwner && this.input) {
+                try {
+                    this.currentOwner["handleRecorderInput"](this.input);
+                } catch (error) {
+                    logError(LogCategory.AUDIO, tr("Failed to call handleRecorderInput on the current owner: %o"), error);
+                }
+            }
+        });
+    }
+
+    getOwner() : RecorderProfileOwner | undefined {
+        return this.currentOwner;
+    }
+
+    isInputActive() : boolean {
+        return typeof this.input !== "undefined" && !this.input.isFiltered();
+    }
+
+    /** @deprecated use `ownRecorder(undefined)` */
+    async unmount() : Promise<void> {
+        await this.ownRecorder(undefined);
     }
 
     getVadType() { return this.config.vad_type; }
@@ -304,10 +348,27 @@ export class RecorderProfile {
         this.save();
     }
 
-    getPushToTalkKey() : KeyDescriptor { return this.config.vad_push_to_talk; }
+    getPushToTalkKey() : KeyDescriptor {
+        return {
+            keyCode: this.config.vad_push_to_talk.key_code,
+
+            keyAlt: this.config.vad_push_to_talk.key_alt,
+            keyCtrl: this.config.vad_push_to_talk.key_ctrl,
+            keyShift: this.config.vad_push_to_talk.key_shift,
+            keyWindows: this.config.vad_push_to_talk.key_windows,
+        }
+    }
+
     setPushToTalkKey(key: KeyDescriptor) {
-        for(const _key of ["key_alt", "key_ctrl", "key_shift", "key_windows", "key_code"])
-            this.config.vad_push_to_talk[_key] = key[_key];
+        this.config.vad_push_to_talk = {
+            delay: this.config.vad_push_to_talk.delay,
+            key_code: key.keyCode,
+
+            key_alt: key.keyAlt,
+            key_ctrl: key.keyCtrl,
+            key_shift: key.keyShift,
+            key_windows: key.keyWindows
+        };
 
         this.reinitializePPTHook();
         this.save();
@@ -315,15 +376,16 @@ export class RecorderProfile {
 
     getPushToTalkDelay() { return this.config.vad_push_to_talk.delay; }
     setPushToTalkDelay(value: number) {
-        if(this.config.vad_push_to_talk.delay === value)
+        if(this.config.vad_push_to_talk.delay === value) {
             return;
+        }
 
         this.config.vad_push_to_talk.delay = value;
         this.save();
     }
 
-    getDeviceId() : string | typeof IDevice.DefaultDeviceId | typeof IDevice.NoDeviceId { return this.config.device_id; }
-    setDevice(device: IDevice | typeof IDevice.DefaultDeviceId | typeof IDevice.NoDeviceId) : Promise<void> {
+    getDeviceId() : string | typeof InputDevice.DefaultDeviceId | typeof InputDevice.NoDeviceId { return this.config.device_id; }
+    setDevice(device: InputDevice | typeof InputDevice.DefaultDeviceId | typeof InputDevice.NoDeviceId) : Promise<void> {
         let deviceId;
         if(typeof device === "object") {
             deviceId = device.deviceId;
@@ -343,8 +405,9 @@ export class RecorderProfile {
 
     getVolume() : number { return this.input ? (this.input.getVolume() * 100) : this.config.volume; }
     setVolume(volume: number) {
-        if(this.config.volume === volume)
+        if(this.config.volume === volume) {
             return;
+        }
 
         this.config.volume = volume;
         this.input?.setVolume(volume / 100);

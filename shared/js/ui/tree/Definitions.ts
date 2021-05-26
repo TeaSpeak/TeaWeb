@@ -103,7 +103,6 @@ export interface ChannelTreeUIEvents {
 
     notify_unread_state: { treeEntryId: number, unread: boolean },
 
-    notify_visibility_changed: { visible: boolean },
     notify_destroy: {}
 }
 

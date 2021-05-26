@@ -1,6 +1,6 @@
 import * as loader from "../loader/loader";
 import {Stage} from "../loader/loader";
-import {BrowserInfo, detect as detectBrowser,} from "detect-browser";
+import {detect as detectBrowser} from "detect-browser";
 
 loader.register_task(Stage.SETUP, {
     name: "app init",
@@ -13,14 +13,11 @@ loader.register_task(Stage.SETUP, {
             }
 
             window.__native_client_init_hook();
-            window.native_client = true;
         } else {
             if(__build.target !== "web") {
                 loader.critical_error("App seems not to be compiled for the web.", "This app has been compiled for " + __build.target);
                 return;
             }
-
-            window.native_client = false;
         }
     },
     priority: 1000
@@ -50,7 +47,6 @@ loader.register_task(Stage.SETUP, {
             case "ie":
                 loader.critical_error("Browser not supported", "We're sorry, but your browser isn't supported.");
                 throw "unsupported browser";
-
         }
     },
     priority: 50

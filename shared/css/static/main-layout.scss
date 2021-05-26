@@ -16,77 +16,59 @@ html:root {
 
 	--channel-chat-seperator: #1e1e1e;
 	--channel-chat-seperator-selected: #707070;
+
+	--server-log-text: #6e6e6e;
+	--server-log-error: #e62222;
+	--server-log-tree-entry: #d8d8d8;
+
+	--hostbanner-background: #2e2e2e;
 }
 
-.hide-small {
-	opacity: 1;
-	transition: opacity $animation_length linear;
-}
+:global {
+	/* Still in use for the global hang in point */
+	.app-container {
+		right: 0;
+		left: 0;
+		top: 0;
 
-.show-small {
-	display: none;
-
-	opacity: 0;
-	transition: opacity $animation_length linear;
-}
-
-.app-container {
-	right: 0;
-	left: 0;
-	top: 0;
-
-	overflow: auto;
-	padding: 0;
-}
-
-@media only screen and (max-width: $small_device) {
-	.hide-small {
-		display: none;
-		opacity: 0;
-		transition: opacity $animation_length linear;
+		overflow: auto;
+		padding: 0;
 	}
 
-	.show-small {
-		display: block !important;
-
-		opacity: 1 !important;
-		transition: opacity $animation_length linear;
-	}
-}
-
-$animation_seperator_length: .1s;
-.container-seperator {
-	@include transition(all $animation_seperator_length ease-in-out);
-	background: var(--channel-chat-seperator);
-
-	flex-grow: 0;
-	flex-shrink: 0;
-
-	&.horizontal {
-		height: $separator_thickness;
-		width: 100%;
-
-		cursor: row-resize;
-	}
-
-	&.vertical {
-		width: $separator_thickness;
-		height: 100%;
-
-		cursor: col-resize;
-	}
-
-	&.seperator-selected {
+	$animation_seperator_length: .1s;
+	.container-seperator {
 		@include transition(all $animation_seperator_length ease-in-out);
+		background: var(--channel-chat-seperator);
 
-		background-color: var(--channel-chat-seperator-selected);
+		flex-grow: 0;
+		flex-shrink: 0;
+
+		&.horizontal {
+			height: $separator_thickness;
+			width: 100%;
+
+			cursor: row-resize;
+		}
+
+		&.vertical {
+			width: $separator_thickness;
+			height: 100%;
+
+			cursor: col-resize;
+		}
+
+		&.seperator-selected {
+			@include transition(all $animation_seperator_length ease-in-out);
+
+			background-color: var(--channel-chat-seperator-selected);
+		}
 	}
-}
 
-html, body {
-	overflow: hidden;
-}
+	html, body {
+		overflow: hidden;
+	}
 
-body {
-	background: var(--app-background)!important;
+	body {
+		background: var(--app-background)!important;
+	}
 }

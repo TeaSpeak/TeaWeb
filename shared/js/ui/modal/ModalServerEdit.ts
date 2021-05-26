@@ -4,11 +4,11 @@ import PermissionType from "../../permission/PermissionType";
 import {GroupManager} from "../../permission/GroupManager";
 import {hashPassword} from "../../utils/helpers";
 import * as tooltip from "../../ui/elements/Tooltip";
-import {spawnIconSelect} from "../../ui/modal/ModalIconSelect";
 import {network} from "../../ui/frames/chat";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 import {tr} from "tc-shared/i18n/localize";
 import {LogCategory, logTrace} from "tc-shared/log";
+import {spawnIconManage} from "tc-shared/ui/modal/icon-viewer/Controller";
 
 export function createServerModal(server: ServerEntry, callback: (properties?: ServerProperties) => Promise<void>) {
     const properties = Object.assign({}, server.properties);
@@ -120,15 +120,15 @@ function apply_general_listener(tag: JQuery, server: ServerEntry, properties: Se
     /* icon */
     {
         tag.find(".button-select-icon").on('click', event => {
-            spawnIconSelect(server.channelTree.client, id => {
+            spawnIconManage(server.channelTree.client, properties.virtualserver_icon_id, newIconId => {
                 const icon_node = tag.find(".icon-preview");
                 icon_node.children().remove();
-                icon_node.append(generateIconJQueryTag(getIconManager().resolveIcon(id, server.properties.virtualserver_unique_identifier, server.channelTree.client.handlerId)));
+                icon_node.append(generateIconJQueryTag(getIconManager().resolveIcon(newIconId, server.properties.virtualserver_unique_identifier, server.channelTree.client.handlerId)));
 
-                logTrace(LogCategory.GENERAL, "Selected icon ID: %d", id);
-                properties.virtualserver_icon_id = id;
+                logTrace(LogCategory.GENERAL, "Selected icon ID: %d", newIconId);
+                properties.virtualserver_icon_id = newIconId;
                 callback_valid(undefined); //Toggle save button update
-            }, properties.virtualserver_icon_id);
+            });
         });
 
         tag.find(".button-icon-remove").on('click', event => {

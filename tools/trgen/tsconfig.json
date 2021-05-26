@@ -6,13 +6,16 @@
     "lib": ["es6"],
 
     "typeRoots": [],
-    "types": []
+    "types": [],
+
+    "esModuleInterop": true
   },
   "files": [
-    "generator.ts",
-    "index.ts",
-    "compiler.ts",
-    "jsrender_generator.ts",
-    "ts_generator.ts"
+    "./Definitions.ts",
+    "./generator/JsRenderer.ts",
+    "./generator/TypeScript.ts",
+    "./webpack/Loader.ts",
+    "./webpack/Plugin.ts",
+    "./webpack/Utils.ts"
   ]
 }

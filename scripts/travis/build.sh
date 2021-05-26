@@ -60,11 +60,11 @@ function parse_arguments() {
 function execute() {
     time_begin=$(date +%s%N)
 
-    echo "> Executing step: $1" >> ${LOG_FILE}
+    echo "> Executing step: $1" >> "${LOG_FILE}"
     echo -e "\e[32m> Executing step: $1\e[0m"
     #Execute the command
     for command in "${@:3}"; do
-        echo "$> $command" >> ${LOG_FILE}
+        echo "$> $command" >> "${LOG_FILE}"
         if [[ ${build_verbose} -gt 0 ]]; then
             echo "$> $command"
         fi
@@ -72,18 +72,18 @@ function execute() {
         error=""
         if [[ ${build_verbose} -gt 0 ]]; then
             if [[ -f ${LOG_FILE}.tmp ]]; then
-                rm ${LOG_FILE}.tmp
+                rm "${LOG_FILE}.tmp"
             fi
-            ${command} |& tee ${LOG_FILE}.tmp | grep -E '^[^(/\S*/libstdc++.so\S*: no version information available)].*'
+            ${command} |& tee "${LOG_FILE}.tmp" | grep -E '^[^(/\S*/libstdc++.so\S*: no version information available)].*'
 
             error_code=${PIPESTATUS[0]}
-            error=$(cat ${LOG_FILE}.tmp)
-            cat ${LOG_FILE}.tmp >> ${LOG_FILE}
-            rm ${LOG_FILE}.tmp
+            error=$(cat "${LOG_FILE}.tmp")
+            cat "${LOG_FILE}.tmp" >> "${LOG_FILE}"
+            rm "${LOG_FILE}.tmp"
         else
             error=$(${command} 2>&1)
             error_code=$?
-            echo "$error" >> ${LOG_FILE}
+            echo "$error" >> "${LOG_FILE}"
         fi
 
 
@@ -154,51 +154,20 @@ source ./scripts/install_dependencies.sh
 
 echo "----------   Web client    ----------"
 
-function move_target_file() {
-    file_name=$(ls -1t | grep -E "^TeaWeb-.*\.zip$" | head -n 1)
-    if [[ -z "$file_name" ]]; then
-        handle_failure -1 "Failed to find target file"
-    fi
-
-    mkdir -p "${PACKAGES_DIRECTORY}" || { echo "failed to create target path"; exit 1; }
-    target_file="${PACKAGES_DIRECTORY}/$file_name"
-    if [[ -f "$target_file" ]]; then
-        echo "Removing old packed file located at $target_file"
-        rm "${target_file}" && handle_failure -1 "Failed to remove target file"
-    fi
-    mv "${file_name}" "${target_file}"
-    echo "Moved target file to $target_file"
-}
-
 function execute_build_release() {
     execute \
         "Building release package" \
         "Failed to build release" \
         "./scripts/build.sh web release"
-
-    execute \
-        "Packaging release" \
-        "Failed to package release" \
-        "./scripts/web_package.sh release"
-
-    move_target_file
 }
 function execute_build_debug() {
     execute \
         "Building debug package" \
         "Failed to build debug" \
         "./scripts/build.sh web dev"
-
-    execute \
-        "Packaging release" \
-        "Failed to package debug" \
-        "./scripts/web_package.sh dev"
-
-    move_target_file
 }
 
 chmod +x ./scripts/build.sh
-chmod +x ./scripts/web_package.sh
 if [[ ${build_release} ]]; then
     execute_build_release
 fi

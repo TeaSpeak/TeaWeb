@@ -1,4 +1,3 @@
-import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
 import * as React from "react";
 import {RDPEntry} from "tc-shared/ui/tree/RendererDataProvider";
 
@@ -13,5 +12,3 @@ export class UnreadMarkerRenderer extends React.Component<{ entry: RDPEntry }, {
         }
     }
 }
-
-export class RendererTreeEntry<Props, State> extends ReactComponentBase<Props, State> { }

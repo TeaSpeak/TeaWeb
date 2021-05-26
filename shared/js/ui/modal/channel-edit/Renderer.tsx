@@ -23,7 +23,7 @@ import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {getIconManager} from "tc-shared/file/Icons";
 import {AbstractModal} from "tc-shared/ui/react-elements/modal/Definitions";
-import {ChannelNameAlignment, ChannelNameParser} from "tc-shared/tree/Channel";
+import {ChannelNameAlignment} from "tc-shared/tree/Channel";
 
 const cssStyle = require("./Renderer.scss");
 

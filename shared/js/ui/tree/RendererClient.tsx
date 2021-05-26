@@ -40,7 +40,7 @@ export class ClientName extends React.Component<{ client: RDPClient }, {}> {
             }
 
             if(name.awayMessage) {
-                awayMessage = " " + name.awayMessage;
+                awayMessage = ` (${name.awayMessage})`;
             }
 
             return (
@@ -154,7 +154,7 @@ class ClientNameEdit extends React.Component<ClientNameEditProps, {}> {
             ref={this.refDiv}
             dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(this.props.initialName)}}
             onBlur={() => this.onBlur()}
-            onKeyPress={e => this.onKeyPress(e)}
+            onKeyDown={e => this.onKeyDown(e)}
         />
     }
 
@@ -162,7 +162,7 @@ class ClientNameEdit extends React.Component<ClientNameEditProps, {}> {
         this.props.editFinished(this.refDiv.current.textContent);
     }
 
-    private onKeyPress(event: React.KeyboardEvent) {
+    private onKeyDown(event: React.KeyboardEvent) {
         if (event.key === "Enter") {
             event.preventDefault();
             this.onBlur();

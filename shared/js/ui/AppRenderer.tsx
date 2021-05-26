@@ -1,141 +1,133 @@
 import * as React from "react";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo} from "react";
 import {ControlBar2} from "tc-shared/ui/frames/control-bar/Renderer";
-import {Registry} from "tc-shared/events";
-import {ControlBarEvents} from "tc-shared/ui/frames/control-bar/Definitions";
-import {ConnectionListUIEvents} from "tc-shared/ui/frames/connection-handler-list/Definitions";
+import {IpcRegistryDescription, Registry} from "tc-shared/events";
 import {ConnectionHandlerList} from "tc-shared/ui/frames/connection-handler-list/Renderer";
 import {ErrorBoundary} from "tc-shared/ui/react-elements/ErrorBoundary";
 import {ContextDivider} from "tc-shared/ui/react-elements/ContextDivider";
 import {SideBarRenderer} from "tc-shared/ui/frames/SideBarRenderer";
-import {SideBarEvents} from "tc-shared/ui/frames/SideBarDefinitions";
-import {SideHeaderEvents} from "tc-shared/ui/frames/side/HeaderDefinitions";
 import {ServerLogFrame} from "tc-shared/ui/frames/log/Renderer";
-import {ServerEventLogUiEvents} from "tc-shared/ui/frames/log/Definitions";
 import {FooterRenderer} from "tc-shared/ui/frames/footer/Renderer";
 import {HostBanner} from "tc-shared/ui/frames/HostBannerRenderer";
-import {HostBannerUiEvents} from "tc-shared/ui/frames/HostBannerDefinitions";
-import {AppUiEvents} from "tc-shared/ui/AppDefinitions";
+import {AppUiVariables} from "tc-shared/ui/AppDefinitions";
 import {ChannelTreeRenderer} from "tc-shared/ui/tree/Renderer";
-import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
-
+import {ImagePreviewHook} from "tc-shared/ui/frames/ImagePreview";
+import {InternalModalHook} from "tc-shared/ui/react-elements/modal/internal";
+import {TooltipHook} from "tc-shared/ui/react-elements/Tooltip";
+import {ChannelVideoRenderer} from "tc-shared/ui/frames/video/Renderer";
+import {
+    createIpcUiVariableConsumer,
+    IpcVariableDescriptor
+} from "tc-shared/ui/utils/IpcVariable";
+import {UiVariableConsumer} from "tc-shared/ui/utils/Variable";
+import {useRegistry} from "tc-shared/ui/react-elements/Helper";
 const cssStyle = require("./AppRenderer.scss");
 
-/*
-<div class="app-container">
-    <div class="app">
-        <!-- navigation bar -->
-        <div class="container-control-bar">
-            <div id="control_bar" class="control_bar">
-            </div>
-        </div>
-        <div class="container-connection-handlers" id="connection-handler-list"></div>
-        <div class="container-app-main">
-            <div class="container-channel-video" id="channel-video"></div>
-            <div class="container-channel-chat">
-                <!-- Channel tree -->
-                <div class="container-channel-tree">
-                    <div class="hostbanner" id="hostbanner"></div>
-                    <div class="channel-tree" id="channelTree"></div>
-                </div>
+const VideoFrame = React.memo((props: { variables: UiVariableConsumer<AppUiVariables> }) => {
+    const data = props.variables.useReadOnly("channelVideo", undefined, { handlerId: undefined, events: undefined });
+    const events = useRegistry(data.events);
 
-                <div class="container-seperator vertical" seperator-id="seperator-channel-chat"></div>
-                <!-- Chat window -->
-                <div class="container-chat" id="chat"></div>
-            </div>
-            <div class="container-seperator horizontal" seperator-id="seperator-main-log"></div>
-            <div class="container-bottom">
-                <div class="container-server-log" id="server-log"></div>
-                <div class="container-footer" id="container-footer">
-                </div>
-            </div> <!-- Selection info -->
-        </div>
-    </div>
-</div>
- */
-
-const VideoFrame = React.memo((props: { events: Registry<AppUiEvents> }) => {
-    const refElement = React.useRef<HTMLDivElement>();
-    const [ container, setContainer ] = useState<HTMLDivElement | undefined>(() => {
-        props.events.fire("query_video_container");
-        return undefined;
-    });
-    props.events.reactUse("notify_video_container", event => setContainer(event.container));
-
-    useEffect(() => {
-        if(!refElement.current || !container) {
-            return;
-        }
-
-        refElement.current.replaceWith(container);
-        return () => container.replaceWith(refElement.current);
-    });
-
-    if(!container) {
+    if(!data.events) {
         return null;
     }
 
-    return <div ref={refElement} />;
+    return <ChannelVideoRenderer handlerId={data.handlerId} events={events} key={"video-" + data.handlerId} />;
 });
 
-const ChannelTree = React.memo((props: { events: Registry<AppUiEvents> }) => {
-    const [ data, setData ] = useState<{ events: Registry<ChannelTreeUIEvents>, handlerId: string }>(() => {
-        props.events.fire("query_channel_tree");
-        return undefined;
-    });
+const ChannelTree = React.memo((props: { variables: UiVariableConsumer<AppUiVariables> }) => {
+    const data = props.variables.useReadOnly("channelTree", undefined, { handlerId: undefined, events: undefined });
+    const events = useRegistry(data.events);
 
-    props.events.reactUse("notify_channel_tree", event => {
-        setData({ events: event.events, handlerId: event.handlerId });
-    }, undefined, []);
-
-    if(!data?.events) {
+    if(!events) {
         return null;
     }
 
-    return <ChannelTreeRenderer handlerId={data.handlerId} events={data.events} />;
+    return <ChannelTreeRenderer handlerId={data.handlerId} events={events} key={"tree-" + data.handlerId} />;
 });
+
+const SideBar = React.memo((props: { variables: UiVariableConsumer<AppUiVariables> }) => (
+    <EventProvider registry={props.variables.useReadOnly("sidebar", undefined, undefined)}>
+        {sidebarRegistry => (
+            <EventProvider registry={props.variables.useReadOnly("sidebarHeader", undefined, undefined)}>
+                {sidebarHeaderRegistry => sidebarRegistry && sidebarHeaderRegistry ? (
+                    <SideBarRenderer events={sidebarRegistry} eventsHeader={sidebarHeaderRegistry} className={cssStyle.sideBar} />
+                ) : null}
+            </EventProvider>
+        )}
+    </EventProvider>
+));
+
+function EventProvider<T>(props: {
+    registry: IpcRegistryDescription<T> | undefined,
+    children: (registry: Registry<T> | undefined) => React.ReactElement
+}) : React.ReactElement {
+    return props.children(useRegistry(props.registry));
+}
 
 export const TeaAppMainView = (props: {
-    events: Registry<AppUiEvents>
-    controlBar: Registry<ControlBarEvents>,
-    connectionList: Registry<ConnectionListUIEvents>,
-    sidebar: Registry<SideBarEvents>,
-    sidebarHeader: Registry<SideHeaderEvents>,
-    log: Registry<ServerEventLogUiEvents>,
-    hostBanner: Registry<HostBannerUiEvents>
+    variables: IpcVariableDescriptor<AppUiVariables>,
 }) => {
+    const variables = useMemo(() => createIpcUiVariableConsumer(props.variables), [ props.variables ]);
+    useEffect(() => () => variables.destroy(), [ props.variables ]);
+
     return (
         <div className={cssStyle.app}>
             <ErrorBoundary>
-                <ControlBar2 events={props.controlBar} className={cssStyle.controlBar} />
+                <EventProvider registry={variables.useReadOnly("controlBar", undefined, undefined)}>
+                    {registry => registry ? (
+                        <ControlBar2 events={registry} className={cssStyle.controlBar} />
+                    ) : null}
+                </EventProvider>
             </ErrorBoundary>
             <ErrorBoundary>
-                <ConnectionHandlerList events={props.connectionList} />
+                <EventProvider registry={variables.useReadOnly("connectionList", undefined, undefined)}>
+                    {registry => registry ? (
+                        <ConnectionHandlerList events={registry} />
+                    ) : null}
+                </EventProvider>
             </ErrorBoundary>
 
             <div className={cssStyle.mainContainer}>
-                <VideoFrame events={props.events} />
+                <VideoFrame variables={variables} />
 
                 <div className={cssStyle.channelTreeAndSidebar}>
                     <div className={cssStyle.channelTree}>
                         <ErrorBoundary>
-                            <HostBanner events={props.hostBanner} />
-                            <ChannelTree events={props.events} />
+                            <EventProvider registry={variables.useReadOnly("hostBanner", undefined, undefined)}>
+                                {registry => registry ? (
+                                    <HostBanner events={registry} />
+                                ) : null}
+                            </EventProvider>
+                            <ChannelTree variables={variables} />
                         </ErrorBoundary>
                     </div>
                     <ContextDivider id={"channel-chat"} direction={"horizontal"} defaultValue={25} />
-                    <SideBarRenderer events={props.sidebar} eventsHeader={props.sidebarHeader} className={cssStyle.sideBar} />
+                    <SideBar variables={variables} />
                 </div>
                 <ContextDivider id={"main-log"} direction={"vertical"} defaultValue={75} />
                 <ErrorBoundary>
                     <div className={cssStyle.containerLog}>
-                        <ServerLogFrame events={props.log} />
+                        <EventProvider registry={variables.useReadOnly("log", undefined, undefined)}>
+                            {registry => registry ? (
+                                <ServerLogFrame events={registry} />
+                            ) : null}
+                        </EventProvider>
                     </div>
                 </ErrorBoundary>
             </div>
             <FooterRenderer />
+
+            <ErrorBoundary>
+                <ImagePreviewHook />
+            </ErrorBoundary>
+
+            <ErrorBoundary>
+                <InternalModalHook />
+            </ErrorBoundary>
+
+            <ErrorBoundary>
+                <TooltipHook />
+            </ErrorBoundary>
         </div>
     );
 }
-
-/* ConnectionHandlerList  */

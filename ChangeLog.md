@@ -1,4 +1,83 @@
 # Changelog:
+* **26.05.21**
+    - Fixed automated builds
+    - Fixed the bookmark UI popout window
+    - Added a context menu for the general bookmark container
+  
+* **05.05.21**
+    - Reworked the icon modal
+    - Fixed some minor icon and avatar related issues
+    - Improved icon modal performance
+  
+* **29.04.21**
+    - Fixed a bug which caused chat messages to appear twice
+    - Adding support for poping out channel conversations
+  
+* **27.04.21**
+    - Implemented support for showing the video feed watchers
+    - Updating the channel tree if the channel client order changes
+  
+* **24.04.21**
+    - Removed the old server info modal and using the new React based and popoutable modal
+    - Using the new React modal for the server info dialog. The modal now also has improved permission and error visualisation
+    - Improved tooltip handling
+  
+* **19.04.21**
+    - Fixed a bug that the client video box is shown as active even though the client does not stream any video
+    - Fixed a bug that the video fullscreen windows pops open when a client leaves/joins the channel
+    - Removed extra new line after blockquote for the markdown renderer
+  
+* **05.04.21**
+    - Fixed the mute but for the webclient
+    - Fixed that "always active" microphone filter now works reliably  
+    - Improved the recorder API
+  
+* **29.03.21**
+    - Acquiring the default input recorder when opening the settings
+    - Adding new modal Input Processing Properties for the native client
+    - Fixed that you can't finish off the name editing by pressing enter
+  
+* **25.03.21**
+    - Allowing to directly select the speaker output device
+    - Saving the speaker output device
+  
+* **24.03.21**
+    - Improved the avatar upload modal (now way more intuitive)
+    - Fixed a bug which cause client avatars to be stuck within the loading screen
+    - Don't spam permission errors if we don't have the permission to view the channel description
+    - Showing channel group inheritance within the client info frame
+  
+* **23.03.21**
+    - Made the permission editor popoutable
+    - Now using SVG flags for higher quality.
+    - Fixed issue [#74](https://github.com/TeaSpeak/TeaWeb/issues/74) (Swiss flag box has black background)
+    - Fixed issue that middle clicking on the channel does not shows the channel file browser instead it shows the global one
+  
+* **21.03.21**
+    - Reworked the server group assignment modal. It now better reacts to the user input as well is now popoutable
+  
+* **18.03.21**
+    - Finally, got fully rid of the initial backend glue and changes all systems to provider
+  
+* **17.03.21**
+    - Updated from webpack 4 to webpack 5
+    - Reworked the client build process
+    - Using webpack dev server from now on
+  
+* **14.03.21**
+    - Enchanted the bookmark system
+      - Added support for auto connect on startup
+      - Cleaned and simplified up the bookmark UI
+      - Added support for importing/exporting bookmarks
+      - Added support for duplicating bookmarks
+      - Adding support for default channels and passwords
+      
+* **12.03.21**
+    - Added a new video spotlight mode which allows showing multiple videos at the same time as well as 
+      dragging and resizing them
+    - Fixed a minor bug within the permission editor
+    - Fixed the creation of channel groups
+  
 * **20.02.21**
     - Improved the browser IPC module
     - Added support for client invite links

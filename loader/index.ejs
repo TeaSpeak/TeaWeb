@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, min-zoom=1, max-zoom: 1, user-scalable=no">
+        <meta name="description" content="The TeaSpeak Web client is a in the browser running client for the VoIP communication software TeaSpeak." />
+        <meta name="keywords" content="TeaSpeak, TeaWeb, TeaSpeak-Web,Web client TeaSpeak, веб клієнт TeaSpeak, TSDNS, багатомовність, мультимовність, теми, функціонал"/>
+
+        <meta name="og:description" content="The TeaSpeak Web client is a in the browser running client for the VoIP communication software TeaSpeak." />
+        <meta name="og:url" content="https://web.teaspeak.de/">
+        <% /* TODO: Put in an appropriate image <meta name="og:image" content="https://www.whatsapp.com/img/whatsapp-promo.png"> */ %>
+
+        <% /* Using an absolute path here since the manifest.json works only with such. */ %>
+        <% /* <link rel="manifest" href="/manifest.json"> */ %>
+
+<% if(buildTarget === "client") { %>
+        <title>TeaClient</title>
+        <meta name='og:title' content='TeaClient'>
+<% } else { %>
+        <title>TeaSpeak-Web</title>
+        <meta name='og:title' content='TeaSpeak-Web'>
+        <link rel='shortcut icon' href='<%= require("./images/favicon_teacup.png") %>' type='image/x-icon' id="favicon">
+        <% /* <link rel="apple-touch-icon" sizes="194x194" href="/apple-touch-icon.png" type="image/png"> */ %>
+<% } %>
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="format-detection" content="telephone=no">
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script defer async src="https://www.googletagmanager.com/gtag/js?id=UA-113151733-4"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+
+            gtag('js', new Date());
+            gtag('config', 'UA-113151733-4');
+        </script>
+
+        <link rel="preload" as="image" href="<%= require("./images/initial-sequence.gif") %>">
+        <link rel="preload" as="image" href="<%= require("./images/bowl.png") %>">
+        <% /* We don't preload the bowl since it's only a div background */ %>
+        <link rel="preload" as="image" href="<%= require("./images/text.png") %>">
+
+        <%= htmlWebpackPlugin.tags.headTags %>
+    </head>
+    <body>
+        <!-- No javascript error -->
+        <noscript>
+            <div id="overlay-no-js">
+                <div class="container">
+                    <div class="img">
+                        <%= require("!!svg-inline-loader!./images/script.svg") %>
+                    </div>
+                    <h1>Please enable JavaScript</h1>
+                    <h3>TeaSpeak web could not run without it!</h3>
+                    <h3>Its like you, without coffee</h3>
+                </div>
+            </div>
+        </noscript>
+
+        <!-- Loading screen -->
+        <div class="loader" id="loader-overlay">
+            <div class="container">
+                <div class="setup">
+                    <lazy-img src="<%= require("./images/initial-sequence.gif") %>" alt="initial loading sequence" x-animation-depend="normal"></lazy-img>
+                    <lazy-img src="<%= require("./images/halloween-initial-sequence.gif") %>" alt="initial loading sequence" x-animation-depend="halloween"></lazy-img>
+                </div>
+                <div class="idle animation-normal">
+                    <lazy-img class="bowl" src="<%= require("./images/bowl.png") %>" alt="bowl" x-animation-depend="normal"></lazy-img>
+                    <lazy-img class="text" src="<%= require("./images/text.png") %>" alt="TeaSpeak" x-animation-depend="normal"></lazy-img>
+                    <div class="steam"></div>
+                </div>
+                <div class="idle animation-halloween">
+                    <lazy-img src="<%= require("./images/halloween-loop.gif") %>" alt="halloween loop" x-animation-depend="halloween"></lazy-img>
+                </div>
+            </div>
+
+            <div class="loader-stage"></div>
+        </div>
+
+        <!-- Critical load error -->
+        <div class="fulloverlay" id="critical-load">
+            <div class="container">
+                <div class="img">
+                    <%= require("!!svg-inline-loader!./images/loading_error_right.svg") %>
+                </div>
+
+                <h1 class="error"></h1>
+                <h3 class="detail"></h3>
+            </div>
+        </div>
+
+        <%= htmlWebpackPlugin.tags.bodyTags %>
+    </body>
+</html>

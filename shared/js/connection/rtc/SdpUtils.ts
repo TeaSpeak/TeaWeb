@@ -1,5 +1,5 @@
 import * as sdpTransform from "sdp-transform";
-import { tr } from "tc-shared/i18n/localize";
+import {tr, tra} from "tc-shared/i18n/localize";
 
 interface SdpCodec {
     payload: number;
@@ -81,6 +81,16 @@ export class SdpProcessor {
 
     getLocalSsrcFromFromMediaId(mediaId: string) : number | undefined {
         return this.rtpLocalChannelMapping[mediaId];
+    }
+
+    getLocalMediaIdFromSsrc(ssrc: number) : string | undefined {
+        for(const key of Object.keys(this.rtpLocalChannelMapping)) {
+            if(this.rtpLocalChannelMapping[key] === ssrc) {
+                return key;
+            }
+        }
+
+        return undefined;
     }
 
     processIncomingSdp(sdpString: string, _mode: "offer" | "answer") : string {

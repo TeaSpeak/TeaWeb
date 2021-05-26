@@ -1,0 +1,223 @@
+:global {
+	$setup-time-normal: 80s / 24; /* 24 frames / sec; the initial sequence is 80 frames */
+	$setup-time-halloween: 323s / 24;
+	$loop-time-halloween: 25s / 24;
+
+	#loader-overlay {
+		position: absolute;
+		overflow: hidden;
+
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+
+		background: #1e1e1e;
+
+		user-select: none;
+
+		z-index: 10000000;
+
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+
+		-webkit-app-region: drag;
+
+		.container {
+			flex-shrink: 0;
+
+			display: block;
+			position: relative;
+
+			width: 1000px;
+			height: 1000px;
+
+			align-self: center;
+			margin-bottom: 10vh;
+
+			transition-duration: .5s;
+
+			img {
+				user-select: none;
+			}
+		}
+
+		.setup, .idle {
+			position: absolute;
+
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+
+			display: none;
+
+			&.visible {
+				display: block;
+			}
+		}
+
+		.setup.visible {
+			&.normal {
+				animation: loader-initial-sequence 0s cubic-bezier(.81,.01,.65,1.16) $setup-time-normal forwards;
+			}
+
+			&.halloween {
+				animation: loader-initial-sequence 0s cubic-bezier(.81,.01,.65,1.16) $setup-time-halloween forwards;
+			}
+		}
+
+		.idle.animation-normal {
+			img {
+				position: absolute;
+			}
+
+			.steam {
+				position: absolute;
+
+				top: 282px;
+				left: 380px;
+
+				width: 249px;
+				height: 125px;
+				background: url("../../images/steam.png") 0 0;
+
+				animation: sprite-steam 2.5s steps(50) forwards infinite;
+			}
+		}
+
+		&.finishing {
+			.idle {
+				.steam {
+					display: none;
+				}
+
+				.bowl {
+					animation: swipe-out-bowl .5s both;
+				}
+
+				.text {
+					animation: swipe-out-text .5s .12s both;
+				}
+			}
+
+			pointer-events: none;
+			animation: overlay-fade .3s .2s both;
+		}
+
+		.loader-stage {
+			position: absolute;
+
+			left: 5px;
+			bottom: 5px;
+
+			font-size: 12px;
+			font-family: monospace;
+
+			color: #999;
+		}
+	}
+
+	/* Automated loader timeout */
+	#loader-overlay:not(.initialized) + #critical-load:not(.shown) {
+		display: block !important;
+		opacity: 0;
+
+		animation: loader-setup-timeout 0s ease-in $setup-time-normal forwards;
+
+		.error::before {
+			content: 'Failed to startup loader!';
+		}
+
+		.detail::before {
+			content: 'Lookup the console for more details';
+		}
+	}
+}
+
+@media all and (max-width: 850px) {
+	:global {
+		#loader-overlay .container {
+			transform: scale(.5);
+		}
+	}
+}
+
+@media all and (max-height: 700px) {
+	:global {
+		#loader-overlay .container {
+			transform: scale(.5);
+		}
+	}
+}
+
+@media all and (max-width: 400px) {
+	:global {
+		#loader-overlay .container {
+			transform: scale(.3);
+		}
+	}
+}
+
+@keyframes :global(loader-initial-sequence) {
+	to {
+		display: none;
+	}
+}
+
+@keyframes :global(sprite-steam) {
+	to {
+		background-position: 0 -6250px;
+	}
+}
+
+@keyframes :global(swipe-out-bowl) {
+	from {
+		transform: translate3d(0, 0, 0);
+	}
+
+	40% {
+		opacity: 1;
+		transform: translate3d(-60px, 0, 0) skew(-5deg, 0) rotateY(-6deg);
+	}
+
+	to {
+		opacity: 0;
+		transform: translate3d(700px, 0, 0) skew(30deg, 0) rotateZ(-6deg);
+	}
+}
+
+@keyframes :global(swipe-out-text) {
+	from {
+		transform: translate3d(0, 0, 0);
+	}
+
+	40% {
+		opacity: 1;
+		transform: translate3d(-30px, 20px, 0) skew(-5deg, 0);
+	}
+
+	to {
+		opacity: 0;
+		transform: translate3d(550px, 0, 0) skew(30deg, 0) scale(.96, 1.25) rotateZ(6deg);
+	}
+}
+
+@keyframes :global(animation-nothing) {
+	to {
+		background-position: 0 -6250px;
+	}
+}
+
+@keyframes :global(overlay-fade) {
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes :global(loader-setup-timeout) {
+	to {
+		opacity: 1;
+	}
+}

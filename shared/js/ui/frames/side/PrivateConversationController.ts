@@ -1,5 +1,5 @@
 import {ConnectionHandler} from "../../../ConnectionHandler";
-import {EventHandler} from "../../../events";
+import {EventHandler} from "tc-events";
 import {
     PrivateConversationInfo,
     PrivateConversationUIEvents
@@ -73,27 +73,18 @@ export class PrivateConversationController extends AbstractConversationControlle
 
         this.connection = connection;
         if(connection) {
-            this.initializeConnectionListener(connection);
             this.setConversationManager(connection.getPrivateConversations());
+            this.setSelectedConversation("conversation-manager-selected");
         } else {
             this.setConversationManager(undefined);
         }
         this.reportConversationList();
     }
 
-    private initializeConnectionListener(connection: ConnectionHandler) {
-        this.connectionListener.push(connection.events().on("notify_visibility_changed", event => {
-            if(!event.visible)
-                return;
+    protected registerConversationManagerEvents(manager: PrivateConversationManager): (() => void)[] {
+        const events = super.registerConversationManagerEvents(manager);
 
-            this.handlePanelShow();
-        }));
-    }
-
-    protected registerConversationManagerEvents(manager: PrivateConversationManager) {
-        super.registerConversationManagerEvents(manager);
-
-        this.listenerManager.push(manager.events.on("notify_conversation_created", event => {
+        events.push(manager.events.on("notify_conversation_created", event => {
             const conversation = event.conversation;
             const events = this.listenerConversation[conversation.getChatId()] = [];
             events.push(conversation.events.on("notify_partner_changed", event => {
@@ -111,17 +102,18 @@ export class PrivateConversationController extends AbstractConversationControlle
 
             this.reportConversationList();
         }));
-        this.listenerManager.push(manager.events.on("notify_conversation_destroyed", event => {
+        events.push(manager.events.on("notify_conversation_destroyed", event => {
             this.listenerConversation[event.conversation.getChatId()]?.forEach(callback => callback());
             delete this.listenerConversation[event.conversation.getChatId()];
 
             this.reportConversationList();
         }));
-        this.listenerManager.push(manager.events.on("notify_selected_changed", () => this.reportConversationList()));
-        this.listenerManager.push(() => {
+        events.push(manager.events.on("notify_selected_changed", () => this.reportConversationList()));
+        events.push(() => {
             Object.values(this.listenerConversation).forEach(callbacks => callbacks.forEach(callback => callback()));
             this.listenerConversation = {};
         });
+        return events;
     }
 
     focusInput() {

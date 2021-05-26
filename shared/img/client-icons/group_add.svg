@@ -1,0 +1,10 @@
+<svg version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+ <style type="text/css">.st0{fill:#666666;}</style>
+ <g transform="scale(.25)">
+  <g id="Icon-Plus" transform="translate(28,278)">
+   <path class="st0" d="m4-222.1c-13.2 0-23.9-10.7-23.9-23.9s10.7-23.9 23.9-23.9 23.9 10.7 23.9 23.9-10.7 23.9-23.9 23.9zm0-45.2c-11.7 0-21.3 9.6-21.3 21.3s9.6 21.3 21.3 21.3 21.3-9.6 21.3-21.3-9.6-21.3-21.3-21.3z"/>
+   <polygon class="st0" points="16.7 -247.4 16.7 -244.6 -8.7 -244.6 -8.7 -247.4"/>
+   <polygon class="st0" points="5.4 -258.7 5.4 -233.3 2.6 -233.3 2.6 -258.7"/>
+  </g>
+ </g>
+</svg>

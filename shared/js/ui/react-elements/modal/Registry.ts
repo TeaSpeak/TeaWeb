@@ -3,7 +3,7 @@ import {ModalConstructorArguments} from "tc-shared/ui/react-elements/modal/Defin
 
 export interface RegisteredModal<T extends keyof ModalConstructorArguments> {
     modalId: T,
-    classLoader: () => Promise<new (...args: ModalConstructorArguments[T]) => AbstractModal>,
+    classLoader: () => Promise<{ default: new (...args: ModalConstructorArguments[T]) => AbstractModal }>,
     popoutSupported: boolean
 }
 
@@ -20,8 +20,14 @@ function registerModal<T extends keyof ModalConstructorArguments>(modal: Registe
 }
 
 registerModal({
+    modalId: "modal-yes-no",
+    classLoader: async () => await import("tc-shared/ui/modal/yes-no/Renderer"),
+    popoutSupported: true
+})
+
+registerModal({
     modalId: "video-viewer",
-    classLoader: async () => await import("tc-shared/video-viewer/Renderer"),
+    classLoader: async () => await import("tc-shared/ui/modal/video-viewer/Renderer"),
     popoutSupported: true
 });
 
@@ -29,6 +35,18 @@ registerModal({
     modalId: "channel-edit",
     classLoader: async () => await import("tc-shared/ui/modal/channel-edit/Renderer"),
     popoutSupported: false /* TODO: Needs style fixing */
+});
+
+registerModal({
+    modalId: "channel-info",
+    classLoader: async () => await import("tc-shared/ui/modal/channel-info/Renderer"),
+    popoutSupported: true
+});
+
+registerModal({
+    modalId: "channel-chat",
+    classLoader: async () => await import("tc-shared/ui/modal/channel-chat/Renderer"),
+    popoutSupported: true
 });
 
 registerModal({
@@ -73,3 +91,74 @@ registerModal({
     popoutSupported: true
 });
 
+registerModal({
+    modalId: "modal-bookmarks",
+    classLoader: async () => await import("tc-shared/ui/modal/bookmarks/Renderer"),
+    popoutSupported: true
+});
+
+registerModal({
+    modalId: "modal-bookmark-add-server",
+    classLoader: async () => await import("tc-shared/ui/modal/bookmarks-add-server/Renderer"),
+    popoutSupported: true
+});
+
+registerModal({
+    modalId: "modal-poked",
+    classLoader: async () => await import("tc-shared/ui/modal/poke/Renderer"),
+    popoutSupported: true
+});
+
+registerModal({
+    modalId: "modal-assign-server-groups",
+    classLoader: async () => await import("tc-shared/ui/modal/group-assignment/Renderer"),
+    popoutSupported: true
+});
+
+registerModal({
+    modalId: "modal-permission-edit",
+    classLoader: async () => await import("tc-shared/ui/modal/permission/ModalRenderer"),
+    popoutSupported: true
+});
+
+registerModal({
+    modalId: "modal-avatar-upload",
+    classLoader: async () => await import("tc-shared/ui/modal/avatar-upload/Renderer"),
+    popoutSupported: true
+});
+
+registerModal({
+    modalId: "modal-input-processor",
+    classLoader: async () => await import("tc-shared/ui/modal/input-processor/Renderer"),
+    popoutSupported: true
+});
+
+registerModal({
+    modalId: "modal-about",
+    classLoader: async () => await import("tc-shared/ui/modal/about/Renderer"),
+    popoutSupported: true
+});
+
+registerModal({
+    modalId: "modal-server-info",
+    classLoader: async () => await import("tc-shared/ui/modal/server-info/Renderer"),
+    popoutSupported: true
+});
+
+registerModal({
+    modalId: "modal-server-bandwidth",
+    classLoader: async () => await import("tc-shared/ui/modal/server-bandwidth/Renderer"),
+    popoutSupported: true
+});
+
+registerModal({
+    modalId: "modal-video-viewers",
+    classLoader: async () => await import("tc-shared/ui/modal/video-viewers/Renderer"),
+    popoutSupported: true
+});
+
+registerModal({
+    modalId: "modal-icon-viewer",
+    classLoader: async () => await import("tc-shared/ui/modal/icon-viewer/Renderer"),
+    popoutSupported: true
+});

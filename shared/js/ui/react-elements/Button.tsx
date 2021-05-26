@@ -1,5 +1,6 @@
 import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
 import * as React from "react";
+import {joinClassList} from "tc-shared/ui/react-elements/Helper";
 
 const cssStyle = require("./Button.scss");
 
@@ -21,12 +22,14 @@ export interface ButtonState {
     disabled?: boolean
 }
 
-export class Button extends ReactComponentBase<ButtonProperties, ButtonState> {
-    protected defaultState(): ButtonState {
-        return {
+export class Button extends React.Component<ButtonProperties, ButtonState> {
+    constructor(props) {
+        super(props);
+
+        this.state = {
             disabled: undefined
-        };
-    }
+        }
+    };
 
     render() {
         if(this.props.hidden)
@@ -34,7 +37,7 @@ export class Button extends ReactComponentBase<ButtonProperties, ButtonState> {
 
         return (
             <button
-                className={this.classList(
+                className={joinClassList(
                     cssStyle.button,
                     cssStyle["color-" + this.props.color] || cssStyle["color-default"],
                     cssStyle["type-" + this.props.type] || cssStyle["type-normal"],

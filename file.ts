@@ -30,49 +30,26 @@ type ProjectResource = {
 }
 
 const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
+    { /* javascript files as manifest.json */
+        "type": "js",
+        "search-pattern": /.*\.(js|json|svg|png|css)$/,
+        "build-target": "dev|rel",
+
+        "path": "js/",
+        "local-path": "./dist/"
+    },
+
     { /* shared html files */
         "type": "html",
         "search-pattern": /^.*([a-zA-Z]+)\.(html|json)$/,
         "build-target": "dev|rel",
 
         "path": "./",
-        "local-path": "./shared/html/"
-    },
-    { /* javascript files as manifest.json */
-        "type": "js",
-        "search-pattern": /.*\.(js|json|svg)$/,
-        "build-target": "dev|rel",
-
-        "path": "js/",
         "local-path": "./dist/"
-    },
-    { /* javascript files as manifest.json */
-        "type": "html",
-        "search-pattern": /.*\.html$/,
-        "build-target": "dev|rel",
-
-        "path": "./",
-        "local-path": "./dist/"
-    },
-    { /* Loader css file (only required in dev mode. In release it gets inlined) */
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "dev",
-
-        "path": "css/",
-        "local-path": "./loader/css/"
     },
     { /* shared sound files */
         "type": "wav",
-        "search-pattern": /.*\.wav$/,
-        "build-target": "dev|rel",
-
-        "path": "audio/",
-        "local-path": "./shared/audio/"
-    },
-    { /* shared data sound files */
-        "type": "json",
-        "search-pattern": /.*\.json/,
+        "search-pattern": /.*\.(wav|json)$/,
         "build-target": "dev|rel",
 
         "path": "audio/",
@@ -87,15 +64,6 @@ const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
         "path": "img/",
         "local-path": "./shared/img/"
     },
-    { /* assembly files */
-        "web-only": true,
-        "type": "wasm",
-        "search-pattern": /.*\.(wasm)/,
-        "build-target": "dev|rel",
-
-        "path": "js/",
-        "local-path": "./dist/"
-    }
 ];
 
 const APP_FILE_LIST_SHARED_VENDORS: ProjectResource[] = [];
@@ -297,7 +265,7 @@ namespace server {
         } else {
             server = http.createServer(handleHTTPRequest);
         }
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             server.on('error', reject);
             server.listen(options.port, () => {
                 server.off("error", reject);
@@ -308,7 +276,7 @@ namespace server {
 
     export async function shutdown() {
         if(server) {
-            await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+            await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
             server = undefined;
         }
     }
@@ -428,7 +396,7 @@ namespace watcher {
             this._process.addListener("error", this.handle_error.bind(this));
 
             try {
-                await new Promise((resolve, reject) => {
+                await new Promise<void>((resolve, reject) => {
                     const id = setTimeout(reject, 5000, "timeout");
                     this._callback_init = () => {
                         clearTimeout(id);

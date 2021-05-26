@@ -86,7 +86,7 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
         } else if (this.state.state === "loaded") {
             rightItem = null;
             if (this.state.assignedKey)
-                rightItem = <div className={cssStyle.key}>{ppt.key_description(this.state.assignedKey)}</div>;
+                rightItem = <div className={cssStyle.key}>{ppt.getKeyDescription(this.state.assignedKey)}</div>;
         } else {
             rightItem =
                 <div key={"status-error"} className={this.classList(cssStyle.status, cssStyle.error)}><Translatable
@@ -101,7 +101,7 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
                 hidden={this.props.hidden}
                 onContextMenu={e => this.onContextMenu(e)}
             >
-                <IconRenderer icon={this.props.icon}/>
+                <IconRenderer icon={this.props.icon} className={cssStyle.icon}/>
                 <a><Translatable trIgnore={true}>{this.props.description}</Translatable></a>
                 {rightItem}
             </div>
@@ -189,7 +189,7 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
             });
         } else {
             this.setState({state: "loaded"});
-            createErrorModal(tr("Failed to change key"), tra("Failed to change key for action \"{}\":{:br:}{}", this.props.action, event.status === "timeout" ? tr("timeout") : event.error));
+            createErrorModal(tr("Failed to change key"), tra("Failed to change key for action \"{}\":\n{}", this.props.action, event.status === "timeout" ? tr("timeout") : event.error));
         }
     }
 }

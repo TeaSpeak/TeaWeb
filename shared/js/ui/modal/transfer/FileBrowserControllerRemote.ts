@@ -1,14 +1,12 @@
 import {ConnectionHandler} from "../../../ConnectionHandler";
-import {Registry} from "../../../events";
+import {Registry} from "tc-events";
 import {FileType} from "../../../file/FileManager";
 import {CommandResult} from "../../../connection/ServerConnectionDeclaration";
 import PermissionType from "../../../permission/PermissionType";
 import {LogCategory, logError, logTrace} from "../../../log";
 import {Entry, MenuEntry, MenuEntryType, spawn_context_menu} from "../../../ui/elements/ContextMenu";
-import * as ppt from "tc-backend/ppt";
-import {SpecialKey} from "../../../PPTListener";
-import {spawnYesNo} from "../../../ui/modal/ModalYesNo";
-import {tr, tra, traj} from "../../../i18n/localize";
+import {getKeyBoard, SpecialKey} from "../../../PPTListener";
+import {tr, tra} from "../../../i18n/localize";
 import {
     FileTransfer,
     FileTransferState,
@@ -26,6 +24,7 @@ import {
     ListedFileInfo,
     PathInfo
 } from "tc-shared/ui/modal/transfer/FileDefinitions";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
 
 function parsePath(path: string, connection: ConnectionHandler): PathInfo {
     if (path === "/" || !path) {
@@ -74,9 +73,18 @@ function parsePath(path: string, connection: ConnectionHandler): PathInfo {
 }
 
 export function initializeRemoteFileBrowserController(connection: ConnectionHandler, events: Registry<FileBrowserEvents>) {
+    /* currently selected files */
+    let currentPath = "/";
+    let currentPathInfo: PathInfo;
+    let selection: { name: string, type: FileType }[] = [];
+
     events.on("action_navigate_to", event => {
         try {
             const info = parsePath(event.path, connection);
+
+            currentPathInfo = info;
+            currentPath = event.path;
+            selection = [];
 
             events.fire_react("notify_current_path", {
                 path: event.path || "/",
@@ -371,20 +379,6 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         });
     });
 
-    /* currently selected files */
-    let currentPath = "/";
-    let currentPathInfo: PathInfo;
-    let selection: { name: string, type: FileType }[] = [];
-    events.on("notify_current_path", result => {
-        if (result.status !== "success") {
-            return;
-        }
-
-        currentPathInfo = result.pathInfo;
-        currentPath = result.path;
-        selection = [];
-    });
-
     events.on("query_current_path", () => events.fire_react("notify_current_path", {
         status: "success",
         path: currentPath,
@@ -427,7 +421,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 icon_class: "client-file_refresh"
             });
         } else {
-            const forceDelete = ppt.key_pressed(SpecialKey.SHIFT);
+            const forceDelete = getKeyBoard().isKeyPressed(SpecialKey.SHIFT);
             if (selection.length === 0) {
                 entries.push({
                     type: MenuEntryType.ENTRY,
@@ -514,12 +508,18 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         }) : event.files;
 
         if (event.mode === "ask") {
-            spawnYesNo(tr("Are you sure?"), tra("Do you really want to delete {0} {1}?", files.length, files.length === 1 ? tr("files") : tr("files")), result => {
-                if (result)
-                    events.fire("action_delete_file", {
-                        files: files,
-                        mode: "force"
-                    });
+            promptYesNo({
+                title: tr("Are you sure?"),
+                question: tra("Do you really want to delete {0} {1}?", files.length, files.length === 1 ? tr("files") : tr("files")),
+            }).then(result => {
+                if(!result) {
+                    return;
+                }
+
+                events.fire("action_delete_file", {
+                    files: files,
+                    mode: "force"
+                });
             });
             return;
         }
@@ -714,7 +714,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 });
                 transfer.awaitFinished().then(() => {
                     if (transfer.transferState() === FileTransferState.ERRORED) {
-                        createErrorModal(tr("Failed to download file"), traj("Failed to download {0}:{:br:}{1}", fileName, transfer.currentErrorMessage())).open();
+                        createErrorModal(tr("Failed to download file"), tra("Failed to download {0}:\n{1}", fileName, transfer.currentErrorMessage())).open();
                     }
                 });
             } catch (error) {
@@ -745,7 +745,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         } else if (event.mode === "files") {
             const pathInfo = parsePath(event.path, connection);
             if (pathInfo.type !== "channel") {
-                createErrorModal(tr("Failed to upload file(s)"), tra("Failed to upload files:{:br:}File uplaod is only supported in channel directories")).open();
+                createErrorModal(tr("Failed to upload file(s)"), tra("Failed to upload files:\nFile uplaod is only supported in channel directories")).open();
                 return;
             }
             for (const file of event.files) {
@@ -759,7 +759,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 });
                 transfer.awaitFinished().then(() => {
                     if (transfer.transferState() === FileTransferState.ERRORED) {
-                        createErrorModal(tr("Failed to upload file"), tra("Failed to upload {0}:{:br:}{1}", fileName, transfer.currentErrorMessage())).open();
+                        createErrorModal(tr("Failed to upload file"), tra("Failed to upload {0}:\n{1}", fileName, transfer.currentErrorMessage())).open();
                     }
                 });
             }

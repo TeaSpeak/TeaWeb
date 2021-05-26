@@ -1,8 +1,8 @@
 import {createErrorModal, createInfoModal, createInputModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {sliderfy} from "tc-shared/ui/elements/Slider";
 import {settings, Settings} from "tc-shared/settings";
-import * as sound from "tc-shared/sound/Sounds";
-import {manager, set_master_volume, Sound} from "tc-shared/sound/Sounds";
+import * as sound from "tc-shared/audio/Sounds";
+import {manager, setSoundMasterVolume, Sound} from "tc-shared/audio/Sounds";
 import * as profiles from "tc-shared/profiles/ConnectionProfile";
 import {ConnectionProfile} from "tc-shared/profiles/ConnectionProfile";
 import {IdentitifyType} from "tc-shared/profiles/Identity";
@@ -12,21 +12,21 @@ import {NameIdentity} from "tc-shared/profiles/identities/NameIdentity";
 import {LogCategory, logDebug, logError, logTrace, logWarn} from "tc-shared/log";
 import * as i18n from "tc-shared/i18n/localize";
 import {RepositoryTranslation, TranslationRepository} from "tc-shared/i18n/localize";
-import * as events from "tc-shared/events";
 import {Registry} from "tc-shared/events";
-import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
-import * as i18nc from "tc-shared/i18n/country";
+import * as i18nc from "../../i18n/CountryFlag";
 import * as forum from "tc-shared/profiles/identities/teaspeak-forum";
 import {formatMessage, set_icon_size} from "tc-shared/ui/frames/chat";
 import {spawnTeamSpeakIdentityImport, spawnTeamSpeakIdentityImprove} from "tc-shared/ui/modal/ModalIdentity";
-import {Device} from "tc-shared/audio/player";
-import * as aplayer from "tc-backend/audio/player";
+import {getAudioBackend, OutputDevice} from "tc-shared/audio/Player";
 import {KeyMapSettings} from "tc-shared/ui/modal/settings/Keymap";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {NotificationSettings} from "tc-shared/ui/modal/settings/Notifications";
-import {initialize_audio_microphone_controller, MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/Microphone";
+import {initialize_audio_microphone_controller} from "tc-shared/ui/modal/settings/Microphone";
 import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
+import {getBackend} from "tc-shared/backend";
+import {MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/MicrophoneDefinitions";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
 
 type ProfileInfoEvent = {
     id: string,
@@ -367,7 +367,7 @@ function settings_general_language(container: JQuery, modal: Modal) {
             container_current.empty();
 
             const language = current_translation ? current_translation.country_code : "gb";
-            $.spawn("div").addClass("country flag-" + language.toLowerCase()).attr('title', i18nc.country_name(language, tr("Unknown language"))).appendTo(container_current);
+            $.spawn("div").addClass("country flag-" + language.toLowerCase()).attr('title', i18nc.getCountryName(language, tr("Unknown language"))).appendTo(container_current);
             $.spawn("a").text(current_translation ? current_translation.name : tr("English (Default)")).appendTo(container_current);
         }).catch(error => {
             /* This shall never happen */
@@ -384,7 +384,7 @@ function settings_general_language(container: JQuery, modal: Modal) {
             const tag = template.renderTag({
                 type: "default",
                 selected: !currently_selected || currently_selected == "default",
-                fallback_country_name: i18nc.country_name('gb'),
+                fallback_country_name: i18nc.getCountryName('gb'),
             });
             tag.on('click', () => {
                 i18n.select_translation(undefined, undefined);
@@ -411,7 +411,10 @@ function settings_general_language(container: JQuery, modal: Modal) {
                     repo_tag.find(".button-delete").on('click', e => {
                         e.preventDefault();
 
-                        spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this repository?"), answer => {
+                        promptYesNo({
+                            title: tr("Are you sure?"),
+                            question: tr("Do you really want to delete this repository?"),
+                        }).then(answer => {
                             if (answer) {
                                 i18n.delete_repository(repo);
                                 update_list();
@@ -433,8 +436,8 @@ function settings_general_language(container: JQuery, modal: Modal) {
                         id: repo.unique_id,
                         country_code: translation.country_code,
                         selected: i18n.config.translation_config().current_translation_path == translation.path,
-                        fallback_country_name: i18nc.country_name('gb'),
-                        country_name: i18nc.country_name((translation.country_code || "XX").toLowerCase()),
+                        fallback_country_name: i18nc.getCountryName('gb'),
+                        country_name: i18nc.getCountryName((translation.country_code || "XX").toLowerCase()),
                     });
                     tag.find(".button-info").on('click', e => {
                         e.preventDefault();
@@ -488,7 +491,7 @@ function settings_general_language(container: JQuery, modal: Modal) {
         if (__build.target === "web") {
             location.reload();
         } else {
-            createErrorModal(tr("Not implemented"), tr("Client restart isn't implemented.<br>Please do it manually!")).open();
+            getBackend("native").reloadWindow();
         }
     });
 
@@ -629,9 +632,9 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
         const update_devices = () => {
             container_devices.children().remove();
 
-            const current_selected = aplayer.current_device();
-            const generate_device = (device: Device | undefined) => {
-                const selected = device === current_selected || (typeof (current_selected) !== "undefined" && typeof (device) !== "undefined" && current_selected.device_id == device.device_id);
+            const current_selected = getAudioBackend().getCurrentDevice();
+            const generate_device = (device: OutputDevice | undefined) => {
+                const selected = device === current_selected || (typeof (current_selected) !== "undefined" && typeof (device) !== "undefined" && current_selected.deviceId == device.deviceId);
 
                 const tag = $.spawn("div").addClass("device").toggleClass("selected", selected).append(
                     $.spawn("div").addClass("container-selected").append(
@@ -655,8 +658,10 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
                     _old.removeClass("selected");
                     tag.addClass("selected");
 
-                    aplayer.set_device(device ? device.device_id : null).then(() => {
+                    const targetDeviceId = device.deviceId || OutputDevice.NoDeviceId;
+                    getAudioBackend().setCurrentDevice(targetDeviceId).then(() => {
                         logDebug(LogCategory.AUDIO, tr("Changed default speaker device"));
+                        settings.setValue(Settings.KEY_SPEAKER_DEVICE_ID, targetDeviceId);
                     }).catch((error) => {
                         _old.addClass("selected");
                         tag.removeClass("selected");
@@ -670,7 +675,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
             };
 
             generate_device(undefined).appendTo(container_devices);
-            aplayer.available_devices().then(result => {
+            getAudioBackend().getAvailableDevices().then(result => {
                 contianer_error.text("").hide();
                 result.forEach(e => generate_device(e).appendTo(container_devices));
             }).catch(error => {
@@ -711,8 +716,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
             slider.on('change', event => {
                 const volume = parseInt(slider.attr('value'));
 
-                if (aplayer.set_master_volume)
-                    aplayer.set_master_volume(volume / 100);
+                getAudioBackend().setMasterVolume(volume / 100);
                 settings.setValue(Settings.KEY_SOUND_MASTER, volume);
             });
         }
@@ -729,7 +733,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
             });
             slider.on('change', event => {
                 const volume = parseInt(slider.attr('value'));
-                set_master_volume(volume / 100);
+                setSoundMasterVolume(volume / 100);
                 settings.setValue(Settings.KEY_SOUND_MASTER_SOUNDS, volume);
             });
         }
@@ -1322,7 +1326,10 @@ export namespace modal_settings {
                 button.on('click', event => {
                     if (!current_profile || current_profile === "default") return;
 
-                    spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this profile?"), result => {
+                    promptYesNo({
+                        title: tr("Are you sure?"),
+                        question: tr("Do you really want to delete this profile?"),
+                    }).then(result => {
                         if (result)
                             event_registry.fire("delete-profile", {profile_id: current_profile});
                     });
@@ -1645,7 +1652,10 @@ export namespace modal_settings {
                 {
                     button_new.on('click', event => {
                         if (is_profile_generated) {
-                            spawnYesNo(tr("Are you sure"), tr("Do you really want to generate a new identity and override the old identity?"), result => {
+                            promptYesNo({
+                                title: tr("Are you sure"),
+                                question: tr("Do you really want to generate a new identity and override the old identity?"),
+                            }).then(result => {
                                 if (result) event_registry.fire("generate-identity-teamspeak", {profile_id: current_profile});
                             });
                         } else {
@@ -1670,7 +1680,10 @@ export namespace modal_settings {
                 {
                     button_import.on('click', event => {
                         if (is_profile_generated) {
-                            spawnYesNo(tr("Are you sure"), tr("Do you really want to import a new identity and override the old identity?"), result => {
+                            promptYesNo({
+                                title: tr("Are you sure"),
+                                question: tr("Do you really want to import a new identity and override the old identity?"),
+                            }).then(result => {
                                 if (result) event_registry.fire("import-identity-teamspeak", {profile_id: current_profile});
                             });
                         } else {
@@ -1905,7 +1918,7 @@ export namespace modal_settings {
 
             event_registry.on("reload-profile", event => {
                 event_registry.fire("query-profile-list");
-                event_registry.fire("select-profile", event.profile_id || selected_profile);
+                event_registry.fire("select-profile", { profile_id: event.profile_id || selected_profile });
             });
         }
 

@@ -1183,7 +1183,7 @@
     },
     {
       "key": {
-        "message": "The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br:}Please select another profile or change the identify type."
+        "message": "The target server is a TeamSpeak 3 server!\nOnly TeamSpeak 3 based identities are able to connect.\nPlease select another profile or change the identify type."
       },
       "translated": "De doelserver is een TeamSpeak 3-server! {: Br:} Alleen op TeamSpeak 3 gebaseerde identiteiten kunnen verbinding maken. {: Br:} Selecteer een ander profiel of verander het identificatietype.",
       "flags": [
@@ -1203,7 +1203,7 @@
     },
     {
       "key": {
-        "message": "You've been disconnected, because your Identity level is too low.{:br:}You need at least a level of {0}"
+        "message": "You've been disconnected, because your Identity level is too low.\nYou need at least a level of {0}"
       },
       "translated": "De verbinding is verbroken, omdat uw identiteitsniveau te laag is. {: Br:} U heeft ten minste een niveau van {0} nodig.",
       "flags": [
@@ -1314,7 +1314,7 @@
     },
     {
       "key": {
-        "message": "You've been kicked from the server by {0}:{:br:}{1}"
+        "message": "You've been kicked from the server by {0}:\n{1}"
       },
       "translated": "Je bent van de server verwijderd door {0}: {: br:} {1}",
       "flags": [
@@ -1324,7 +1324,7 @@
     },
     {
       "key": {
-        "message": "You've been kicked from the server:{:br:}{1}"
+        "message": "You've been kicked from the server:\n{1}"
       },
       "translated": "Je bent van de server verwijderd: {: br:} {1}",
       "flags": [
@@ -1615,7 +1615,7 @@
     },
     {
       "key": {
-        "message": "Failed to delete avatar.{:br:}Error: {0}"
+        "message": "Failed to delete avatar.\nError: {0}"
       },
       "translated": "Verwijderen van avatar is mislukt. {: Br:} Fout: {0}",
       "flags": [
@@ -1625,7 +1625,7 @@
     },
     {
       "key": {
-        "message": "Failed to delete avatar.{:br:}Lookup the console for more details"
+        "message": "Failed to delete avatar.\nLookup the console for more details"
       },
       "translated": "Kan avatar niet verwijderen. {: Br:} Zoek de console op voor meer details",
       "flags": [
@@ -1725,7 +1725,7 @@
     },
     {
       "key": {
-        "message": "Failed to update avatar flag.{:br:}Error: {0}"
+        "message": "Failed to update avatar flag.\nError: {0}"
       },
       "translated": "Het updaten van de avatar-vlag is mislukt. {: Br:} Fout: {0}",
       "flags": [
@@ -1735,7 +1735,7 @@
     },
     {
       "key": {
-        "message": "Failed to update avatar flag.{:br:}Lookup the console for more details"
+        "message": "Failed to update avatar flag.\nLookup the console for more details"
       },
       "translated": "Het updaten van de avatar-vlag is mislukt. {: Br:} Zoek de console op voor meer details",
       "flags": [
@@ -3245,7 +3245,7 @@
     },
     {
       "key": {
-        "message": "The profile data is invalid.{:br:}This might cause data loss."
+        "message": "The profile data is invalid.\nThis might cause data loss."
       },
       "translated": "De profielgegevens zijn ongeldig. {: Br:} Dit kan gegevensverlies veroorzaken.",
       "flags": [
@@ -5028,7 +5028,7 @@
     },
     {
       "key": {
-        "message": "Failed to change the speaker device to the target speaker{:br:}{}"
+        "message": "Failed to change the speaker device to the target speaker\n{}"
       },
       "translated": "Kan het luidsprekerapparaat niet wijzigen in de doelspreker {: br:} {}",
       "flags": [
@@ -6109,7 +6109,7 @@
     },
     {
       "key": {
-        "message": "Failed to logout from forum account.{:br:}Error: {}"
+        "message": "Failed to logout from forum account.\nError: {}"
       },
       "translated": "Uitloggen van forumaccount is mislukt. {: Br:} Fout: {}",
       "flags": [
@@ -7655,7 +7655,7 @@
     },
     {
       "key": {
-        "message": "Failed to delete account{:br:}Message: {}"
+        "message": "Failed to delete account\nMessage: {}"
       },
       "translated": "Kan account {: br:} niet verwijderen Bericht: {}",
       "flags": [
@@ -7715,7 +7715,7 @@
     },
     {
       "key": {
-        "message": "Failed to rename account{:br:}Message: {}"
+        "message": "Failed to rename account\nMessage: {}"
       },
       "translated": "Kan de naam van account {: br:} niet wijzigen Bericht: {}",
       "flags": [
@@ -7755,7 +7755,7 @@
     },
     {
       "key": {
-        "message": "Failed to change password{:br:}Message: {}"
+        "message": "Failed to change password\nMessage: {}"
       },
       "translated": "Kan wachtwoord niet wijzigen {: br:} Bericht: {}",
       "flags": [
@@ -11345,7 +11345,7 @@
     },
     {
       "key": {
-        "message": "Failed to rename group:{:br:}"
+        "message": "Failed to rename group:\n"
       },
       "translated": "Naam wijzigen van groep mislukt: {: br:}",
       "flags": [
@@ -16349,7 +16349,7 @@
     },
     {
       "key": {
-        "message": "Failed to delete ban. {:br:}Error: {}"
+        "message": "Failed to delete ban. \nError: {}"
       },
       "translated": "Het verwijderen van de ban is mislukt. {: br:} Fout: {}",
       "flags": [
@@ -16613,7 +16613,7 @@
     },
     {
       "key": {
-        "message": "Failed to edited ban. {:br:}Error: {}"
+        "message": "Failed to edited ban. \nError: {}"
       },
       "translated": "Kan ban niet bewerken. {: br:} Fout: {}",
       "flags": [
@@ -16663,7 +16663,7 @@
     },
     {
       "key": {
-        "message": "Failed to add ban. {:br:}Error: {}"
+        "message": "Failed to add ban. \nError: {}"
       },
       "translated": "Ban kan niet worden toegevoegd. {: br:} Fout: {}",
       "flags": [
@@ -21137,7 +21137,7 @@
     },
     {
       "key": {
-        "message": "Failed to refresh server properties.{:br:}Error: {}"
+        "message": "Failed to refresh server properties.\nError: {}"
       },
       "translated": "Vernieuwen van servereigenschappen is mislukt. {: Br:} Fout: {}",
       "flags": [

@@ -1,29 +1,20 @@
 import {AbstractServerConnection} from "./connection/ConnectionBase";
 import {PermissionManager} from "./permission/PermissionManager";
 import {GroupManager} from "./permission/GroupManager";
-import {ServerSettings, Settings, settings, StaticSettings} from "./settings";
-import {Sound, SoundManager} from "./sound/Sounds";
-import {ConnectionProfile} from "./profiles/ConnectionProfile";
+import {Settings, settings} from "./settings";
+import {Sound, SoundManager} from "./audio/Sounds";
 import {LogCategory, logError, logInfo, logTrace, logWarn} from "./log";
-import {createErrorModal, createInfoModal, createInputModal, Modal} from "./ui/elements/Modal";
+import {createErrorModal, createInputModal, Modal} from "./ui/elements/Modal";
 import {hashPassword} from "./utils/helpers";
 import {HandshakeHandler} from "./connection/HandshakeHandler";
-import * as htmltags from "./ui/htmltags";
 import {FilterMode, InputStartError, InputState} from "./voice/RecorderBase";
-import {CommandResult} from "./connection/ServerConnectionDeclaration";
 import {defaultRecorder, RecorderProfile} from "./voice/RecorderProfile";
-import {Regex} from "./ui/modal/ModalConnect";
 import {formatMessage} from "./ui/frames/chat";
-import {spawnAvatarUpload} from "./ui/modal/ModalAvatar";
-import * as dns from "tc-backend/dns";
 import {EventHandler, Registry} from "./events";
 import {FileManager} from "./file/FileManager";
-import {FileTransferState, TransferProvider} from "./file/Transfer";
-import {tr, traj} from "./i18n/localize";
-import {md5} from "./crypto/md5";
+import {tr, tra} from "./i18n/localize";
 import {guid} from "./crypto/uid";
 import {PluginCmdRegistry} from "./connection/PluginCmdHandler";
-import {W2GPluginCmdHandler} from "./video-viewer/W2GPlugin";
 import {VoiceConnectionStatus, WhisperSessionInitializeData} from "./connection/VoiceConnection";
 import {getServerConnectionFactory} from "./connection/ConnectionFactory";
 import {WhisperSession} from "./voice/VoiceWhisper";
@@ -42,6 +33,13 @@ import {PlaylistManager} from "tc-shared/music/PlaylistManager";
 import {connectionHistory} from "tc-shared/connectionlog/History";
 import {ConnectParameters} from "tc-shared/ui/modal/connect/Controller";
 import {assertMainApplication} from "tc-shared/ui/utils";
+import {getDNSProvider} from "tc-shared/dns";
+import {W2GPluginCmdHandler} from "tc-shared/ui/modal/video-viewer/W2GPlugin";
+import ipRegex from "ip-regex";
+import * as htmltags from "./ui/htmltags";
+import {ServerSettings} from "tc-shared/ServerSettings";
+import {ignorePromise} from "tc-shared/proto";
+import {InvokerInfo} from "tc-shared/tree/ChannelDefinitions";
 
 assertMainApplication();
 
@@ -69,6 +67,43 @@ export enum DisconnectReason {
     SERVER_HOSTMESSAGE,
     IDENTITY_TOO_LOW,
     UNKNOWN
+}
+
+export type ClientDisconnectInfo = {
+    reason: "handler-destroy" | "requested"
+} | {
+    reason: "connection-closed" | "connection-ping-timeout"
+} | {
+    reason: "connect-failure" | "connect-dns-fail" | "connect-identity-too-low"
+} | {
+    reason: "connect-identity-unsupported",
+    unsupportedReason: "ts3-server"
+} | {
+    /* Connect fail since client has been banned */
+    reason: "connect-banned",
+    message: string
+} | {
+    /* Connection got closed because the client got kicked */
+    reason: "client-kicked",
+    message: string,
+    invoker: InvokerInfo
+} | {
+    /* Connection got closed because the client got banned */
+    reason: "client-banned",
+    message: string,
+    length: number | 0,
+    invoker?: InvokerInfo,
+} | {
+    reason: "server-shutdown",
+    message: string,
+    /* TODO: Do we have an invoker here? */
+} | {
+    reason: "connect-host-message-disconnect",
+    message: string
+} | {
+    reason: "generic-connection-error",
+    message: string,
+    allowReconnect: boolean
 }
 
 export enum ConnectionState {
@@ -123,17 +158,6 @@ export interface LocalClientStatus {
     queries_visible: boolean;
 }
 
-export interface ConnectParametersOld {
-    nickname?: string;
-    channel?: {
-        target: string | number;
-        password?: string;
-    };
-    token?: string;
-    password?: {password: string, hashed: boolean};
-    auto_reconnect_attempt?: boolean;
-}
-
 export class ConnectionHandler {
     readonly handlerId: string;
 
@@ -155,6 +179,7 @@ export class ConnectionHandler {
     sound: SoundManager;
 
     serverFeatures: ServerFeatures;
+    log: ServerEventLog;
 
     private sideBar: SideBarManager;
     private playlistManager: PlaylistManager;
@@ -168,14 +193,14 @@ export class ConnectionHandler {
     private localClient: LocalClientEntry;
 
     private autoReconnectTimer: number;
-    private autoReconnectAttempt: boolean = false;
+    private isReconnectAttempt: boolean;
 
     private connectAttemptId: number = 1;
     private echoTestRunning = false;
 
     private pluginCmdRegistry: PluginCmdRegistry;
 
-    private client_status: LocalClientStatus = {
+    private handlerState: LocalClientStatus = {
         input_muted: false,
 
         output_muted: false,
@@ -190,8 +215,6 @@ export class ConnectionHandler {
     private inputHardwareState: InputHardwareState = InputHardwareState.MISSING;
     private listenerRecorderInputDeviceChanged: (() => void);
 
-    log: ServerEventLog;
-
     constructor() {
         this.handlerId = guid();
         this.events_ = new Registry<ConnectionEvents>();
@@ -200,7 +223,13 @@ export class ConnectionHandler {
         this.settings = new ServerSettings();
 
         this.serverConnection = getServerConnectionFactory().create(this);
-        this.serverConnection.events.on("notify_connection_state_changed", event => this.on_connection_state_changed(event.oldState, event.newState));
+        this.serverConnection.events.on("notify_connection_state_changed", event => {
+            logTrace(LogCategory.CLIENT, tr("From %s to %s"), ConnectionState[event.oldState], ConnectionState[event.newState]);
+            this.events_.fire("notify_connection_state_changed", {
+                oldState: event.oldState,
+                newState: event.newState
+            });
+        });
 
         this.serverConnection.getVoiceConnection().events.on("notify_recorder_changed", event => {
             this.setInputHardwareState(this.getVoiceRecorder() ? InputHardwareState.VALID : InputHardwareState.MISSING);
@@ -249,23 +278,34 @@ export class ConnectionHandler {
         this.events_.fire("notify_handler_initialized");
     }
 
-    initialize_client_state(source?: ConnectionHandler) {
-        this.client_status.input_muted = source ? source.client_status.input_muted : settings.getValue(Settings.KEY_CLIENT_STATE_MICROPHONE_MUTED);
-        this.client_status.output_muted = source ? source.client_status.output_muted : settings.getValue(Settings.KEY_CLIENT_STATE_SPEAKER_MUTED);
-        this.update_voice_status();
+    initializeHandlerState(source?: ConnectionHandler) {
+        if(source) {
+            this.handlerState.input_muted = source.handlerState.input_muted;
+            this.handlerState.output_muted = source.handlerState.output_muted;
+            this.update_voice_status();
 
-        this.setSubscribeToAllChannels(source ? source.client_status.channel_subscribe_all : settings.getValue(Settings.KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS));
-        this.doSetAway(source ? source.client_status.away : (settings.getValue(Settings.KEY_CLIENT_STATE_AWAY) ? settings.getValue(Settings.KEY_CLIENT_AWAY_MESSAGE) : false), false);
-        this.setQueriesShown(source ? source.client_status.queries_visible : settings.getValue(Settings.KEY_CLIENT_STATE_QUERY_SHOWN));
+            this.setAway(source.handlerState.away);
+            this.setQueriesShown(source.handlerState.queries_visible);
+            this.setSubscribeToAllChannels(source.handlerState.channel_subscribe_all);
+            /* Ignore lastChannelCodecWarned */
+        } else {
+            this.handlerState.input_muted = settings.getValue(Settings.KEY_CLIENT_STATE_MICROPHONE_MUTED);
+            this.handlerState.output_muted = settings.getValue(Settings.KEY_CLIENT_STATE_SPEAKER_MUTED);
+            this.update_voice_status();
+
+            this.setSubscribeToAllChannels(settings.getValue(Settings.KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS));
+            this.doSetAway(settings.getValue(Settings.KEY_CLIENT_STATE_AWAY) ? settings.getValue(Settings.KEY_CLIENT_AWAY_MESSAGE) : false, false);
+            this.setQueriesShown(settings.getValue(Settings.KEY_CLIENT_STATE_QUERY_SHOWN));
+        }
     }
 
     events() : Registry<ConnectionEvents> {
         return this.events_;
     }
 
-    async startConnectionNew(parameters: ConnectParameters, autoReconnectAttempt: boolean) {
+    async startConnectionNew(parameters: ConnectParameters, isReconnectAttempt: boolean) {
         this.cancelAutoReconnect(true);
-        this.autoReconnectAttempt = autoReconnectAttempt;
+        this.isReconnectAttempt = isReconnectAttempt;
         this.handleDisconnect(DisconnectReason.REQUESTED);
 
         const localConnectionAttemptId = ++this.connectAttemptId;
@@ -316,22 +356,27 @@ export class ConnectionHandler {
             }
         }
 
-        if(resolvedAddress.host.match(Regex.IP_V4) || resolvedAddress.host.match(Regex.IP_V6)) {
+        if(ipRegex({ exact: true }).test(resolvedAddress.host)) {
             /* We don't have to resolve the target host */
-        } else if(dns.supported()) {
+        } else {
             this.log.log("connection.hostname.resolve", {});
             try {
-                const resolved = await dns.resolve_address(parsedAddress, { timeout: 5000 });
+                const resolved = await getDNSProvider().resolveAddress({ hostname: parsedAddress.host, port: parsedAddress.port }, { timeout: 5000 });
                 if(this.connectAttemptId !== localConnectionAttemptId) {
                     /* Our attempt has been aborted */
                     return;
                 }
 
-                if(resolved?.target_ip) {
-                    resolvedAddress.host = resolved.target_ip;
-                    resolvedAddress.port = typeof resolved.target_port === "number" ? resolved.target_port : resolvedAddress.port;
-                } else {
-                    throw tr("address resolve result id empty");
+                if(resolved.status === "empty-result") {
+                    throw tr("address resolve result empty");
+                } else if(resolved.status === "error") {
+                    throw resolved.message;
+                }
+
+                resolvedAddress.host = resolved.resolvedAddress.hostname;
+                resolvedAddress.port = resolved.resolvedAddress.port;
+                if(typeof resolvedAddress.port !== "number") {
+                    resolvedAddress.port = parsedAddress.port;
                 }
 
                 this.log.log("connection.hostname.resolved", {
@@ -349,11 +394,9 @@ export class ConnectionHandler {
                 this.handleDisconnect(DisconnectReason.DNS_FAILED, error);
                 return;
             }
-        } else {
-            this.handleDisconnect(DisconnectReason.DNS_FAILED, tr("Unable to resolve hostname"));
         }
 
-        if(this.autoReconnectAttempt) {
+        if(this.isReconnectAttempt) {
             /* this.currentConnectId = 0; */
             /* Reconnect attempts are connecting to the last server. No need to update the general attempt id */
         } else {
@@ -367,27 +410,11 @@ export class ConnectionHandler {
         await this.serverConnection.connect(resolvedAddress, new HandshakeHandler(parameters));
     }
 
-    async startConnection(addr: string, profile: ConnectionProfile, user_action: boolean, parameters: ConnectParametersOld) {
-        await this.startConnectionNew({
-            profile: profile,
-            targetAddress: addr,
-
-            nickname: parameters.nickname,
-            nicknameSpecified: true,
-
-            serverPassword: parameters.password?.password,
-            serverPasswordHashed: parameters.password?.hashed,
-
-            defaultChannel: parameters?.channel?.target,
-            defaultChannelPassword: parameters?.channel?.password,
-
-            token: parameters.token
-        }, !user_action);
-    }
-
     async disconnectFromServer(reason?: string) {
         this.cancelAutoReconnect(true);
-        if(!this.connected) return;
+        if(!this.connected) {
+            return;
+        }
 
         this.handleDisconnect(DisconnectReason.REQUESTED);
         try {
@@ -456,15 +483,15 @@ export class ConnectionHandler {
             }
             */
 
-            this.settings.setServer(this.channelTree.server.properties.virtualserver_unique_identifier);
+            this.settings.setServerUniqueId(this.channelTree.server.properties.virtualserver_unique_identifier);
 
             /* apply the server settings */
-            if(this.client_status.channel_subscribe_all) {
+            if(this.handlerState.channel_subscribe_all) {
                 this.channelTree.subscribe_all_channels();
             } else {
                 this.channelTree.unsubscribe_all_channels();
             }
-            this.channelTree.toggle_server_queries(this.client_status.queries_visible);
+            this.channelTree.toggle_server_queries(this.handlerState.queries_visible);
 
             this.sync_status_with_server();
             this.channelTree.server.updateProperties();
@@ -495,7 +522,7 @@ export class ConnectionHandler {
         return this.serverConnection && this.serverConnection.connected();
     }
 
-    private generate_ssl_certificate_accept() : JQuery {
+    private generate_ssl_certificate_accept() : HTMLAnchorElement {
         const properties = {
             connect_default: true,
             connect_profile: this.serverConnection.handshake_handler().parameters.profile.id,
@@ -504,27 +531,39 @@ export class ConnectionHandler {
 
         const build_url = (base: string, search: string, props: any) => {
             const parameters: string[] = [];
-            for(const key of Object.keys(props))
+            for(const key of Object.keys(props)) {
                 parameters.push(key + "=" + encodeURIComponent(props[key]));
+            }
 
             let callback = base + search; /* don't use document.URL because it may contains a #! */
-            if(!search)
+            if(!search) {
                 callback += "?" + parameters.join("&");
-            else
+            } else {
                 callback += "&" + parameters.join("&");
+            }
 
             return "https://" + this.serverConnection.remote_address().host + ":" + this.serverConnection.remote_address().port + "/?forward_url=" + encodeURIComponent(callback);
         };
 
         /* generate the tag */
-        const tag = $.spawn("a").text(tr("here"));
+        const tag = document.createElement("a");
+        tag.text = tr("here");
 
         let pathname = document.location.pathname;
         if(pathname.endsWith(".php"))
             pathname = pathname.substring(0, pathname.lastIndexOf("/"));
 
-        tag.attr('href', build_url(document.location.origin + pathname, document.location.search, properties));
+        tag.href = build_url(document.location.origin + pathname, document.location.search, properties);
         return tag;
+    }
+
+    /**
+     * This method dispatches a connection disconnect.
+     * The method can be called out of every context and will properly terminate
+     * all resources related to the current connection.
+     */
+    handleDisconnectNew(reason: ClientDisconnectInfo) {
+        /* TODO: */
     }
 
     private _certificate_modal: Modal;
@@ -550,7 +589,7 @@ export class ConnectionHandler {
                 this.sound.play(Sound.CONNECTION_REFUSED);
                 break;
             case DisconnectReason.CONNECT_FAILURE:
-                if(this.autoReconnectAttempt) {
+                if(this.isReconnectAttempt) {
                     autoReconnect = true;
                     break;
                 }
@@ -561,7 +600,7 @@ export class ConnectionHandler {
                     logError(LogCategory.CLIENT, tr("Could not connect to remote host!"), data);
                 }
 
-                if(__build.target === "client" || !dns.resolve_address_ipv4) {
+                if(__build.target === "client") {
                     createErrorModal(
                         tr("Could not connect"),
                         tr("Could not connect to remote host (Connection refused)")
@@ -569,9 +608,19 @@ export class ConnectionHandler {
                 } else {
                     const generateAddressPart = () => Math.floor(Math.random() * 256);
                     const addressParts = [generateAddressPart(), generateAddressPart(), generateAddressPart(), generateAddressPart()];
-                    dns.resolve_address_ipv4(addressParts.join("-") + ".con-gate.work").then(async result => {
-                        if(result !== addressParts.join("."))
+                    getDNSProvider().resolveAddressIPv4({
+                        hostname: addressParts.join("-") + ".con-gate.work",
+                        port: 9987
+                    }, { timeout: 5000 }).then(async result => {
+                        if(result.status === "empty-result") {
+                            throw tr("empty result");
+                        } else if(result.status === "error") {
+                            throw result.message;
+                        }
+
+                        if(result.resolvedAddress.hostname !== addressParts.join(".")) {
                             throw "miss matching address";
+                        }
 
                         createErrorModal(
                             tr("Could not connect"),
@@ -610,7 +659,7 @@ export class ConnectionHandler {
             case DisconnectReason.HANDSHAKE_TEAMSPEAK_REQUIRED:
                 createErrorModal(
                     tr("Target server is a TeamSpeak server"),
-                    formatMessage(tr("The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br:}Please select another profile or change the identify type."))
+                    tr("The target server is a TeamSpeak 3 server!\nOnly TeamSpeak 3 based identities are able to connect.\nPlease select another profile or change the identify type.")
                 ).open();
                 this.sound.play(Sound.CONNECTION_DISCONNECTED);
                 autoReconnect = false;
@@ -618,7 +667,7 @@ export class ConnectionHandler {
             case DisconnectReason.IDENTITY_TOO_LOW:
                 createErrorModal(
                     tr("Identity level is too low"),
-                    formatMessage(tr("You've been disconnected, because your Identity level is too low.{:br:}You need at least a level of {0}"), data["extra_message"])
+                    formatMessage(tr("You've been disconnected, because your Identity level is too low.\nYou need at least a level of {0}"), data["extra_message"])
                 ).open();
                 this.sound.play(Sound.CONNECTION_DISCONNECTED);
 
@@ -626,13 +675,13 @@ export class ConnectionHandler {
                 break;
             case DisconnectReason.CONNECTION_CLOSED:
                 logError(LogCategory.CLIENT, tr("Lost connection to remote server!"));
-                if(!this.autoReconnectAttempt) {
+                if(!this.isReconnectAttempt) {
                     createErrorModal(
                         tr("Connection closed"),
                         tr("The connection was closed by remote host")
                     ).open();
+                    this.sound.play(Sound.CONNECTION_DISCONNECTED);
                 }
-                this.sound.play(Sound.CONNECTION_DISCONNECTED);
 
                 autoReconnect = true;
                 break;
@@ -643,6 +692,7 @@ export class ConnectionHandler {
                     tr("Connection lost"),
                     tr("Lost connection to remote host (Ping timeout)<br>Even possible?")
                 ).open();
+                autoReconnect = true;
 
                 break;
             case DisconnectReason.SERVER_CLOSED:
@@ -660,25 +710,15 @@ export class ConnectionHandler {
             case DisconnectReason.SERVER_REQUIRES_PASSWORD:
                 this.log.log("server.requires.password", {});
 
-                createInputModal(tr("Server password"), tr("Enter server password:"), password => password.length != 0, async password => {
+                const reconnectParameters = this.generateReconnectParameters();
+                createInputModal(tr("Server password"), tr("Enter server password:"), password => password.length != 0, password => {
                     if(typeof password !== "string") {
                         return;
                     }
 
-                    const profile = this.serverConnection.handshake_handler().parameters.profile;
-                    const cprops = this.reconnect_properties(profile);
-                    cprops.password = {
-                        password: await hashPassword(password),
-                        hashed: true
-                    };
-
-                    if(this.currentConnectId >= 0) {
-                        connectionHistory.updateConnectionServerPassword(this.currentConnectId, cprops.password.password)
-                            .catch(error => {
-                                logWarn(LogCategory.GENERAL, tr("Failed to update the connection server password: %o"), error);
-                            });
-                    }
-                    this.startConnection(this.channelTree.server.remote_address.host + ":" + this.channelTree.server.remote_address.port, profile, false, cprops);
+                    reconnectParameters.serverPassword = password;
+                    reconnectParameters.serverPasswordHashed = false;
+                    ignorePromise(this.startConnectionNew(reconnectParameters, false));
                 }).open();
                 break;
             case DisconnectReason.CLIENT_KICKED:
@@ -686,7 +726,7 @@ export class ConnectionHandler {
                 const modal = createErrorModal(
                     tr("You've been kicked"),
                     formatMessage(
-                        have_invoker ? tr("You've been kicked from the server by {0}:{:br:}{1}") : tr("You've been kicked from the server:{:br:}{1}"),
+                        have_invoker ? tr("You've been kicked from the server by {0}:\n{1}") : tr("You've been kicked from the server:\n{1}"),
                         have_invoker ?
                             htmltags.generate_client_object({ client_id: parseInt(data["invokerid"]), client_unique_id: data["invokeruid"], client_name: data["invokername"]}) :
                             "",
@@ -724,11 +764,9 @@ export class ConnectionHandler {
 
         this.channelTree.unregisterClient(this.localClient); /* if we dont unregister our client here the client will be destroyed */
         this.channelTree.reset();
-        if(this.serverConnection) {
-            this.serverConnection.disconnect();
-        }
+        ignorePromise(this.serverConnection?.disconnect());
 
-        this.client_status.lastChannelCodecWarned = 0;
+        this.handlerState.lastChannelCodecWarned = 0;
 
         if(autoReconnect) {
             if(!this.serverConnection) {
@@ -738,15 +776,13 @@ export class ConnectionHandler {
             this.log.log("reconnect.scheduled", {timeout: 5000});
 
             logInfo(LogCategory.NETWORKING, tr("Allowed to auto reconnect. Reconnecting in 5000ms"));
-            const server_address = this.serverConnection.remote_address();
-            const profile = this.serverConnection.handshake_handler().parameters.profile;
-
+            const reconnectParameters = this.generateReconnectParameters();
             this.autoReconnectTimer = setTimeout(() => {
                 this.autoReconnectTimer = undefined;
                 this.log.log("reconnect.execute", {});
                 logInfo(LogCategory.NETWORKING, tr("Reconnecting..."));
 
-                this.startConnection(server_address.host + ":" + server_address.port, profile, false, Object.assign(this.reconnect_properties(profile), {auto_reconnect_attempt: true}));
+                ignorePromise(this.startConnectionNew(reconnectParameters, true));
             }, 5000);
         }
 
@@ -762,14 +798,6 @@ export class ConnectionHandler {
             clearTimeout(this.autoReconnectTimer);
             this.autoReconnectTimer = undefined;
         }
-    }
-
-    private on_connection_state_changed(old_state: ConnectionState, new_state: ConnectionState) {
-        logTrace(LogCategory.CLIENT, tr("From %s to %s"), ConnectionState[old_state], ConnectionState[new_state]);
-        this.events_.fire("notify_connection_state_changed", {
-            oldState: old_state,
-            newState: new_state
-        });
     }
 
     private updateVoiceStatus() {
@@ -804,8 +832,8 @@ export class ConnectionHandler {
                 localClientUpdates.client_input_hardware = codecSupportEncode;
                 localClientUpdates.client_output_hardware = codecSupportDecode;
 
-                if(this.client_status.lastChannelCodecWarned !== currentChannel.getChannelId()) {
-                    this.client_status.lastChannelCodecWarned = currentChannel.getChannelId();
+                if(this.handlerState.lastChannelCodecWarned !== currentChannel.getChannelId()) {
+                    this.handlerState.lastChannelCodecWarned = currentChannel.getChannelId();
 
                     if(!codecSupportEncode || !codecSupportDecode) {
                         let message;
@@ -825,8 +853,8 @@ export class ConnectionHandler {
             }
 
             localClientUpdates.client_input_hardware = localClientUpdates.client_input_hardware && this.inputHardwareState === InputHardwareState.VALID;
-            localClientUpdates.client_output_muted = this.client_status.output_muted;
-            localClientUpdates.client_input_muted = this.client_status.input_muted;
+            localClientUpdates.client_output_muted = this.handlerState.output_muted;
+            localClientUpdates.client_input_muted = this.handlerState.input_muted;
             if(localClientUpdates.client_input_muted || localClientUpdates.client_output_muted) {
                 shouldRecord = false;
             }
@@ -851,11 +879,13 @@ export class ConnectionHandler {
                     this.getClient().updateVariables(...updates);
 
                     this.clientStatusSync = true;
-                    this.serverConnection.send_command("clientupdate", localClientUpdates).catch(error => {
-                        logWarn(LogCategory.GENERAL, tr("Failed to update client audio hardware properties. Error: %o"), error);
-                        this.log.log("error.custom", { message: tr("Failed to update audio hardware properties.") });
-                        this.clientStatusSync = false;
-                    });
+                    if(this.connected) {
+                        this.serverConnection.send_command("clientupdate", localClientUpdates).catch(error => {
+                            logWarn(LogCategory.GENERAL, tr("Failed to update client audio hardware properties. Error: %o"), error);
+                            this.log.log("error.custom", { message: tr("Failed to update audio hardware properties.") });
+                            this.clientStatusSync = false;
+                        });
+                    }
                 }
             }
         } else {
@@ -890,10 +920,10 @@ export class ConnectionHandler {
     sync_status_with_server() {
         if(this.serverConnection.connected())
             this.serverConnection.send_command("clientupdate", {
-                client_input_muted: this.client_status.input_muted,
-                client_output_muted: this.client_status.output_muted,
-                client_away: typeof(this.client_status.away) === "string" || this.client_status.away,
-                client_away_message: typeof(this.client_status.away) === "string" ? this.client_status.away : "",
+                client_input_muted: this.handlerState.input_muted,
+                client_output_muted: this.handlerState.output_muted,
+                client_away: typeof(this.handlerState.away) === "string" || this.handlerState.away,
+                client_away_message: typeof(this.handlerState.away) === "string" ? this.handlerState.away : "",
                 /* TODO: Somehow store this? */
                 //client_input_hardware: this.client_status.sound_record_supported && this.getInputHardwareState() === InputHardwareState.VALID,
                 //client_output_hardware: this.client_status.sound_playback_supported
@@ -905,11 +935,8 @@ export class ConnectionHandler {
 
     /* can be called as much as you want, does nothing if nothing changed */
     async acquireInputHardware() {
-        /* if we're having multiple recorders, try to get the right one */
-        let recorder: RecorderProfile = defaultRecorder;
-
         try {
-            await this.serverConnection.getVoiceConnection().acquireVoiceRecorder(recorder);
+            await this.serverConnection.getVoiceConnection().acquireVoiceRecorder(defaultRecorder);
         } catch (error) {
             logError(LogCategory.AUDIO, tr("Failed to acquire recorder: %o"), error);
             createErrorModal(tr("Failed to acquire recorder"), tr("Failed to acquire recorder.\nLookup the console for more details.")).open();
@@ -971,107 +998,27 @@ export class ConnectionHandler {
         }
     }
 
-    getVoiceRecorder() : RecorderProfile | undefined { return this.serverConnection.getVoiceConnection().voiceRecorder(); }
+    getVoiceRecorder() : RecorderProfile | undefined { return this.serverConnection?.getVoiceConnection().voiceRecorder(); }
 
 
-    reconnect_properties(profile?: ConnectionProfile) : ConnectParametersOld {
-        const name = (this.getClient() ? this.getClient().clientNickName() : "") ||
-                        (this.serverConnection?.handshake_handler() ? this.serverConnection.handshake_handler().parameters.nickname : "") ||
-                        StaticSettings.instance.static(Settings.KEY_CONNECT_USERNAME, profile ? profile.defaultUsername : undefined) ||
-                        "Another TeaSpeak user";
-
-        const targetChannel = this.getClient().currentChannel();
-        const connectParameters = this.serverConnection.handshake_handler().parameters;
-
-        return {
-            channel: targetChannel ? {target: "/" + targetChannel.channelId, password: targetChannel.getCachedPasswordHash()} : undefined,
-            nickname: name,
-            password: connectParameters.serverPassword ? {
-                password: connectParameters.serverPassword,
-                hashed: connectParameters.serverPasswordHashed
-            } : undefined
+    generateReconnectParameters() : ConnectParameters | undefined {
+        const baseProfile = this.serverConnection.handshake_handler()?.parameters;
+        if(!baseProfile) {
+            /* We never tried to connect to anywhere */
+            return undefined;
         }
-    }
 
-    update_avatar() {
-        spawnAvatarUpload(data => {
-            if(typeof(data) === "undefined") {
-                return;
-            }
+        baseProfile.nickname = this.getClient()?.clientNickName() || baseProfile.nickname;
+        baseProfile.nicknameSpecified = false;
 
-            if(!data) {
-                logInfo(LogCategory.CLIENT, tr("Deleting existing avatar"));
-                this.serverConnection.send_command('ftdeletefile', {
-                    name: "/avatar_", /* delete own avatar */
-                    path: "",
-                    cid: 0
-                }).then(() => {
-                    createInfoModal(tr("Avatar deleted"), tr("Avatar successfully deleted")).open();
-                }).catch(error => {
-                    logError(LogCategory.GENERAL, tr("Failed to reset avatar flag: %o"), error);
+        const targetChannel = this.getClient()?.currentChannel();
+        if(targetChannel) {
+            baseProfile.defaultChannel = targetChannel.channelId;
+            baseProfile.defaultChannelPassword = targetChannel.getCachedPasswordHash();
+            baseProfile.defaultChannelPasswordHashed = true;
+        }
 
-                    let message;
-                    if(error instanceof CommandResult) {
-                        message = formatMessage(tr("Failed to delete avatar.{:br:}Error: {0}"), error.extra_message || error.message);
-                    }
-
-                    if(!message) {
-                        message = formatMessage(tr("Failed to delete avatar.{:br:}Lookup the console for more details"));
-                    }
-                    
-                    createErrorModal(tr("Failed to delete avatar"), message).open();
-                    return;
-                });
-            } else {
-                logInfo(LogCategory.CLIENT, tr("Uploading new avatar"));
-                (async () => {
-                    const transfer = this.fileManager.initializeFileUpload({
-                        name: "/avatar",
-                        path: "",
-
-                        channel: 0,
-                        channelPassword: undefined,
-
-                        source: async () => await TransferProvider.provider().createBufferSource(data)
-                    });
-
-                    await transfer.awaitFinished();
-
-                    if(transfer.transferState() !== FileTransferState.FINISHED) {
-                        if(transfer.transferState() === FileTransferState.ERRORED) {
-                            logWarn(LogCategory.FILE_TRANSFER, tr("Failed to upload clients avatar: %o"), transfer.currentError());
-                            createErrorModal(tr("Failed to upload avatar"), traj("Failed to upload avatar:{:br:}{0}", transfer.currentErrorMessage())).open();
-                            return;
-                        } else if(transfer.transferState() === FileTransferState.CANCELED) {
-                            createErrorModal(tr("Failed to upload avatar"), tr("Your avatar upload has been canceled.")).open();
-                            return;
-                        } else {
-                            createErrorModal(tr("Failed to upload avatar"), tr("Avatar upload finished with an unknown finished state.")).open();
-                            return;
-                        }
-                    }
-
-                    try {
-                        await this.serverConnection.send_command('clientupdate', {
-                            client_flag_avatar: md5(new Uint8Array(data))
-                        });
-                    } catch(error) {
-                        logError(LogCategory.GENERAL, tr("Failed to update avatar flag: %o"), error);
-
-                        let message;
-                        if(error instanceof CommandResult)
-                            message = formatMessage(tr("Failed to update avatar flag.{:br:}Error: {0}"), error.extra_message || error.message);
-                        if(!message)
-                            message = formatMessage(tr("Failed to update avatar flag.{:br:}Lookup the console for more details"));
-                        createErrorModal(tr("Failed to set avatar"), message).open();
-                        return;
-                    }
-
-                    createInfoModal(tr("Avatar successfully uploaded"), tr("Your avatar has been uploaded successfully!")).open();
-                })();
-
-            }
-        });
+        return baseProfile;
     }
 
     private async initializeWhisperSession(session: WhisperSession) : Promise<WhisperSessionInitializeData> {
@@ -1167,11 +1114,11 @@ export class ConnectionHandler {
 
     /* state changing methods */
     setMicrophoneMuted(muted: boolean, dontPlaySound?: boolean) {
-        if(this.client_status.input_muted === muted) {
+        if(this.handlerState.input_muted === muted) {
             return;
         }
 
-        this.client_status.input_muted = muted;
+        this.handlerState.input_muted = muted;
         if(!dontPlaySound) {
             this.sound.play(muted ? Sound.MICROPHONE_MUTED : Sound.MICROPHONE_ACTIVATED);
         }
@@ -1180,21 +1127,30 @@ export class ConnectionHandler {
     }
     toggleMicrophone() { this.setMicrophoneMuted(!this.isMicrophoneMuted()); }
 
-    isMicrophoneMuted() { return this.client_status.input_muted; }
+    isMicrophoneMuted() { return this.handlerState.input_muted; }
     isMicrophoneDisabled() { return this.inputHardwareState !== InputHardwareState.VALID; }
 
     setSpeakerMuted(muted: boolean, dontPlaySound?: boolean) {
-        if(this.client_status.output_muted === muted) return;
-        if(muted && !dontPlaySound) this.sound.play(Sound.SOUND_MUTED); /* play the sound *before* we're setting the muted state */
-        this.client_status.output_muted = muted;
+        if(this.handlerState.output_muted === muted) {
+            return;
+        }
+
+        if(muted && !dontPlaySound) {
+            /* play the sound *before* we're setting the muted state */
+            this.sound.play(Sound.SOUND_MUTED);
+        }
+        this.handlerState.output_muted = muted;
         this.events_.fire("notify_state_updated", { state: "speaker" });
-        if(!muted && !dontPlaySound) this.sound.play(Sound.SOUND_ACTIVATED); /* play the sound *after* we're setting we've unmuted the sound */
+        if(!muted && !dontPlaySound) {
+            /* play the sound *after* we're setting we've unmuted the sound */
+            this.sound.play(Sound.SOUND_ACTIVATED);
+        }
         this.update_voice_status();
         this.serverConnection.getVoiceConnection().stopAllVoiceReplays();
     }
 
     toggleSpeakerMuted() { this.setSpeakerMuted(!this.isSpeakerMuted()); }
-    isSpeakerMuted() { return this.client_status.output_muted; }
+    isSpeakerMuted() { return this.handlerState.output_muted; }
 
     /*
      * Returns whatever the client is able to playback sound (voice). Reasons for returning true could be:
@@ -1205,8 +1161,11 @@ export class ConnectionHandler {
     isSpeakerDisabled() : boolean { return false; }
 
     setSubscribeToAllChannels(flag: boolean) {
-        if(this.client_status.channel_subscribe_all === flag) return;
-        this.client_status.channel_subscribe_all = flag;
+        if(this.handlerState.channel_subscribe_all === flag) {
+            return;
+        }
+
+        this.handlerState.channel_subscribe_all = flag;
         if(flag) {
             this.channelTree.subscribe_all_channels();
         } else {
@@ -1215,25 +1174,27 @@ export class ConnectionHandler {
         this.events_.fire("notify_state_updated", { state: "subscribe" });
     }
 
-    isSubscribeToAllChannels() : boolean { return this.client_status.channel_subscribe_all; }
+    isSubscribeToAllChannels() : boolean { return this.handlerState.channel_subscribe_all; }
 
     setAway(state: boolean | string) {
         this.doSetAway(state, true);
     }
 
-    private doSetAway(state: boolean | string, play_sound: boolean) {
-        if(this.client_status.away === state)
+    private doSetAway(state: boolean | string, playSound: boolean) {
+        if(this.handlerState.away === state) {
             return;
+        }
 
-        const was_away = this.isAway();
-        const will_away = typeof state === "boolean" ? state : true;
-        if(was_away != will_away && play_sound)
-            this.sound.play(will_away ? Sound.AWAY_ACTIVATED : Sound.AWAY_DEACTIVATED);
+        const wasAway = this.isAway();
+        const willAway = typeof state === "boolean" ? state : true;
+        if(wasAway != willAway && playSound) {
+            this.sound.play(willAway ? Sound.AWAY_ACTIVATED : Sound.AWAY_DEACTIVATED);
+        }
 
-        this.client_status.away = state;
+        this.handlerState.away = state;
         this.serverConnection.send_command("clientupdate", {
-            client_away: typeof(this.client_status.away) === "string" || this.client_status.away,
-            client_away_message: typeof(this.client_status.away) === "string" ? this.client_status.away : "",
+            client_away: typeof(this.handlerState.away) === "string" || this.handlerState.away,
+            client_away_message: typeof(this.handlerState.away) === "string" ? this.handlerState.away : "",
         }).catch(error => {
             logWarn(LogCategory.GENERAL, tr("Failed to update away status. Error: %o"), error);
             this.log.log("error.custom", {message: tr("Failed to update away status.")});
@@ -1244,11 +1205,13 @@ export class ConnectionHandler {
         });
     }
     toggleAway() { this.setAway(!this.isAway()); }
-    isAway() : boolean { return typeof this.client_status.away !== "boolean" || this.client_status.away; }
+    isAway() : boolean { return typeof this.handlerState.away !== "boolean" || this.handlerState.away; }
 
     setQueriesShown(flag: boolean) {
-        if(this.client_status.queries_visible === flag) return;
-        this.client_status.queries_visible = flag;
+        if(this.handlerState.queries_visible === flag) {
+            return;
+        }
+        this.handlerState.queries_visible = flag;
         this.channelTree.toggle_server_queries(flag);
 
         this.events_.fire("notify_state_updated", {
@@ -1257,7 +1220,7 @@ export class ConnectionHandler {
     }
 
     areQueriesShown() : boolean {
-        return this.client_status.queries_visible;
+        return this.handlerState.queries_visible;
     }
 
     getInputHardwareState() : InputHardwareState { return this.inputHardwareState; }
@@ -1316,11 +1279,6 @@ export interface ConnectionEvents {
     notify_connection_state_changed: {
         oldState: ConnectionState,
         newState: ConnectionState
-    },
-
-    /* the handler has become visible/invisible for the client */
-    notify_visibility_changed: {
-        visible: boolean
     },
 
     /* fill only trigger once, after everything has been constructed */

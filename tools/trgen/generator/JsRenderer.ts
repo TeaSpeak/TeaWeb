@@ -1,0 +1,52 @@
+import {TranslationEntry} from "../Definitions";
+
+export interface File {
+    content: string;
+    name: string;
+}
+
+/* Well my IDE hates me and does not support groups. By default with ES6 groups are supported... nvm */
+//const regex = /{{ *tr *(?<message_expression>(("([^"]|\\")*")|('([^']|\\')*')|(`([^`]|\\`)+`)|( *\+ *)?)+) *\/ *}}/;
+const regex = /{{ *tr *((("([^"]|\\")*")|('([^']|\\')*')|(`([^`]|\\`)+`)|([\n ]*\+[\n ]*)?)+) *\/ *}}/;
+export function extractJsRendererTranslations(file: File) : TranslationEntry[] {
+    let result: TranslationEntry[] = [];
+
+    const lines = file.content.split('\n');
+    let match: RegExpExecArray;
+    let baseIndex = 0;
+
+    while(match = regex.exec(file.content.substr(baseIndex))) {
+        let expression = (match.groups || {})["message_expression"] || match[1];
+
+        let message;
+        try {
+            message = eval(expression);
+        } catch (error) {
+            console.error("Failed to evaluate expression:\n%s", expression);
+            baseIndex += match.index + match[0].length;
+            continue;
+        }
+
+        let character = baseIndex + match.index;
+        let line;
+
+        for(line = 0; line < lines.length; line++) {
+            const length = lines[line].length + 1;
+            if(length > character) {
+                break;
+            }
+            character -= length;
+        }
+
+        result.push({
+            filename: file.name,
+            character: character + 1,
+            line: line + 1,
+            message: message,
+            type: "js-template"
+        });
+
+        baseIndex += match.index + match[0].length;
+    }
+    return result;
+}

@@ -1,9 +1,10 @@
 import {LogCategory, logDebug, logError, logInfo, logTrace, logWarn} from "../log";
 import {guid} from "../crypto/uid";
-import {Settings, StaticSettings} from "../settings";
+import {settings, Settings} from "../settings";
 import * as loader from "tc-loader";
 import {formatMessage, formatMessageString} from "../ui/frames/chat";
 
+/* FIXME: Use the storage adapter and not the local storage else settings might get lost! */
 export interface TranslationKey {
     message: string;
     line?: number;
@@ -74,9 +75,13 @@ export function tr(message: string, key?: string) : string {
     return translated;
 }
 
-export function tra(message: string, ...args: (string | number | boolean)[]) : string;
-export function tra(message: string, ...args: any[]) : JQuery[];
-export function tra(message: string, ...args: any[]) : any {
+export function trJQuery(message: string, ...args: any[]) : JQuery[] {
+    message = /* @tr-ignore */ tr(message);
+    return formatMessage(message, ...args);
+}
+
+/* We can remove our checks if we're sure that no call calls this with an object any more*/
+export function tra(message: string, ...args: (string | number | boolean)[]) : string {
     message = /* @tr-ignore */ tr(message);
     for(const element of args) {
         if(element === null) {
@@ -91,16 +96,18 @@ export function tra(message: string, ...args: any[]) : any {
                 continue;
 
             default:
-                return formatMessage(message, ...args);
+                debugger;
+                logWarn(LogCategory.GENERAL, tr("Received tra argument which isn't a string"));
         }
     }
-    if(message.indexOf("{:") !== -1)
-        return formatMessage(message, ...args);
-    return formatMessageString(message, ...args);
-}
 
-export function traj(message: string, ...args: any[]) : JQuery[] {
-    return tra(message, ...args, {});
+    if(message.indexOf("{:") !== -1) {
+        debugger;
+        logWarn(LogCategory.GENERAL, tr("Received tra message which contains HTML elements"));
+        message = message.replace(/{:br:}/g, "\n");
+    }
+
+    return formatMessageString(message, ...args);
 }
 
 async function load_translation_file(url: string, path: string) : Promise<TranslationFile> {
@@ -175,8 +182,9 @@ async function load_repository0(repo: TranslationRepository, reload: boolean) {
         Object.assign(repo, info_json);
     }
 
-    if(!repo.unique_id)
+    if(!repo.unique_id) {
         repo.unique_id = guid();
+    }
 
     repo.translations = repo.translations || [];
     repo.load_timestamp = Date.now();
@@ -208,8 +216,9 @@ export namespace config {
     const repository_config_key = "i18n.repository";
     let _cached_repository_config: RepositoryConfig;
     export function repository_config() {
-        if(_cached_repository_config)
+        if(_cached_repository_config) {
             return _cached_repository_config;
+        }
 
         const config_string = localStorage.getItem(repository_config_key);
         let config: RepositoryConfig;
@@ -224,7 +233,7 @@ export namespace config {
 
         if(config.repositories.length == 0) {
             //Add the default TeaSpeak repository
-            load_repository(StaticSettings.instance.static(Settings.KEY_I18N_DEFAULT_REPOSITORY)).then(repo => {
+            load_repository(settings.getValue(Settings.KEY_I18N_DEFAULT_REPOSITORY)).then(repo => {
                 logInfo(LogCategory.I18N, tr("Successfully added default repository from \"%s\"."), repo.url);
                 register_repository(repo);
             }).catch(error => {
@@ -316,7 +325,7 @@ export function select_translation(repository: TranslationRepository, entry: Rep
 }
 
 /* ATTENTION: This method is called before most other library initialisations! */
-export async function initialize() {
+export async function initializeI18N() {
     const rcfg = config.repository_config(); /* initialize */
     const cfg = config.translation_config();
 
@@ -328,7 +337,7 @@ export async function initialize() {
             logError(LogCategory.I18N, tr("Failed to initialize selected translation: %o"), error);
             const show_error = () => {
                 import("../ui/elements/Modal").then(Modal => {
-                    Modal.createErrorModal(tr("Translation System"), tra("Failed to load current selected translation file.{:br:}File: {0}{:br:}Error: {1}{:br:}{:br:}Using default fallback translations.", cfg.current_translation_url, error)).open()
+                    Modal.createErrorModal(tr("Translation System"), tra("Failed to load current selected translation file.\nFile: {0}\nError: {1}\n\nUsing default fallback translations.", cfg.current_translation_url, error)).open()
                 });
             };
             if(loader.running())
@@ -348,16 +357,12 @@ export async function initialize() {
 declare global {
     interface Window {
         tr(message: string) : string;
-        tra(message: string, ...args: (string | number | boolean | null | undefined)[]) : string;
-        tra(message: string, ...args: any[]) : JQuery[];
 
         log: any;
         StaticSettings: any;
     }
 
     const tr: typeof window.tr;
-    const tra: typeof window.tra;
 }
 
 window.tr = tr;
-window.tra = tra;

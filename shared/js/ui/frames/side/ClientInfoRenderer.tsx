@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useContext, useEffect, useState} from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import {
     ClientCountryInfo,
     ClientForumInfo,
@@ -8,7 +8,7 @@ import {
     ClientInfoOnline,
     ClientStatusInfo,
     ClientVersionInfo,
-    ClientVolumeInfo,
+    ClientVolumeInfo, InheritedChannelInfo,
     OptionalClientInfoInfo
 } from "tc-shared/ui/frames/side/ClientInfoDefinitions";
 import {Registry} from "tc-shared/events";
@@ -24,31 +24,62 @@ import {ClientIcon} from "svg-sprites/client-icons";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {getIconManager} from "tc-shared/file/Icons";
 import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
+import {CountryCode} from "tc-shared/ui/react-elements/CountryCode";
+import {getKeyBoard} from "tc-shared/PPTListener";
+import {tra} from "tc-shared/i18n/localize";
 
 const cssStyle = require("./ClientInfoRenderer.scss");
 
 const EventsContext = React.createContext<Registry<ClientInfoEvents>>(undefined);
 const ClientContext = React.createContext<OptionalClientInfoInfo>(undefined);
 
-const Avatar = React.memo(() => {
+const EditOverlay = React.memo(() => {
     const events = useContext(EventsContext);
+
+    const refContainer = useRef<HTMLDivElement>();
+
+    useEffect(() => {
+        const keyboard = getKeyBoard();
+        return keyboard.registerHook({
+            keyShift: true,
+
+            callbackPress: () => {
+                refContainer.current?.classList.add(cssStyle.disabled);
+            },
+            callbackRelease: () => {
+                refContainer.current?.classList.remove(cssStyle.disabled);
+            }
+        });
+    }, []);
+
+    return (
+        <div
+            ref={refContainer}
+            className={cssStyle.edit}
+            onClick={() => events.fire("action_edit_avatar")}
+        >
+            <ClientIconRenderer icon={ClientIcon.AvatarUpload} className={cssStyle.icon} />
+        </div>
+    );
+});
+
+const Avatar = React.memo(() => {
     const client = useContext(ClientContext);
 
     let avatar: "loading" | ClientAvatar;
     if(client.type === "none") {
         avatar = "loading";
     } else {
-        avatar = getGlobalAvatarManagerFactory().getManager(client.handlerId).resolveClientAvatar({ id: client.clientId, clientUniqueId: client.clientUniqueId, database_id: client.clientDatabaseId });
+        avatar = getGlobalAvatarManagerFactory().getManager(client.handlerId)
+            .resolveClientAvatar({ id: client.clientId, clientUniqueId: client.clientUniqueId, database_id: client.clientDatabaseId });
     }
 
     return (
         <div className={cssStyle.containerAvatar + " " + (client.type === "self" ? cssStyle.editable : undefined)}>
             <div className={cssStyle.avatar}>
-                <AvatarRenderer avatar={avatar} className={cssStyle.avatarImage + " " + (avatar === "loading" ? cssStyle.loading : "")} />
+                <AvatarRenderer avatar={avatar} className={cssStyle.avatarImage + " " + (avatar === "loading" ? cssStyle.loading : "")} key={avatar === "loading" ? "loading" : avatar.clientAvatarId} />
             </div>
-            <div className={cssStyle.edit} onClick={() => events.fire("action_edit_avatar")}>
-                <img src="img/photo-camera.svg" alt={tr("Upload avatar")} />
-            </div>
+            <EditOverlay />
         </div>
     )
 });
@@ -153,7 +184,7 @@ const ClientOnlineSince = React.memo(() => {
     });
 
     return (
-        <InfoBlock imageUrl={"img/icon_client_online_time.svg"}>
+        <InfoBlock clientIcon={ClientIcon.ClientInfoOnlineTime}>
             <Translatable>Online since</Translatable>
             {onlineBody}
         </InfoBlock>
@@ -174,12 +205,9 @@ const ClientCountry = React.memo(() => {
     events.reactUse("notify_country", event => setCountry(event.country), undefined, []);
 
     return (
-        <InfoBlock imageUrl={"img/icon_client_country.svg"}>
+        <InfoBlock clientIcon={ClientIcon.ClientInfoCountry}>
             <Translatable>Country</Translatable>
-            <>
-                <div className={cssStyle.country + " country flag-" + country?.flag.toLocaleLowerCase()} />
-                <a>{country?.name || tr("Unknown")}</a>
-            </>
+            <CountryCode alphaCode={country?.flag} className={cssStyle.country} />
         </InfoBlock>
     );
 });
@@ -213,7 +241,7 @@ const ClientVolume = React.memo(() => {
     }
 
     return (
-        <InfoBlock imageUrl={"img/icon_client_volume.svg"} key={"volume"}>
+        <InfoBlock clientIcon={ClientIcon.ClientInfoVolume} key={"volume"}>
             <Translatable>Volume</Translatable>
             {body}
         </InfoBlock>
@@ -252,7 +280,7 @@ const ClientForumAccount = React.memo(() => {
 
 
     return (
-        <InfoBlock imageUrl={"img/icon_client_forum_account.svg"} valueClass={cssStyle.clientTeaforoAccount}>
+        <InfoBlock clientIcon={ClientIcon.ClientInfoForumAccount} valueClass={cssStyle.clientTeaforoAccount}>
             <Translatable>TeaSpeak Forum account</Translatable>
             <a href={"https://forum.teaspeak.de/index.php?members/" + forum.userId} target={"_blank"}>{text}</a>
         </InfoBlock>
@@ -285,7 +313,7 @@ const ClientVersion = React.memo(() => {
     }
 
     return (
-        <InfoBlock imageUrl={"img/icon_client_version.svg"}>
+        <InfoBlock clientIcon={ClientIcon.ClientInfoVersion}>
             <Translatable>Version</Translatable>
             {body}
         </InfoBlock>
@@ -341,7 +369,7 @@ const ClientStatus = React.memo(() => {
     }
 
     return (
-        <InfoBlock imageUrl={"img/icon_client_status.svg"} key={"status"} valueClass={cssStyle.status}>
+        <InfoBlock clientIcon={ClientIcon.ClientInfoStatus} key={"status"} valueClass={cssStyle.status}>
             <Translatable>Status</Translatable>
             <>{elements}</>
         </InfoBlock>
@@ -393,11 +421,29 @@ const ChannelGroupRenderer = () => {
         return undefined;
     }, [ client.contextHash ]);
 
-    events.reactUse("notify_channel_group", event => setChannelGroup(event.group), undefined, []);
+    const [ inheritedChannel, setInheritedChannel ] = useDependentState<InheritedChannelInfo>(() => undefined, [ client.contextHash ]);
+
+    events.reactUse("notify_channel_group", event => {
+        setChannelGroup(event.group);
+        setInheritedChannel(event.inheritedChannel);
+    }, undefined, []);
 
     let body;
     if(channelGroup) {
-        body = <GroupRenderer group={channelGroup} key={"group-" + channelGroup.groupId} />;
+        let groupRendered = <GroupRenderer group={channelGroup} key={"group-" + channelGroup.groupId} />;
+        if(inheritedChannel) {
+            body = (
+                <React.Fragment key={"inherited"}>
+                    {groupRendered}
+                    <div className={cssStyle.channelGroupInherited}>
+                        <Translatable>Inherited from</Translatable>&nbsp;
+                        {inheritedChannel.channelName}
+                    </div>
+                </React.Fragment>
+            )
+        } else {
+            body = groupRendered;
+        }
     } else {
         body = <React.Fragment key={"loading"}><Translatable>loading</Translatable> <LoadingDots /></React.Fragment>;
     }

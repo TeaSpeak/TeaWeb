@@ -8,7 +8,7 @@ import {Settings} from "tc-shared/settings";
 
 const cssStyle = require("./HostBannerRenderer.scss");
 
-const HostBannerRenderer = React.memo((props: { banner: HostBannerInfoSet, }) => {
+export const HostBannerRenderer = React.memo((props: { banner: HostBannerInfoSet, clickable: boolean, className?: string }) => {
     const [ revision, setRevision ] = useState(Date.now());
     useEffect(() => {
         if(!props.banner.updateInterval) {
@@ -35,10 +35,11 @@ const HostBannerRenderer = React.memo((props: { banner: HostBannerInfoSet, }) =>
         <div
             className={
                 cssStyle.containerImage + " " + cssStyle["mode-" + props.banner.mode] + " " + cssStyle["state-" + loadingState] + " " +
-                (withBackground ? cssStyle.withBackground : "")
+                (withBackground ? cssStyle.withBackground : "") + " " + props.className + " "
+                + (props.clickable ? cssStyle.clickable : "")
             }
             onClick={() => {
-                if(props.banner.linkUrl) {
+                if(props.banner.linkUrl && props.clickable) {
                     window.open(props.banner.linkUrl, "_blank");
                 }
             }}
@@ -67,7 +68,7 @@ export const HostBanner = React.memo((props: { events: Registry<HostBannerUiEven
     return (
         <div className={cssStyle.container + " " + (hostBanner.status !== "set" ? cssStyle.disabled : "")}>
             <ErrorBoundary>
-                {hostBanner.status === "set" ? <HostBannerRenderer key={"banner"} banner={hostBanner} /> : undefined}
+                {hostBanner.status === "set" ? <HostBannerRenderer key={"banner"} banner={hostBanner} clickable={true} /> : undefined}
             </ErrorBoundary>
         </div>
     );

@@ -2,6 +2,7 @@ import {Registry} from "../events";
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {tr} from "../i18n/localize";
 import {ErrorCode} from "../connection/ErrorCode";
+import {assertMainApplication} from "tc-shared/ui/utils";
 
 /* Transfer source types */
 export enum TransferSourceType {
@@ -420,6 +421,7 @@ export abstract class TransferProvider {
     private static instance_;
     public static provider() : TransferProvider { return this.instance_; }
     public static setProvider(provider: TransferProvider) {
+        assertMainApplication();
         this.instance_ = provider;
     }
 

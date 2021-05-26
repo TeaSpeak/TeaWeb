@@ -3,6 +3,9 @@ import * as loader from "tc-loader";
 import * as fidentity from "./TeaForumIdentity";
 import {LogCategory, logDebug, logError, logInfo, logWarn} from "../../log";
 import {tr} from "tc-shared/i18n/localize";
+import {getStorageAdapter} from "tc-shared/StorageAdapter";
+
+/* TODO: Properly redesign this whole system! */
 
 declare global {
     interface Window {
@@ -57,8 +60,9 @@ export namespace gcaptcha {
             }
         }
 
-        if(typeof(window.grecaptcha) === "undefined")
+        if(typeof(window.grecaptcha) === "undefined") {
             throw tr("failed to load recaptcha");
+        }
     }
 
     export async function spawn(container: JQuery, key: string, callback_data: (token: string) => any) {
@@ -79,7 +83,7 @@ export namespace gcaptcha {
     }
 }
 
-function api_url() {
+function getForumApiURL() {
     return settings.getValue(Settings.KEY_TEAFORO_URL);
 }
 
@@ -125,13 +129,13 @@ export class Data {
     is_expired() : boolean { return this.parsed.data_age + 48 * 60 * 60 * 1000 < Date.now(); }
     should_renew() : boolean { return this.parsed.data_age + 24 * 60 * 60 * 1000 < Date.now(); } /* renew data all 24hrs */
 }
-let _data: Data | undefined;
+let forumData: Data | undefined;
 
 export function logged_in() : boolean {
-    return !!_data && !_data.is_expired();
+    return !!forumData && !forumData.is_expired();
 }
 
-export function data() : Data { return _data; }
+export function data() : Data { return forumData; }
 
 export interface LoginResult {
     status: "success" | "captcha" | "error";
@@ -148,7 +152,7 @@ export async function login(username: string, password: string, captcha?: any) :
     try {
         response = await new Promise<any>((resolve, reject) => {
             $.ajax({
-                url: api_url() + "?web-api/v1/login",
+                url: getForumApiURL() + "?web-api/v1/login",
                 type: "POST",
                 cache: false,
                 data: {
@@ -209,10 +213,11 @@ export async function login(username: string, password: string, captcha?: any) :
     //document.cookie = "user_sign=" + response["sign"] + ";path=/";
 
     try {
-        _data = new Data(response["auth-key"], response["data"], response["sign"]);
-        localStorage.setItem("teaspeak-forum-data", response["data"]);
-        localStorage.setItem("teaspeak-forum-sign", response["sign"]);
-        localStorage.setItem("teaspeak-forum-auth", response["auth-key"]);
+        forumData = new Data(response["auth-key"], response["data"], response["sign"]);
+        const adapter = getStorageAdapter();
+        await adapter.set("teaspeak-forum-data", response["data"]);
+        await adapter.set("teaspeak-forum-sign", response["sign"]);
+        await adapter.set("teaspeak-forum-auth", response["auth-key"]);
         fidentity.update_forum();
     } catch(error) {
         logError(LogCategory.GENERAL, tr("Failed to parse forum given data: %o"), error);
@@ -227,19 +232,26 @@ export async function login(username: string, password: string, captcha?: any) :
     };
 }
 
+async function resetForumLocalData() {
+    const adapter = getStorageAdapter();
+    await adapter.delete("teaspeak-forum-data");
+    await adapter.delete("teaspeak-forum-sign");
+    await adapter.delete("teaspeak-forum-auth");
+}
+
 export async function renew_data() : Promise<"success" | "login-required"> {
     let response;
     try {
         response = await new Promise<any>((resolve, reject) => {
             $.ajax({
-                url: api_url() + "?web-api/v1/renew-data",
+                url: getForumApiURL() + "?web-api/v1/renew-data",
                 type: "GET",
                 cache: false,
 
                 crossDomain: true,
 
                 data: {
-                    "auth-key": _data.auth_key
+                    "auth-key": forumData.auth_key
                 },
 
                 success: resolve,
@@ -270,9 +282,9 @@ export async function renew_data() : Promise<"success" | "login-required"> {
     logDebug(LogCategory.GENERAL, tr("Renew succeeded. Parsing data."));
 
     try {
-        _data = new Data(_data.auth_key, response["data"], response["sign"]);
-        localStorage.setItem("teaspeak-forum-data", response["data"]);
-        localStorage.setItem("teaspeak-forum-sign", response["sign"]);
+        forumData = new Data(forumData.auth_key, response["data"], response["sign"]);
+        await getStorageAdapter().set("teaspeak-forum-data", response["data"]);
+        await getStorageAdapter().set("teaspeak-forum-sign", response["sign"]);
         fidentity.update_forum();
     } catch(error) {
         logError(LogCategory.GENERAL, tr("Failed to parse forum given data: %o"), error);
@@ -283,21 +295,22 @@ export async function renew_data() : Promise<"success" | "login-required"> {
 }
 
 export async function logout() : Promise<void> {
-    if(!logged_in())
+    if(!logged_in()) {
         return;
+    }
 
     let response;
     try {
         response = await new Promise<any>((resolve, reject) => {
             $.ajax({
-                url: api_url() + "?web-api/v1/logout",
+                url: getForumApiURL() + "?web-api/v1/logout",
                 type: "GET",
                 cache: false,
 
                 crossDomain: true,
 
                 data: {
-                    "auth-key": _data.auth_key
+                    "auth-key": forumData.auth_key
                 },
 
                 success: resolve,
@@ -312,7 +325,7 @@ export async function logout() : Promise<void> {
     }
 
     if(response["status"] !== "ok") {
-        logError(LogCategory.GENERAL, tr("Response status not okey. Error happend: %o"), response);
+        logError(LogCategory.GENERAL, tr("Response status not ok. Error happened: %o"), response);
         throw (response["errors"] || [])[0] || tr("Unknown error");
     }
 
@@ -323,10 +336,8 @@ export async function logout() : Promise<void> {
         }
     }
 
-    _data = undefined;
-    localStorage.removeItem("teaspeak-forum-data");
-    localStorage.removeItem("teaspeak-forum-sign");
-    localStorage.removeItem("teaspeak-forum-auth");
+    forumData = undefined;
+    await resetForumLocalData();
     fidentity.update_forum();
 }
 
@@ -334,30 +345,28 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     name: "TeaForo initialize",
     priority: 10,
     function: async () => {
-        const raw_data = localStorage.getItem("teaspeak-forum-data");
-        const raw_sign = localStorage.getItem("teaspeak-forum-sign");
-        const forum_auth = localStorage.getItem("teaspeak-forum-auth");
-        if(!raw_data || !raw_sign || !forum_auth) {
-            logInfo(LogCategory.GENERAL, tr("No TeaForo authentification found. TeaForo connection status: unconnected"));
+        const rawData = await getStorageAdapter().get("teaspeak-forum-data");
+        const rawSign = await getStorageAdapter().get("teaspeak-forum-sign");
+        const rawForumAuth = await getStorageAdapter().get("teaspeak-forum-auth");
+        if(!rawData || !rawSign || !rawForumAuth) {
+            logInfo(LogCategory.GENERAL, tr("No TeaForo authentication found. TeaForo connection status: unconnected"));
             return;
         }
 
         try {
-            _data = new Data(forum_auth, raw_data, raw_sign);
+            forumData = new Data(rawForumAuth, rawData, rawSign);
         } catch(error) {
             logError(LogCategory.GENERAL, tr("Failed to initialize TeaForo connection from local data. Error: %o"), error);
             return;
         }
-        if(_data.should_renew()) {
+        if(forumData.should_renew()) {
             logInfo(LogCategory.GENERAL, tr("TeaForo data should be renewed. Executing renew."));
-            renew_data().then(status => {
+            renew_data().then(async status => {
                 if(status === "success") {
                     logInfo(LogCategory.GENERAL, tr("TeaForo data has been successfully renewed."));
                 } else {
                     logWarn(LogCategory.GENERAL, tr("Failed to renew TeaForo data. New login required."));
-                    localStorage.removeItem("teaspeak-forum-data");
-                    localStorage.removeItem("teaspeak-forum-sign");
-                    localStorage.removeItem("teaspeak-forum-auth");
+                    await resetForumLocalData();
                 }
             }).catch(error => {
                 logWarn(LogCategory.GENERAL, tr("Failed to renew TeaForo data. An error occurred: %o"), error);
@@ -365,23 +374,21 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
             return;
         }
 
-        if(_data && _data.is_expired()) {
+        if(forumData && forumData.is_expired()) {
             logError(LogCategory.GENERAL, tr("TeaForo data is expired. TeaForo connection isn't available!"));
         }
 
 
         setInterval(() => {
             /* if we don't have any _data object set we could not renew anything */
-            if(_data) {
+            if(forumData) {
                 logInfo(LogCategory.IDENTITIES, tr("Renewing TeaForo data."));
-                renew_data().then(status => {
+                renew_data().then(async status => {
                     if(status === "success") {
                         logInfo(LogCategory.IDENTITIES,tr("TeaForo data has been successfully renewed."));
                     } else {
                         logWarn(LogCategory.IDENTITIES,tr("Failed to renew TeaForo data. New login required."));
-                        localStorage.removeItem("teaspeak-forum-data");
-                        localStorage.removeItem("teaspeak-forum-sign");
-                        localStorage.removeItem("teaspeak-forum-auth");
+                        await resetForumLocalData();
                     }
                 }).catch(error => {
                     logWarn(LogCategory.GENERAL, tr("Failed to renew TeaForo data. An error occurred: %o"), error);

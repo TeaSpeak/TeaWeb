@@ -260,7 +260,7 @@
 
     padding-bottom: .5em;
 
-    a {
+    .text {
         flex-grow: 1;
         flex-shrink: 1;
 
@@ -284,6 +284,20 @@
         margin-left: 1em;
         min-width: 8em;
     }
+
+    .icon {
+        flex-shrink: 0;
+        flex-grow: 0;
+
+        align-self: flex-end;
+
+        width: 1.2em;
+        height: 1.2em;
+    }
+}
+
+.tooltipContainer {
+    min-width: 14em;
 }
 
 .containerDevices {

@@ -9,6 +9,7 @@ import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
 import {AbstractModal} from "tc-shared/ui/react-elements/ModalDefinitions";
+import {downloadTextAsFile, requestFileAsText} from "tc-shared/file/Utils";
 
 const cssStyle = require("./Renderer.scss");
 
@@ -357,36 +358,6 @@ const CssVariableEditor = (props: { events: Registry<CssEditorEvents> }) => {
             <ControlButtons events={props.events}/>
         </div>
     )
-};
-const downloadTextAsFile = (text, name) => {
-    const element = document.createElement("a");
-    element.text = "download";
-    element.href = "data:test/plain;charset=utf-8," + encodeURIComponent(text);
-    element.download = name;
-    element.style.display = "none";
-
-    document.body.appendChild(element);
-    element.click();
-    element.remove();
-};
-
-const requestFileAsText = async (): Promise<string> => {
-    const element = document.createElement("input");
-    element.style.display = "none";
-    element.type = "file";
-
-    document.body.appendChild(element);
-    element.click();
-    await new Promise(resolve => {
-        element.onchange = resolve;
-    });
-
-    if (element.files.length !== 1)
-        return undefined;
-    const file = element.files[0];
-    element.remove();
-
-    return await file.text();
 };
 
 class PopoutConversationUI extends AbstractModal {

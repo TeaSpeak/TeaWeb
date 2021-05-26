@@ -10,7 +10,7 @@ import {
     MusicBotUiEvents
 } from "tc-shared/ui/frames/side/MusicBotDefinitions";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
-import {preview_image} from "tc-shared/ui/frames/image_preview";
+import {showImagePreview} from "tc-shared/ui/frames/ImagePreview";
 import {Slider} from "tc-shared/ui/react-elements/Slider";
 
 const cssStyle = require("./MusicBotRenderer.scss");
@@ -144,7 +144,7 @@ const Thumbnail = React.memo(() => {
                         draggable={false}
                         key={"song-thumbnail"}
                         src={info.thumbnail}
-                        onClick={() => preview_image(info.thumbnail, info.thumbnail)}
+                        onClick={() => showImagePreview(info.thumbnail, info.thumbnail)}
                         alt={tr("Thumbnail")}
                         style={{ cursor: "pointer" }}
                     />

@@ -1,0 +1,463 @@
+@import "../../../../css/static/mixin";
+@import "../../../../css/static/properties";
+
+.container {
+    @include user-select(none);
+
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+
+    width: 1000em;
+    min-width: 20em;
+    max-width: 100%;
+
+    min-height: 20em;
+
+    flex-shrink: 1;
+    flex-grow: 1;
+
+    .contextContainer {
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+
+        &.left {
+            min-width: 10em;
+            min-height: 10em;
+            overflow: hidden;
+            background-color: var(--modal-permission-left);
+        }
+
+        &.right {
+            min-width: 30em;
+            background-color: var(--modal-permission-right);
+        }
+    }
+
+    .header {
+        flex-shrink: 0;
+        flex-grow: 0;
+
+        height: 4em;
+        background-color: var(--modal-permissions-header-background);
+        color: var(--modal-permissions-header-text);
+
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        .entry {
+            flex-grow: 1;
+            flex-shrink: 1;
+
+            text-align: center;
+
+            height: 100%;
+
+            padding-left: .5em;
+            padding-right: .5em;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+
+        &.tabSelector {
+            min-width: 8em;
+
+            .entry {
+                position: relative;
+                overflow: hidden;
+
+                cursor: pointer;
+                padding-bottom: 2px;
+
+                a {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                }
+
+                &:hover {
+                    border: none;
+                    border-bottom: 2px solid var(--modal-permissions-header-hover);
+
+                    padding-bottom: 0;
+
+                    &:before {
+                        position: absolute;
+                        content: '';
+
+                        margin-right: -10em;
+                        margin-left: -10em;
+                        margin-bottom: -.2em;
+                        bottom: 0;
+
+                        height: 100%;
+                        width: calc(100% + 20em);
+
+                        box-shadow: inset 0px -1.2em 3em -20px var(--modal-permissions-header-hover);
+                    }
+                }
+
+                &.selected {
+                    border: none;
+                    border-bottom: 2px solid var(--modal-permissions-header-selected);
+
+                    padding-bottom: 0;
+
+                    &:before {
+                        position: absolute;
+                        content: '';
+
+                        margin-right: -10em;
+                        margin-left: -10em;
+                        margin-bottom: -.2em;
+                        bottom: 0;
+
+                        height: 100%;
+                        width: calc(100% + 20em);
+
+                        box-shadow: inset 0px -1.2em 3em -20px var(--modal-permissions-header-selected);
+                    }
+                }
+            }
+        }
+
+        &.activeTabInfo {
+            min-width: 6em;
+            font-weight: bold;
+
+            .entry {
+                overflow: hidden;
+
+                a {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                }
+            }
+
+            > * {
+                font-size: 1.5em;
+            }
+        }
+    }
+
+    .body {
+        flex-grow: 1;
+        flex-shrink: 1;
+    }
+}
+
+.containerList {
+    color: var(--text);
+
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    overflow: auto;
+    @include chat-scrollbar-vertical();
+    @include chat-scrollbar-horizontal();
+
+    width: 100%;
+
+    flex-grow: 1;
+    flex-shrink: 1;
+
+    .entries {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+
+        height: max-content;
+
+        min-width: 100%;
+        width: max-content;
+
+        .entry {
+            padding-left: .25em;
+
+            flex-shrink: 0;
+            flex-grow: 0;
+
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+
+            cursor: pointer;
+
+            width: 100%;
+
+            &:hover {
+                background-color: var(--modal-permissions-entry-hover);
+            }
+
+            &.selected {
+                background-color: var(--modal-permissions-entry-selected);
+            }
+
+            > * {
+                align-self: center;
+            }
+
+            @include transition(background-color .25s ease-in-out);
+        }
+    }
+}
+
+.sideContainer {
+    height: 0; /* will expend due to flex grow */
+    width: 100%;
+
+    flex-grow: 1;
+
+    &.hidden {
+        display: none;
+    }
+}
+
+.containerServerGroups, .containerChannelGroups {
+    position: relative;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    .list {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        min-height: 2em;
+
+        .name {
+            margin-left: 0.25em;
+        }
+
+        :global(.icon_em) {
+            font-size: 16px;
+        }
+    }
+
+    .buttons {
+        position: relative;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        height: 2.5em;
+        width: 100%;
+
+        .button {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+
+            flex-grow: 1;
+            flex-shrink: 1;
+
+            cursor: pointer;
+
+            background-color: var(--modal-permissions-buttons-background);
+
+            &:hover {
+                background-color: var(--modal-permissions-buttons-hover);
+            }
+
+            &.disabled {
+                background-color: var(--modal-permissions-buttons-disabled);
+            }
+
+            @include transition(background-color .25s ease-in-out);
+
+            .icon {
+                font-size: 2.2em;
+                align-self: center;
+            }
+        }
+    }
+
+    $animation_length: .3s;
+
+    .containerGroupList {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+
+        &.hidden {
+            @include transform(translateX(-100%));
+        }
+
+        @include transition($animation_length ease-in-out);
+    }
+
+    .containerClientList {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+
+        .selectedGroup {
+            flex-shrink: 0;
+            flex-grow: 0;
+
+            z-index: 2;
+
+            display: flex;
+            flex-direction: row;
+            justify-content: stretch;
+
+            background-color: var(--modal-permissions-current-group);
+            color: var(--text);
+            padding-left: .25em;
+
+            height: 1.5em;
+            font-size: 1.125em;
+
+            .icon {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-around;
+
+                height: 100%;
+                margin-right: .25em;
+            }
+
+            .name {
+                flex-grow: 1;
+                flex-shrink: 1;
+
+                height: 1.5em;
+            }
+        }
+
+        .overlay {
+            z-index: 1;
+
+            position: absolute;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+
+            padding-top: 2em;
+
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+
+            color: #666666;
+            background-color: var(--modal-permission-left);
+
+            a {
+                text-align: center;
+                font-size: 1.2em;
+                align-self: center;
+            }
+
+            &.error {
+                color: #6b6161;
+            }
+
+            &.hidden {
+                display: none;
+            }
+        }
+
+        &.hidden {
+            @include transform(translateX(100%));
+        }
+
+        @include transition($animation_length ease-in-out);
+    }
+}
+
+.containerChannels {
+    position: relative;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+}
+
+.containerClient {
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.containerChannelClient {
+    position: relative;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+}
+
+.containerChannels, .containerClient, .containerChannelClient {
+    .listChannels {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        min-height: 2em;
+
+        .name {
+            margin-left: 0.25em;
+        }
+    }
+
+    .clientSelect {
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        padding: .25em;
+
+        hr {
+            border: none;
+            border-top: 2px solid var(--modal-permissions-seperator);
+
+            margin-left: -.25em;
+            margin-right: -.25em;
+        }
+
+        .inputField {
+            margin-top: -.75em;
+        }
+
+        .infoField {
+            margin-bottom: .25em;
+            margin-top: -.5em;
+        }
+    }
+}

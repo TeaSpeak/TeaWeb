@@ -1,5 +1,5 @@
 import {LogCategory, logError, logWarn} from "tc-shared/log";
-import {tr} from "tc-shared/i18n/localize";
+import {tr, tra} from "tc-shared/i18n/localize";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
@@ -37,6 +37,9 @@ export type ConnectionHistoryServerInfo = {
     /* These properties are only available upon server variable retrieval */
     clientsOnline: number | -1,
     clientsMax: number | -1,
+
+    hostBannerUrl: string | undefined,
+    hostBannerMode: number,
 
     passwordProtected: boolean
 }
@@ -310,6 +313,9 @@ export class ConnectionHistory {
 
             databaseValue.clientsOnline = info.clientsOnline;
             databaseValue.clientsMax = info.clientsMax;
+
+            databaseValue.hostBannerUrl = info.hostBannerUrl
+            databaseValue.hostBannerMode = info.hostBannerMode;
         });
     }
 
@@ -333,9 +339,9 @@ export class ConnectionHistory {
                 break;
             }
 
-            promises.push(new Promise(resolve => {
+            promises.push(new Promise<void>(resolve => {
                 const deleteRequest = entry.delete();
-                deleteRequest.onsuccess = resolve;
+                deleteRequest.onsuccess = () => resolve();
                 deleteRequest.onerror = () => {
                     logWarn(LogCategory.GENERAL, tr("Failed to delete a connection attempt: %o"), deleteRequest.error);
                     resolve();
@@ -377,6 +383,9 @@ export class ConnectionHistory {
 
             clientsOnline: value.clientsOnline,
             clientsMax: value.clientsMax,
+
+            hostBannerUrl: value.hostBannerUrl,
+            hostBannerMode: typeof value.hostBannerMode === "number" ? value.hostBannerMode : 0,
 
             passwordProtected: value.passwordProtected
         };
@@ -500,7 +509,9 @@ const kConnectServerInfoUpdatePropertyKeys: (keyof ServerProperties)[] = [
     "virtualserver_maxclients",
     "virtualserver_clientsonline",
     "virtualserver_flag_password",
-    "virtualserver_country_code"
+    "virtualserver_country_code",
+    "virtualserver_hostbanner_gfx_url",
+    "virtualserver_hostbanner_mode"
 ];
 
 class ConnectionHistoryUpdateListener {
@@ -551,6 +562,9 @@ class ConnectionHistoryUpdateListener {
 
                         clientsMax: event.server_properties.virtualserver_maxclients,
                         clientsOnline: event.server_properties.virtualserver_clientsonline,
+
+                        hostBannerUrl: event.server_properties.virtualserver_hostbanner_gfx_url,
+                        hostBannerMode: event.server_properties.virtualserver_hostbanner_mode,
 
                         passwordProtected: event.server_properties.virtualserver_flag_password
                     }).catch(error => {

@@ -6,154 +6,156 @@ html:root {
     --modal-newcomer-divider: #313135;
 }
 
-.modal-body.modal-newcomer {
-    display: flex!important;
-    flex-direction: column!important;
-    justify-content: stretch!important;
+:global {
+    .modal-body.modal-newcomer {
+        display: flex!important;
+        flex-direction: column!important;
+        justify-content: stretch!important;
 
-    padding: 0!important;
+        padding: 0!important;
 
-    min-width: 20em;
-    width: 60em;
+        min-width: 20em;
+        width: 60em;
 
-    @include user-select(none);
+        @include user-select(none);
 
-    .container-header {
-        flex-shrink: 0;
-        flex-grow: 0;
+        .container-header {
+            flex-shrink: 0;
+            flex-grow: 0;
 
-        color: var(--modal-newcommer-header-color);
-        padding: .5em .5em .25em;
+            color: var(--modal-newcommer-header-color);
+            padding: .5em .5em .25em;
 
-        position: relative;
-        font-size: 1.5em;
-        text-transform: uppercase;
-
-        .step {
-            &.hidden {
-                display: none;
-            }
-
-
-            &::after {
-                content: ' ';
-                position: absolute;
-
-                left: 0;
-                right: 0;
-                bottom: 0;
-
-                height: 1.25px;
-                //background: linear-gradient(90deg, rgba(49,49,53,1) 80%, rgba(49,49,53,0) 100%);
-                background: var(--modal-newcomer-divider);
-            }
-
-            &.hidden {
-                &::after {
-                    content: unset;
-                }
-            }
-        }
-    }
-
-    .container-body {
-        //flex-grow: 1;
-        //flex-shrink: 1;
-        flex-shrink: 1;
-        min-height: 18em;
-
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-
-        overflow: auto;
-        @include chat-scrollbar-horizontal();
-        @include chat-scrollbar-vertical();
-
-        background-color: #19191b;
-
-        .body {
-            display: flex;
-            flex-direction: column;
-            justify-content: stretch;
-
-            padding: .5em .5em .5em;
-
-            &.height-transition {
-                @include transition(max-height .25s ease-in-out, min-height .25s ease-in-out);
-                overflow: hidden;
-            }
+            position: relative;
+            font-size: 1.5em;
+            text-transform: uppercase;
 
             .step {
-                &.step-welcome, &.step-finish {
-                    display: flex;
-                    flex-direction: row;
-                    justify-content: center;
-
-                    .text {
-                        align-self: center;
-                        h1 {
-                            line-height: 1.1em;
-
-                            margin-bottom: .8em;
-                            margin-top: 0;
-                        }
-
-                        flex-shrink: 0;
-                    }
-
-                    &.step-welcome h1 {
-                        margin-bottom: 0;
-                    }
-
-                    .logo {
-                        max-height: 15em;
-                        max-width: 15em;
-
-                        align-self: center;
-                        margin-right: 1em;
-
-                        img {
-                            max-height: 100%;
-                            max-width: 100%;
-                        }
-                    }
-                }
-
-                /* for step-identity or step-microphone */
-                .container-settings-identity-profile {
-                    padding: .5em;
-
-                    .left .body {
-                        background-color: #202122;
-                        .overlay {
-                            background-color: #202122;
-                        }
-
-                        .profile.selected {
-                            background-color: #141415;
-                        }
-                    }
-                }
-
-                &.step-identity { }
-
                 &.hidden {
                     display: none;
                 }
+
+
+                &::after {
+                    content: ' ';
+                    position: absolute;
+
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+
+                    height: 1.25px;
+                    //background: linear-gradient(90deg, rgba(49,49,53,1) 80%, rgba(49,49,53,0) 100%);
+                    background: var(--modal-newcomer-divider);
+                }
+
+                &.hidden {
+                    &::after {
+                        content: unset;
+                    }
+                }
             }
         }
-    }
 
-    .buttons {
-        flex-shrink: 0;
-        flex-grow: 0;
+        .container-body {
+            //flex-grow: 1;
+            //flex-shrink: 1;
+            flex-shrink: 1;
+            min-height: 18em;
 
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
 
-        border-top: 1.25px solid var(--modal-newcomer-divider);
-        padding: .5em;
+            overflow: auto;
+            @include chat-scrollbar-horizontal();
+            @include chat-scrollbar-vertical();
+
+            background-color: #19191b;
+
+            .body {
+                display: flex;
+                flex-direction: column;
+                justify-content: stretch;
+
+                padding: .5em .5em .5em;
+
+                &.height-transition {
+                    @include transition(max-height .25s ease-in-out, min-height .25s ease-in-out);
+                    overflow: hidden;
+                }
+
+                .step {
+                    &.step-welcome, &.step-finish {
+                        display: flex;
+                        flex-direction: row;
+                        justify-content: center;
+
+                        .text {
+                            align-self: center;
+                            h1 {
+                                line-height: 1.1em;
+
+                                margin-bottom: .8em;
+                                margin-top: 0;
+                            }
+
+                            flex-shrink: 0;
+                        }
+
+                        &.step-welcome h1 {
+                            margin-bottom: 0;
+                        }
+
+                        .logo {
+                            max-height: 15em;
+                            max-width: 15em;
+
+                            align-self: center;
+                            margin-right: 1em;
+
+                            img {
+                                max-height: 100%;
+                                max-width: 100%;
+                            }
+                        }
+                    }
+
+                    /* for step-identity or step-microphone */
+                    .container-settings-identity-profile {
+                        padding: .5em;
+
+                        .left .body {
+                            background-color: #202122;
+                            .overlay {
+                                background-color: #202122;
+                            }
+
+                            .profile.selected {
+                                background-color: #141415;
+                            }
+                        }
+                    }
+
+                    &.step-identity { }
+
+                    &.hidden {
+                        display: none;
+                    }
+                }
+            }
+        }
+
+        .buttons {
+            flex-shrink: 0;
+            flex-grow: 0;
+
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+
+            border-top: 1.25px solid var(--modal-newcomer-divider);
+            padding: .5em;
+        }
     }
 }

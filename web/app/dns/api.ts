@@ -1,5 +1,4 @@
 import {tr} from "tc-shared/i18n/localize";
-import * as log from "tc-shared/log";
 import {LogCategory, logError, logTrace} from "tc-shared/log";
 
 export enum RRType {

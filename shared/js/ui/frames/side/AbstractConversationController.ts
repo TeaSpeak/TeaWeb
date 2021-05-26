@@ -1,5 +1,5 @@
 import {AbstractConversationUiEvents, ChatHistoryState} from "./AbstractConversationDefinitions";
-import {EventHandler, Registry} from "../../../events";
+import {EventHandler, Registry} from "tc-events";
 import {LogCategory, logError} from "../../../log";
 import {tr, tra} from "../../../i18n/localize";
 import {
@@ -8,9 +8,12 @@ import {
     AbstractChatManagerEvents,
     AbstractConversationEvents
 } from "tc-shared/conversations/AbstractConversion";
+import {ChannelConversation} from "tc-shared/conversations/ChannelConversationManager";
+import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 
 export const kMaxChatFrameMessageSize = 50; /* max 100 messages, since the server does not support more than 100 messages queried at once */
 
+export type SelectedConversation<ConversationType> = ConversationType | undefined | "conversation-manager-selected";
 export abstract class AbstractConversationController<
     Events extends AbstractConversationUiEvents,
     Manager extends AbstractChatManager<ManagerEvents, ConversationType, ConversationEvents>,
@@ -20,15 +23,17 @@ export abstract class AbstractConversationController<
 > {
     protected readonly uiEvents: Registry<Events>;
     protected conversationManager: Manager | undefined;
-    protected listenerManager: (() => void)[];
+    private listenerManager: (() => void)[];
 
-    protected currentSelectedConversation: ConversationType;
-    protected currentSelectedListener: (() => void)[];
+    private selectedConversation: SelectedConversation<ConversationType>;
+    private currentSelectedConversation: ConversationType;
+    private currentSelectedListener: (() => void)[];
 
     protected constructor() {
         this.uiEvents = new Registry<Events>();
         this.currentSelectedListener = [];
         this.listenerManager = [];
+        this.selectedConversation = "conversation-manager-selected";
     }
 
     destroy() {
@@ -50,27 +55,48 @@ export abstract class AbstractConversationController<
 
         this.listenerManager.forEach(callback => callback());
         this.listenerManager = [];
-        this.conversationManager = manager;
 
-        if(manager) {
-            this.registerConversationManagerEvents(manager);
-            this.setCurrentlySelected(manager.getSelectedConversation());
-        } else {
-            this.setCurrentlySelected(undefined);
+        this.conversationManager = manager;
+        this.selectedConversation = undefined;
+        this.setCurrentlySelected(undefined);
+
+        if(this.conversationManager) {
+            this.registerConversationManagerEvents(this.conversationManager);
         }
     }
 
-    protected registerConversationManagerEvents(manager: Manager) {
-        this.listenerManager.push(manager.events.on("notify_selected_changed", event => this.setCurrentlySelected(event.newConversation)));
+    protected setSelectedConversation(conversation: SelectedConversation<ConversationType>) {
+        if(this.selectedConversation === conversation) {
+            return;
+        }
+
+        /* TODO: Verify that that conversation matches our current handler? */
+        this.selectedConversation = conversation;
+        if(conversation === "conversation-manager-selected") {
+            this.setCurrentlySelected(this.conversationManager?.getSelectedConversation());
+        } else {
+            this.setCurrentlySelected(conversation);
+        }
+    }
+
+    protected registerConversationManagerEvents(manager: Manager) : (() => void)[] {
+        this.listenerManager.push(manager.events.on("notify_selected_changed", event => {
+            if(this.selectedConversation === "conversation-manager-selected") {
+                this.setCurrentlySelected(event.newConversation);
+            }
+        }));
+
         this.listenerManager.push(manager.events.on("notify_cross_conversation_support_changed", () => {
             const currentConversation = this.getCurrentConversation();
             if(currentConversation) {
                 this.reportStateToUI(currentConversation);
             }
         }));
+
+        return this.listenerManager;
     }
 
-    protected registerConversationEvents(conversation: ConversationType) {
+    protected registerConversationEvents(conversation: ConversationType) : (() => void)[] {
         this.currentSelectedListener.push(conversation.events.on("notify_unread_timestamp_changed", event =>
             this.uiEvents.fire_react("notify_unread_timestamp_changed", { chatId: conversation.getChatId(), timestamp: event.timestamp })));
 
@@ -92,9 +118,11 @@ export abstract class AbstractConversationController<
         this.currentSelectedListener.push(conversation.events.on("notify_read_state_changed", () => {
             this.reportStateToUI(conversation);
         }));
+
+        return this.currentSelectedListener;
     }
 
-    protected setCurrentlySelected(conversation: ConversationType | undefined) {
+    private setCurrentlySelected(conversation: ConversationType | undefined) {
         if(this.currentSelectedConversation === conversation) {
             return;
         }
@@ -108,11 +136,6 @@ export abstract class AbstractConversationController<
         if(conversation) {
             this.registerConversationEvents(conversation);
         }
-    }
-
-    /* TODO: Is this even a thing? */
-    handlePanelShow() {
-        this.uiEvents.fire_react("notify_panel_show");
     }
 
     protected reportStateToUI(conversation: AbstractChat<any>) {
@@ -187,6 +210,7 @@ export abstract class AbstractConversationController<
 
         }
     }
+
     public uiQueryHistory(conversation: AbstractChat<any>, timestamp: number, enforce?: boolean) {
         const localHistoryState = this.conversationManager.historyUiStates[conversation.getChatId()] || (this.conversationManager.historyUiStates[conversation.getChatId()] = {
             executingUIHistoryQuery: false,

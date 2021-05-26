@@ -2,7 +2,7 @@ import {
     AbstractServerConnection,
     CommandOptionDefaults,
     CommandOptions, ConnectionPing,
-    ConnectionStatistics,
+    ConnectionStatistics, ServerCommand,
 } from "tc-shared/connection/ConnectionBase";
 import {ConnectionHandler, ConnectionState, DisconnectReason} from "tc-shared/ConnectionHandler";
 import {HandshakeHandler} from "tc-shared/connection/HandshakeHandler";
@@ -11,20 +11,19 @@ import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {settings, Settings} from "tc-shared/settings";
 import * as log from "tc-shared/log";
 import {LogCategory, logDebug, logError, logInfo, logTrace, logWarn} from "tc-shared/log";
-import {Regex} from "tc-shared/ui/modal/ModalConnect";
 import {AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
-import {WrappedWebSocket} from "tc-backend/web/connection/WrappedWebSocket";
+import {WrappedWebSocket} from "./WrappedWebSocket";
 import {AbstractVoiceConnection} from "tc-shared/connection/VoiceConnection";
-import {parseCommand} from "tc-backend/web/connection/CommandParser";
+import {parseCommand} from "./CommandParser";
 import {ServerAddress} from "tc-shared/tree/Server";
-import {RtpVoiceConnection} from "tc-backend/web/voice/Connection";
+import {RtpVoiceConnection} from "../voice/Connection";
 import {VideoConnection} from "tc-shared/connection/VideoConnection";
-import {VoiceConnection} from "tc-backend/web/legacy/voice/VoiceHandler";
-import {LegacySupportVoiceBridge} from "tc-backend/web/connection/LegacySupportVoiceBridge";
 import {ServerFeature} from "tc-shared/connection/ServerFeatures";
 import {RTCConnection} from "tc-shared/connection/rtc/Connection";
 import {RtpVideoConnection} from "tc-shared/connection/rtc/video/Connection";
 import { tr } from "tc-shared/i18n/localize";
+import {createErrorModal} from "tc-shared/ui/elements/Modal";
+import ipRegex from "ip-regex";
 
 class ReturnListener<T> {
     resolve: (value?: T | PromiseLike<T>) => void;
@@ -51,10 +50,6 @@ export class ServerConnection extends AbstractServerConnection {
     private voiceConnection: RtpVoiceConnection;
     private videoConnection: RtpVideoConnection;
 
-    /* legacy */
-    private oldVoiceConnection: VoiceConnection;
-    private legacyVoiceConnection: LegacySupportVoiceBridge;
-
     private pingStatistics = {
         thread_id: 0,
 
@@ -76,15 +71,12 @@ export class ServerConnection extends AbstractServerConnection {
         this.commandHandlerBoss = new ServerConnectionCommandBoss(this);
         this.defaultCommandHandler = new ConnectionCommandHandler(this);
 
-        this.commandHandlerBoss.register_handler(this.defaultCommandHandler);
+        this.commandHandlerBoss.registerHandler(this.defaultCommandHandler);
         this.command_helper.initialize();
 
         this.rtcConnection = new RTCConnection(this, true);
         this.voiceConnection = new RtpVoiceConnection(this, this.rtcConnection);
         this.videoConnection = new RtpVideoConnection(this.rtcConnection);
-
-        this.oldVoiceConnection = new VoiceConnection(this);
-        this.legacyVoiceConnection = new LegacySupportVoiceBridge(this, this.oldVoiceConnection, this.voiceConnection);
     }
 
     destroy() {
@@ -109,16 +101,11 @@ export class ServerConnection extends AbstractServerConnection {
             this.rtcConnection.destroy();
             this.command_helper.destroy();
 
-            this.defaultCommandHandler && this.commandHandlerBoss.unregister_handler(this.defaultCommandHandler);
+            this.defaultCommandHandler && this.commandHandlerBoss.unregisterHandler(this.defaultCommandHandler);
             this.defaultCommandHandler = undefined;
 
             this.voiceConnection && this.voiceConnection.destroy();
             this.voiceConnection = undefined;
-
-            this.oldVoiceConnection?.destroy();
-            this.oldVoiceConnection = undefined;
-
-            this.legacyVoiceConnection = undefined;
 
             this.commandHandlerBoss && this.commandHandlerBoss.destroy();
             this.commandHandlerBoss = undefined;
@@ -150,10 +137,12 @@ export class ServerConnection extends AbstractServerConnection {
         proxySocket:
         if(!settings.getValue(Settings.KEY_CONNECT_NO_DNSPROXY)) {
             let host;
-            if(Regex.IP_V4.test(address.host)) {
-                host = address.host.replace(/\./g, "-") + ".con-gate.work";
-            } else if(Regex.IP_V6.test(address.host)) {
-                host = address.host.replace(/\[(.*)]/, "$1").replace(/:/g, "_") + ".con-gate.work";
+
+            if(ipRegex({ exact: true }).test(address.host)) {
+                host = address.host;
+                host = host.replace(/\./g, "-");
+                host = host.replace(/:/g, "_");
+                host = host + ".con-gate.work";
             } else {
                 break proxySocket;
             }
@@ -171,13 +160,13 @@ export class ServerConnection extends AbstractServerConnection {
         }));
 
         let timeoutRaised = false;
-        let timeoutPromise = new Promise(resolve => setTimeout(() => {
+        let timeoutPromise = new Promise<void>(resolve => setTimeout(() => {
             timeoutRaised = true;
             resolve();
         }, timeout));
 
         let cancelRaised = false;
-        let cancelPromise = new Promise(resolve => {
+        let cancelPromise = new Promise<void>(resolve => {
             this.connectCancelCallback = () => {
                 this.connectCancelCallback = undefined;
                 cancelRaised = true;
@@ -341,10 +330,7 @@ export class ServerConnection extends AbstractServerConnection {
                 group.group(log.LogType.TRACE, tr("Json:")).collapsed(true).log("%o", json).end();
                 /* devel-block-end */
 
-                this.commandHandlerBoss.invoke_handle({
-                    command: json["command"],
-                    arguments: json["data"]
-                });
+                this.commandHandlerBoss.invokeCommand(new ServerCommand(json["command"], json["data"], []));
 
                 if(json["command"] === "initserver") {
                     this.handleServerInit();
@@ -355,10 +341,7 @@ export class ServerConnection extends AbstractServerConnection {
             } else if(json["type"] === "command-raw") {
                 const command = parseCommand(json["payload"]);
                 logTrace(LogCategory.NETWORKING, tr("Received command %s"), command.command);
-                this.commandHandlerBoss.invoke_handle({
-                    command: command.command,
-                    arguments: command.payload
-                });
+                this.commandHandlerBoss.invokeCommand(command);
 
                 if(command.command === "initserver") {
                     this.handleServerInit();
@@ -379,8 +362,6 @@ export class ServerConnection extends AbstractServerConnection {
                     this.events.fire("notify_ping_updated", { newPing: this.ping() });
                     //logDebug(LogCategory.NETWORKING, tr("Received new pong. Updating ping to: JS: %o Native: %o"), this._ping.value.toFixed(3), this._ping.value_native.toFixed(3));
                 }
-            } else if(json["type"] === "WebRTC") {
-                this.oldVoiceConnection?.handleControlPacket(json);
             } else {
                 logWarn(LogCategory.NETWORKING, tr("Unknown command type %o"), json["type"]);
             }
@@ -409,22 +390,12 @@ export class ServerConnection extends AbstractServerConnection {
             }
 
             if(this.client.serverFeatures.supportsFeature(ServerFeature.VIDEO, 1)) {
-                this.legacyVoiceConnection.setVoiceBridge("new").then(() => {
-                    this.rtcConnection.doInitialSetup();
-                }).catch(error => {
-                    logError(LogCategory.VOICE, tr("Failed to setup the voice bridge: %o"), error);
-                    /* FIXME: Some kind of error modal? */
-                });
+                this.rtcConnection.doInitialSetup();
             } else{
                 /* old voice connection */
-                logDebug(LogCategory.NETWORKING, tr("Using legacy voice connection for TeaSpeak server bellow 1.4.5"));
-                this.legacyVoiceConnection.setVoiceBridge("old").then(() => {
-                    this.oldVoiceConnection.startVoiceBridge();
-                    this.rtcConnection.setNotSupported();
-                }).catch(error => {
-                    logError(LogCategory.VOICE, tr("Failed to setup the old voice bridge: %o"), error);
-                    /* FIXME: Some kind of error modal? */
-                });
+                logDebug(LogCategory.NETWORKING, tr("Using legacy voice connection for TeaSpeak server bellow 1.5"));
+                createErrorModal(tr("Server outdated"), tr("Please update your server in order to use the WebClient")).open();
+                this.rtcConnection.setNotSupported();
             }
         });
     }
@@ -487,14 +458,14 @@ export class ServerConnection extends AbstractServerConnection {
     }
 
     getVoiceConnection(): AbstractVoiceConnection {
-        return this.legacyVoiceConnection;
+        return this.voiceConnection;
     }
 
     getVideoConnection(): VideoConnection {
         return this.videoConnection;
     }
 
-    command_handler_boss(): AbstractCommandHandlerBoss {
+    getCommandHandler(): AbstractCommandHandlerBoss {
         return this.commandHandlerBoss;
     }
 

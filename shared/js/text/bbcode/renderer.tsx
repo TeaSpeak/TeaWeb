@@ -10,11 +10,9 @@ import HTMLRenderer from "vendor/xbbcode/renderer/html";
 
 import "./emoji";
 import "./highlight";
-import "./youtube";
+import "./YoutubeRenderer";
 import "./url";
 import "./image";
-import {ElementRenderer, Renderer} from "vendor/xbbcode/renderer/base";
-import {TextElement} from "vendor/xbbcode/elements";
 
 export let BBCodeHandlerContext: Context<string>;
 

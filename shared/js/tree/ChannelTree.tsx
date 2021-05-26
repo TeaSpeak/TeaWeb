@@ -2,7 +2,7 @@ import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {MenuEntryType} from "tc-shared/ui/elements/ContextMenu";
 import {LogCategory, logDebug, logError, logWarn} from "tc-shared/log";
 import {PermissionType} from "tc-shared/permission/PermissionType";
-import {Sound} from "tc-shared/sound/Sounds";
+import {Sound} from "tc-shared/audio/Sounds";
 import {Group} from "tc-shared/permission/GroupManager";
 import {ServerAddress, ServerEntry} from "./Server";
 import {ChannelEntry, ChannelProperties, ChannelSubscribeMode} from "./Channel";
@@ -10,13 +10,10 @@ import {ClientEntry, LocalClientEntry, MusicClientEntry} from "./Client";
 import {ChannelTreeEntry} from "./ChannelTreeEntry";
 import {ConnectionHandler, ViewReasonId} from "tc-shared/ConnectionHandler";
 import {Registry} from "tc-shared/events";
-import * as React from "react";
-
 import {batch_updates, BatchUpdateType, flush_batched_updates} from "tc-shared/ui/react-elements/ReactComponentBase";
 import {createInputModal} from "tc-shared/ui/elements/Modal";
 import {spawnBanClient} from "tc-shared/ui/modal/ModalBanClient";
-import {formatMessage} from "tc-shared/ui/frames/chat";
-import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
+import {formatMessageString} from "tc-shared/ui/frames/chat";
 import {tr, tra} from "tc-shared/i18n/localize";
 import {initializeChannelTreeUiEvents} from "tc-shared/ui/tree/Controller";
 import {ChannelTreePopoutController} from "tc-shared/ui/tree/popout/Controller";
@@ -26,6 +23,7 @@ import {ClientIcon} from "svg-sprites/client-icons";
 import "./EntryTagsHandler";
 import {spawnChannelEditNew} from "tc-shared/ui/modal/channel-edit/Controller";
 import {ChannelTreeUIEvents} from "tc-shared/ui/tree/Definitions";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
 
 export interface ChannelTreeEvents {
     /* general tree notified */
@@ -694,16 +692,19 @@ export class ChannelTree {
                         disabled: false,
                         callback: () => {
                             const param_string = clients.map((_, index) => "{" + index + "}").join(', ');
-                            const param_values = clients.map(client => client.createChatTag(true));
-                            const tag = $.spawn("div").append(...formatMessage(tr("Do you really want to delete ") + param_string, ...param_values));
-                            const tag_container = $.spawn("div").append(tag);
-                            spawnYesNo(tr("Are you sure?"), tag_container, result => {
-                                if(result) {
-                                    for(const client of clients) {
-                                        this.client.serverConnection.send_command("musicbotdelete", {
-                                            botid: client.properties.client_database_id
-                                        });
-                                    }
+                            const param_values = clients.map(client => client.clientNickName());
+                            promptYesNo({
+                                title: tr("Are you sure?"),
+                                question: formatMessageString(tr("Do you really want to delete ") + param_string, ...param_values)
+                            }).then(result => {
+                                if(!result) {
+                                    return;
+                                }
+
+                                for(const client of clients) {
+                                    this.client.serverConnection.send_command("musicbotdelete", {
+                                        botid: client.properties.client_database_id
+                                    });
                                 }
                             });
                         },
@@ -797,11 +798,16 @@ export class ChannelTree {
                 name: tr("Delete all channels"),
                 icon_class: "client-delete",
                 callback: () => {
-                    spawnYesNo(tr("Are you sure?"), tra("Do you really want to delete {0} channels?", channels.length), result => {
-                        if(typeof result === "boolean" && result) {
-                            for(const channel of channels) {
-                                this.client.serverConnection.send_command("channeldelete", { cid: channel.channelId });
-                            }
+                    promptYesNo({
+                        title: tr("Are you sure?"),
+                        question: tra("Do you really want to delete {0} channels?", channels.length)
+                    }).then(result => {
+                        if(!result) {
+                            return;
+                        }
+
+                        for(const channel of channels) {
+                            this.client.serverConnection.send_command("channeldelete", { cid: channel.channelId });
                         }
                     });
                 }

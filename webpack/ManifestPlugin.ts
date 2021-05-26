@@ -1,108 +1,122 @@
 import * as webpack from "webpack";
-import * as fs from "fs-extra";
 import * as path from "path";
+import {Compilation, NormalModule} from "webpack";
 
 interface Options {
-    file?: string;
-    base: string;
+    outputFileName?: string;
+    context: string;
 }
 
 class ManifestGenerator {
-    private manifest_content;
+    private readonly options: Options;
 
-    readonly options: Options;
     constructor(options: Options) {
-        this.options = options || { base: __dirname };
+        this.options = options || { context: __dirname };
     }
 
     apply(compiler: webpack.Compiler) {
-        compiler.hooks.afterCompile.tap(this.constructor.name,  compilation => {
-            const chunks_data = {};
-            for(const chunkGroup of compilation.chunkGroups) {
-                const fileJs = [];
-                const filesCss = [];
-                const modules = [];
+        compiler.hooks.thisCompilation.tap({
+            name: "ManifestGenerator",
+            stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL
+        }, compilation => {
+            compilation.hooks.processAssets.tap("ManifestGenerator", () => this.emitAssets(compilation));
+        });
+    }
 
-                for(const chunk of chunkGroup.chunks) {
-                    if(!chunk.files.length)
-                        continue;
+    emitAssets(compilation: webpack.Compilation) {
+        const chunkData = {};
 
-                    /*
-                    if(chunk.files.length !== 1) {
-                        console.error("Expected only one file per chunk but got " + chunk.files.length);
-                        chunk.files.forEach(e => console.log(" - %s", e));
-                        throw "expected only one file per chunk";
-                    }
-                    */
+        for(const chunkGroup of compilation.chunkGroups) {
+            const fileJs = [];
+            const filesCss = [];
+            const modules = [];
 
-                    for(const file of chunk.files) {
-                        const extension = path.extname(file);
-                        if(extension === ".js") {
+            for(const chunk of chunkGroup.chunks) {
+                if(!chunk.files.size) {
+                    continue;
+                }
+
+                for(const file of chunk.files) {
+                    const extension = path.extname(file);
+                    switch (extension) {
+                        case ".js":
                             fileJs.push({
                                 hash: chunk.hash,
                                 file: file
                             });
-                        } else if(extension === ".css") {
+                            break;
+
+                        case ".css":
                             filesCss.push({
                                 hash: chunk.hash,
                                 file: file
                             });
-                        } else if(extension === ".wasm") {
-                            /* do nothing */
-                        } else {
+                            break;
+
+                        case ".wasm":
+                            break;
+
+                        default:
                             throw "Unknown chunk file with extension " + extension;
-                        }
-                    }
-
-                    for(const module of chunk.getModules()) {
-                        if(!module.type.startsWith("javascript/"))
-                            continue;
-
-                        if(!module.context)
-                            continue;
-
-                        if(module.context.startsWith("svg-sprites/")) {
-                            /* custom svg sprite handler */
-                            modules.push({
-                                id: module.id,
-                                context: "svg-sprites",
-                                resource: module.context.substring("svg-sprites/".length)
-                            });
-                            continue;
-                        }
-
-                        if(!module.resource)
-                            continue;
-
-                        if(module.context !== path.dirname(module.resource))
-                            throw "invalid context/resource relation";
-
-                        modules.push({
-                            id: module.id,
-                            context: path.relative(this.options.base, module.context).replace(/\\/g, "/"),
-                            resource: path.basename(module.resource)
-                        });
                     }
                 }
 
-                chunks_data[chunkGroup.options.name] = {
-                    files: fileJs,
-                    css_files: filesCss,
-                    modules: modules
-                };
+                for(const module of compilation.chunkGraph.getChunkModules(chunk)) {
+                    const identifier = module.identifier();
+                    if(typeof identifier === "string" && identifier.startsWith("svg-sprites/")) {
+                        /* custom svg sprite handler */
+                        modules.push({
+                            id: module.id,
+                            context: "svg-sprites",
+                            resource: identifier.substring("svg-sprites/".length)
+                        });
+                        continue;
+                    }
+
+                    if(!module.context) {
+                        continue;
+                    }
+
+                    if(!module.type.startsWith("javascript/")) {
+                        continue;
+                    }
+
+                    if(!(module instanceof NormalModule)) {
+                        continue;
+                    }
+
+                    if(module.resource.indexOf("webpack-dev-server") !== -1) {
+                        /* Don't include dev server files */
+                        continue;
+                    }
+
+                    if(module.context !== path.dirname(module.resource)) {
+                        throw "invalid context/resource relation (" + module.context + " <-> " + path.dirname(module.resource) + ")";
+                    }
+
+                    const moduleId = compilation.chunkGraph.getModuleId(module);
+                    modules.push({
+                        id: moduleId,
+                        context: path.relative(this.options.context, module.context).replace(/\\/g, "/"),
+                        resource: path.basename(module.resource)
+                    });
+                }
             }
 
-            this.manifest_content = {
-                version: 2,
-                chunks: chunks_data
+            chunkData[chunkGroup.options.name] = {
+                files: fileJs,
+                css_files: filesCss,
+                modules: modules
             };
+        }
+
+        const payload = JSON.stringify({
+            version: 2,
+            chunks: chunkData
         });
 
-        compiler.hooks.done.tap(this.constructor.name, () => {
-            const file = this.options.file || "manifest.json";
-            fs.mkdirpSync(path.dirname(file));
-            fs.writeFileSync(this.options.file || "manifest.json", JSON.stringify(this.manifest_content));
-        });
+        const fileName = this.options.outputFileName || "manifest.json";
+        compilation.emitAsset(fileName, new webpack.sources.RawSource(payload));
     }
 }
 

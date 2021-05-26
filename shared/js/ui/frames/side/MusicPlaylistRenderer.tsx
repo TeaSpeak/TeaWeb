@@ -9,10 +9,11 @@ import {
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
-import {preview_image} from "tc-shared/ui/frames/image_preview";
+import {showImagePreview} from "tc-shared/ui/frames/ImagePreview";
 import {joinClassList, useTr} from "tc-shared/ui/react-elements/Helper";
 import {spawnContextMenu} from "tc-shared/ui/ContextMenu";
 import {copyToClipboard} from "tc-shared/utils/helpers";
+import ImagePlaylistNoThumbnail from "./MusicPlaylistNoThumbnail.png";
 
 const cssStyle = require("./MusicPlaylistRenderer.scss");
 
@@ -58,7 +59,7 @@ export const DefaultThumbnail = (_props: { type: "loading" | "none-present" }) =
     return (
         <img
             draggable={false}
-            src="img/music/no-thumbnail.png"
+            src={ImagePlaylistNoThumbnail}
             alt={useTr("loading")}
         />
     );
@@ -86,7 +87,7 @@ const PlaylistEntry = React.memo((props: { serverUniqueId: string, playlistId: n
                         draggable={false}
                         key={"song-thumbnail"}
                         src={status.thumbnailImage}
-                        onClick={() => preview_image(status.thumbnailImage, status.thumbnailImage)}
+                        onClick={() => showImagePreview(status.thumbnailImage, status.thumbnailImage)}
                         alt={useTr("Thumbnail")}
                     />
                 )

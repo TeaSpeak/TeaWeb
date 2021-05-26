@@ -1,9 +1,14 @@
-import * as log from "./log";
-import {LogCategory, logError, logTrace} from "./log";
+import {LogCategory, logError, logInfo, logTrace} from "./log";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {Registry} from "./events";
-import { tr } from "./i18n/localize";
+import {tr} from "./i18n/localize";
+import {CallOnce, ignorePromise} from "tc-shared/proto";
+import {getStorageAdapter} from "tc-shared/StorageAdapter";
+
+/*
+ * TODO: Sync settings across renderer instances
+ */
 
 export type RegistryValueType = boolean | number | string | object;
 export type RegistryValueTypeNames = "boolean" | "number" | "string" | "object";
@@ -55,7 +60,7 @@ function decodeValueFromString<T extends RegistryValueType>(input: string, type:
     }
 }
 
-function encodeValueToString<T extends RegistryValueType>(input: T) : string {
+export function encodeSettingValueToString<T extends RegistryValueType>(input: T) : string {
     switch (typeof input) {
         case "string":
             return input;
@@ -74,26 +79,38 @@ function encodeValueToString<T extends RegistryValueType>(input: T) : string {
     }
 }
 
-function resolveKey<ValueType extends RegistryValueType, DefaultType>(
+export function resolveSettingKey<ValueType extends RegistryValueType, DefaultType>(
     key: RegistryKey<ValueType>,
     resolver: (key: string) => string | undefined | null,
     defaultValue: DefaultType
 ) : ValueType | DefaultType {
     let value = resolver(key.key);
 
-    if(typeof value === "string") {
-        return decodeValueFromString(value, key.valueType);
+    const keys = [key.key];
+    if(Array.isArray(key.fallbackKeys)) {
+        keys.push(...key.fallbackKeys);
     }
 
-    /* trying fallback values */
-    for(const fallback of key.fallbackKeys || []) {
-        value = resolver(fallback);
+    for(const resolveKey of keys) {
+        value = resolver(resolveKey);
         if(typeof value !== "string") {
             continue;
         }
 
+        switch (key.valueType) {
+            case "number":
+            case "boolean":
+                if(value.length === 0) {
+                    continue;
+                }
+                break;
+
+            default:
+                break;
+        }
+
         if(key.fallbackImports) {
-            const fallbackValueImporter = key.fallbackImports[fallback];
+            const fallbackValueImporter = key.fallbackImports[resolveKey];
             if(fallbackValueImporter) {
                 return fallbackValueImporter(value);
             }
@@ -125,9 +142,9 @@ export class UrlParameterParser {
     getValue<V extends RegistryValueType>(key: ValuedRegistryKey<V>, defaultValue?: V) : V;
     getValue<V extends RegistryValueType, DV>(key: RegistryKey<V> | ValuedRegistryKey<V>, defaultValue: DV) : V | DV {
         if(arguments.length > 1) {
-            return resolveKey(key, key => this.getParameter(key), defaultValue);
+            return resolveSettingKey(key, key => this.getParameter(key), defaultValue);
         } else if("defaultValue" in key) {
-            return resolveKey(key, key => this.getParameter(key), key.defaultValue);
+            return resolveSettingKey(key, key => this.getParameter(key), key.defaultValue);
         } else {
             throw tr("missing value");
         }
@@ -141,7 +158,7 @@ export class UrlParameterBuilder {
         if(value === undefined) {
             delete this.parameters[key.key];
         } else {
-            this.parameters[key.key] = encodeURIComponent(encodeValueToString(value));
+            this.parameters[key.key] = encodeURIComponent(encodeSettingValueToString(value));
         }
     }
 
@@ -264,16 +281,10 @@ export namespace AppParameters {
         description: "Peer address of the apps core",
     };
 
-    export const KEY_MODAL_IDENTITY_CODE: RegistryKey<string> = {
-        key: "modal-identify",
+    export const KEY_MODAL_IPC_CHANNEL: RegistryKey<string> = {
+        key: "modal-channel",
         valueType: "string",
-        description: "An authentication code used to register the new process as the modal"
-    };
-
-    export const KEY_MODAL_TARGET: RegistryKey<string> = {
-        key: "modal-target",
-        valueType: "string",
-        description: "Target modal unique id which should be loaded"
+        description: "The modal IPC channel id for communication with the controller"
     };
 
     export const KEY_LOAD_DUMMY_ERROR: ValuedRegistryKey<boolean> = {
@@ -282,32 +293,6 @@ export namespace AppParameters {
         valueType: "boolean",
         defaultValue: false
     };
-}
-
-export class StaticSettings {
-    private static _instance: StaticSettings;
-    static get instance() : StaticSettings {
-        if(!this._instance) {
-            this._instance = new StaticSettings(true);
-        }
-
-        return this._instance;
-    }
-
-    protected staticValues = {};
-
-    protected constructor(_reserved = undefined) { }
-
-    static<V extends RegistryValueType, DV>(key: RegistryKey<V>, defaultValue: DV) : V | DV;
-    static<V extends RegistryValueType>(key: ValuedRegistryKey<V>, defaultValue?: V) : V;
-
-    static<V extends RegistryValueType, DV>(key: RegistryKey<V> | ValuedRegistryKey<V>, defaultValue: DV) : V | DV {
-        if(arguments.length > 1) {
-            return AppParameters.getValue(key, defaultValue);
-        } else {
-            return AppParameters.getValue(key as ValuedRegistryKey<V>);
-        }
-    }
 }
 
 export interface SettingsEvents {
@@ -759,6 +744,13 @@ export class Settings {
         valueType: "boolean",
     };
 
+    static readonly KEY_VIDEO_SPOTLIGHT_MODE: ValuedRegistryKey<number> = {
+        key: "video_spotlight_mode",
+        defaultValue: 1,
+        description: "Select the video spotlight mode.\n0: Single video\n1: Video grid",
+        valueType: "number",
+    };
+
     static readonly KEY_INVITE_SHORT_URL: ValuedRegistryKey<boolean> = {
         key: "invite_short_url",
         defaultValue: true,
@@ -772,6 +764,56 @@ export class Settings {
         description: "Enable/disable the advanced menu for the invite menu",
         valueType: "boolean",
     };
+
+    static readonly KEY_MICROPHONE_LEVEL_INDICATOR: RegistryKey<boolean> = {
+        key: "microphone_level_indicator",
+        description: "Enable/disable the microphone level indicator when opening the microphone settings. The default is true, except for the linux native client.",
+        valueType: "boolean",
+    };
+
+    static readonly KEY_MICROPHONE_THRESHOLD_ATTACK_SMOOTH: ValuedRegistryKey<number> = {
+        key: "microphone_threshold_attack_smooth",
+        valueType: "number",
+        defaultValue: .25
+    };
+
+    static readonly KEY_MICROPHONE_THRESHOLD_RELEASE_SMOOTH: ValuedRegistryKey<number> = {
+        key: "microphone_threshold_release_smooth",
+        valueType: "number",
+        defaultValue: .9
+
+    };
+    static readonly KEY_MICROPHONE_THRESHOLD_RELEASE_DELAY: ValuedRegistryKey<number> = {
+        key: "microphone_threshold_release_delay",
+        valueType: "number",
+        description: "Delay for the client to cut of the audio in ms.",
+        defaultValue: 500
+    };
+
+    static readonly KEY_SPEAKER_DEVICE_ID: RegistryKey<string> = {
+        key: "speaker_device_id",
+        valueType: "string",
+        description: "The target speaker device id",
+    }
+
+    static readonly KEY_UPDATER_LAST_USED_UI: RegistryKey<string> = {
+        key: "updater_last_used_ui",
+        valueType: "string",
+        description: "Last used TeaSpeak UI version",
+    }
+
+    static readonly KEY_UPDATER_LAST_USED_CLIENT: RegistryKey<string> = {
+        key: "updater_last_used_client",
+        valueType: "string",
+        description: "Last used TeaSpeak Client version (TeaClient only)",
+    }
+
+    /* When using a higher number clients crash due to a bug in NodeJS */
+    static readonly KEY_IPC_EVENT_BUNDLE_MAX_SIZE: ValuedRegistryKey<number> = {
+        key: "ipc_event_bundle_max_size",
+        valueType: "number",
+        defaultValue: 0
+    }
 
     static readonly FN_LOG_ENABLED: (category: string) => RegistryKey<boolean> = category => {
         return {
@@ -882,44 +924,54 @@ export class Settings {
         return result;
     })();
 
-    static initialize() {
-        settings = new Settings();
-        (window as any).settings = settings;
-        (window as any).Settings = Settings;
-    }
-
-
     readonly events: Registry<SettingsEvents>;
 
-    private readonly cacheGlobal = {};
+    private settingsCache: any;
     private saveWorker: number;
-    private updated: boolean = false;
+    private updated: boolean;
+
+    private saveState: "none" | "saving" | "saving-changed";
 
     constructor() {
         this.events = new Registry<SettingsEvents>();
-        const json = localStorage.getItem("settings.global");
+        this.updated = false;
+        this.saveState = "none";
+    }
+
+    @CallOnce
+    async initialize() {
+        const json = await getStorageAdapter().get("settings.global");
+
         try {
-            this.cacheGlobal = JSON.parse(json);
+            if(json === null) {
+                logInfo(LogCategory.GENERAL, tr("Found no settings. Creating new client settings."));
+                this.settingsCache = {};
+            } else {
+                this.settingsCache = JSON.parse(json);
+            }
         } catch(error) {
+            this.settingsCache = {};
             logError(LogCategory.GENERAL, tr("Failed to load global settings!\nJson: %s\nError: %o"), json, error);
 
             const show_popup = () => {
                 //FIXME: Readd this
                 //createErrorModal(tr("Failed to load global settings"), tr("Failed to load global client settings!\nLookup console for more information.")).open();
             };
-            if(!loader.finished())
+            if(!loader.finished()) {
                 loader.register_task(loader.Stage.LOADED, {
                     priority: 0,
                     name: "Settings error",
                     function: async () => show_popup()
                 });
-            else
+            } else {
                 show_popup();
+            }
         }
-        if(!this.cacheGlobal) this.cacheGlobal = {};
+
         this.saveWorker = setInterval(() => {
-            if(this.updated)
+            if(this.updated) {
                 this.save();
+            }
         }, 5 * 1000);
     }
 
@@ -927,9 +979,9 @@ export class Settings {
     getValue<V extends RegistryValueType>(key: ValuedRegistryKey<V>, defaultValue?: V) : V;
     getValue<V extends RegistryValueType, DV>(key: RegistryKey<V> | ValuedRegistryKey<V>, defaultValue: DV) : V | DV {
         if(arguments.length > 1) {
-            return resolveKey(key, key => this.cacheGlobal[key], defaultValue);
+            return resolveSettingKey(key, key => this.settingsCache[key], defaultValue);
         } else if("defaultValue" in key) {
-            return resolveKey(key, key => this.cacheGlobal[key], key.defaultValue);
+            return resolveSettingKey(key, key => this.settingsCache[key], key.defaultValue);
         } else {
             debugger;
             throw tr("missing default value");
@@ -941,21 +993,21 @@ export class Settings {
             value = undefined;
         }
 
-        if(this.cacheGlobal[key.key] === value) {
+        if(this.settingsCache[key.key] === value) {
             return;
         }
 
-        const oldValue = this.cacheGlobal[key.key];
+        const oldValue = this.settingsCache[key.key];
         if(value === undefined) {
-            delete this.cacheGlobal[key.key];
+            delete this.settingsCache[key.key];
         } else {
-            this.cacheGlobal[key.key] = encodeValueToString(value);
+            this.settingsCache[key.key] = encodeSettingValueToString(value);
         }
 
         this.updated = true;
         this.events.fire("notify_setting_changed", {
             mode: "global",
-            newValue: this.cacheGlobal[key.key],
+            newValue: this.settingsCache[key.key],
             oldValue: oldValue,
             setting: key.key,
             newCastedValue: value
@@ -975,121 +1027,49 @@ export class Settings {
         })
     }
 
-    save() {
-        this.updated = false;
-        let global = JSON.stringify(this.cacheGlobal);
-        localStorage.setItem("settings.global", global);
-        if(localStorage.save)
-            localStorage.save();
-    }
-}
-
-export class ServerSettings {
-    private cacheServer = {};
-    private serverUniqueId: string;
-    private serverSaveWorker: number;
-    private serverSettingsUpdated: boolean = false;
-    private _destroyed = false;
-
-    constructor() {
-        this.serverSaveWorker = setInterval(() => {
-            if(this.serverSettingsUpdated) {
-                this.save();
-            }
-        }, 5 * 1000);
-    }
-
-    destroy() {
-        this._destroyed = true;
-
-        this.serverUniqueId = undefined;
-        this.cacheServer = undefined;
-
-        clearInterval(this.serverSaveWorker);
-        this.serverSaveWorker = undefined;
-    }
-
-    getValue<V extends RegistryValueType, DV>(key: RegistryKey<V>, defaultValue: DV) : V | DV;
-    getValue<V extends RegistryValueType>(key: ValuedRegistryKey<V>, defaultValue?: V) : V;
-    getValue(key, defaultValue) {
-        if(this._destroyed) {
-            throw "destroyed";
-        }
-
-        if(arguments.length > 1) {
-            return resolveKey(key, key => this.cacheServer[key], defaultValue);
-        } else if("defaultValue" in key) {
-            return resolveKey(key, key => this.cacheServer[key], key.defaultValue);
-        } else {
-            debugger;
-            throw tr("missing default value");
-        }
-    }
-
-    setValue<T extends RegistryValueType>(key: RegistryKey<T>, value?: T) {
-        if(this._destroyed) {
-            throw "destroyed";
-        }
-
-        if(this.cacheServer[key.key] === value) {
+    private async doSave() {
+        if(this.saveState === "none") {
             return;
         }
 
-        this.serverSettingsUpdated = true;
-        if(value === undefined || value === null) {
-            delete this.cacheServer[key.key];
-        } else {
-            this.cacheServer[key.key] = encodeValueToString(value);
-        }
+        do {
+            this.saveState = "saving";
 
-        if(UPDATE_DIRECT) {
-            this.save();
-        }
-    }
-
-    setServer(server_unique_id: string) {
-        if(this._destroyed) throw "destroyed";
-        if(this.serverUniqueId) {
-            this.save();
-            this.cacheServer = {};
-            this.serverUniqueId = undefined;
-        }
-        this.serverUniqueId = server_unique_id;
-
-        if(this.serverUniqueId) {
-
-            const json = localStorage.getItem("settings.server_" + server_unique_id);
             try {
-                this.cacheServer = JSON.parse(json);
-            } catch(error) {
-                logError(LogCategory.GENERAL, tr("Failed to load server settings for server %s!\nJson: %s\nError: %o"), server_unique_id, json, error);
+                await getStorageAdapter().set("settings.global", JSON.stringify(this.settingsCache));
+            } catch (error) {
+                logError(LogCategory.GENERAL, tr("Failed to save global settings: %o"), error);
             }
-            if(!this.cacheServer)
-                this.cacheServer = {};
-        }
+        } while(this.saveState !== "saving");
+
+        this.saveState = "none";
     }
 
     save() {
-        if(this._destroyed) {
-            throw "destroyed";
-        }
-        this.serverSettingsUpdated = false;
+        switch (this.saveState) {
+            case "saving":
+            case "saving-changed":
+                this.saveState = "saving-changed";
+                return;
 
-        if(this.serverUniqueId) {
-            let server = JSON.stringify(this.cacheServer);
-            localStorage.setItem("settings.server_" + this.serverUniqueId, server);
-
-            if(localStorage.save) {
-                localStorage.save();
-            }
+            default:
+            case "none":
+                this.saveState = "saving";
+                break;
         }
+
+        ignorePromise(this.doSave());
     }
 }
 
-export let settings: Settings = null;
-
+export let settings: Settings;
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
-    priority: 1000,
+    priority: 1100,
     name: "Settings initialize",
-    function: async () => Settings.initialize()
+    function: async () => {
+        settings = new Settings();
+        await settings.initialize();
+        (window as any).settings = settings;
+        (window as any).Settings = Settings;
+    }
 })

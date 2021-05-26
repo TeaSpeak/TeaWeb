@@ -1,11 +1,11 @@
 import {ElementRenderer} from "vendor/xbbcode/renderer/base";
-import {TagElement} from "vendor/xbbcode/elements";
+import {BBCodeTagElement} from "vendor/xbbcode/elements";
 import * as React from "react";
 import * as loader from "tc-loader";
 import {rendererReact, rendererText} from "tc-shared/text/bbcode/renderer";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {copyToClipboard} from "tc-shared/utils/helpers";
-import * as image_preview from "tc-shared/ui/frames/image_preview";
+import * as image_preview from "tc-shared/ui/frames/ImagePreview";
 
 export const regexImage = /^(?:https?):(?:\/{1,3}|\\)[-a-zA-Z0-9:;,@#%&()~_?+=\/\\.]*$/g;
 
@@ -49,7 +49,7 @@ function loadImageForElement(element: HTMLImageElement) {
             icon_class: "client-copy"
         })
     });
-    parent.css("cursor", "pointer").on('click', () => image_preview.preview_image(proxiedURL, url));
+    parent.css("cursor", "pointer").on('click', () => image_preview.showImagePreview(proxiedURL, url));
 }
 
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
@@ -57,12 +57,12 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     function: async () => {
         let reactId = 0;
 
-        rendererReact.registerCustomRenderer(new class extends ElementRenderer<TagElement, React.ReactNode> {
+        rendererReact.registerCustomRenderer(new class extends ElementRenderer<BBCodeTagElement, React.ReactNode> {
             tags(): string | string[] {
                 return ["img", "image"];
             }
 
-            render(element: TagElement): React.ReactNode {
+            render(element: BBCodeTagElement): React.ReactNode {
                 let target;
                 let content = rendererText.render(element);
                 if (!element.options) {

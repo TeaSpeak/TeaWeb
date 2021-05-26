@@ -116,7 +116,10 @@ export function spawnQueryManage(client: ConnectionHandler) {
             template.find(".button-query-delete").on('click', () => {
                 if(!selected_query) return;
 
-                Modals.spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this account?"), result => {
+                Modals.promptYesNo({
+                    title: tr("Are you sure?"),
+                    question:  tr("Do you really want to delete this account?"),
+                }).then(result => {
                     if(result) {
                         client.serverConnection.send_command("querydelete", {
                             client_login_name: selected_query.username
@@ -161,7 +164,6 @@ import {createErrorModal, createInfoModal, createInputModal, createModal, Modal}
 import {CommandResult, QueryListEntry} from "../../connection/ServerConnectionDeclaration";
 import {SingleCommandHandler} from "../../connection/ConnectionBase";
 import {copyToClipboard} from "../../utils/helpers";
-import {spawnYesNo} from "../../ui/modal/ModalYesNo";
 import {LogCategory, logError} from "../../log";
 import PermissionType from "../../permission/PermissionType";
 import {ConnectionHandler} from "../../ConnectionHandler";
@@ -169,6 +171,7 @@ import {spawnQueryCreate, spawnQueryCreated} from "../../ui/modal/ModalQuery";
 import {formatMessage} from "../../ui/frames/chat";
 import {ErrorCode} from "../../connection/ErrorCode";
 import {tr} from "tc-shared/i18n/localize";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
 
 export function spawnQueryManage(client: ConnectionHandler) {
     let modal: Modal;
@@ -336,7 +339,10 @@ export function spawnQueryManage(client: ConnectionHandler) {
                 button_delete.on('click', event => {
                     if (!selected_query) return;
 
-                    spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this account?"), result => {
+                    promptYesNo({
+                        title: tr("Are you sure?"),
+                        question: tr("Do you really want to delete this account?"),
+                    }).then(result => {
                         if (result) {
                             client.serverConnection.send_command("querydelete", {
                                 client_login_name: selected_query.username
@@ -388,13 +394,13 @@ export function spawnQueryManage(client: ConnectionHandler) {
                                     return true;
                                 }
                             };
-                            client.serverConnection.command_handler_boss().register_single_handler(single_handler);
+                            client.serverConnection.getCommandHandler().registerSingleHandler(single_handler);
 
                             client.serverConnection.send_command("querychangepassword", {
                                 client_login_name: selected_query.username,
                                 client_login_password: result
                             }).catch(error => {
-                                client.serverConnection.command_handler_boss().remove_single_handler(single_handler);
+                                client.serverConnection.getCommandHandler().removeSingleHandler(single_handler);
                                 if (error instanceof CommandResult)
                                     error = error.extra_message || error.message;
                                 createErrorModal(tr("Unable to change password"), formatMessage(tr("Failed to change password{:br:}Message: {}"), error)).open();

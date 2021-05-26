@@ -1,0 +1,19 @@
+@import "../../../../../../css/static/mixin";
+@import "../../../../../../css/static/color-variables";
+
+/* FIXME: Remove this wired import */
+@import "../../../../../../css/static/general";
+@import "../../../../../../css/static/modal";
+
+html, body {
+    margin: 0;
+    padding: 0;
+
+    height: 100vh;
+    width: 100vw;
+
+    background: #19191b;
+    color: #999;
+
+    overflow: hidden;
+}

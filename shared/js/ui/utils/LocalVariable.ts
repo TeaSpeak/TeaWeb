@@ -53,8 +53,8 @@ class LocalUiVariableConsumer<Variables extends UiVariableMap> extends UiVariabl
 }
 
 export function createLocalUiVariables<Variables extends UiVariableMap>() : [UiVariableProvider<Variables>, UiVariableConsumer<Variables>] {
-    const provider = new LocalUiVariableProvider();
-    const consumer = new LocalUiVariableConsumer(provider);
+    const provider = new LocalUiVariableProvider<Variables>();
+    const consumer = new LocalUiVariableConsumer<Variables>(provider);
     provider.setConsumer(consumer);
-    return [provider as any, consumer as any];
+    return [provider, consumer];
 }

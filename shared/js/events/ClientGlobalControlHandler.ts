@@ -1,6 +1,5 @@
 import {Registry} from "../events";
 import {ClientGlobalControlEvents} from "../events/GlobalEvents";
-import {Sound} from "../sound/Sounds";
 import {ConnectionHandler} from "../ConnectionHandler";
 import {createErrorModal, createInfoModal, createInputModal} from "../ui/elements/Modal";
 import PermissionType from "../permission/PermissionType";
@@ -9,16 +8,18 @@ import {openBanList} from "../ui/modal/ModalBanList";
 import {formatMessage} from "../ui/frames/chat";
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {spawnSettingsModal} from "../ui/modal/ModalSettings";
-import {spawnPermissionEditorModal} from "../ui/modal/permission/ModalPermissionEditor";
+import {spawnPermissionEditorModal} from "../ui/modal/permission/ModalController";
 import {tr, tra} from "../i18n/localize";
 import {spawnGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-editor/Controller";
 import {spawnModalCssVariableEditor} from "tc-shared/ui/modal/css-editor/Controller";
 import {server_connections} from "tc-shared/ConnectionManager";
-import {spawnAbout} from "tc-shared/ui/modal/ModalAbout";
 import {spawnVideoSourceSelectModal} from "tc-shared/ui/modal/video-source/Controller";
 import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {spawnEchoTestModal} from "tc-shared/ui/modal/echo-test/Controller";
 import {spawnConnectModalNew} from "tc-shared/ui/modal/connect/Controller";
+import {spawnBookmarkModal} from "tc-shared/ui/modal/bookmarks/Controller";
+import {Sound} from "tc-shared/audio/Sounds";
+import {spawnAboutModal} from "tc-shared/ui/modal/about/Controller";
 
 /*
 function initialize_sounds(event_registry: Registry<ClientGlobalControlEvents>) {
@@ -62,12 +63,7 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
         const connection_handler = event.connection || current_connection_handler;
         switch (event.window) {
             case "bookmark-manage":
-                import("../ui/modal/ModalBookmarks").catch(error => {
-                    handle_import_error(error);
-                    return undefined;
-                }).then(window => {
-                    window?.spawnBookmarkModal();
-                });
+                spawnBookmarkModal();
                 break;
             case "query-manage":
                 if(!connection_handler || !connection_handler.connected) {
@@ -154,7 +150,7 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                 break;
 
             case "about":
-                spawnAbout();
+                spawnAboutModal();
                 break;
 
             case "server-echo-test":

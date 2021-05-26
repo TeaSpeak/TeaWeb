@@ -207,7 +207,7 @@ class IconManager extends AbstractIconManager {
             if(!handler.connected) {
                 logWarn(LogCategory.FILE_TRANSFER, tr("Received handler id hint for icon download, but handler %s is not connected. Trying others."), handlerIdHint);
                 handler = undefined;
-            } else if(handler.channelTree.server.properties.virtualserver_unique_identifier !== icon.serverUniqueId) {
+            } else if(icon.serverUniqueId && handler.channelTree.server.properties.virtualserver_unique_identifier !== icon.serverUniqueId) {
                 logWarn(LogCategory.FILE_TRANSFER,
                     tr("Received handler id hint for icon download, but handler %s is not connected to the expected server (%s <=> %s). Trying others."),
                     handlerIdHint, handler.channelTree.server.properties.virtualserver_unique_identifier, icon.serverUniqueId);

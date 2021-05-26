@@ -11,9 +11,9 @@ import PermissionType from "tc-shared/permission/PermissionType";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
-import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {LogCategory, logError} from "tc-shared/log";
+import {InternalModal} from "tc-shared/ui/react-elements/modal/Definitions";
 
 const cssStyle = require("./ModalGroupCreate.scss");
 
@@ -328,13 +328,13 @@ function initializeGroupCreateController(connection: ConnectionHandler, events: 
         let promise: Promise<CommandResult>;
         if(event.source <= 0) {
             /* real group create */
-            promise = connection.serverConnection.send_command("servergroupadd", {
+            promise = connection.serverConnection.send_command(target + "groupadd", {
                 name: event.name,
                 type: event.target === "query" ? 2 : event.target === "template" ? 0 : 1
             });
         } else {
             /* group copy */
-            promise = connection.serverConnection.send_command("servergroupcopy", {
+            promise = connection.serverConnection.send_command(target + "groupcopy", {
                 ssgid: event.source,
                 name: event.name,
                 type: event.target === "query" ? 2 : event.target === "template" ? 0 : 1
@@ -345,7 +345,7 @@ function initializeGroupCreateController(connection: ConnectionHandler, events: 
         }).catch(error => {
             if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                 createErrorModal(tr("Failed to create group"),
-                    tra("Failed to create group.\nMissing permission {}", connection.permissions.resolveInfo(parseInt(error.json["failed_permid"]))?.name || tr("unknwon"))).open();
+                    tra("Failed to create group.\nMissing permission {}", connection.permissions.getFailedPermission(error))).open();
                 return;
             }
 

@@ -4,6 +4,12 @@ import {tr} from "tc-shared/i18n/localize";
 import {LogCategory, logDebug, logError, logInfo, logWarn} from "tc-shared/log";
 import {ChatEvent} from "../ui/frames/side/AbstractConversationDefinitions";
 
+/*
+ * Note:
+ * In this file we're explicitly using the local storage because the index-db database cache is windows bound
+ * like the local storage. We don't need to use the storage adapter here.
+ */
+
 const clientUniqueId2StoreName = uniqueId => "conversation-" + uniqueId;
 
 let currentDatabase: IDBDatabase;
@@ -16,7 +22,7 @@ async function requestDatabase() {
         if(databaseMode === "open") {
             return;
         } else if(databaseMode === "opening" || databaseMode === "updating") {
-            await new Promise(resolve => databaseStateChangedCallbacks.push(resolve));
+            await new Promise<void>(resolve => databaseStateChangedCallbacks.push(resolve));
         } else if(databaseMode === "closed") {
             try {
                 await doOpenDatabase(false);
@@ -163,6 +169,7 @@ async function doOpenDatabase(forceUpgrade: boolean) {
         fireDatabaseStateChanged();
     }
 
+    /* localStorage access note, see file start */
     let localVersion = parseInt(localStorage.getItem("indexeddb-private-conversations-version") || "0");
     let upgradePerformed = false;
 
@@ -198,6 +205,7 @@ async function doOpenDatabase(forceUpgrade: boolean) {
             openRequest.onsuccess = () => resolve(openRequest.result);
         });
 
+        /* localStorage access note, see file start */
         localStorage.setItem("indexeddb-private-conversations-version", database.version.toString());
         if(!upgradePerformed && forceUpgrade) {
             logWarn(LogCategory.CHAT, tr("Opened private conversations database, with an update, but update didn't happened. Trying again."));
@@ -277,7 +285,7 @@ export async function queryConversationEvents(clientUniqueId: string, query: {
     const events = [];
     let hasMoreEvents = false;
 
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
         cursor.onsuccess = () => {
             if(!cursor.result) {
                 /* no more results */

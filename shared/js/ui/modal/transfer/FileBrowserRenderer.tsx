@@ -1,15 +1,14 @@
 import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import {useContext, useEffect, useRef, useState} from "react";
 import {FileType} from "tc-shared/file/FileManager";
-import * as ppt from "tc-backend/ppt";
-import {SpecialKey} from "tc-shared/PPTListener";
+import {getKeyBoard, SpecialKey} from "tc-shared/PPTListener";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
 import {network} from "tc-shared/ui/frames/chat";
 import {Table, TableColumn, TableRow, TableRowElement} from "tc-shared/ui/react-elements/Table";
 import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
-import * as Moment from "moment";
+import moment from "moment";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 import {BoxedInputField} from "tc-shared/ui/react-elements/InputField";
 import {LogCategory, logWarn} from "tc-shared/log";
@@ -149,15 +148,20 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
     protected defaultState(): NavigationBarState {
         return {
             currentPath: this.props.initialPath,
-            state: "normal",
+            state: "navigating",
         }
+    }
+
+    componentDidMount() {
+        this.props.events.fire("query_current_path");
     }
 
     render() {
         let input;
         let path = this.state.currentPath;
-        if (!path.endsWith("/"))
+        if (!path.endsWith("/")) {
             path += "/";
+        }
 
         if (this.state.state === "editing") {
             input = (
@@ -240,17 +244,19 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
 
     componentDidUpdate(prevProps: Readonly<NavigationBarProperties>, prevState: Readonly<NavigationBarState>, snapshot?: any): void {
         setTimeout(() => {
-            if (this.refRendered.current)
+            if (this.refRendered.current) {
                 this.refRendered.current.scrollLeft = 999999;
+            }
         }, 10);
     }
 
     private onPathClicked(event: React.MouseEvent, index: number) {
         let path;
-        if (index === -1)
+        if (index === -1) {
             path = "/";
-        else
+        } else {
             path = "/" + this.state.currentPath.split("/").filter(e => !!e).slice(0, index + 1).join("/") + "/";
+        }
         this.props.events.fire("action_navigate_to", {path: path});
 
         event.stopPropagation();
@@ -267,8 +273,9 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
     }
 
     private onInputPathBluer() {
-        if (this.state.state !== "editing" || this.ignoreBlur)
+        if (this.state.state !== "editing" || this.ignoreBlur) {
             return;
+        }
 
         this.setState({
             state: "normal"
@@ -314,9 +321,9 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
 
         if (event.status !== "success") {
             if (event.status === "timeout") {
-                createErrorModal(tr("Failed to enter path"), tra("Failed to enter given path.{:br:}Action resulted in a timeout.")).open();
+                createErrorModal(tr("Failed to enter path"), tra("Failed to enter given path.\nAction resulted in a timeout.")).open();
             } else {
-                createErrorModal(tr("Failed to enter path"), tra("Failed to enter given path:{:br:}{0}", event.error)).open();
+                createErrorModal(tr("Failed to enter path"), tra("Failed to enter given path:\n{0}", event.error)).open();
             }
         }
     }
@@ -422,7 +429,7 @@ const FileName = (props: { path: string, file: ListedFileInfo }) => {
             if (props.file.virtual || props.file.mode === "creating" || props.file.mode === "uploading")
                 return;
 
-            if (!ppt.key_pressed(SpecialKey.SHIFT))
+            if (!getKeyBoard().isKeyPressed(SpecialKey.SHIFT))
                 return;
 
             event.stopPropagation();
@@ -450,9 +457,9 @@ const FileName = (props: { path: string, file: ListedFileInfo }) => {
         } else {
             setFileName(props.file.name);
             if (event.status === "timeout") {
-                createErrorModal(tr("Failed to rename file"), tra("Failed to rename file.{:br:}Action resulted in a timeout.")).open();
+                createErrorModal(tr("Failed to rename file"), tra("Failed to rename file.\nAction resulted in a timeout.")).open();
             } else {
-                createErrorModal(tr("Failed to rename file"), tra("Failed to rename file:{:br:}{0}", event.error)).open();
+                createErrorModal(tr("Failed to rename file"), tra("Failed to rename file:\n{0}", event.error)).open();
             }
         }
     });
@@ -656,7 +663,7 @@ const FileListEntry = (props: { row: TableRow<ListedFileInfo>, columns: TableCol
 
             onClick={() => props.events.fire("action_select_files", {
                 files: [{name: file.name, type: file.type}],
-                mode: ppt.key_pressed(SpecialKey.SHIFT) ? "toggle" : "exclusive"
+                mode: getKeyBoard().isKeyPressed(SpecialKey.SHIFT) ? "toggle" : "exclusive"
             })}
             onContextMenu={e => {
                 if (!selected) {
@@ -664,7 +671,7 @@ const FileListEntry = (props: { row: TableRow<ListedFileInfo>, columns: TableCol
                         /* explicitly clicked on one file */
                         props.events.fire("action_select_files", {
                             files: [{name: file.name, type: file.type}],
-                            mode: ppt.key_pressed(SpecialKey.SHIFT) ? "toggle" : "exclusive"
+                            mode: getKeyBoard().isKeyPressed(SpecialKey.SHIFT) ? "toggle" : "exclusive"
                         });
                     } else {
                         props.events.fire("action_select_files", {files: [], mode: "exclusive"});
@@ -1043,7 +1050,7 @@ export class FileBrowserRenderer extends ReactComponentBase<FileListTablePropert
                             "name": () => <FileName path={this.currentPath} file={directory}/>,
                             "type": () => <a key={"type"}><Translatable>Directory</Translatable></a>,
                             "change-date": () => directory.datetime ?
-                                <a>{Moment(directory.datetime).format("DD/MM/YYYY HH:mm")}</a> : undefined
+                                <a>{moment(directory.datetime).format("DD/MM/YYYY HH:mm")}</a> : undefined
                         },
                         className: cssStyle.directoryEntry,
                         userData: directory
@@ -1057,7 +1064,7 @@ export class FileBrowserRenderer extends ReactComponentBase<FileListTablePropert
                             "size": () => <FileSize path={this.currentPath} file={file}/>,
                             "type": () => <a key={"type"}><Translatable>File</Translatable></a>,
                             "change-date": () => file.datetime ?
-                                <a key={"date"}>{Moment(file.datetime).format("DD/MM/YYYY HH:mm")}</a> : undefined
+                                <a key={"date"}>{moment(file.datetime).format("DD/MM/YYYY HH:mm")}</a> : undefined
                         },
                         className: cssStyle.directoryEntry,
                         userData: file
@@ -1145,9 +1152,6 @@ export class FileBrowserRenderer extends ReactComponentBase<FileListTablePropert
         this.currentPath = this.props.initialPath;
 
         this.props.events.fire("query_current_path", {});
-        this.props.events.fire("query_files", {
-            path: this.currentPath
-        });
     }
 
     private onDrop(event: React.DragEvent) {
@@ -1302,7 +1306,7 @@ export class FileBrowserRenderer extends ReactComponentBase<FileListTablePropert
             if (e.status === "success")
                 return;
 
-            createErrorModal(tr("Failed to delete entry"), tra("Failed to delete \"{0}\":{:br:}{1}", e.name, e.error || tr("Unknown error"))).open();
+            createErrorModal(tr("Failed to delete entry"), tra("Failed to delete \"{0}\":\n{1}", e.name, e.error || tr("Unknown error"))).open();
         });
     }
 
@@ -1354,9 +1358,9 @@ export class FileBrowserRenderer extends ReactComponentBase<FileListTablePropert
         this.forceUpdate();
 
         if (event.status === "timeout") {
-            createErrorModal(tr("Failed to create directory"), tra("Failed to create directory.{:br:}Action resulted in a timeout.")).open();
+            createErrorModal(tr("Failed to create directory"), tra("Failed to create directory.\nAction resulted in a timeout.")).open();
         } else {
-            createErrorModal(tr("Failed to create directory"), tra("Failed to create directory:{:br:}{0}", event.error)).open();
+            createErrorModal(tr("Failed to create directory"), tra("Failed to create directory:\n{0}", event.error)).open();
         }
     }
 

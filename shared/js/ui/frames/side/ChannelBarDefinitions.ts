@@ -1,4 +1,4 @@
-import {Registry} from "tc-shared/events";
+import {IpcRegistryDescription} from "tc-shared/events";
 import {ChannelConversationUiEvents} from "tc-shared/ui/frames/side/ChannelConversationDefinitions";
 import {ChannelDescriptionUiEvents} from "tc-shared/ui/frames/side/ChannelDescriptionDefinitions";
 import {ChannelFileBrowserUiEvents} from "tc-shared/ui/frames/side/ChannelFileBrowserDefinitions";
@@ -7,13 +7,13 @@ export type ChannelBarMode = "conversation" | "description" | "file-transfer" | 
 
 export interface ChannelBarModeData {
     "conversation": {
-        events: Registry<ChannelConversationUiEvents>,
+        events: IpcRegistryDescription<ChannelConversationUiEvents>,
     },
     "description": {
-        events: Registry<ChannelDescriptionUiEvents>
+        events: IpcRegistryDescription<ChannelDescriptionUiEvents>
     },
     "file-transfer": {
-        events: Registry<ChannelFileBrowserUiEvents>
+        events: IpcRegistryDescription<ChannelFileBrowserUiEvents>
     },
     "none": {}
 }

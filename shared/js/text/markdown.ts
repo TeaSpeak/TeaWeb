@@ -95,7 +95,6 @@ export class MD2BBCodeRenderer {
 
         "hr": () => "[hr]",
 
-        //> Experience real-time editing with Remarkable!
         "blockquote_open": () => "[quote]",
         "blockquote_close": () => "[/quote]"
     };
@@ -162,6 +161,8 @@ export function renderMarkdownAsBBCode(message: string, textProcessor: (text: st
     md2bbCodeRenderer.reset();
 
     let result = remarkableRenderer.render(message);
+    /* Replace the extra \n after a quote since quotes itself are blocks and not inline blocks */
+    result = result.replace(/\[\/quote]\n/g, "[/quote]");
     logTrace(LogCategory.CHAT, tr("Markdown render result:\n%s"), result);
     return result;
 }

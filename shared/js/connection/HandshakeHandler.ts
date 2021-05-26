@@ -2,10 +2,9 @@ import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {IdentitifyType} from "../profiles/Identity";
 import {AbstractServerConnection} from "../connection/ConnectionBase";
 import {DisconnectReason} from "../ConnectionHandler";
-import {tr} from "../i18n/localize";
 import {ConnectParameters} from "tc-shared/ui/modal/connect/Controller";
-import {LogCategory, logWarn} from "tc-shared/log";
 import {getBackend} from "tc-shared/backend";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export interface HandshakeIdentityHandler {
     connection: AbstractServerConnection;
@@ -15,6 +14,18 @@ export interface HandshakeIdentityHandler {
 
     fillClientInitData(data: any);
 }
+
+export type ServerHandshakeError = {
+    reason: "identity-unsupported",
+}
+
+export type ServerHandshakeResult = {
+    status: "success",
+    /* TODO: May some other variables as well? */
+} | {
+    status: "failed",
+    error: ServerHandshakeError
+};
 
 export class HandshakeHandler {
     private connection: AbstractServerConnection;
@@ -78,12 +89,12 @@ export class HandshakeHandler {
 
     private async handleHandshakeFinished() {
         const data = {
-            client_nickname: this.parameters.nickname || "Another TeaSpeak user",
+            client_nickname: this.parameters.nickname || this.parameters.profile.connectUsername(),
             client_platform: navigator.browserSpecs?.name + " " + navigator.platform,
             client_version: "TeaWeb " + __build.version + " (" + navigator.userAgent + ")",
             client_version_sign: undefined,
 
-            client_default_channel: this.parameters.defaultChannel || "",
+            client_default_channel: typeof this.parameters.defaultChannel === "number" ? "/" + this.parameters.defaultChannel : this.parameters.defaultChannel || "",
             client_default_channel_password: this.parameters.defaultChannelPassword || "",
             client_default_token: this.parameters.token,
 
@@ -116,7 +127,7 @@ export class HandshakeHandler {
         this.handshakeImpl.fillClientInitData(data);
         this.connection.send_command("clientinit", data).catch(error => {
             if(error instanceof CommandResult) {
-                if(error.id == 1028) {
+                if(error.id == ErrorCode.SERVER_INVALID_PASSWORD) {
                     this.connection.client.handleDisconnect(DisconnectReason.SERVER_REQUIRES_PASSWORD);
                 } else if(error.id == 783 || error.id == 519) {
                     error.extra_message = isNaN(parseInt(error.extra_message)) ? "8" : error.extra_message;
@@ -126,8 +137,9 @@ export class HandshakeHandler {
                 } else {
                     this.connection.client.handleDisconnect(DisconnectReason.CLIENT_KICKED, error);
                 }
-            } else
+            } else {
                 this.connection.disconnect();
+            }
         });
     }
 }

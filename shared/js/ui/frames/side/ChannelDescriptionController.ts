@@ -80,40 +80,39 @@ export class ChannelDescriptionController {
     }
 
     private async updateCachedDescriptionStatus() {
-        try {
-            let description;
-            if(this.currentChannel) {
-                description = await new Promise<any>((resolve, reject) => {
-                    this.currentChannel.getChannelDescription().then(resolve).catch(reject);
-                    setTimeout(() => reject(tr("timeout")), 5000);
-                });
-            }
+        if(this.currentChannel) {
+            const handlerId = this.currentChannel.channelTree.client.handlerId;
+            const result = await this.currentChannel.getChannelDescription(false);
+            switch (result.status) {
+                case "success":
+                case "empty":
+                    this.cachedDescriptionStatus = {
+                        status: "success",
+                        description: result.status === "success" ? result.description : undefined,
+                        handlerId: handlerId
+                    };
+                    break;
 
-            this.cachedDescriptionStatus = {
-                status: "success",
-                description: description,
-                handlerId: this.currentChannel?.channelTree.client.handlerId || "unknown"
-            };
-        } catch (error) {
-            if(error instanceof CommandResult) {
-                if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
-                    const permission = this.currentChannel?.channelTree.client.permissions.resolveInfo(parseInt(error.json["failed_permid"]));
+                case "no-permissions":
                     this.cachedDescriptionStatus = {
                         status: "no-permissions",
-                        failedPermission: permission ? permission.name : "unknown"
+                        failedPermission: result.failedPermission
                     };
-                    return;
-                }
+                    break;
 
-                error = error.formattedMessage();
-            } else if(typeof error !== "string") {
-                logError(LogCategory.GENERAL, tr("Failed to get channel descriptions: %o"), error);
-                error = tr("lookup the console");
+                case "error":
+                default:
+                    this.cachedDescriptionStatus = {
+                        status: "error",
+                        reason: result.message || tr("unknown query result"),
+                    };
+                    break;
             }
-
+        } else {
             this.cachedDescriptionStatus = {
-                status: "error",
-                reason: error
+                status: "success",
+                description: undefined,
+                handlerId: "unknown"
             };
         }
         this.cachedDescriptionAge = Date.now();

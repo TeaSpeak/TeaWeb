@@ -1,12 +1,7 @@
-import * as webpack from "webpack";
-import {RawSourceMap} from "source-map";
-import LoaderContext = webpack.loader.LoaderContext;
-
 const wabt = require("wabt")();
-
 const filename = "module.wast";
 
-export default function loader(this: LoaderContext, source: string | Buffer, sourceMap?: RawSourceMap): string | Buffer | void | undefined {
+export default function loader(source: string | Buffer): string | Buffer | void | undefined {
     this.cacheable();
 
     const module = wabt.parseWat(filename, source);

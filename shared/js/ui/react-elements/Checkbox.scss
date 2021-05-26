@@ -5,7 +5,7 @@ html:root {
     --checkbox-checkmark: #46c0ec;
 
     --checkbox-background: #272626;
-    --checkbox-disabled-background: #1a1a1e;
+    --checkbox-disabled-background: #1a1819;
 }
 
 .checkbox {
@@ -77,6 +77,9 @@ html:root {
 label.disabled > .checkbox, .checkbox:disabled, .checkbox.disabled {
     &.checkbox, > .checkbox {
         pointer-events: none!important;
+        box-shadow: none;
+
+        border: 1px solid var(--boxed-input-field-border);
         background-color: var(--checkbox-disabled-background);
     }
 }

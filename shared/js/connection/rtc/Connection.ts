@@ -9,9 +9,9 @@ import {RemoteRTPAudioTrack, RemoteRTPTrackState, RemoteRTPVideoTrack, TrackClie
 import {SdpCompressor, SdpProcessor} from "./SdpUtils";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 import {WhisperTarget} from "tc-shared/voice/VoiceWhisper";
-import {globalAudioContext} from "tc-backend/audio/player";
 import {VideoBroadcastConfig, VideoBroadcastType} from "tc-shared/connection/VideoConnection";
 import {Settings, settings} from "tc-shared/settings";
+import {getAudioBackend} from "tc-shared/audio/Player";
 
 const kSdpCompressionMode = 1;
 
@@ -144,7 +144,7 @@ function getIdleTrack(kind: "video" | "audio") : MediaStreamTrack | null {
             return dummyVideoTrack;
         } else if(kind === "audio") {
             if(!dummyAudioTrack) {
-                const dest = globalAudioContext().createMediaStreamDestination();
+                const dest = getAudioBackend().getAudioContext().createMediaStreamDestination();
                 dummyAudioTrack = dest.stream.getAudioTracks()[0];
             }
 
@@ -449,19 +449,6 @@ export type RTCSourceTrackType = "audio" | "audio-whisper" | "video" | "video-sc
 export type RTCBroadcastableTrackType = Exclude<RTCSourceTrackType, "audio-whisper">;
 const kRtcSourceTrackTypes: RTCSourceTrackType[] = ["audio", "audio-whisper", "video", "video-screen"];
 
-function broadcastableTrackTypeToNumber(type: RTCBroadcastableTrackType) : number {
-    switch (type) {
-        case "video-screen":
-            return 3;
-        case "video":
-            return 2;
-        case "audio":
-            return 1;
-        default:
-            throw tr("invalid target type");
-    }
-}
-
 type TemporaryRtpStream = {
     createTimestamp: number,
     timeoutId: number,
@@ -534,16 +521,15 @@ export class RTCConnection {
         this.retryCalculator = new RetryTimeCalculator(5000, 30000, 10000);
         this.audioSupport = audioSupport;
 
-        this.connection.command_handler_boss().register_handler(this.commandHandler);
+        this.connection.getCommandHandler().registerHandler(this.commandHandler);
         this.reset(true);
 
         this.connection.events.on("notify_connection_state_changed", event => this.handleConnectionStateChanged(event));
-
         (window as any).rtp = this;
     }
 
     destroy() {
-        this.connection.command_handler_boss().unregister_handler(this.commandHandler);
+        this.connection.getCommandHandler().unregisterHandler(this.commandHandler);
     }
 
     isAudioEnabled() : boolean {
@@ -659,6 +645,40 @@ export class RTCConnection {
         const oldTrack = this.currentTracks[type] = source;
         await this.updateTracks();
         return oldTrack;
+    }
+
+    async clearTrackSources(types: RTCSourceTrackType[]) : Promise<MediaStreamTrack[]> {
+        const result = [];
+
+        for(const type of types) {
+            if(this.currentTracks[type]) {
+                result.push(this.currentTracks[type]);
+                this.currentTracks[type] = null;
+            } else {
+                result.push(undefined);
+            }
+        }
+
+        if(result.find(entry => typeof entry !== "undefined") !== -1) {
+            await this.updateTracks();
+        }
+
+        return result;
+    }
+
+    getTrackTypeFromSsrc(ssrc: number) : RTCSourceTrackType | undefined {
+        const mediaId = this.sdpProcessor.getLocalMediaIdFromSsrc(ssrc);
+        if(!mediaId) {
+            return undefined;
+        }
+
+        for(const type of kRtcSourceTrackTypes) {
+            if(this.currentTransceiver[type]?.mid === mediaId) {
+                return type;
+            }
+        }
+
+        return undefined;
     }
 
     public async startVideoBroadcast(type: VideoBroadcastType, config: VideoBroadcastConfig) {
@@ -1041,11 +1061,17 @@ export class RTCConnection {
 
     private handleLocalIceCandidate(candidate: RTCIceCandidate | undefined) {
         if(candidate) {
+            /*
+             * Even if we're only offering local candidates we still should count them else we might
+             * get an candidate finish without any candidates (which should never happen).
+             * An example for this would be safari.
+             */
+            this.localCandidateCount++;
+
             if(candidate.address?.endsWith(".local")) {
                 logTrace(LogCategory.WEBRTC, tr("Skipping local fqdn ICE candidate %s"), candidate.toJSON().candidate);
                 return;
             }
-            this.localCandidateCount++;
 
             const json = candidate.toJSON();
             logTrace(LogCategory.WEBRTC, tr("Received local ICE candidate %s"), json.candidate);

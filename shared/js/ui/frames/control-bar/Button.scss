@@ -155,10 +155,10 @@ html:root {
         border: .05em solid var(--menu-bar-dropdown-border);
         border-radius: 0 $border_radius_middle $border_radius_middle $border_radius_middle;
 
-        width: 15em; /* fallback */
+        width: 20em; /* fallback */
         width: max-content;
 
-        max-width: 25em;
+        max-width: 30em;
 
         z-index: 1000;
         /*box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);*/
@@ -209,6 +209,13 @@ html:root {
                 margin-right: .5em;
             }
 
+            &.title {
+                color: #557edc;
+
+                .entryName {
+                    margin-left: .25em;
+                }
+            }
 
             &:first-of-type {
                 border-radius: .1em .1em 0 0;
@@ -267,12 +274,6 @@ html:root {
     hr {
         margin-top: 5px;
         margin-bottom: 5px;
-    }
-}
-
-.buttonBookmarks {
-    .dropdown {
-        width: 300px;
     }
 }
 

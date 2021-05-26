@@ -427,7 +427,7 @@ class LocalAvatarManagerFactory extends AbstractAvatarManagerFactory {
                 remoteAvatarId: avatarId,
                 unregisterCallback: avatar.events.registerConsumer({
                     handleEvent(mode: EventDispatchType, type: string, payload: any) {
-                        this.ipcChannel.sendMessage("avatar-event", { handlerId: handlerId, avatarId: avatarId, type, payload }, remoteId);
+                        this.ipcChannel?.sendMessage("avatar-event", { handlerId: handlerId, avatarId: avatarId, type, payload }, remoteId);
                     }
                 })
             });

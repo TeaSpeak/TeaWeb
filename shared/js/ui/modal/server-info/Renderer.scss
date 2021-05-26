@@ -1,0 +1,250 @@
+@import "../../../../css/static/mixin";
+@import "../../../../css/static/properties";
+
+.container {
+    padding: 0;
+    width: 55em;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    background-color: var(--serverinfo-background);
+    user-select: none;
+
+    &.windowed {
+        height: 100%;
+        width: 100%;
+    }
+
+    .containerHostBanner {
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+
+        max-height: 10em;
+
+        background-color: var(--serverinfo-hostbanner-background);
+
+        .hostBanner {
+            border: none;
+            border-radius: 0;
+        }
+    }
+
+    .containerProperties {
+        flex-shrink: 1;
+        min-height: 12em; /* 10em + 2 * 1em margin */
+
+        overflow-y: auto;
+
+        @include chat-scrollbar-vertical();
+    }
+
+    .buttons {
+        margin: 1em;
+
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        button {
+            min-width: 8em;
+        }
+    }
+}
+
+.group {
+    flex-grow: 0;
+    flex-shrink: 0;
+
+    margin: 1em;
+    padding: .5em;
+
+    border-radius: .2em;
+    border: 1px solid var(--serverinfo-group-border);
+
+    background-color: var(--serverinfo-group-background);
+
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+
+    height: 10em;
+    max-height: 10em;
+
+    .image {
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        max-width: 15em;
+        max-height: 9em; /* minus one padding */
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        img {
+            object-fit: contain;
+            max-height: 100%;
+            max-width: 100%;
+        }
+
+        margin-right: 2em;
+        @include transition(.25s ease-in-out);
+    }
+
+    &.reverse {
+        flex-direction: row-reverse;
+        text-align: right;
+
+        .image {
+            margin-right: 0;
+            margin-left: 2em;
+        }
+
+        .properties {
+            .row {
+                flex-direction: row-reverse;
+            }
+        }
+    }
+}
+
+.properties {
+    flex-shrink: 1;
+    flex-grow: 1;
+
+    min-width: 20em;
+    min-height: 10em;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    height: inherit;
+
+    overflow-y: auto;
+    @include chat-scrollbar();
+
+    .row {
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        height: 1.8em;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+
+        .key {
+            flex-shrink: 0;
+            flex-grow: 0;
+
+            color: var(--serverinfo-key);
+            text-transform: uppercase;
+            align-self: center;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            width: 15em;
+        }
+
+        .value {
+            color: var(--serverinfo-value);
+            align-self: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            user-select: text;
+
+            .country {
+                display: inline-block;
+                margin-right: .25em;
+            }
+
+            &.server-version {
+                display: flex;
+                flex-direction: row;
+                justify-content: flex-start;
+
+                a {
+                    flex-shrink: 1;
+                    min-width: 0;
+
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+            }
+        }
+    }
+
+    .network {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+
+        .button {
+            margin-right: 1em;
+
+            flex-shrink: 1e8;
+            min-width: 5em;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+
+            button {
+                height: 2.5em;
+                width: 12em;
+
+                max-width: 100%;
+
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+
+        .right {
+            flex-grow: 1;
+            flex-shrink: 1;
+            min-width: 10em;
+        }
+    }
+}
+
+.version {
+    display: flex;
+    flex-direction: row;
+
+    span {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .tooltip {
+        height: 1em;
+        width: 1em;
+
+        align-self: center;
+        margin-right: .5em;
+    }
+}
+
+@media all and (max-width: 50em) {
+    .group .image {
+        margin: 0!important;
+        max-width: 0!important;
+    }
+}

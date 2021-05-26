@@ -8,12 +8,10 @@
     "lib": ["ES7", "dom", "dom.iterable"],
     "removeComments": true, /* we dont really need them within the target files */
     "jsx": "react",
+    "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
       "tc-shared/*": ["shared/js/*"],
-      "tc-backend/audio-lib/*": ["web/audio-lib/pkg/*"], /* specific web part */
-      "tc-backend/web/*": ["web/app/*"], /* specific web part */
-      "tc-backend/*": ["shared/backend.d/*"],
       "tc-loader": ["loader/exports/loader.d.ts"],
       "tc-events": ["vendor/TeaEventBus/src/index.ts"],
       "tc-services": ["vendor/TeaClientServices/src/index.ts"],

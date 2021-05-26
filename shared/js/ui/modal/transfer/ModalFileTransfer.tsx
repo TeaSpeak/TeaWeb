@@ -6,10 +6,10 @@ import {FileTransferInfo} from "./FileTransferInfo";
 import {initializeRemoteFileBrowserController} from "./FileBrowserControllerRemote";
 import {initializeTransferInfoController} from "./FileTransferInfoController";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
-import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {channelPathPrefix, FileBrowserEvents} from "tc-shared/ui/modal/transfer/FileDefinitions";
 import {TransferInfoEvents} from "tc-shared/ui/modal/transfer/FileTransferInfoDefinitions";
+import {InternalModal} from "tc-shared/ui/react-elements/modal/Definitions";
 
 const cssStyle = require("./FileBrowserRenderer.scss");
 
@@ -27,18 +27,17 @@ class FileTransferModal extends InternalModal {
         this.remoteBrowseEvents.enableDebug("remote-file-browser");
         this.transferInfoEvents.enableDebug("transfer-info");
 
+        const path = this.defaultChannelId ? "/" + channelPathPrefix + this.defaultChannelId + "/" : "/";
         initializeRemoteFileBrowserController(server_connections.getActiveConnectionHandler(), this.remoteBrowseEvents);
         initializeTransferInfoController(server_connections.getActiveConnectionHandler(), this.transferInfoEvents);
-    }
-
-    protected onInitialize() {
-        const path = this.defaultChannelId ? "/" + channelPathPrefix + this.defaultChannelId + "/" : "/";
         this.remoteBrowseEvents.fire("action_navigate_to", { path: path });
     }
 
     protected onDestroy() {
         this.remoteBrowseEvents.fire("notify_destroy");
         this.transferInfoEvents.fire("notify_destroy");
+        this.remoteBrowseEvents.destroy();
+        this.transferInfoEvents.destroy();
     }
 
     renderTitle() {

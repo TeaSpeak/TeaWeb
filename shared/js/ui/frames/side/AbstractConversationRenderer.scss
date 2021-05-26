@@ -52,6 +52,11 @@ html:root {
     width: 100%;
 
     min-width: 250px;
+    min-height: 10em;
+
+    flex-grow: 1;
+    flex-shrink: 1;
+
     background: var(--chat-background);
 
     position: relative;

@@ -1785,9 +1785,9 @@
     },
     {
       "key": {
-        "message": "The profile data is invalid.{:br:}This might cause data loss."
+        "message": "The profile data is invalid.\nThis might cause data loss."
       },
-      "translated": "A profiladatok érvénytelenek.{:br:}Ez adatvesztést okozhat.",
+      "translated": "A profiladatok érvénytelenek.\nEz adatvesztést okozhat.",
       "flags": [
         "google-translated",
         "human-verified",
@@ -5248,9 +5248,9 @@
     },
     {
       "key": {
-        "message": "The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br:}Please select another profile or change the identify type."
+        "message": "The target server is a TeamSpeak 3 server!\nOnly TeamSpeak 3 based identities are able to connect.\nPlease select another profile or change the identify type."
       },
-      "translated": "A célkiszolgáló egy TeamSpeak 3 szerver!{:br:}Csak a TeamSpeak 3 alapú identitások képesek kapcsolódni.{:br:}Kérjük, válasszon másik profilt, vagy módosítsa az azonosító típusát.",
+      "translated": "A célkiszolgáló egy TeamSpeak 3 szerver!\nCsak a TeamSpeak 3 alapú identitások képesek kapcsolódni.\nKérjük, válasszon másik profilt, vagy módosítsa az azonosító típusát.",
       "flags": [
         "google-translated",
         "human-verified",
@@ -5270,9 +5270,9 @@
     },
     {
       "key": {
-        "message": "You've been disconnected, because your Identity level is too low.{:br:}You need at least a level of {0}"
+        "message": "You've been disconnected, because your Identity level is too low.\nYou need at least a level of {0}"
       },
-      "translated": "Megszakadt a kapcsolat, mert identitás szintje túl alacsony.{:br:}Legalább {0} szintre van szüksége.",
+      "translated": "Megszakadt a kapcsolat, mert identitás szintje túl alacsony.\nLegalább {0} szintre van szüksége.",
       "flags": [
         "google-translated",
         "human-verified",
@@ -5392,9 +5392,9 @@
     },
     {
       "key": {
-        "message": "You've been kicked from the server by {0}:{:br:}{1}"
+        "message": "You've been kicked from the server by {0}:\n{1}"
       },
-      "translated": "{0} kirúgott téged a szerverről:{:br:}{1}",
+      "translated": "{0} kirúgott téged a szerverről:\n{1}",
       "flags": [
         "google-translated",
         "human-verified",
@@ -5403,9 +5403,9 @@
     },
     {
       "key": {
-        "message": "You've been kicked from the server:{:br:}{1}"
+        "message": "You've been kicked from the server:\n{1}"
       },
-      "translated": "Ki lettél rúgva a szerverről:{:br:}{1}",
+      "translated": "Ki lettél rúgva a szerverről:\n{1}",
       "flags": [
         "google-translated",
         "human-verified",
@@ -5557,9 +5557,9 @@
     },
     {
       "key": {
-        "message": "Microphone start failed.{:br:}Error: {}"
+        "message": "Microphone start failed.\nError: {}"
       },
-      "translated": "A mikrofon indítása sikertelen.{:br:}Hiba: {}",
+      "translated": "A mikrofon indítása sikertelen.\nHiba: {}",
       "flags": [
         "google-translated",
         "human-verified"
@@ -5665,9 +5665,9 @@
     },
     {
       "key": {
-        "message": "Failed to delete avatar.{:br:}Error: {0}"
+        "message": "Failed to delete avatar.\nError: {0}"
       },
-      "translated": "Az avatár törlése nem sikerült. {:br:}Hiba: {0}",
+      "translated": "Az avatár törlése nem sikerült. \nHiba: {0}",
       "flags": [
         "google-translated",
         "human-verified",
@@ -5676,9 +5676,9 @@
     },
     {
       "key": {
-        "message": "Failed to delete avatar.{:br:}Lookup the console for more details"
+        "message": "Failed to delete avatar.\nLookup the console for more details"
       },
-      "translated": "Az avatár törlése nem sikerült. {:br:} További részletekért nézze meg a konzolt",
+      "translated": "Az avatár törlése nem sikerült. \n További részletekért nézze meg a konzolt",
       "flags": [
         "google-translated",
         "human-verified",
@@ -5719,9 +5719,9 @@
     },
     {
       "key": {
-        "message": "Failed to initialize avatar upload.{:br:}Missing permission {0}"
+        "message": "Failed to initialize avatar upload.\nMissing permission {0}"
       },
-      "translated": "Az avatár feltöltésének inicializálása nem sikerült.{:br:}Hiányzik az engedély {0}",
+      "translated": "Az avatár feltöltésének inicializálása nem sikerült.\nHiányzik az engedély {0}",
       "flags": [
         "google-translated",
         "human-verified"
@@ -5729,9 +5729,9 @@
     },
     {
       "key": {
-        "message": "Failed to initialize avatar upload.{:br:}Error: {0}"
+        "message": "Failed to initialize avatar upload.\nError: {0}"
       },
-      "translated": "Az avatár feltöltésének inicializálása nem sikerült.{:br:}Hiba: {0}",
+      "translated": "Az avatár feltöltésének inicializálása nem sikerült.\nHiba: {0}",
       "flags": [
         "google-translated",
         "human-verified"
@@ -5739,9 +5739,9 @@
     },
     {
       "key": {
-        "message": "Failed to initialize avatar upload.{:br:}Lookup the console for more details"
+        "message": "Failed to initialize avatar upload.\nLookup the console for more details"
       },
-      "translated": "Az avatár feltöltésének inicializálása nem sikerült.{:br:}További információk a konzolon találhatók",
+      "translated": "Az avatár feltöltésének inicializálása nem sikerült.\nTovábbi információk a konzolon találhatók",
       "flags": [
         "google-translated",
         "human-verified"
@@ -5770,9 +5770,9 @@
     },
     {
       "key": {
-        "message": "Failed to upload avatar.{:br:}Error: {0}"
+        "message": "Failed to upload avatar.\nError: {0}"
       },
-      "translated": "Az avatár feltöltése nem sikerült.{:br:}Hiba: {0}",
+      "translated": "Az avatár feltöltése nem sikerült.\nHiba: {0}",
       "flags": [
         "google-translated",
         "human-verified"
@@ -5780,9 +5780,9 @@
     },
     {
       "key": {
-        "message": "Failed to initialize avatar upload.{:br:}Lookup the console for more details"
+        "message": "Failed to initialize avatar upload.\nLookup the console for more details"
       },
-      "translated": "Az avatár feltöltésének inicializálása nem sikerült.{:br:}További részletekért nézze meg a konzolt",
+      "translated": "Az avatár feltöltésének inicializálása nem sikerült.\nTovábbi részletekért nézze meg a konzolt",
       "flags": [
         "google-translated",
         "human-verified"
@@ -5812,9 +5812,9 @@
     },
     {
       "key": {
-        "message": "Failed to update avatar flag.{:br:}Error: {0}"
+        "message": "Failed to update avatar flag.\nError: {0}"
       },
-      "translated": "Az avatár zászlójának frissítése nem sikerült.{:br:}Hiba: {0}",
+      "translated": "Az avatár zászlójának frissítése nem sikerült.\nHiba: {0}",
       "flags": [
         "google-translated",
         "human-verified",
@@ -5823,9 +5823,9 @@
     },
     {
       "key": {
-        "message": "Failed to update avatar flag.{:br:}Lookup the console for more details"
+        "message": "Failed to update avatar flag.\nLookup the console for more details"
       },
-      "translated": "Az avatár zászlójának frissítése nem sikerült.{:br:}További részletekért nézze meg a konzolt",
+      "translated": "Az avatár zászlójának frissítése nem sikerült.\nTovábbi részletekért nézze meg a konzolt",
       "flags": [
         "google-translated",
         "human-verified",
@@ -6825,9 +6825,9 @@
     },
     {
       "key": {
-        "message": "Failed to delete ban. {:br:}Error: {}"
+        "message": "Failed to delete ban. \nError: {}"
       },
-      "translated": "Nem sikerült törölni a tiltást.{:br:}Hiba: {}",
+      "translated": "Nem sikerült törölni a tiltást.\nHiba: {}",
       "flags": [
         "google-translated",
         "human-verified",
@@ -7116,9 +7116,9 @@
     },
     {
       "key": {
-        "message": "Failed to edited ban. {:br:}Error: {}"
+        "message": "Failed to edited ban. \nError: {}"
       },
-      "translated": "Nem sikerült szerkeszteni a tiltást.{:br:}Hiba: {}",
+      "translated": "Nem sikerült szerkeszteni a tiltást.\nHiba: {}",
       "flags": [
         "google-translated",
         "human-verified",
@@ -7171,9 +7171,9 @@
     },
     {
       "key": {
-        "message": "Failed to add ban. {:br:}Error: {}"
+        "message": "Failed to add ban. \nError: {}"
       },
-      "translated": "A tiltás hozzáadása nem sikerült.{:br:}Hiba: {}",
+      "translated": "A tiltás hozzáadása nem sikerült.\nHiba: {}",
       "flags": [
         "google-translated",
         "human-verified",
@@ -7403,9 +7403,9 @@
     },
     {
       "key": {
-        "message": "Failed to delete account{:br:}Message: {}"
+        "message": "Failed to delete account\nMessage: {}"
       },
-      "translated": "A fiók törlése nem sikerült.{:br:}Üzenet: {}",
+      "translated": "A fiók törlése nem sikerült.\nÜzenet: {}",
       "flags": [
         "google-translated",
         "human-verified",
@@ -7469,9 +7469,9 @@
     },
     {
       "key": {
-        "message": "Failed to rename account{:br:}Message: {}"
+        "message": "Failed to rename account\nMessage: {}"
       },
-      "translated": "Nem sikerült átnevezni a fiókot{:br:}Üzenetet: {}",
+      "translated": "Nem sikerült átnevezni a fiókot\nÜzenetet: {}",
       "flags": [
         "google-translated",
         "human-verified",
@@ -7513,9 +7513,9 @@
     },
     {
       "key": {
-        "message": "Failed to change password{:br:}Message: {}"
+        "message": "Failed to change password\nMessage: {}"
       },
-      "translated": "A jelszó megváltoztatása nem sikerült{:br:}Üzenet: {}",
+      "translated": "A jelszó megváltoztatása nem sikerült\nÜzenet: {}",
       "flags": [
         "google-translated",
         "human-verified",
@@ -7801,9 +7801,9 @@
     },
     {
       "key": {
-        "message": "Failed to change the speaker device to the target speaker{:br:}{}"
+        "message": "Failed to change the speaker device to the target speaker\n{}"
       },
-      "translated": "Nem sikerült a hangszóró eszközt a cél hangszóróra beállítani{:br:}{}",
+      "translated": "Nem sikerült a hangszóró eszközt a cél hangszóróra beállítani\n{}",
       "flags": [
         "google-translated",
         "human-verified",
@@ -8941,9 +8941,9 @@
     },
     {
       "key": {
-        "message": "Failed to change the microphone to the target microphone{:br:}{}"
+        "message": "Failed to change the microphone to the target microphone\n{}"
       },
-      "translated": "Nem sikerült a mikrofont a célmikrofonra váltani{:br:}{}",
+      "translated": "Nem sikerült a mikrofont a célmikrofonra váltani\n{}",
       "flags": [
         "google-translated",
         "human-verified"
@@ -9004,9 +9004,9 @@
     },
     {
       "key": {
-        "message": "Failed to change vad type{:br:}{}"
+        "message": "Failed to change vad type\n{}"
       },
-      "translated": "Nem sikerült megváltoztatni a VAD típusát:{:br:}{}",
+      "translated": "Nem sikerült megváltoztatni a VAD típusát:\n{}",
       "flags": [
         "google-translated",
         "human-verified"
@@ -9067,9 +9067,9 @@
     },
     {
       "key": {
-        "message": "Failed to change PPT key:{:br:}{}"
+        "message": "Failed to change PPT key:\n{}"
       },
-      "translated": "A PPT kulcs megváltoztatása nem sikerült:{:br:}{}",
+      "translated": "A PPT kulcs megváltoztatása nem sikerült:\n{}",
       "flags": [
         "google-translated",
         "human-verified"
@@ -9108,9 +9108,9 @@
     },
     {
       "key": {
-        "message": "Failed to change PPT delay state:{:br:}{}"
+        "message": "Failed to change PPT delay state:\n{}"
       },
-      "translated": "Nem sikerült megváltoztatni a PPT késleltetési állapotát:{:br:}{}",
+      "translated": "Nem sikerült megváltoztatni a PPT késleltetési állapotát:\n{}",
       "flags": [
         "google-translated",
         "human-verified"
@@ -9149,9 +9149,9 @@
     },
     {
       "key": {
-        "message": "Failed to change PPT delay:{:br:}{}"
+        "message": "Failed to change PPT delay:\n{}"
       },
-      "translated": "A PPT késleltetés megváltoztatása nem sikerült:{:br:}{}",
+      "translated": "A PPT késleltetés megváltoztatása nem sikerült:\n{}",
       "flags": [
         "google-translated",
         "human-verified"
@@ -9323,9 +9323,9 @@
     },
     {
       "key": {
-        "message": "Failed to logout from forum account.{:br:}Error: {}"
+        "message": "Failed to logout from forum account.\nError: {}"
       },
-      "translated": "Nem sikerült kijelentkezni a fórum fiókból.{:br:}Hiba: {}",
+      "translated": "Nem sikerült kijelentkezni a fórum fiókból.\nHiba: {}",
       "flags": [
         "google-translated",
         "human-verified",
@@ -10166,9 +10166,9 @@
     },
     {
       "key": {
-        "message": "Failed to create group:{:br:}"
+        "message": "Failed to create group:\n"
       },
-      "translated": "A csoport létrehozása nem sikerült:{:br:}",
+      "translated": "A csoport létrehozása nem sikerült:\n",
       "flags": [
         "google-translated",
         "human-verified"
@@ -10240,9 +10240,9 @@
     },
     {
       "key": {
-        "message": "Failed to rename group:{:br:}"
+        "message": "Failed to rename group:\n"
       },
-      "translated": "Nem sikerült átnevezni a csoportot:{:br:}",
+      "translated": "Nem sikerült átnevezni a csoportot:\n",
       "flags": [
         "google-translated",
         "human-verified",
@@ -10335,9 +10335,9 @@
     },
     {
       "key": {
-        "message": "Failed to delete group:{:br:}"
+        "message": "Failed to delete group:\n"
       },
-      "translated": "A csoport törlése nem sikerült:{:br:}",
+      "translated": "A csoport törlése nem sikerült:\n",
       "flags": [
         "google-translated",
         "human-verified"
@@ -10438,9 +10438,9 @@
     },
     {
       "key": {
-        "message": "Failed to create group:{:br:}"
+        "message": "Failed to create group:\n"
       },
-      "translated": "A csoport létrehozása nem sikerült:{:br:}",
+      "translated": "A csoport létrehozása nem sikerült:\n",
       "flags": [
         "google-translated",
         "human-verified"
@@ -10512,9 +10512,9 @@
     },
     {
       "key": {
-        "message": "Failed to rename group:{:br:}"
+        "message": "Failed to rename group:\n"
       },
-      "translated": "Nem sikerült átnevezni a csoportot:{:br:}",
+      "translated": "Nem sikerült átnevezni a csoportot:\n",
       "flags": [
         "google-translated",
         "human-verified",
@@ -10606,9 +10606,9 @@
     },
     {
       "key": {
-        "message": "Failed to delete group:{:br:}"
+        "message": "Failed to delete group:\n"
       },
-      "translated": "A csoport törlése nem sikerült:{:br:}",
+      "translated": "A csoport törlése nem sikerült:\n",
       "flags": [
         "google-translated",
         "human-verified"
@@ -15349,9 +15349,9 @@
     },
     {
       "key": {
-        "message": "Failed to delete conversation message{:br:}Error: {}"
+        "message": "Failed to delete conversation message\nError: {}"
       },
-      "translated": "Nem sikerült törölni az üzenetet{:br:}Hiba: {}",
+      "translated": "Nem sikerült törölni az üzenetet\nHiba: {}",
       "flags": [
         "google-translated",
         "human-verified"
@@ -16902,9 +16902,9 @@
     },
     {
       "key": {
-        "message": "Failed to refresh server properties.{:br:}Error: {}"
+        "message": "Failed to refresh server properties.\nError: {}"
       },
-      "translated": "Nem sikerült frissíteni a szerver tulajdonságait.{:br:}Hiba: {}",
+      "translated": "Nem sikerült frissíteni a szerver tulajdonságait.\nHiba: {}",
       "flags": [
         "google-translated",
         "human-verified",

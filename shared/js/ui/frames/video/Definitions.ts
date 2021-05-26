@@ -48,7 +48,7 @@ export type VideoStreamState = {
     reason?: string
 } | {
     state: "connected",
-    stream: MediaStream
+    streamObjectId: string
 };
 
 export type VideoSubscribeInfo = {
@@ -69,25 +69,33 @@ export type LocalVideoState = "muted" | "unset" | "empty";
 export interface ChannelVideoEvents {
     action_toggle_expended: { expended: boolean },
     action_video_scroll: { direction: "left" | "right" },
-    action_set_spotlight: { videoId: string | undefined, expend: boolean },
+    action_toggle_spotlight: {
+        videoIds: string[],
+        enabled: boolean,
+        expend: boolean
+    },
     action_focus_spotlight: {},
     action_set_fullscreen: { videoId: string | undefined },
     action_set_pip: { videoId: string | undefined, broadcastType: VideoBroadcastType },
     action_toggle_mute: { videoId: string, broadcastType: VideoBroadcastType | undefined, muted: boolean },
     action_dismiss: { videoId: string, broadcastType: VideoBroadcastType },
+    action_show_viewers: {},
 
     query_expended: {},
+    query_visible: {},
     query_videos: {},
     query_video: { videoId: string },
     query_video_info: { videoId: string },
     query_video_statistics: { videoId: string, broadcastType: VideoBroadcastType },
     query_spotlight: {},
     query_video_stream: { videoId: string, broadcastType: VideoBroadcastType },
-    query_subscribe_info: {}
+    query_subscribe_info: {},
+    query_viewer_count: {},
 
     notify_expended: { expended: boolean },
     notify_videos: {
-        videoIds: string[]
+        videoIds: string[],
+        videoActiveCount: number,
     },
     notify_video: {
         videoId: string,
@@ -103,12 +111,8 @@ export interface ChannelVideoEvents {
         videoId: string,
         statusIcon: ClientIcon
     },
-    notify_video_arrows: {
-        left: boolean,
-        right: boolean
-    },
     notify_spotlight: {
-        videoId: string | undefined
+        videoId: string[]
     },
     notify_video_statistics: {
         videoId: string | undefined,
@@ -122,6 +126,10 @@ export interface ChannelVideoEvents {
     },
     notify_subscribe_info: {
         info: VideoSubscribeInfo
+    },
+    notify_viewer_count: {
+        camera: number | undefined,
+        screen: number | undefined,
     }
 }
 
@@ -165,4 +173,15 @@ export function makeVideoAutoplay(video: HTMLVideoElement) : () => void {
         video.removeEventListener("pause", listenerPause);
         video.removeEventListener("ended", listenerEnded);
     };
+}
+
+const kVideoStreamMapName = "__teaspeak_video_streams__" + __build.timestamp + "_" + __build.version;
+export function getVideoStreamMap() : { [key: string]: MediaStream } {
+    let windowInstance = window;
+    while(windowInstance.opener) {
+        /* Are we sure about this while loop? */
+        windowInstance = windowInstance.opener;
+    }
+
+    return windowInstance[kVideoStreamMapName] || (windowInstance[kVideoStreamMapName] = {});
 }

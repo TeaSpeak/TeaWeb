@@ -2,9 +2,9 @@ import {ClientConnectionInfo, ClientEntry} from "../../tree/Client";
 import PermissionType from "../../permission/PermissionType";
 import {createInfoModal, createModal, Modal} from "../../ui/elements/Modal";
 import {copyToClipboard} from "../../utils/helpers";
-import * as i18nc from "../../i18n/country";
+import * as i18nc from "../../i18n/CountryFlag";
 import * as tooltip from "../../ui/elements/Tooltip";
-import * as moment from "moment";
+import moment from "moment";
 import {format_number, network} from "../../ui/frames/chat";
 import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 import {tr} from "tc-shared/i18n/localize";
@@ -205,7 +205,7 @@ function apply_basic_info(client: ClientEntry, tag: JQuery, modal: Modal, callba
         const container = tag.find(".property-country");
         container.find(".value").empty().append(
             $.spawn("div").addClass("country flag-" + client.properties.client_country.toLowerCase()),
-            $.spawn("a").text(i18nc.country_name(client.properties.client_country, tr("Unknown")))
+            $.spawn("a").text(i18nc.getCountryName(client.properties.client_country, tr("Unknown")))
         );
     }
 

@@ -2,7 +2,6 @@ import * as React from "react";
 import {useEffect, useRef, useState} from "react";
 import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
-import {HTMLRenderer} from "tc-shared/ui/react-elements/HTMLRenderer";
 import {ProgressBar} from "tc-shared/ui/react-elements/ProgressBar";
 import {TransferProgress,} from "tc-shared/file/Transfer";
 import {tra} from "tc-shared/i18n/localize";
@@ -14,9 +13,9 @@ import {TransferStatus} from "tc-shared/ui/modal/transfer/FileDefinitions";
 import {TransferInfoData, TransferInfoEvents} from "tc-shared/ui/modal/transfer/FileTransferInfoDefinitions";
 
 const cssStyle = require("./FileTransferInfoRenderer.scss");
-const iconArrow = require("./icon_double_arrow.svg");
-const iconTransferUpload = require("./icon_transfer_upload.svg");
-const iconTransferDownload = require("./icon_transfer_download.svg");
+import IconArrow from "./icon_double_arrow.svg";
+import IconTransferUpload from "./icon_transfer_upload.svg";
+import IconTransferDownload from "./icon_transfer_download.svg";
 
 const ExpendState = (props: { extended: boolean, events: Registry<TransferInfoEvents> }) => {
     const [expended, setExpended] = useState(props.extended);
@@ -25,7 +24,7 @@ const ExpendState = (props: { extended: boolean, events: Registry<TransferInfoEv
     return (
         <div className={cssStyle.expansionContainer + (expended ? " " + cssStyle.expended : "")}
              onClick={() => props.events.fire("action_toggle_expansion", {visible: !expended})}>
-            <HTMLRenderer purify={false}>{iconArrow}</HTMLRenderer>
+            <IconArrow />
         </div>
     );
 };
@@ -306,8 +305,7 @@ const TransferEntry = (props: { transfer: TransferInfoData, events: Registry<Tra
     return <div className={cssStyle.transferEntryContainer + (hidden ? " " + cssStyle.hidden : "")}>
         <div className={cssStyle.transferEntry}>
             <div className={cssStyle.image}>
-                <HTMLRenderer
-                    purify={false}>{props.transfer.direction === "upload" ? iconTransferUpload : iconTransferDownload}</HTMLRenderer>
+                {props.transfer.direction === "upload" ? <IconTransferUpload key={"upload"} /> : <IconTransferDownload key={"download"} />}
             </div>
             <div className={cssStyle.info}>
                 <a className={cssStyle.name}>{props.transfer.name}</a>

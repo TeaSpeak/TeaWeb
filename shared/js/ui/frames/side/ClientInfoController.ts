@@ -1,14 +1,19 @@
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {ClientGroupInfo, ClientInfoEvents,} from "tc-shared/ui/frames/side/ClientInfoDefinitions";
+import {ClientGroupInfo, ClientInfoEvents, InheritedChannelInfo,} from "tc-shared/ui/frames/side/ClientInfoDefinitions";
 
 import {Registry} from "tc-shared/events";
 import {openClientInfo} from "tc-shared/ui/modal/ModalClientInfo";
+import {spawnAvatarUpload} from "tc-shared/ui/modal/avatar-upload/Controller";
+import {tra} from "tc-shared/i18n/localize";
 
 export class ClientInfoController {
     private readonly uiEvents: Registry<ClientInfoEvents>;
 
     private connection: ConnectionHandler;
     private listenerConnection: (() => void)[];
+    private listenerInheritedChannel: (() => void)[];
+
+    private inheritedChannelInfo: InheritedChannelInfo;
 
     constructor() {
         this.uiEvents = new Registry<ClientInfoEvents>();
@@ -27,7 +32,14 @@ export class ClientInfoController {
         this.uiEvents.on("query_version", () => this.sendVersion());
         this.uiEvents.on("query_forum", () => this.sendForum());
 
-        this.uiEvents.on("action_edit_avatar", () => this.connection?.update_avatar());
+        this.uiEvents.on("action_edit_avatar", () => {
+            if(!this.connection?.connected) {
+                return;
+            }
+
+            spawnAvatarUpload(this.connection);
+        });
+
         this.uiEvents.on("action_show_full_info", () => {
             const client = this.connection?.getSelectedClientInfo().getClient();
             if(client) {
@@ -39,6 +51,9 @@ export class ClientInfoController {
     destroy() {
         this.listenerConnection.forEach(callback => callback());
         this.listenerConnection = [];
+
+        this.listenerInheritedChannel?.forEach(callback => callback());
+        this.listenerInheritedChannel = [];
     }
 
     setConnectionHandler(connection: ConnectionHandler) {
@@ -54,6 +69,7 @@ export class ClientInfoController {
             this.initializeConnection(connection);
         }
         this.sendClient();
+        this.updateInheritedInfo();
     }
 
     private initializeConnection(connection: ConnectionHandler) {
@@ -78,7 +94,10 @@ export class ClientInfoController {
             }
         }));
 
-        this.listenerConnection.push(connection.getSelectedClientInfo().events.on("notify_client_changed", () => this.sendClient()));
+        this.listenerConnection.push(connection.getSelectedClientInfo().events.on("notify_client_changed", () => {
+            this.updateInheritedInfo();
+            this.sendClient();
+        }));
         this.listenerConnection.push(connection.getSelectedClientInfo().events.on("notify_cache_changed", event => {
             switch (event.category) {
                 case "name":
@@ -98,6 +117,7 @@ export class ClientInfoController {
                     break;
 
                 case "group-channel":
+                    this.updateInheritedInfo();
                     this.sendChannelGroup();
                     break;
 
@@ -122,6 +142,43 @@ export class ClientInfoController {
                     break;
             }
         }));
+    }
+
+    private updateInheritedInfo() {
+        let newChannelId;
+        const selectInfo = this.connection?.getSelectedClientInfo().getInfo();
+        if(selectInfo?.channelGroupInheritedChannel) {
+            newChannelId = selectInfo.channelGroupInheritedChannel;
+        }
+
+        this.listenerInheritedChannel?.forEach(callback => callback());
+        this.listenerInheritedChannel = undefined;
+        if(!newChannelId) {
+            this.inheritedChannelInfo = undefined;
+            return;
+        }
+
+        const targetChannel = this.connection.channelTree.findChannel(newChannelId);
+        if(!targetChannel) {
+            this.inheritedChannelInfo = {
+                channelId: newChannelId,
+                channelName: tr("Unknown channel")
+            };
+            return;
+        }
+
+        this.inheritedChannelInfo = {
+            channelId: targetChannel.channelId,
+            channelName: targetChannel.channelName()
+        };
+
+        this.listenerInheritedChannel = [];
+        this.listenerInheritedChannel.push(targetChannel.events.on("notify_properties_updated", event => {
+            if("channel_name" in event.updated_properties) {
+                this.inheritedChannelInfo.channelName = event.channel_properties.channel_name;
+                this.sendChannelGroup();
+            }
+        }))
     }
 
     private generateGroupInfo(groupId: number, type: "channel" | "server") : ClientGroupInfo {
@@ -171,9 +228,12 @@ export class ClientInfoController {
     private sendChannelGroup() {
         const info = this.connection?.getSelectedClientInfo().getInfo();
         if(typeof info === "undefined") {
-            this.uiEvents.fire_react("notify_channel_group", { group: undefined });
+            this.uiEvents.fire_react("notify_channel_group", { group: undefined, inheritedChannel: this.inheritedChannelInfo });
         } else {
-            this.uiEvents.fire_react("notify_channel_group", { group: this.generateGroupInfo(info.channelGroup, "channel") });
+            this.uiEvents.fire_react("notify_channel_group", {
+                group: this.generateGroupInfo(info.channelGroup, "channel"),
+                inheritedChannel: this.inheritedChannelInfo
+            });
         }
     }
 

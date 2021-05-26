@@ -1,17 +1,13 @@
-export interface ParsedCommand {
-    command?: string;
-
-    payload: {[key: string]: string}[]
-    switches: string[]
-}
+import {ServerCommand} from "tc-shared/connection/ConnectionBase";
 
 function unescapeCommandValue(value: string) : string {
     let result = "", index = 0, lastIndex = 0;
 
     while (true) {
         index = value.indexOf('\\', lastIndex);
-        if(index === -1 || index >= value.length + 1)
+        if(index === -1 || index >= value.length + 1) {
             break;
+        }
 
         let replace;
         switch (value.charAt(index + 1)) {
@@ -54,12 +50,13 @@ const escapeCharacterMap = {
 
 const escapeCommandValue = (value: string) => value.replace(/[\\ \/|\b\f\n\r\t\x07]/g, value => "\\" + escapeCharacterMap[value]);
 
-export function parseCommand(command: string): ParsedCommand {
+export function parseCommand(command: string): ServerCommand {
     const parts = command.split("|").map(element => element.split(" ").map(e => e.trim()).filter(e => !!e));
 
     let cmd;
-    if(parts[0][0].indexOf("=") === -1)
+    if(parts[0][0].indexOf("=") === -1) {
         cmd = parts[0].pop_front();
+    }
 
     let switches = [];
     let payloads = [];
@@ -72,20 +69,17 @@ export function parseCommand(command: string): ParsedCommand {
             }
 
             const separator = keyValue.indexOf('=');
-            if(separator === -1)
+            if(separator === -1) {
                 payload[keyValue] = "";
-            else
+            } else {
                 payload[keyValue.substring(0, separator)] = unescapeCommandValue(keyValue.substring(separator + 1));
+            }
         }
 
         payloads.push(payload)
     });
 
-    return {
-        command: cmd,
-        payload: payloads,
-        switches: switches
-    }
+    return new ServerCommand(cmd, payloads, switches);
 }
 
 export function buildCommand(data: any | any[], switches?: string[], command?: string) {
@@ -95,13 +89,15 @@ export function buildCommand(data: any | any[], switches?: string[], command?: s
         result += " |";
         for(const key of Object.keys(payload)) {
             result += " " + key;
-            if(payload[key] !== undefined && payload[key] !== null)
+            if(payload[key] !== undefined && payload[key] !== null) {
                 result += " " + key + "=" + escapeCommandValue(payload[key].toString());
+            }
         }
     }
 
-    if(switches?.length)
+    if(switches?.length) {
         result += " " + switches.map(e => "-" + e).join(" ");
+    }
 
     return command ? command + result.substring(2) : result.substring(3);
 }

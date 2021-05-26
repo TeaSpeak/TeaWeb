@@ -57,6 +57,11 @@ export type ClientVersionInfo = {
     version: string
 }
 
+export type InheritedChannelInfo = {
+    channelId: number,
+    channelName: string
+}
+
 export interface ClientInfoEvents {
     action_show_full_info: {},
     action_edit_avatar: {},
@@ -75,7 +80,10 @@ export interface ClientInfoEvents {
 
     notify_client_name: { name: string },
     notify_client_description: { description: string }
-    notify_channel_group: { group: ClientGroupInfo | undefined },
+    notify_channel_group: {
+        group: ClientGroupInfo | undefined,
+        inheritedChannel: InheritedChannelInfo | undefined
+    },
     notify_server_groups: { groups: ClientGroupInfo[] },
     notify_status: { status: ClientStatusInfo },
     notify_online: { status: ClientInfoOnline },

@@ -49,7 +49,7 @@ export class ConnectionManager {
 
     spawnConnectionHandler() : ConnectionHandler {
         const handler = new ConnectionHandler();
-        handler.initialize_client_state(this.activeConnectionHandler);
+        handler.initializeHandlerState(this.activeConnectionHandler);
         this.connectionHandlers.push(handler);
 
         this.events_.fire("notify_handler_created", { handler: handler, handlerId: handler.handlerId });
@@ -102,8 +102,6 @@ export class ConnectionManager {
             oldHandlerId: oldHandler?.handlerId,
             newHandlerId: handler?.handlerId
         });
-        oldHandler?.events().fire("notify_visibility_changed", { visible: false });
-        handler?.events().fire("notify_visibility_changed", { visible: true });
     }
 
     swapHandlerOrder(handlerA: ConnectionHandler, handlerB: ConnectionHandler) {

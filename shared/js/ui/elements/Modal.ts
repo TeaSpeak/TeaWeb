@@ -1,8 +1,8 @@
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
-import {KeyCode} from "../../PPTListener";
-import * as $ from "jquery";
+import $ from "jquery";
 import {LogCategory, logError} from "tc-shared/log";
+import ModalIcon from "../react-elements/modal/TeaCup.png";
 
 export enum ElementType {
     HEADER,
@@ -89,8 +89,6 @@ export class ModalProperties {
     }
 
     template_properties?: any = {};
-    trigger_tab: boolean = true;
-    full_size?: boolean = false;
 }
 
 namespace modal {
@@ -219,13 +217,14 @@ export class Modal {
             modal_footer: footer,
 
             closeable: this.properties.closeable,
-            full_size: this.properties.full_size
+            full_size: false
         };
 
         if(this.properties.template_properties)
             Object.assign(properties, this.properties.template_properties);
 
         const tag = template.renderTag(properties);
+        tag.find(".modal-header .container-icon img").attr("src", ModalIcon);
         if(typeof(this.properties.width) !== "undefined" && typeof(this.properties.min_width) !== "undefined")
             tag.find(".modal-content")
                 .css("min-width", this.properties.min_width)
@@ -304,6 +303,7 @@ export function createModal(data: ModalProperties | any) : Modal {
 
 export class InputModalProperties extends ModalProperties {
     maxLength?: number;
+    defaultValue?: string;
 
     field_title?: string;
     field_label?: string;
@@ -340,7 +340,7 @@ export function createInputModal(headMessage: BodyCreator, question: BodyCreator
         button_submit.prop("disabled", !valid);
     });
     input.on('keydown', event => {
-        if(event.keyCode !== KeyCode.KEY_RETURN || event.shiftKey)
+        if(event.key !== "Enter" || event.shiftKey)
             return;
         if(button_submit.prop("disabled"))
             return;
@@ -366,6 +366,11 @@ export function createInputModal(headMessage: BodyCreator, question: BodyCreator
         }
         modal.close();
     });
+
+    if(props.defaultValue) {
+        input.val(props.defaultValue);
+        setTimeout(() => input.trigger("change"), 0);
+    }
 
     modal.open_listener.push(() => input.focus());
     modal.close_listener.push(() => button_cancel.trigger('click'));

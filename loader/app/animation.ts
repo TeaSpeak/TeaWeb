@@ -1,6 +1,6 @@
 import * as loader from "./loader/loader";
 import {Stage} from "./loader/loader";
-import {getUrlParameter} from "./loader/utils";
+import {getUrlParameter} from "./loader/Utils";
 
 let overlay: HTMLDivElement;
 let setupContainer: HTMLDivElement;

@@ -23,7 +23,7 @@ class TeaForumHandshakeHandler extends AbstractHandshakeIdentityHandler {
     }
 
     executeHandshake() {
-        this.connection.command_handler_boss().register_handler(this.handler);
+        this.connection.getCommandHandler().registerHandler(this.handler);
         this.connection.send_command("handshakebegin", {
             intention: 0,
             authentication_method: this.identity.type(),
@@ -51,12 +51,12 @@ class TeaForumHandshakeHandler extends AbstractHandshakeIdentityHandler {
     }
 
     protected trigger_fail(message: string) {
-        this.connection.command_handler_boss().unregister_handler(this.handler);
+        this.connection.getCommandHandler().unregisterHandler(this.handler);
         super.trigger_fail(message);
     }
 
     protected trigger_success() {
-        this.connection.command_handler_boss().unregister_handler(this.handler);
+        this.connection.getCommandHandler().unregisterHandler(this.handler);
         super.trigger_success();
     }
 }

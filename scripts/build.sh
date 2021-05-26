@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
 # shellcheck disable=SC1090
-source "$(dirname "$0")/resolve_commands.sh"
 cd "$(dirname "$0")/../" || { echo "Failed to enter the base directory"; exit 1; }
-
 
 if [[ $# -lt 2 ]]; then
     echo "Invalid argument count!"
@@ -41,7 +39,7 @@ if [[ $_exit_code -ne 0 ]]; then
     exit 1
 fi
 
-echo "Generating required build tooks"
+echo "Generating required build hooks"
 chmod +x ./tools/build_trgen.sh
 ./tools/build_trgen.sh; _exit_code=$?
 if [[ $_exit_code -ne 0 ]]; then
@@ -49,32 +47,18 @@ if [[ $_exit_code -ne 0 ]]; then
     exit 1
 fi
 
-echo "Generating style files"
-npm run compile-scss; _exit_code=$?
-if [[ $_exit_code -ne 0 ]]; then
-    echo "Failed to generate style files"
-    exit 1
-fi
-
 if [[ "$build_type" == "release" ]]; then # Compile everything for release mode
-    NODE_ENV=production npm run build-$build_target; _exit_code=$?
+    NODE_ENV=production npm run build-$build_target -- --env package=1; _exit_code=$?
     if [[ $_exit_code -ne 0 ]]; then
-        echo "Failed to build the $build_target applcation"
+        echo "Failed to build the $build_target application"
         exit 1
     fi
 elif [[ "$build_type" == "development" ]]; then
-    NODE_ENV=development npm run build-$build_target; _exit_code=$?
+    NODE_ENV=development npm run build-$build_target -- --env package=1; _exit_code=$?
     if [[ $_exit_code -ne 0 ]]; then
-        echo "Failed to build the $build_target applcation"
+        echo "Failed to build the $build_target application"
         exit 1
     fi
 fi
 
-echo "Generating environment"
-node file.js generate $build_target ${build_type}; _exit_code=$?
-if [[ $_exit_code -ne 0 ]]; then
-    echo "Failed to generate environment"
-    exit 1
-fi
-
-echo "$build_target builded successfully!"
+echo "$build_target build successfully!"

@@ -1,0 +1,462 @@
+@import "../../../../css/static/mixin";
+@import "../../../../css/static/properties";
+
+html:root {
+    --modal-permission-loading: #666;
+    --modal-permission-error: #666161;
+}
+
+.containerMenuBar {
+    padding-top: .5em;
+    padding-left: .5em;
+    padding-right: .5em;
+
+    flex-shrink: 0;
+    flex-grow: 0;
+
+    height: 3em;
+    box-sizing: content-box;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+
+    .clients {
+        width: 12em;
+        min-width: 3em;
+
+        flex-shrink: 1;
+        flex-grow: 0;
+
+        margin-right: 1em;
+        align-self: center;
+
+        &.hidden {
+            display: none;
+        }
+    }
+
+    .filter {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        min-width: 4em;
+
+        align-self: center;
+
+        padding-top: 0 !important;
+        margin-bottom: 0 !important;
+
+        .label {
+            top: 0.5em;
+        }
+
+        &:focus-within .label, .labelFloating {
+            top: -0.4em !important;
+        }
+    }
+
+    .options {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        margin-left: .5em;
+        font-size: .9em;
+        padding-top: .8em; /* since we've only one switch currently */
+    }
+
+    .containerIconSelect {
+        position: relative;
+
+        height: 2.5em;
+
+        border-radius: .2em;
+        margin-left: 1em;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+
+        cursor: pointer;
+        background-color: var(--modal-permissions-icon-select);
+        border: 1px solid var(--modal-permissions-icon-select-border);
+
+        .preview {
+            height: 100%;
+            width: 3em;
+
+            border: none;
+            border-right: 1px solid var(--modal-permissions-icon-select-border);
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+
+            > div {
+                align-self: center;
+            }
+
+            > img {
+                align-self: center;
+
+                width: 1em;
+                height: 1em;
+            }
+
+            @include transition(border-color $button_hover_animation_time ease-in-out);
+        }
+
+        .containerDropdown {
+            position: relative;
+            cursor: pointer;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+
+            height: 100%;
+            width: 1.5em;
+
+            .button {
+                text-align: center;
+
+                .arrow {
+                    border-color: var(--text);
+                }
+            }
+
+            .dropdown {
+                display: none;
+                position: absolute;
+                width: max-content;
+
+                top: calc(2.5em - 2px);
+
+                flex-direction: column;
+                justify-content: flex-start;
+
+                background-color: var(--modal-permissions-icon-select);
+                border: 1px solid var(--modal-permissions-icon-select-border);
+                border-radius: .2em 0 .2em .2em;
+
+                right: -1px;
+
+                z-index: 10;
+
+                .entry {
+                    padding: .5em;
+
+                    &:not(:last-of-type) {
+                        border: none;
+                        border-bottom: 1px solid var(--modal-permissions-icon-select-border);
+                    }
+
+                    &:hover {
+                        background-color: var(--modal-permissions-icon-select-hover);
+                    }
+                }
+            }
+
+            &:hover {
+                border-bottom-right-radius: 0;
+
+                .dropdown {
+                    display: flex;
+                }
+            }
+        }
+
+        &:hover {
+            background-color: var(--modal-permissions-icon-select-hover);
+            border-color: var(--modal-permissions-icon-select-hover-border);
+
+            .preview {
+                border-color: var(--modal-permissions-icon-select-hover-border);
+            }
+        }
+
+        @include transition(border-color $button_hover_animation_time ease-in-out);
+    }
+}
+
+.permissionTable {
+    @include user-select(none);
+
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    min-height: 6em;
+    height: 50em;
+
+    flex-shrink: 1;
+    flex-grow: 1;
+
+    padding-left: .5em;
+    padding-right: .5em;
+
+    .row {
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        width: 100%;
+        height: 2em;
+
+        border: none;
+
+        border-bottom: 1px solid var(--modal-permissions-table-border);
+
+        @mixin fixed-column($name, $width) {
+            .column#{$name} {
+                display: flex;
+                flex-direction: row;
+                justify-content: stretch;
+
+                flex-grow: 0;
+                flex-shrink: 0;
+
+                width: $width;
+
+                align-items: center;
+
+                padding-left: 1em;
+
+                border: none;
+                border-right: 1px solid var(--modal-permissions-table-border);
+
+                overflow: hidden;
+
+                a {
+                    max-width: 100%;
+
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                }
+            }
+        }
+
+        @include fixed-column(Name, 6em);
+        @include fixed-column(Value, 6em);
+        @include fixed-column(Skip, 5em);
+        @include fixed-column(Negate, 5em);
+        @include fixed-column(Granted, 6em);
+
+        .columnName {
+            flex-grow: 1;
+            flex-shrink: 1;
+
+            .groupName {
+                margin-left: .5em;
+            }
+        }
+
+        .columnGranted {
+            border-right: none;
+        }
+
+
+        &.active {
+            color: var(--modal-permissions-table-entry-active-text) !important;
+        }
+
+        &.group {
+            color: var(--modal-permissions-table-entry-group-text) !important;
+            font-weight: bold;
+
+            .arrow {
+                cursor: pointer;
+                border-color: var(--modal-permissions-table-entry-active-text);
+            }
+        }
+
+        &.permission {
+        }
+    }
+
+    .header {
+        .row {
+            background-color: var(--modal-permissions-table-header);
+            color: var(--modal-permissions-table-header-text);
+
+            font-weight: bold;
+
+            .columnGranted {
+                margin-right: .5em;
+            }
+        }
+    }
+
+    .body {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        position: relative;
+        min-height: 6em; /* TODO: Width */
+
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+
+        overflow-y: scroll;
+        overflow-x: auto;
+
+        @include chat-scrollbar-vertical();
+        @include chat-scrollbar-horizontal();
+
+        .row {
+            position: absolute;
+
+            left: 0;
+            right: 0;
+
+            color: var(--modal-permissions-table-row-text);
+            background-color: var(--modal-permissions-table-row-odd);
+
+            &.even {
+                background-color: var(--modal-permissions-table-row-even);
+            }
+
+            &:hover {
+                background-color: var(--modal-permissions-table-row-hover);
+            }
+
+            input[type="number"] {
+                color: var(--modal-permissions-table-input);
+
+                outline: none;
+                background: transparent;
+                border: none;
+
+                height: 1.5em;
+                width: 5em; /* the column width minus one */
+
+                /* fix the column padding */
+                padding-left: 1em;
+                margin-left: -.5em; /* have a bit of space on both sides */
+
+                border-bottom: 2px solid transparent;
+
+                @include transition(border-bottom-color $button_hover_animation_time ease-in-out);
+
+                &:not(.applying):focus {
+                    border-bottom-color: var(--modal-permissions-table-input-focus);
+                }
+
+
+                &.applying {
+                    padding-left: 0;
+                }
+            }
+
+            /* We cant use this effect here because the odd/even effect would be a bit crazy then */
+            //@include transition(background-color $button_hover_animation_time ease-in-out);
+        }
+
+        .spaceAllocator {
+            width: 100%;
+            flex-shrink: 0;
+            flex-grow: 0;
+        }
+
+        .overlay {
+            position: absolute;
+
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+
+            z-index: 1;
+            background-color: var(--modal-permission-right);
+
+            padding-top: 2em;
+
+            a {
+                text-align: center;
+                font-size: 1.6em;
+
+                color: var(--modal-permission-loading);
+            }
+
+            &.hidden {
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            &.error {
+                a {
+                    color: var(--modal-permission-error);
+                }
+            }
+        }
+    }
+
+    .overlay {
+        position: absolute;
+
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        z-index: 1;
+        background: var(--modal-permission-right);
+
+        &.hidden {
+            display: none;
+        }
+
+        &.unset {
+        }
+
+        &.noPermissions {
+            justify-content: flex-start;
+            padding-top: 2em;
+            font-size: 1em;
+
+            a {
+                text-align: center;
+                font-size: 1.5em;
+                color: var(--modal-permission-no-permnissions);
+            }
+        }
+    }
+}
+
+.containerFooter {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+
+    padding: .5em;
+
+    button {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+
+        * {
+            align-self: center;
+        }
+
+        div {
+            margin-right: .5em;
+        }
+    }
+}

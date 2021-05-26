@@ -9,19 +9,21 @@ import {initializeConnectionListController} from "tc-shared/ui/frames/connection
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {server_connections} from "tc-shared/ConnectionManager";
-import {AppUiEvents} from "tc-shared/ui/AppDefinitions";
+import {AppUiEvents, AppUiVariables} from "tc-shared/ui/AppDefinitions";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {SideBarController} from "tc-shared/ui/frames/SideBarController";
 import {ServerEventLogController} from "tc-shared/ui/frames/log/Controller";
 import {HostBannerController} from "tc-shared/ui/frames/HostBannerController";
+import {UiVariableProvider} from "tc-shared/ui/utils/Variable";
+import {createIpcUiVariableProvider, IpcUiVariableProvider} from "tc-shared/ui/utils/IpcVariable";
 
 export class AppController {
-    private uiEvents: Registry<AppUiEvents>;
-
     private listener: (() => void)[];
 
     private currentConnection: ConnectionHandler;
     private listenerConnection: (() => void)[];
+
+    private variables: IpcUiVariableProvider<AppUiVariables>;
 
     private container: HTMLDivElement;
     private controlBarEvents: Registry<ControlBarEvents>;
@@ -32,9 +34,21 @@ export class AppController {
     private hostBannerController: HostBannerController;
 
     constructor() {
-        this.uiEvents = new Registry<AppUiEvents>();
-        this.uiEvents.on("query_channel_tree", () => this.notifyChannelTree());
-        this.uiEvents.on("query_video_container", () => this.notifyVideoContainer());
+        this.variables = createIpcUiVariableProvider();
+        this.variables.setVariableProvider("connectionList", () => this.connectionListEvents.generateIpcDescription());
+        this.variables.setVariableProvider("controlBar", () => this.controlBarEvents.generateIpcDescription());
+        this.variables.setVariableProvider("hostBanner", () => this.hostBannerController.uiEvents.generateIpcDescription());
+        this.variables.setVariableProvider("log", () => this.serverLogController.events.generateIpcDescription());
+        this.variables.setVariableProvider("sidebar", () => this.sideBarController.uiEvents.generateIpcDescription());
+        this.variables.setVariableProvider("sidebarHeader", () => this.sideBarController.getHeaderController().uiEvents.generateIpcDescription());
+        this.variables.setVariableProvider("channelTree", () => ({
+            events: this.currentConnection?.channelTree.mainTreeUiEvents.generateIpcDescription(),
+            handlerId: this.currentConnection?.handlerId
+        }));
+        this.variables.setVariableProvider("channelVideo", () => ({
+            events: this.currentConnection?.video_frame.getEvents().generateIpcDescription(),
+            handlerId: this.currentConnection?.handlerId
+        }));
 
         this.listener = [];
     }
@@ -64,8 +78,8 @@ export class AppController {
         this.hostBannerController?.destroy();
         this.hostBannerController = undefined;
 
-        this.uiEvents?.destroy();
-        this.uiEvents = undefined;
+        this.variables?.destroy();
+        this.variables = undefined;
     }
 
     initialize() {
@@ -81,12 +95,12 @@ export class AppController {
         this.connectionListEvents = new Registry<ConnectionListUIEvents>();
         initializeConnectionListController(this.connectionListEvents);
 
-        this.listener.push(server_connections.events().on("notify_active_handler_changed", event => this.setConnectionHandler(event.newHandler)));
-        this.setConnectionHandler(server_connections.getActiveConnectionHandler());
-
         this.sideBarController = new SideBarController();
         this.serverLogController = new ServerEventLogController();
         this.hostBannerController = new HostBannerController();
+
+        this.listener.push(server_connections.events().on("notify_active_handler_changed", event => this.setConnectionHandler(event.newHandler)));
+        this.setConnectionHandler(server_connections.getActiveConnectionHandler());
     }
 
     setConnectionHandler(connection: ConnectionHandler) {
@@ -102,33 +116,14 @@ export class AppController {
         this.serverLogController.setConnectionHandler(connection);
         this.hostBannerController.setConnectionHandler(connection);
 
-        this.notifyChannelTree();
-        this.notifyVideoContainer();
+        this.variables.sendVariable("channelTree");
+        this.variables.sendVariable("channelVideo");
     }
 
     renderApp() {
         ReactDOM.render(React.createElement(TeaAppMainView, {
-            controlBar: this.controlBarEvents,
-            connectionList: this.connectionListEvents,
-            sidebar: this.sideBarController.uiEvents,
-            sidebarHeader: this.sideBarController.getHeaderController().uiEvents,
-            log: this.serverLogController.events,
-            events: this.uiEvents,
-            hostBanner: this.hostBannerController.uiEvents
+            variables: this.variables.generateConsumerDescription(),
         }), this.container);
-    }
-
-    private notifyChannelTree() {
-        this.uiEvents.fire_react("notify_channel_tree", {
-            handlerId: this.currentConnection?.handlerId,
-            events: this.currentConnection?.channelTree.mainTreeUiEvents
-        });
-    }
-
-    private notifyVideoContainer() {
-        this.uiEvents.fire_react("notify_video_container", {
-            container: this.currentConnection?.video_frame.getContainer()
-        });
     }
 }
 

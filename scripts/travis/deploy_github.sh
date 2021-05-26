@@ -1,98 +1,92 @@
 #!/usr/bin/env bash
 
-cd "$(dirname "$0")/../../" || { echo "Failed to enter base dir"; exit 1; }
+cd "$(dirname "$0")/../../" || {
+  echo "Failed to enter base dir"
+  exit 1
+}
 source ./scripts/travis/properties.sh
+source ./scripts/helper.sh
 
 if [[ -z "${GIT_AUTHTOKEN}" ]]; then
-    echo "GIT_AUTHTOKEN isn't set. Don't deploying build!"
-    exit 0
+  echo "GIT_AUTHTOKEN isn't set. Don't deploying build!"
+  exit 0
 fi
 
-GIT_COMMIT_SHORT=$(git rev-parse --short HEAD)
-GIT_COMMIT_LONG=$(git rev-parse HEAD)
-echo "Deploying $GIT_COMMIT_SHORT ($GIT_COMMIT_LONG) to github."
+git_release_executable="/tmp/git-release"
+install_git_release() {
+  if [[ -x "${git_release_executable}" ]]; then
+    # File already available. No need to install it.
+    return 0
+  fi
 
-GIT_RELEASE_EXECUTABLE="/tmp/git-release"
-if [[ ! -x ${GIT_RELEASE_EXECUTABLE} ]]; then
-    if [[ ! -f ${GIT_RELEASE_EXECUTABLE} ]]; then
-        echo "Downloading github-release-linux (1.2.4)"
+  if [[ ! -f ${git_release_executable} ]]; then
+    echo "Downloading github-release-linux (1.2.4)"
 
-        if [[ -f /tmp/git-release.gz ]]; then
-            rm /tmp/git-release.gz
-        fi
-        wget https://github.com/tfausak/github-release/releases/download/1.2.4/github-release-linux.gz -O /tmp/git-release.gz -q;
-        [[ $? -eq 0 ]] || {
-            echo "Failed to download github-release-linux"
-            exit 1
-        }
-
-        gunzip /tmp/git-release.gz; _exit_code=$?;
-        [[ $_exit_code -eq 0 ]] || {
-            echo "Failed to unzip github-release-linux"
-            exit 1
-        }
-        chmod +x /tmp/git-release;
-
-        echo "Download of github-release-linux (1.2.4) finished"
-    else
-        chmod +x ${GIT_RELEASE_EXECUTABLE}
+    if [[ -f /tmp/git-release.gz ]]; then
+      rm /tmp/git-release.gz
     fi
+    wget https://github.com/tfausak/github-release/releases/download/1.2.4/github-release-linux.gz -O /tmp/git-release.gz -q
+    [[ $? -eq 0 ]] || {
+      echo "Failed to download github-release-linux"
+      exit 1
+    }
 
-    if [[ ! -x ${GIT_RELEASE_EXECUTABLE} ]]; then
-        echo "git-release isn't executable"
-        exit 1
-    fi
-fi
+    gunzip /tmp/git-release.gz
+    _exit_code=$?
+    [[ $_exit_code -eq 0 ]] || {
+      echo "Failed to unzip github-release-linux"
+      exit 1
+    }
+    chmod +x /tmp/git-release
 
-cd "$(dirname "$0")/../../" || { echo "Failed to enter base dir"; exit 1; }
-echo "Generating release"
-${GIT_RELEASE_EXECUTABLE} release \
-	--repo "TeaWeb" \
-	--owner "TeaSpeak" \
-	--token "${GIT_AUTHTOKEN}" \
-    --title "Travis autobuild ${GIT_COMMIT_SHORT}" \
-	--tag "${GIT_COMMIT_SHORT}" \
-	--description "This is a autobuild release from travis"
-[[ $? -eq 0 ]] || {
-    echo "Failed to generate git release"
+    echo "Download of github-release-linux (1.2.4) finished"
+  else
+    chmod +x ${git_release_executable}
+  fi
+
+  if [[ ! -x ${git_release_executable} ]]; then
+    echo "git-release isn't executable"
     exit 1
+  fi
+}
+install_git_release
+
+git_versions_tag=$(git_version "short-tag")
+echo "Deploying $git_versions_tag ($(git_version "long-tag")) to GitHub."
+
+echo "Generating release tag"
+${git_release_executable} release \
+    --repo "TeaWeb" \
+    --owner "TeaSpeak" \
+    --token "${GIT_AUTHTOKEN}" \
+    --title "Travis auto build $git_versions_tag" \
+    --tag "$git_versions_tag" \
+    --description "This is a auto build release from travis"
+
+[[ $? -eq 0 ]] || {
+  echo "Failed to generate git release"
+  exit 1
 }
 
-echo "Uploading release files"
-folders=("${LOG_FILE}" "${PACKAGES_DIRECTORY}")
-uploaded_files=()
-failed_files=()
+upload_package() {
+  local package_file
+  package_file=$(find_release_package "web" "$1")
+  if [[ $? -eq 0 ]]; then
+    echo "Uploading $1 package ($package_file)"
+    ${git_release_executable} upload \
+        --repo "TeaWeb" \
+        --owner "TeaSpeak" \
+        --token "${GIT_AUTHTOKEN}" \
+        --tag "$git_versions_tag" \
+        --file "$package_file" \
+        --name "$(basename "$package_file")"
 
-for folder in "${folders[@]}"; do
-    echo "Scanning folder $folder"
-    if [[ ! -d ${folder} ]]; then
-        continue;
-    fi
+    echo "Successfully uploaded $1 package"
+  else
+    echo "Skipping $1 package upload: $package_file"
+  fi
+}
 
-    for file in ${folder}*; do
-        if [[ -d ${file} ]]; then
-            echo "  Skipping directory `basename $file` ($file)"
-            continue
-        fi
-        echo "  Found entry `basename $file` ($file). Uploading file.";
-
-        ${GIT_RELEASE_EXECUTABLE} upload \
-            --repo "TeaWeb" \
-            --owner "TeaSpeak" \
-            --token "${GIT_AUTHTOKEN}" \
-            --tag "${GIT_COMMIT_SHORT}" \
-            --file "$file" \
-            --name "`basename $file`"
-
-        [[ $? -eq 0 ]] && {
-            echo "    Uploaded.";
-            uploaded_files+="$file"
-        } || {
-            echo "Failed to generate git release"
-            failed_files+="$file"
-        }
-    done
-done
-
-echo "Successfully uploaded ${#uploaded_files[@]} files. ${#failed_files[@]} uploads failed."
+upload_package "development"
+upload_package "release"
 exit 0

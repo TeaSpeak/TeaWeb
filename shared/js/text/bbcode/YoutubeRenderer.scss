@@ -1,0 +1,59 @@
+.container {
+    width: 20em;
+    height: 10em;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    margin: .5em;
+    border-radius: .1em;
+
+    overflow: hidden;
+    user-select: none;
+
+    position: relative;
+
+    img {
+        max-width: 100%;
+    }
+
+    .playButton {
+        position: absolute;
+
+        cursor: pointer;
+
+        left: 50%;
+        top: 50%;
+
+        width: 68px;
+        height: 48px;
+
+        margin-left: -34px;
+        margin-top: -24px;
+
+        border: none;
+        background-color: transparent;
+        padding: 0;
+
+        svg {
+            height: 100%;
+            left: 0;
+            position: absolute;
+            top: 0;
+            width: 100%;
+
+            fill: #212121;
+            fill-opacity: .8;
+
+            transition: fill .1s cubic-bezier(0.0,0.0,0.2,1),fill-opacity .1s cubic-bezier(0.0,0.0,0.2,1);
+        }
+
+        &:hover {
+            svg {
+                fill: #f00;
+                fill-opacity: 1;
+            }
+        }
+    }
+}
