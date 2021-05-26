@@ -98,7 +98,7 @@ git_version() {
   if [[ -z "$response" || "${ignore_dirty_worktree:=0}" -eq 1 || 1 -eq 1 ]]; then
       case "$1" in
         "short-tag" | "name" | "file-name")
-          git rev-parse --short HEAD
+          git rev-parse --short=8 HEAD
           ;;
         "long-tag")
           git rev-parse HEAD
