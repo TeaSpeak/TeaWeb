@@ -55,11 +55,13 @@ export interface ModalBookmarkEvents {
             entry: string
         } | {
             type: "selected",
+        } | {
+            type: "end"
         },
         displayName: string | undefined
     },
     action_duplicate_bookmark: { uniqueId: string, displayName: string | undefined, originalName: string },
-    action_delete_bookmark: { uniqueId: string },
+    action_delete_bookmark: { uniqueId: string, force: boolean },
 
     action_connect: { uniqueId: string, newTab: boolean, closeModal: boolean },
 

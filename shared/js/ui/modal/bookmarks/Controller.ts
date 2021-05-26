@@ -17,7 +17,9 @@ import {server_connections} from "tc-shared/ConnectionManager";
 import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {LocalClientEntry} from "tc-shared/tree/Client";
 import _ from "lodash";
-import {LogCategory, logError} from "tc-shared/log";
+import {LogCategory, logError, logWarn} from "tc-shared/log";
+import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
+import {tra} from "tc-shared/i18n/localize";
 
 class BookmarkModalController {
     readonly events: Registry<ModalBookmarkEvents>;
@@ -194,7 +196,30 @@ class BookmarkModalController {
         }));
 
         /* events */
-        this.events.on("action_delete_bookmark", event => bookmarks.deleteEntry(event.uniqueId));
+        this.events.on("action_delete_bookmark", event => {
+            const entry = bookmarks.findBookmark(event.uniqueId);
+            if(!entry) {
+                logWarn(LogCategory.GENERAL, tr("Tried to delete an unknown bookmark entry %s."), event.uniqueId);
+                return;
+            }
+
+            const children = bookmarks.directoryContents(entry.uniqueId);
+            if(!event.force && entry.type === "directory" && children.length > 0) {
+                promptYesNo({
+                    title: tr("Are you sure?"),
+                    question: tra("Do you really want to delete the directory \"{0}\"?\nThe directory contains {1} entries.", entry.displayName, children.length)
+                }).then(result => {
+                    if(!result) {
+                        return;
+                    }
+
+                    this.events.fire("action_delete_bookmark", { uniqueId: entry.uniqueId, force: true });
+                });
+                return;
+            }
+
+            bookmarks.deleteEntry(event.uniqueId);
+        });
         this.events.on("action_create_bookmark", event => {
             if(!event.displayName) {
                 return;
@@ -215,9 +240,12 @@ class BookmarkModalController {
                 }
 
                 case "selected":
-                default:
                     parentBookmark = this.selectedBookmark?.parentEntry;
                     previousBookmark = this.selectedBookmark?.previousEntry;
+                    break;
+
+                case "end":
+                default:
                     break;
             }
 

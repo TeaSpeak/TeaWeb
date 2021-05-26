@@ -31,8 +31,6 @@ import ServerInfoImage from "./serverinfo.png";
 import {IconTooltip} from "tc-shared/ui/react-elements/Tooltip";
 import {CountryCode} from "tc-shared/ui/react-elements/CountryCode";
 import {downloadTextAsFile, requestFileAsText} from "tc-shared/file/Utils";
-import {promptYesNo} from "tc-shared/ui/modal/yes-no/Controller";
-import {tra} from "tc-shared/i18n/localize";
 
 const EventContext = React.createContext<Registry<ModalBookmarkEvents>>(undefined);
 const VariableContext = React.createContext<UiVariableConsumer<ModalBookmarkVariables>>(undefined);
@@ -52,23 +50,6 @@ const BookmarkListEntryRenderer = React.memo((props: { entry: BookmarkListEntry 
     const variables = useContext(VariableContext);
     const events = useContext(EventContext);
     const selectedItem = variables.useVariable("bookmarkSelected", undefined, undefined);
-
-    const tryDelete = () => {
-        if(props.entry.type === "directory" && props.entry.childCount > 0) {
-            promptYesNo({
-                title: tr("Are you sure?"),
-                question: tra("Do you really want to delete the directory \"{0}\"?\nThe directory contains {1} entries.", props.entry.displayName, props.entry.childCount)
-            }).then(result => {
-                if(!result) {
-                    return;
-                }
-
-                events.fire("action_delete_bookmark", { uniqueId: props.entry.uniqueId });
-            });
-        } else {
-            events.fire("action_delete_bookmark", { uniqueId: props.entry.uniqueId });
-        }
-    };
 
     let icon;
     if(props.entry.icon) {
@@ -98,7 +79,9 @@ const BookmarkListEntryRenderer = React.memo((props: { entry: BookmarkListEntry 
         );
     }
     buttons.push(
-        <div className={cssStyle.button} key={"bookmark-remove"} title={tr("Delete entry")} onClick={tryDelete}>
+        <div className={cssStyle.button} key={"bookmark-remove"} title={tr("Delete entry")} onClick={() => {
+            events.fire("action_delete_bookmark", { uniqueId: props.entry.uniqueId, force: false });
+        }}>
             <ClientIconRenderer icon={ClientIcon.Delete} />
         </div>
     );
@@ -184,7 +167,7 @@ const BookmarkListEntryRenderer = React.memo((props: { entry: BookmarkListEntry 
                         type: "normal",
                         label: props.entry.type === "bookmark" ? tr("Delete bookmark") : tr("Delete directory"),
                         icon: ClientIcon.BookmarkRemove,
-                        click: tryDelete
+                        click: () => events.fire("action_delete_bookmark", { uniqueId: props.entry.uniqueId, force: false })
                     }
                 ]);
             }}
@@ -209,7 +192,31 @@ const BookmarkList = React.memo(() => {
     const bookmarks = bookmarksInfo.status === "loaded" ? bookmarksInfo.value : [];
 
     return (
-        <div className={cssStyle.containerBookmarks}>
+        <div
+            className={cssStyle.containerBookmarks}
+            onContextMenu={event => {
+                event.preventDefault();
+
+                if(bookmarks.length === 0) {
+                    return;
+                }
+
+                spawnContextMenu({ pageX: event.pageX, pageY: event.pageY }, [
+                    {
+                        type: "normal",
+                        label: tr("Add bookmark"),
+                        icon: ClientIcon.BookmarkAdd,
+                        click: () => events.fire("action_create_bookmark", { entryType: "bookmark", order: { type: "end" }, displayName: undefined })
+                    },
+                    {
+                        type: "normal",
+                        label: tr("Add directory"),
+                        icon: ClientIcon.BookmarkAddFolder,
+                        click: () => events.fire("action_create_bookmark", { entryType: "directory", order: { type: "end" }, displayName: undefined })
+                    },
+                ]);
+            }}
+        >
             {bookmarks.map(entry => <BookmarkListEntryRenderer entry={entry} key={"entry-" + entry.uniqueId} />)}
             <div key={"overlay-loading"} className={cssStyle.overlay + " " + (bookmarksInfo.status === "loaded" ? "" : cssStyle.shown)}>
                 <div className={cssStyle.text}><Translatable>loading</Translatable> <LoadingDots /></div>

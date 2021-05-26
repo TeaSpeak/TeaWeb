@@ -1,4 +1,9 @@
 # Changelog:
+* **26.05.21**
+    - Fixed automated builds
+    - Fixed the bookmark UI popout window
+    - Added a context menu for the general bookmark container
+  
 * **05.05.21**
     - Reworked the icon modal
     - Fixed some minor icon and avatar related issues

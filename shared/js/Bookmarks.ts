@@ -300,6 +300,10 @@ export class BookmarkManager {
         this.doEditBookmark(uniqueId, newValues);
     }
 
+    directoryContents(uniqueId: string) : BookmarkEntry[] {
+        return this.registeredBookmarks.filter(bookmark => bookmark.parentEntry === uniqueId);
+    }
+
     deleteEntry(uniqueId: string) {
         const index = this.registeredBookmarks.findIndex(entry => entry.uniqueId === uniqueId);
         if(index === -1) {
