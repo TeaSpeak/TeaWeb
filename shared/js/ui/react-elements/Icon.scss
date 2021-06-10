@@ -2,6 +2,11 @@
     width: 1em;
     height: 1em;
 
+    flex-shrink: 0;
+    flex-grow: 0;
+
+    align-self: center;
+
     display: flex;
     flex-direction: column;
     justify-content: stretch;

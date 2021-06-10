@@ -1,13 +1,17 @@
 @import "../../../css/static/mixin";
 @import "../../../css/static/properties";
 
+$animation_time: $button_hover_animation_time;
 .container {
     position: relative;
-    overflow: hidden;
+    /* Don't use overflow hidden here since some container may require overflow */
 
     &:hover {
         .containerButton {
             top: 1em;
+            opacity: 1;
+
+            @include transition(top ease-in-out $animation_time, opacity ease-in-out $animation_time / 2 $animation_time / 2);
         }
     }
 }
@@ -16,10 +20,12 @@
     position: absolute;
     z-index: 10;
 
-    top: -3em;
+    opacity: 0;
+    top: -1em;
+
     right: 1em;
 
-    @include transition(all ease-in-out $button_hover_animation_time);
+    @include transition(top ease-in-out $animation_time, opacity ease-in-out $animation_time / 2);
 
     &.disabled {
         display: none;
@@ -38,7 +44,7 @@
 
     cursor: pointer;
 
-    @include transition(all ease-in-out $button_hover_animation_time);
+    @include transition(all ease-in-out $animation_time);
 
     &:hover {
         background-color: #0000008f;
