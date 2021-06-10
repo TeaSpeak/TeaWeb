@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Registry} from "tc-shared/events";
 import {ChannelFileBrowserUiEvents} from "tc-shared/ui/frames/side/ChannelFileBrowserDefinitions";
 import {channelPathPrefix, FileBrowserEvents} from "tc-shared/ui/modal/transfer/FileDefinitions";
@@ -32,10 +32,13 @@ export const ChannelFileBrowser = (props: { events: Registry<ChannelFileBrowserU
         props.events.fire("query_events");
         return undefined;
     });
+
     props.events.reactUse("notify_events", event => setEvents({
-        events: event.browserEvents,
+        events: Registry.fromIpcDescription(event.browserEvents),
         channelId: event.channelId
     }));
+
+    useEffect(() => () => events?.events?.destroy(), [ events?.events ]);
 
     if(!events) {
         return null;

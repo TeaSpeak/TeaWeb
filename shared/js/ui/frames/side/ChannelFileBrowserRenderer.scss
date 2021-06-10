@@ -6,7 +6,7 @@
     height: 100%;
     width: 100%;
 
-    color: #999;
+    color: #999!important;
 
     .navbar {
         flex-shrink: 0;
@@ -17,13 +17,13 @@
 }
 
 .fileTable {
-    border: none;
-    border-radius: 0;
+    border: none!important;
+    border-radius: 0!important;
 
-    background-color: var(--chat-background);
+    background-color: var(--chat-background)!important;
 
     .header {
-        background-color: var(--chat-background);
+        background-color: var(--chat-background)!important;
     }
 }
 
@@ -36,10 +36,10 @@
 }
 
 .boxedInput {
-    background-color: var(--side-info-background);
-    border-color: #212121;
+    background-color: var(--side-info-background)!important;
+    border-color: #212121!important;
 
     &:focus-within {
-        background-color: #242424;
+        background-color: #242424!important;
     }
 }

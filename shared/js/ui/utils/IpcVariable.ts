@@ -28,6 +28,21 @@ function registerInvokeCallback(callback: () => void) {
     }
 }
 
+function savePostMessage(channel: BroadcastChannel | MessageEventSource, message: any) {
+    try {
+        // @ts-ignore
+        channel.postMessage(message);
+    } catch (error) {
+        if(error instanceof Error) {
+            debugger;
+            console.error(error);
+            return;
+        }
+
+        throw error;
+    }
+}
+
 export class IpcUiVariableProvider<Variables extends UiVariableMap> extends UiVariableProvider<Variables> {
     readonly ipcChannelId: string;
     private readonly bundleMaxSize: number;
@@ -72,7 +87,7 @@ export class IpcUiVariableProvider<Variables extends UiVariableMap> extends UiVa
             const sendResult = (error?: any) => {
                 if(source) {
                     // @ts-ignore
-                    source.postMessage({
+                    savePostMessage(source, {
                         type: "edit-result",
                         token,
                         error
@@ -124,7 +139,7 @@ export class IpcUiVariableProvider<Variables extends UiVariableMap> extends UiVa
      */
     private broadcastIpcMessage(message: any) {
         if(this.bundleMaxSize <= 0) {
-            this.broadcastChannel.postMessage(message);
+            savePostMessage(this.broadcastChannel, message);
             return;
         }
 
@@ -145,7 +160,7 @@ export class IpcUiVariableProvider<Variables extends UiVariableMap> extends UiVa
             return;
         }
 
-        this.broadcastChannel.postMessage({
+        savePostMessage(this.broadcastChannel, {
             type: "bundled",
             messages: this.enqueuedMessages
         });
@@ -253,7 +268,7 @@ class IpcUiVariableConsumer<Variables extends UiVariableMap> extends UiVariableC
      */
     private sendIpcMessage(message: any) {
         if(this.bundleMaxSize <= 0) {
-            this.broadcastChannel.postMessage(message);
+            savePostMessage(this.broadcastChannel, message);
             return;
         }
 
@@ -274,7 +289,7 @@ class IpcUiVariableConsumer<Variables extends UiVariableMap> extends UiVariableC
             return;
         }
 
-        this.broadcastChannel.postMessage({
+        savePostMessage(this.broadcastChannel, {
             type: "bundled",
             messages: this.enqueuedMessages
         });

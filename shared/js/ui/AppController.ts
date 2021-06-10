@@ -9,12 +9,11 @@ import {initializeConnectionListController} from "tc-shared/ui/frames/connection
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {server_connections} from "tc-shared/ConnectionManager";
-import {AppUiEvents, AppUiVariables} from "tc-shared/ui/AppDefinitions";
+import {AppUiVariables} from "tc-shared/ui/AppDefinitions";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {SideBarController} from "tc-shared/ui/frames/SideBarController";
 import {ServerEventLogController} from "tc-shared/ui/frames/log/Controller";
 import {HostBannerController} from "tc-shared/ui/frames/HostBannerController";
-import {UiVariableProvider} from "tc-shared/ui/utils/Variable";
 import {createIpcUiVariableProvider, IpcUiVariableProvider} from "tc-shared/ui/utils/IpcVariable";
 
 export class AppController {

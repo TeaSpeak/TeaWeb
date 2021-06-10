@@ -80,16 +80,14 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
 
     events.on("action_navigate_to", event => {
         try {
-            const info = parsePath(event.path, connection);
 
-            currentPathInfo = info;
+            currentPathInfo = parsePath(event.path, connection);
             currentPath = event.path;
             selection = [];
 
             events.fire_react("notify_current_path", {
                 path: event.path || "/",
                 status: "success",
-                pathInfo: info
             });
         } catch (error) {
             events.fire_react("notify_current_path", {
@@ -382,7 +380,6 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
     events.on("query_current_path", () => events.fire_react("notify_current_path", {
         status: "success",
         path: currentPath,
-        pathInfo: currentPathInfo
     }));
 
     events.on("action_rename_file_result", result => {
