@@ -686,12 +686,13 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         });
     });
 
-    events.on("action_start_download", event => {
-        event.files.forEach(file => {
+    events.on("action_start_download", async event => {
+        for(const file of event.files) {
             try {
                 let targetSupplier;
                 if (__build.target === "client" && TransferProvider.provider().targetSupported(TransferTargetType.FILE)) {
-                    const target = TransferProvider.provider().createFileTarget(undefined, file.name);
+                    /* Get the target file path before we're actiually starting to download the file */
+                    const target = await TransferProvider.provider().createFileTarget(undefined, file.name);
                     targetSupplier = async () => target;
                 } else if (TransferProvider.provider().targetSupported(TransferTargetType.DOWNLOAD)) {
                     targetSupplier = async () => await TransferProvider.provider().createDownloadTarget();
@@ -717,7 +718,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             } catch (error) {
                 logError(LogCategory.FILE_TRANSFER, tr("Failed to parse path for file download: %s"), error);
             }
-        });
+        }
     });
 
     events.on("action_start_upload", event => {
