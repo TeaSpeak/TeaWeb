@@ -479,29 +479,30 @@ export class ConnectionHistory {
         const transaction = this.database.transaction(["attempt-history"], "readonly");
         const store = transaction.objectStore("attempt-history");
 
-        const cursor = store.index(targetType === "server-unique-id" ? "serverUniqueId" : "targetAddress").openCursor(target, "prev");
-        while(true) {
-            const entry = await new Promise<IDBCursorWithValue | null>((resolve, reject) => {
-                cursor.onsuccess = () => resolve(cursor.result);
-                cursor.onerror = () => reject(cursor.error);
-            });
+        const cursor = await new Promise<IDBCursorWithValue | null>((resolve, reject) => {
+            const cursor = store.index(targetType === "server-unique-id" ? "serverUniqueId" : "targetAddress").openCursor(target, "prev");;
+            cursor.onsuccess = () => resolve(cursor.result);
+            cursor.onerror = () => reject(cursor.error);
+        });
 
-            if(!entry) {
+        while(true) {
+            if(!cursor.value) {
                 return undefined;
             }
 
-            if(entry.value.serverUniqueId === kUnknownHistoryServerUniqueId && onlySucceeded) {
+            if(cursor.value.serverUniqueId === kUnknownHistoryServerUniqueId && onlySucceeded) {
+                cursor.continue();
                 continue;
             }
 
             return {
-                id: entry.value.id,
-                timestamp: entry.value.timestamp,
-                serverUniqueId: entry.value.serverUniqueId,
+                id: cursor.value.id,
+                timestamp: cursor.value.timestamp,
+                serverUniqueId: cursor.value.serverUniqueId,
 
-                nickname: entry.value.nickname,
-                hashedPassword: entry.value.hashedPassword,
-                targetAddress: entry.value.targetAddress,
+                nickname: cursor.value.nickname,
+                hashedPassword: cursor.value.hashedPassword,
+                targetAddress: cursor.value.targetAddress,
             };
         }
     }
