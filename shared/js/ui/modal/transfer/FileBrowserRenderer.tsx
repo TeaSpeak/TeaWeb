@@ -115,7 +115,7 @@ const NavigationEntry = (props: { events: Registry<FileBrowserEvents>, path: str
                         const oldPath = fileUrl.split("/").slice(0, -1).join("/") + "/";
 
                         props.events.fire("action_rename_file", {
-                            newPath: props.path + "/",
+                            newPath: props.path.endsWith("/") ? props.path : props.path + "/",
                             oldPath: oldPath,
                             oldName: name,
                             newName: name
