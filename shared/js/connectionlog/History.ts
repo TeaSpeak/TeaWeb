@@ -480,10 +480,15 @@ export class ConnectionHistory {
         const store = transaction.objectStore("attempt-history");
 
         const cursor = await new Promise<IDBCursorWithValue | null>((resolve, reject) => {
-            const cursor = store.index(targetType === "server-unique-id" ? "serverUniqueId" : "targetAddress").openCursor(target, "prev");;
+            const cursor = store.index(targetType === "server-unique-id" ? "serverUniqueId" : "targetAddress").openCursor(target, "prev");
             cursor.onsuccess = () => resolve(cursor.result);
             cursor.onerror = () => reject(cursor.error);
         });
+
+        if(!cursor) {
+            /* We did not find any entry */
+            return undefined;
+        }
 
         while(true) {
             if(!cursor.value) {
