@@ -479,35 +479,30 @@ export class ConnectionHistory {
         const transaction = this.database.transaction(["attempt-history"], "readonly");
         const store = transaction.objectStore("attempt-history");
 
-        const cursor = await new Promise<IDBCursorWithValue | null>((resolve, reject) => {
-            const cursor = store.index(targetType === "server-unique-id" ? "serverUniqueId" : "targetAddress").openCursor(target, "prev");
-            cursor.onsuccess = () => resolve(cursor.result);
-            cursor.onerror = () => reject(cursor.error);
-        });
-
-        if(!cursor) {
-            /* We did not find any entry */
-            return undefined;
-        }
-
+        const cursor = store.index(targetType === "server-unique-id" ? "serverUniqueId" : "targetAddress").openCursor(target, "prev");
         while(true) {
-            if(!cursor.value) {
+            const entry = await new Promise<IDBCursorWithValue | null>((resolve, reject) => {
+                cursor.onsuccess = () => resolve(cursor.result);
+                cursor.onerror = () => reject(cursor.error);
+            });
+
+            if(!entry) {
                 return undefined;
             }
 
-            if(cursor.value.serverUniqueId === kUnknownHistoryServerUniqueId && onlySucceeded) {
-                cursor.continue();
+            if(entry.value.serverUniqueId === kUnknownHistoryServerUniqueId && onlySucceeded) {
+                entry.continue();
                 continue;
             }
 
             return {
-                id: cursor.value.id,
-                timestamp: cursor.value.timestamp,
-                serverUniqueId: cursor.value.serverUniqueId,
+                id: entry.value.id,
+                timestamp: entry.value.timestamp,
+                serverUniqueId: entry.value.serverUniqueId,
 
-                nickname: cursor.value.nickname,
-                hashedPassword: cursor.value.hashedPassword,
-                targetAddress: cursor.value.targetAddress,
+                nickname: entry.value.nickname,
+                hashedPassword: entry.value.hashedPassword,
+                targetAddress: entry.value.targetAddress,
             };
         }
     }
