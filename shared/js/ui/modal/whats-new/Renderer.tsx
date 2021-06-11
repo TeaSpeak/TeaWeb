@@ -4,6 +4,7 @@ import * as dompurify from "dompurify";
 import {ChangeLog, ChangeLogEntry, ChangeSet} from "tc-shared/update/ChangeLog";
 import {Translatable, VariadicTranslatable} from "tc-shared/ui/react-elements/i18n";
 import {guid} from "tc-shared/crypto/uid";
+import moment from "moment";
 
 const {Remarkable} = require("remarkable");
 const cssStyle = require("./Renderer.scss");
@@ -108,7 +109,7 @@ export const WhatsNew = (props: { changesUI?: ChangeLog, changesClient?: ChangeL
             <VariadicTranslatable key={"info-web"}
                                   text={"The web client has been updated to the version from {}."}
             >
-                {versionUIDate}
+                {moment(__build.timestamp).format("dd.MM.YY")}
             </VariadicTranslatable>
         );
     } else if (props.changesUI && props.changesClient) {

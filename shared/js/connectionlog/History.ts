@@ -2,9 +2,10 @@ import {LogCategory, logError, logWarn} from "tc-shared/log";
 import {tr, tra} from "tc-shared/i18n/localize";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {server_connections} from "tc-shared/ConnectionManager";
 import {ServerProperties} from "tc-shared/tree/Server";
+import {Registry} from "tc-events";
 
 export const kUnknownHistoryServerUniqueId = "unknown";
 
@@ -44,10 +45,17 @@ export type ConnectionHistoryServerInfo = {
     passwordProtected: boolean
 }
 
+export interface ConnectionHistoryEvents {
+    notify_server_info_updated: { serverUniqueId: string, keys: (keyof ConnectionHistoryServerInfo)[] }
+}
+
 export class ConnectionHistory {
+    readonly events: Registry<ConnectionHistoryEvents>;
     private database: IDBDatabase;
 
-    constructor() { }
+    constructor() {
+        this.events = new Registry<ConnectionHistoryEvents>();
+    }
 
     async initializeDatabase() {
         const openRequest = indexedDB.open("connection-log", 1);
@@ -306,16 +314,29 @@ export class ConnectionHistory {
             return;
         }
 
-
         await this.updateDatabaseServerInfo(serverUniqueId, databaseValue => {
-            databaseValue.name = info.name;
-            databaseValue.iconId = info.iconId;
+            const changes: (keyof ConnectionHistoryServerInfo)[] = [];
+            const updateValue = (databaseKey: string, infoKey: keyof ConnectionHistoryServerInfo) => {
+                if(databaseValue[databaseKey] === info[infoKey]) {
+                    return;
+                }
 
-            databaseValue.clientsOnline = info.clientsOnline;
-            databaseValue.clientsMax = info.clientsMax;
+                databaseValue[databaseKey] = info[infoKey];
+                changes.push(infoKey);
+            }
 
-            databaseValue.hostBannerUrl = info.hostBannerUrl
-            databaseValue.hostBannerMode = info.hostBannerMode;
+            updateValue("name", "name");
+            updateValue("iconId", "iconId");
+
+            updateValue("clientsOnline", "clientsOnline");
+            updateValue("clientsMax", "clientsMax");
+
+            updateValue("hostBannerUrl", "hostBannerUrl");
+            updateValue("hostBannerMode", "hostBannerMode");
+
+            if(changes.length > 0) {
+                this.events.fire("notify_server_info_updated", { serverUniqueId: serverUniqueId, keys: changes });
+            }
         });
     }
 
@@ -542,7 +563,15 @@ class ConnectionHistoryUpdateListener {
     }
 
     private registerConnectionHandler(handler: ConnectionHandler) {
-        handler.channelTree.server.events.on("notify_properties_updated", event => {
+        const events = this.listenerConnectionHandler[handler.handlerId] = [];
+        events.push(handler.channelTree.server.events.on("notify_properties_updated", event => {
+            switch(handler.connection_state) {
+                case ConnectionState.UNCONNECTED:
+                case ConnectionState.DISCONNECTING:
+                    /* We don't want any changes here */
+                    return;
+            }
+
             if("virtualserver_unique_identifier" in event.updated_properties) {
                 if(handler.currentConnectId > 0) {
                     this.history.updateConnectionServerUniqueId(handler.currentConnectId, event.server_properties.virtualserver_unique_identifier)
@@ -573,7 +602,7 @@ class ConnectionHistoryUpdateListener {
                     break;
                 }
             }
-        });
+        }));
     }
 }
 
@@ -581,7 +610,7 @@ export let connectionHistory: ConnectionHistory;
 let historyInfoListener: ConnectionHistoryUpdateListener;
 
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
-    priority: 0,
+    priority: 40,
     name: "Chat history setup",
     function: async () => {
         if(!('indexedDB' in window)) {

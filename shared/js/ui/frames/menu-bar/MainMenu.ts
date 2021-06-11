@@ -11,6 +11,7 @@ import {bookmarks} from "tc-shared/Bookmarks";
 import {RemoteIconInfo} from "tc-shared/file/Icons";
 import {connectionHistory} from "tc-shared/connectionlog/History";
 import {spawnModalAddCurrentServerToBookmarks} from "tc-shared/ui/modal/bookmarks-add-server/Controller";
+import {LogCategory, logTrace} from "tc-shared/log";
 
 function renderConnectionItems() {
     const items: MenuBarEntry[] = [];
@@ -52,7 +53,9 @@ function renderConnectionItems() {
     return items;
 }
 
+let bookmarkServerUniqueIds: string[] = [];
 async function renderBookmarkItems() {
+    bookmarkServerUniqueIds = [];
     const bookmarkList = bookmarks.getOrderedRegisteredBookmarks();
 
     const bookmarkItems: MenuBarEntry[] = [];
@@ -66,15 +69,17 @@ async function renderBookmarkItems() {
             let icon: RemoteIconInfo;
 
             try {
-                const connectInfo = await connectionHistory.lastConnectInfo(bookmark.entry.serverAddress, "address");
+                const connectInfo = await connectionHistory.lastConnectInfo(bookmark.entry.serverAddress, "address", true);
                 if(connectInfo) {
+                    bookmarkServerUniqueIds.push(connectInfo.serverUniqueId);
                     const info = await connectionHistory.queryServerInfo(connectInfo.serverUniqueId);
                     if(info && info.iconId > 0) {
                         icon = { iconId: info.iconId, serverUniqueId: connectInfo.serverUniqueId };
                     }
                 }
-            } catch (_) {
-                /* no need for any error handling */
+            } catch (error) {
+                /* No need to warn in prod build */
+                logTrace(LogCategory.BOOKMARKS, "Failed to query last connect info: %o", error);
             }
 
             parentList.push({
@@ -363,6 +368,16 @@ class MenuBarUpdateListener {
         }));
         this.generalHandlerEvents.push(server_connections.events().on("notify_active_handler_changed", () => updateMenuBar()));
         this.generalHandlerEvents.push(bookmarks.events.on(["notify_bookmark_deleted", "notify_bookmark_created", "notify_bookmark_edited", "notify_bookmarks_imported"], () => updateMenuBar()));
+        this.generalHandlerEvents.push(connectionHistory.events.on("notify_server_info_updated", event => {
+            if(bookmarkServerUniqueIds.indexOf(event.serverUniqueId) === -1) {
+                return;
+            }
+
+            if(event.keys.indexOf("iconId") !== -1) {
+                /* An icon for a bookmark has changed. Send the menu bar with the new icons. */
+                updateMenuBar();
+            }
+        }));
         server_connections.getAllConnectionHandlers().forEach(handler => this.registerHandlerEvents(handler));
     }
 

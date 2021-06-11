@@ -109,7 +109,7 @@ const BookmarkListEntryRenderer = React.memo((props: { entry: BookmarkListEntry 
                 events.fire("action_connect", { uniqueId: props.entry.uniqueId, newTab: false, closeModal: true });
             }}
             onContextMenu={event => {
-                event.preventDefault();
+                event.stopPropagation();
 
                 if(selectedItem.remoteValue?.id !== props.entry.uniqueId) {
                     selectedItem.setValue({ id: props.entry.uniqueId });
@@ -195,9 +195,8 @@ const BookmarkList = React.memo(() => {
         <div
             className={cssStyle.containerBookmarks}
             onContextMenu={event => {
-                event.preventDefault();
-
                 if(bookmarks.length === 0) {
+                    /* We've an extra overlay for not having any bookmarks. */
                     return;
                 }
 

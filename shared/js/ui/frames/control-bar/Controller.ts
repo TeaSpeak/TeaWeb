@@ -23,6 +23,8 @@ import {connectionHistory} from "tc-shared/connectionlog/History";
 import {RemoteIconInfo} from "tc-shared/file/Icons";
 import {spawnModalAddCurrentServerToBookmarks} from "tc-shared/ui/modal/bookmarks-add-server/Controller";
 import {getAudioBackend, OutputDevice} from "tc-shared/audio/Player";
+import {ignorePromise} from "tc-shared/proto";
+import {LogCategory, logTrace} from "tc-shared/log";
 
 class InfoController {
     private readonly mode: ControlBarMode;
@@ -33,6 +35,8 @@ class InfoController {
     private globalHandlerRegisteredEvents: {[key: string]: (() => void)[]} = {};
     private handlerRegisteredEvents: (() => void)[] = [];
     private defaultRecorderListener: () => void;
+
+    private bookmarkServerUniqueIds: string[] = [];
 
     constructor(events: Registry<ControlBarEvents>, mode: ControlBarMode) {
         this.events = events;
@@ -61,6 +65,16 @@ class InfoController {
             this.sendVideoState("camera");
         }));
         bookmarks.events.on(["notify_bookmark_edited", "notify_bookmark_created", "notify_bookmark_deleted", "notify_bookmarks_imported"], () => this.sendBookmarks());
+        events.push(connectionHistory.events.on("notify_server_info_updated", event => {
+            if(this.bookmarkServerUniqueIds.indexOf(event.serverUniqueId) === -1) {
+                return;
+            }
+
+            if(event.keys.indexOf("iconId") !== -1) {
+                /* An icon for a bookmark has changed. Send the full new list. */
+                ignorePromise(this.sendBookmarks());
+            }
+        }));
         events.push(getVideoDriver().getEvents().on("notify_device_list_changed", () => this.sendCameraList()));
         events.push(getRecorderBackend().getDeviceList().getEvents().on("notify_list_updated", () => this.sendMicrophoneList()));
         events.push(defaultRecorderEvents.on("notify_default_recorder_changed", () => {
@@ -202,7 +216,9 @@ class InfoController {
         });
     }
 
+    /* Note: This method might be executed concurrently */
     public async sendBookmarks() {
+        this.bookmarkServerUniqueIds = [];
         const bookmarkList = bookmarks.getOrderedRegisteredBookmarks();
 
         const parent: Bookmark[] = [];
@@ -216,15 +232,17 @@ class InfoController {
                 let icon: RemoteIconInfo;
 
                 try {
-                    const connectInfo = await connectionHistory.lastConnectInfo(bookmark.entry.serverAddress, "address");
+                    const connectInfo = await connectionHistory.lastConnectInfo(bookmark.entry.serverAddress, "address", true);
                     if(connectInfo) {
+                        this.bookmarkServerUniqueIds.push(connectInfo.serverUniqueId);
                         const info = await connectionHistory.queryServerInfo(connectInfo.serverUniqueId);
                         if(info && info.iconId > 0) {
                             icon = { iconId: info.iconId, serverUniqueId: connectInfo.serverUniqueId };
                         }
                     }
-                } catch (_) {
-                    /* no need for any error handling */
+                } catch (error) {
+                    /* No need to warn in prod build */
+                    logTrace(LogCategory.BOOKMARKS, "Failed to query last connect info: %o", error);
                 }
 
                 parentList.push({

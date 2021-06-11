@@ -167,16 +167,6 @@ html:root {
             right: 0;
         }
 
-        .iconContainer {
-            margin-right: .25em;
-
-            display: flex;
-            flex-direction: column;
-
-            flex-shrink: 0;
-            flex-grow: 0;
-        }
-
         .dropdownEntry {
             position: relative;
 
@@ -305,4 +295,11 @@ html:root {
         transform: rotate(45deg);
         -webkit-transform: rotate(45deg);
     }
+}
+
+.iconContainer {
+    margin-right: .25em;
+
+    display: flex;
+    flex-direction: column;
 }

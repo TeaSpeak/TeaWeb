@@ -3,6 +3,8 @@
     - Fixed the bug that cause the file transfer to timeout if the user hasn't been quick enough to save his file
     - Fixed the emoji picker being cut off
     - Fixed the file transfer sidebar not working
+    - Instantly reflect changes to the server icon for the bookmark menu bar
+    - Fixed a bug which prevented the proper context menu appear within the bookmark manage modal
   
 * **26.05.21**
     - Fixed automated builds

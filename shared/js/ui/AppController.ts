@@ -127,7 +127,7 @@ export class AppController {
 }
 
 export let appViewController: AppController;
-loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
+loader.register_task(Stage.LOADED, {
     name: "app view",
     function: async () => {
         appViewController = new AppController();
@@ -137,5 +137,5 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
         (window as any).AppController = AppController;
         (window as any).appViewController = appViewController;
     },
-    priority: 0
+    priority: 100
 });

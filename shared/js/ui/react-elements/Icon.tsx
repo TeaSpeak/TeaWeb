@@ -64,7 +64,7 @@ export const RemoteIconRenderer = React.memo((props: { icon: RemoteIcon | undefi
             }
 
             return (
-                <IconUrl iconUrl={props.icon.getImageUrl()} title={props.title || ("icon " + props.icon.iconId)} key={"icon-" + props.icon.iconId} />
+                <IconUrl iconUrl={props.icon.getImageUrl()} title={props.title || ("icon " + props.icon.iconId)} key={"icon-" + props.icon.iconId} className={props.className} />
             );
 
         case "loading":
