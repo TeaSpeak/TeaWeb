@@ -16,14 +16,10 @@ else
     exit 1
 fi
 
-# FIXME: This dosn't work anymore
-zip_file=$(find "$PACKAGES_DIRECTORY" -maxdepth 1 -name "TeaWeb-release*.zip" -print)
-[[ $(echo "$zip_file" | wc -l) -ne 1 ]] && {
-    echo "Invalid .zip file count (Expected 1 but got $(echo "$zip_file" | wc -l)): ${zip_file[*]}"
-    exit 1
-}
-[[ ! -e "$zip_file" ]] && {
-    echo "File ($zip_file) does not exists"
+# We're only using the release packages even on the development branch
+zip_file=$(find_release_package "web" "release")
+[[ $? -ne "$zip_file" ]] && {
+    echo "TeaWeb release package does not exists ($zip_file)"
     exit 1
 }
 
