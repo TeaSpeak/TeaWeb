@@ -59,6 +59,6 @@ export class ChannelFileBrowserController {
     }
 
     private notifyEvents() {
-        this.uiEvents.fire_react("notify_events", { browserEvents: this.remoteBrowseEvents, channelId: this.currentChannel?.channelId });
+        this.uiEvents.fire_react("notify_events", { browserEvents: this.remoteBrowseEvents.generateIpcDescription(), channelId: this.currentChannel?.channelId });
     }
 }

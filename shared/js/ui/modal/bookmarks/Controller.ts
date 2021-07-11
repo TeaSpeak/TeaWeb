@@ -567,7 +567,7 @@ class BookmarkModalController {
         }
 
         return this.bookmarkUniqueServerIds[bookmarkId] = (async () => {
-            const info = await connectionHistory.lastConnectInfo(bookmark.serverAddress, "address");
+            const info = await connectionHistory.lastConnectInfo(bookmark.serverAddress, "address", true);
             if(!info) {
                 return undefined;
             }

@@ -41,7 +41,7 @@ const ExpendArrow = React.memo(() => {
         return false;
     });
 
-    events.reactUse("notify_expended", event => setExpended(event.expended), undefined, [ setExpended ]);
+    events.reactUse("notify_expended", event => setExpended(event.expended), undefined, []);
 
     return (
         <div className={cssStyle.expendArrow} onClick={() => events.fire("action_toggle_expended", { expended: !expended })}>
@@ -776,8 +776,8 @@ const VisibilityHandler = React.memo((props: {
         return false;
     })
 
-    events.reactUse("notify_videos", event => setStreamingCount(event.videoActiveCount));
-    events.reactUse("notify_expended", event => setExpanded(event.expended));
+    events.reactUse("notify_videos", event => setStreamingCount(event.videoActiveCount), []);
+    events.reactUse("notify_expended", event => setExpanded(event.expended), []);
     return (
         <div className={joinClassList(cssStyle.container, streamingCount === 0 && cssStyle.hidden, expanded && cssStyle.expended)}>
             {props.children}

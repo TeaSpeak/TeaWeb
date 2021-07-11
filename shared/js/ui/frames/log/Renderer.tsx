@@ -43,22 +43,23 @@ const LogEntryRenderer = React.memo((props: { entry: LogMessage }) => {
     );
 });
 
-const ServerLogRenderer = () => {
+const ServerLogRenderer = (props: { backlog?: number }) => {
+    const backlog = typeof props.backlog === "number" ? props.backlog : 100;
     const handlerId = useContext(HandlerIdContext);
     const events = useContext(EventsContext);
+
+    const refContainer = useRef<HTMLDivElement>();
+    const scrollOffset = useRef<number | "bottom">("bottom");
+
+    const [ , setRevision ] = useState(0);
     const [ logs, setLogs ] = useDependentState<LogMessage[] | "loading">(() => {
         events.fire_react("query_log");
         return "loading";
     }, [ handlerId ]);
 
-    const [ revision, setRevision ] = useState(0);
-
-    const refContainer = useRef<HTMLDivElement>();
-    const scrollOffset = useRef<number | "bottom">("bottom");
-
     events.reactUse("notify_log", event => {
         const logs = event.events.slice(0);
-        logs.splice(0, Math.max(0, logs.length - 100));
+        logs.splice(0, Math.max(0, logs.length - backlog));
         logs.sort((a, b) => a.timestamp - b.timestamp);
         setLogs(logs);
     });
@@ -69,10 +70,10 @@ const ServerLogRenderer = () => {
         }
 
         logs.push(event.event);
-        logs.splice(0, Math.max(0, logs.length - 100));
+        logs.splice(0, Math.max(0, logs.length - backlog));
         logs.sort((a, b) => a.timestamp - b.timestamp);
-        setRevision(revision + 1);
-    });
+        setRevision(performance.now());
+    }, logs !== "loading", [ logs ]);
 
     const fixScroll = () => {
         if(!refContainer.current) {

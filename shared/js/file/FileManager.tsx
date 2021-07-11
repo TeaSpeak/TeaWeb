@@ -549,9 +549,11 @@ export class FileManager {
         const initializeCallback = async () => {
             try {
                 transfer.target = await transfer.targetSupplier(transfer);
-                if(!transfer.target)
+                if(!transfer.target) {
                     throw tr("Failed to create transfer target");
+                }
 
+                transfer.lastStateUpdate = Date.now();
                 await this.connectionHandler.serverConnection.send_command("ftinitdownload", {
                     "path": options.path,
                     "name": options.name,
@@ -565,7 +567,6 @@ export class FileManager {
                 if(transfer.transferState() === FileTransferState.INITIALIZING) {
                     throw tr("missing transfer start notify");
                 }
-
             } catch (error) {
                 transfer.setFailed({
                     error: "initialize",
@@ -588,9 +589,11 @@ export class FileManager {
         const initializeCallback = async () => {
             try {
                 transfer.source = await transfer.sourceSupplier(transfer);
-                if(!transfer.source)
+                if(!transfer.source) {
                     throw tr("Failed to create transfer source");
+                }
 
+                transfer.lastStateUpdate = Date.now();
                 transfer.fileSize = await transfer.source.fileSize();
                 await this.connectionHandler.serverConnection.send_command("ftinitupload", {
                     "path": options.path,
@@ -604,14 +607,15 @@ export class FileManager {
                     "proto": 1
                 }, { process_result: options.processCommandResult });
 
-                if(transfer.transferState() === FileTransferState.INITIALIZING)
+                if(transfer.transferState() === FileTransferState.INITIALIZING) {
                     throw tr("missing transfer start notify");
+                }
 
             } catch (error) {
                 transfer.setFailed({
                     error: "initialize",
                     commandResult: error
-                }, error instanceof CommandResult ? error.formattedMessage() : typeof error === "string" ? error : tr("Lookup the console"));
+                }, error instanceof CommandResult ? error.formattedMessage() : typeof error === "string" ? error : tr("lookup the console"));
             }
         };
 
@@ -735,8 +739,18 @@ export class FileManager {
                         /* Transfer is locally pending because of some limits */
                         return false;
 
-                    case FileTransferState.CONNECTING:
                     case FileTransferState.INITIALIZING:
+                        if(entry instanceof FileDownloadTransfer) {
+                            if(!entry.target) {
+                                /* We're still prompting the user for a target file location. Lets apply a timeout of 1 min. */
+                                if(entry.transfer.lastStateUpdate < Date.now() + 60 * 1000) {
+                                    return false;
+                                }
+                            }
+                        }
+                        return true;
+
+                    case FileTransferState.CONNECTING:
                     case FileTransferState.RUNNING:
                         /* These states can time out */
                         return true;

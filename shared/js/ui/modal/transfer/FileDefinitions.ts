@@ -132,7 +132,6 @@ export interface FileBrowserEvents {
         path: string,
         status: "success" | "timeout" | "error";
         error?: string;
-        pathInfo?: PathInfo
     },
 
     notify_transfer_start: {

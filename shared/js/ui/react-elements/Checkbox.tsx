@@ -29,7 +29,7 @@ export class Checkbox extends React.Component<CheckboxProperties, CheckboxState>
 
     render() {
         const disabled = typeof this.state.disabled === "boolean" ? this.state.disabled : this.props.disabled;
-        const checked = typeof this.props.value === "boolean" ? this.props.value : typeof this.state.checked === "boolean" ? this.state.checked : this.props.initialValue;
+        const checked = (typeof this.props.value === "boolean" ? this.props.value : typeof this.state.checked === "boolean" ? this.state.checked : this.props.initialValue) || false;
         const disabledClass = disabled ? cssStyle.disabled : "";
 
         return (

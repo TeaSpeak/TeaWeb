@@ -80,16 +80,14 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
 
     events.on("action_navigate_to", event => {
         try {
-            const info = parsePath(event.path, connection);
 
-            currentPathInfo = info;
+            currentPathInfo = parsePath(event.path, connection);
             currentPath = event.path;
             selection = [];
 
             events.fire_react("notify_current_path", {
                 path: event.path || "/",
                 status: "success",
-                pathInfo: info
             });
         } catch (error) {
             events.fire_react("notify_current_path", {
@@ -382,7 +380,6 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
     events.on("query_current_path", () => events.fire_react("notify_current_path", {
         status: "success",
         path: currentPath,
-        pathInfo: currentPathInfo
     }));
 
     events.on("action_rename_file_result", result => {
@@ -689,12 +686,13 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         });
     });
 
-    events.on("action_start_download", event => {
-        event.files.forEach(file => {
+    events.on("action_start_download", async event => {
+        for(const file of event.files) {
             try {
                 let targetSupplier;
                 if (__build.target === "client" && TransferProvider.provider().targetSupported(TransferTargetType.FILE)) {
-                    const target = TransferProvider.provider().createFileTarget(undefined, file.name);
+                    /* Get the target file path before we're actiually starting to download the file */
+                    const target = await TransferProvider.provider().createFileTarget(undefined, file.name);
                     targetSupplier = async () => target;
                 } else if (TransferProvider.provider().targetSupported(TransferTargetType.DOWNLOAD)) {
                     targetSupplier = async () => await TransferProvider.provider().createDownloadTarget();
@@ -720,7 +718,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             } catch (error) {
                 logError(LogCategory.FILE_TRANSFER, tr("Failed to parse path for file download: %s"), error);
             }
-        });
+        }
     });
 
     events.on("action_start_upload", event => {
