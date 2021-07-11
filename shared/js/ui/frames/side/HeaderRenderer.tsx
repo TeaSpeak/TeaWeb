@@ -116,7 +116,7 @@ const BlockPing = () => {
         return undefined;
     });
 
-    events.reactUse("notify_ping", event => setPingInfo(event.ping));
+    events.reactUse("notify_ping", event => setPingInfo(event.ping), undefined, [ ]);
 
     let value, title;
     if(!pingInfo) {
