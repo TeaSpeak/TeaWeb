@@ -1,5 +1,8 @@
 # Changelog:
 * **11.06.21**
+    - Fixed a bug which cause the video bar to not be retractable
+  
+* **11.06.21**
     - Fixed the bug that cause the file transfer to timeout if the user hasn't been quick enough to save his file
     - Fixed the emoji picker being cut off
     - Fixed the file transfer sidebar not working
