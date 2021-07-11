@@ -8,8 +8,7 @@ import {
     kIPCAvatarChannel,
     setGlobalAvatarManagerFactory, uniqueId2AvatarId
 } from "../file/Avatars";
-import {getIpcInstance, IPCChannel} from "../ipc/BrowserIPC";
-import {AppParameters} from "../settings";
+import {IPCChannel} from "../ipc/BrowserIPC";
 import {ChannelMessage} from "../ipc/BrowserIPC";
 import {guid} from "../crypto/uid";
 import { tr } from "tc-shared/i18n/localize";
@@ -144,9 +143,12 @@ class RemoteAvatarManager extends AbstractAvatarManager {
 
     handleAvatarEvent(type: string, payload: any) {
         const avatar = this.knownAvatars.find(e => e.avatarId === payload.avatarId);
-        if(!avatar) return;
+        if(!avatar) {
+            return;
+        }
 
-        avatar.events.fire(type as any, payload, true);
+        delete payload.type;
+        avatar.events.fire(type as any, payload);
     }
 }
 
