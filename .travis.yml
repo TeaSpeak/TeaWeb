@@ -19,7 +19,8 @@ stages:
 jobs:
   include:
     - stage: compile
-      script: "./scripts/travis/build.sh --enable-release --enable-debug || travis_terminate 1;"
+      # script: "./scripts/travis/build.sh --enable-release --enable-debug || travis_terminate 1;"
+      script: "./scripts/travis/build.sh --enable-release || travis_terminate 1;"
 
 deploy:
   - provider: script
@@ -28,12 +29,12 @@ deploy:
     skip_cleanup: true
     on:
       branch: develop
-#  - provider: script
-#    cleanup: false
-#    skip_cleanup: true
-#    script: "bash scripts/travis/deploy_docker.sh development"
-#    on:
-#      branch: develop
+  - provider: script
+    cleanup: false
+    skip_cleanup: true
+    script: "bash scripts/travis/deploy_docker.sh development"
+    on:
+      branch: develop
   - provider: script
     script: "bash scripts/travis/deploy_server.sh production"
     cleanup: false
@@ -46,9 +47,9 @@ deploy:
     script: "bash scripts/travis/deploy_github.sh"
     on:
       branch: master
-#  - provider: script
-#    cleanup: false
-#    skip_cleanup: true
-#    script: "bash  scripts/travis/deploy_docker.sh release"
-#    on:
-#      branch: master
+  - provider: script
+    cleanup: false
+    skip_cleanup: true
+    script: "bash  scripts/travis/deploy_docker.sh release"
+    on:
+      branch: master

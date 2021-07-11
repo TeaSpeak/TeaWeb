@@ -87,6 +87,6 @@ upload_package() {
   fi
 }
 
-upload_package "development"
+# upload_package "development"
 upload_package "release"
 exit 0
