@@ -73,7 +73,7 @@ const ServerLogRenderer = (props: { backlog?: number }) => {
         logs.splice(0, Math.max(0, logs.length - backlog));
         logs.sort((a, b) => a.timestamp - b.timestamp);
         setRevision(performance.now());
-    });
+    }, logs !== "loading", [ logs ]);
 
     const fixScroll = () => {
         if(!refContainer.current) {
