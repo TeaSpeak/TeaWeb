@@ -2852,7 +2852,7 @@
             }
         },
         {
-            "translated": "Server password",
+            "translated": "Server Passwort",
             "flags": [
                 "google-translate",
                 "in-use-system",
@@ -20211,7 +20211,7 @@
             }
         },
         {
-            "translated": "Server-Passwort",
+            "translated": "Server Passwort",
             "flags": [
                 "google-translate",
                 "ui-visible",
@@ -28166,9 +28166,9 @@
             "key": {
                 "message": "Collapse all channels"
             },
-            "translated": "Reduzieren Sie alle Channels",
+            "translated": "Alle Channels einklappen",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "in-use-system"
             ]
         },
@@ -28178,7 +28178,7 @@
             },
             "translated": "Verbrauchen Sie alle Channels",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "in-use-system"
             ]
         },
@@ -28186,9 +28186,9 @@
             "key": {
                 "message": "Delete all channels"
             },
-            "translated": "Löschen Sie alle Channels",
+            "translated": "Alle Kanäle löschen",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "in-use-system"
             ]
         },
@@ -28206,9 +28206,9 @@
             "key": {
                 "message": "Apply to all channels"
             },
-            "translated": "Auf alle Channels anwenden",
+            "translated": "Auf alle Kanäle anwenden",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "in-use-system"
             ]
         },
@@ -29265,9 +29265,9 @@
             "key": {
                 "message": "Invalid channel id (ID is NaN)"
             },
-            "translated": "Ungültige Channel-ID (ID ist NaN)",
+            "translated": "Ungültige Kanal-ID (ID ist NaN)",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "in-use-system"
             ]
         },
@@ -29275,9 +29275,9 @@
             "key": {
                 "message": "Channel not visible anymore"
             },
-            "translated": "Channel nicht mehr sichtbar",
+            "translated": "Kanal nicht mehr sichtbar",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "in-use-system"
             ]
         },
@@ -29917,7 +29917,7 @@
             "key": {
                 "message": "Collapse all channels"
             },
-            "translated": "Reduzieren Sie alle Channels",
+            "translated": "Alle Channels einklappen",
             "flags": [
                 "google-translated",
                 "in-use-system"
@@ -29927,7 +29927,7 @@
             "key": {
                 "message": "Expend all channels"
             },
-            "translated": "Verbrauchen Sie alle Channels",
+            "translated": "Alle Kanäle ausklappen",
             "flags": [
                 "google-translated",
                 "in-use-system"
