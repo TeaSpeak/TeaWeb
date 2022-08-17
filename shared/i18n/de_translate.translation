@@ -28166,7 +28166,7 @@
             "key": {
                 "message": "Collapse all channels"
             },
-            "translated": "Alle Channels einklappen",
+            "translated": "Alle Kanäle einklappen",
             "flags": [
                 "human-verified",
                 "in-use-system"
@@ -28176,7 +28176,7 @@
             "key": {
                 "message": "Expend all channels"
             },
-            "translated": "Verbrauchen Sie alle Channels",
+            "translated": "Alle Kanäle ausklappen",
             "flags": [
                 "human-verified",
                 "in-use-system"
@@ -29929,7 +29929,7 @@
             },
             "translated": "Alle Kanäle ausklappen",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "in-use-system"
             ]
         },
