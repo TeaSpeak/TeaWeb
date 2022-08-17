@@ -27688,7 +27688,7 @@
             "key": {
                 "message": "Create group using this template"
             },
-            "translated": "Gruppe mit dieser Vorlage ersetellen",
+            "translated": "Gruppe mit dieser Vorlage erstellen",
             "flags": [
                 "human-verified",
                 "ui-visible",
