@@ -1527,9 +1527,9 @@
             }
         },
         {
-            "translated": "Du wurdest gestoßen!",
+            "translated": "Sie wurden angestupst!",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "in-use-system"
             ],
             "key": {
@@ -3454,9 +3454,9 @@
             }
         },
         {
-            "translated": "Verwalten Sie den virtuellen Server",
+            "translated": "Virtuellen Server verwalten",
             "flags": [
-                "google-translate"
+                "human-verified",
             ],
             "key": {
                 "message": "Manager the  Virtual Server"
@@ -4284,9 +4284,9 @@
             }
         },
         {
-            "translated": "Wirt",
+            "translated": "Host",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -4306,18 +4306,18 @@
             }
         },
         {
-            "translated": "Wirt:",
+            "translated": "Host:",
             "flags": [
-                "google-translate"
+                "human-verified",
             ],
             "key": {
                 "message": "Host:"
             }
         },
         {
-            "translated": "Hafen:",
+            "translated": "Port:",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Port:"
@@ -4809,7 +4809,7 @@
             }
         },
         {
-            "translated": "Aktivieren Sie die Berichterstellung für die TeamSpeak-Serverliste",
+            "translated": "Berichterstellung für die TeamSpeak-Serverliste aktivieren",
             "flags": [
                 "google-translate",
                 "ui-visible",
@@ -4820,7 +4820,7 @@
             }
         },
         {
-            "translated": "<del> Aktivieren Sie das Reporting für die TeaSpeak-Serverliste </del> (TeaSpeak unterstützt diese Einstellung nicht)",
+            "translated": "<del> Reporting für die TeaSpeak-Serverliste aktivieren </del> (TeaSpeak unterstützt diese Einstellung nicht)",
             "flags": [
                 "google-translate"
             ],
@@ -5851,9 +5851,9 @@
             }
         },
         {
-            "translated": "Du wurdest von ...",
+            "translated": "Sie wurden angestupst von ...",
             "flags": [
-                "google-translate"
+                "human-verified",
             ],
             "key": {
                 "message": "You have been poked by"
@@ -6712,7 +6712,7 @@
             }
         },
         {
-            "translated": "Erstellen Sie einen neuen Dateidownload für%s:%s (Schlüssel:%s, erwartet %d Bytes).",
+            "translated": "Neuen Dateidownload für%s:%s erstellen (Schlüssel:%s, erwartet %d Bytes).",
             "flags": [
                 "google-translate"
             ],
@@ -7444,9 +7444,9 @@
             }
         },
         {
-            "translated": "Sich bewerben",
+            "translated": "Übernehmen",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -8047,7 +8047,7 @@
             }
         },
         {
-            "translated": "Du musst verbunden sein",
+            "translated": "Sie müssen verbunden sein",
             "flags": [
                 "google-translate",
                 "in-use-system"
@@ -8057,7 +8057,7 @@
             }
         },
         {
-            "translated": "Du musst verbunden sein!",
+            "translated": "Sie müssen verbunden sein!",
             "flags": [
                 "google-translate",
                 "in-use-system"
@@ -11385,7 +11385,7 @@
             }
         },
         {
-            "translated": "Aktivieren Sie Ihr Mikrofon auf diesem Server",
+            "translated": "Mikrofon auf diesem Server aktivieren",
             "flags": [
                 "google-translate",
                 "in-use-system"
@@ -11637,9 +11637,9 @@
             }
         },
         {
-            "translated": "Du wurdest verboten",
+            "translated": "Sie wurden gebannt",
             "flags": [
-                "google-translate"
+                "human-verified",
             ],
             "key": {
                 "message": "You've been banned"
@@ -11976,7 +11976,7 @@
             }
         },
         {
-            "translated": "Verbindung trennen zum aktuellen Server",
+            "translated": "Verbindung vom aktuellen Server trennen",
             "flags": [
                 "human-verified",
                 "in-use-system",
@@ -11998,7 +11998,7 @@
             }
         },
         {
-            "translated": "Abwesend melden, auf diesem Server",
+            "translated": "Auf diesem Server als abwesend setzen",
             "flags": [
                 "human-verified",
                 "ui-visible",
@@ -12040,7 +12040,7 @@
             }
         },
         {
-            "translated": "Gehen Sie für alle Server online",
+            "translated": "Für alle Server online gehen",
             "flags": [
                 "google-translate",
                 "ui-visible",
@@ -14139,9 +14139,9 @@
             }
         },
         {
-            "translated": "Du darfst maximal verbieten",
+            "translated": "Sie dürfen maximal bannen",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "in-use-system"
             ],
             "key": {
@@ -14149,9 +14149,9 @@
             }
         },
         {
-            "translated": "Du darfst <b>permanent</b> verbieten.",
+            "translated": "Sie dürfen <b>permanent</b> verbieten.",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "in-use-system"
             ],
             "key": {
@@ -14299,7 +14299,7 @@
             }
         },
         {
-            "translated": "Bitte geben Sie Ihren Token / Privileg-Schlüssel ein",
+            "translated": "Bitte Token / Privileg-Schlüssel eingeben",
             "flags": [
                 "google-translate",
                 "in-use-system"
@@ -14329,9 +14329,9 @@
             }
         },
         {
-            "translated": "Du wurdest getreten",
+            "translated": "Sie wurden gekickt",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "in-use-system"
             ],
             "key": {
@@ -15085,7 +15085,7 @@
             }
         },
         {
-            "translated": "Verwalten Sie den virtuellen Server",
+            "translated": "Virtuellen Server verwalten",
             "flags": [
                 "google-translate",
                 "in-use-system"
@@ -16108,7 +16108,7 @@
             }
         },
         {
-            "translated": "Du hast {} mal verbunden",
+            "translated": "Sie haben {} mal verbunden",
             "flags": [
                 "google-translate",
                 "in-use-system"
@@ -17433,9 +17433,9 @@
             }
         },
         {
-            "translated": "Du sprichst in Channel",
+            "translated": "Sie sprechen im Kanal",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -17444,9 +17444,9 @@
             }
         },
         {
-            "translated": "Deine Ping",
+            "translated": "Dein Ping",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -17455,7 +17455,7 @@
             }
         },
         {
-            "translated": "Zum Channel Chat wechseln",
+            "translated": "Zum Kanal-Chat wechseln",
             "flags": [
                 "human-verified",
                 "ui-visible",
@@ -17469,6 +17469,7 @@
             "translated": "Private Chats",
             "flags": [
                 "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -17477,18 +17478,20 @@
             }
         },
         {
-            "translated": "Du hast noch keine Chats!",
+            "translated": "Sie haben noch keine Chats!",
             "flags": [
-                "google-translate"
+                "google-translate",
+                "human-verified"
             ],
             "key": {
                 "message": "You&nbsp;dont&nbsp;have any&nbsp;chats&nbsp;yet!"
             }
         },
         {
-            "translated": "Partner schreibt ...",
+            "translated": "Partner schreibt...",
             "flags": [
-                "google-translate"
+                "google-translate",
+                "human-verified"
             ],
             "key": {
                 "message": "Partner is typing..."
@@ -17545,9 +17548,9 @@
             }
         },
         {
-            "translated": "Du kannst nur in deinem eigenen Channel schreiben",
+            "translated": "Sie können nur in Ihrem eigenen Channel schreiben",
             "flags": [
-                "google-translate"
+                "human-verified",
             ],
             "key": {
                 "message": "You're only able to write in your own channel"
@@ -18005,9 +18008,9 @@
             }
         },
         {
-            "translated": "Schlüssel:",
+            "translated": "Slots:",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -18049,9 +18052,9 @@
             }
         },
         {
-            "translated": "Vernetzung",
+            "translated": "Netzwerk",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -18324,9 +18327,9 @@
             }
         },
         {
-            "translated": "Hafen",
+            "translated": "Port",
             "flags": [
-                "google-translate",
+                "human-verified"
                 "ui-visible",
                 "in-use-system"
             ],
@@ -18335,9 +18338,9 @@
             }
         },
         {
-            "translated": "Der Port, an dem der Server empfangsbereit sein soll.",
+            "translated": "Der Port, auf dem der Server bereitstehen soll.",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -18346,9 +18349,9 @@
             }
         },
         {
-            "translated": "Datei download",
+            "translated": "Datei Download",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -19490,9 +19493,9 @@
             }
         },
         {
-            "translated": "Sie können Ihr TeaSpeak-Forum-Konto nicht verwenden. Du bist nicht mit deinem Forum Account verbunden!",
+            "translated": "Sie können Ihr TeaSpeak-Forum-Konto nicht verwenden. Sie sind nicht mit Ihrem Forum Account verbunden!",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -20769,9 +20772,9 @@
             }
         },
         {
-            "translated": "Schlüssel",
+            "translated": "Slots",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ],
@@ -20967,84 +20970,84 @@
             }
         },
         {
-            "key": {
-                "message": "App loaded successfully!"
-            },
             "translated": "App erfolgreich geladen!",
             "flags": [
                 "google-translated",
                 "in-use-system"
             ]
+            "key": {
+                "message": "App loaded successfully!"
+            },
         },
         {
-            "key": {
-                "message": "Client does not support aplayer.set_master_volume()... May client is too old?"
-            },
             "translated": "Client unterstützt aplayer.set_master_volume () nicht ... Ist der Client möglicherweise zu alt?",
             "flags": [
                 "google-translated",
                 "in-use-system"
             ]
+            "key": {
+                "message": "Client does not support aplayer.set_master_volume()... May client is too old?"
+            },
         },
         {
-            "key": {
-                "message": "Failed to initialize default recorder: %o"
-            },
             "translated": "Standardrekorder konnte nicht initialisiert werden:% o",
             "flags": [
                 "google-translated",
                 "in-use-system"
             ]
+            "key": {
+                "message": "Failed to initialize default recorder: %o"
+            },
         },
         {
-            "key": {
-                "message": "Missing aplayer.initializeFromGesture"
-            },
             "translated": "Fehlender aplayer.initializeFromGesture",
             "flags": [
                 "google-translated",
                 "in-use-system"
             ]
+            "key": {
+                "message": "Missing aplayer.initializeFromGesture"
+            },
         },
         {
-            "key": {
-                "message": "Another TeaWeb instance is already running"
-            },
             "translated": "Eine andere TeaWeb-Instanz wird bereits ausgeführt",
             "flags": [
                 "google-translated",
                 "in-use-system"
             ]
+            "key": {
+                "message": "Another TeaWeb instance is already running"
+            },
         },
         {
-            "key": {
-                "message": "Executed connect successfully in another browser window. Closing this window"
-            },
             "translated": "Verbindung in einem anderen Browserfenster erfolgreich ausgeführt. Dieses Fenster schließen",
             "flags": [
                 "google-translated",
                 "in-use-system"
             ]
+            "key": {
+                "message": "Executed connect successfully in another browser window. Closing this window"
+            },
         },
         {
-            "key": {
-                "message": "Connecting successfully within other instance"
-            },
             "translated": "Verbindung in einer anderen Instanz erfolgreich hergestellt",
             "flags": [
                 "google-translated",
                 "in-use-system"
             ]
+            "key": {
+                "message": "Connecting successfully within other instance"
+            },
         },
         {
-            "key": {
-                "message": "Failed to execute connect within other TeaWeb instance. Using this one. Error: %o"
-            },
             "translated": "Verbindung in anderer TeaWeb-Instanz konnte nicht ausgeführt werden. Mit diesem. Fehler:% o",
             "flags": [
                 "google-translated",
                 "in-use-system"
             ]
+            "key": {
+                "message": "Failed to execute connect within other TeaWeb instance. Using this one. Error: %o"
+            },
         },
         {
             "key": {
@@ -24466,7 +24469,7 @@
             "key": {
                 "message": "Enable the BBCode syntax for your chat."
             },
-            "translated": "Aktivieren Sie die BBCode-Syntax für Ihren Chat.",
+            "translated": "BBCode-Syntax für Ihren Chat aktivieren.",
             "flags": [
                 "google-translated",
                 "ui-visible",
@@ -24718,7 +24721,7 @@
             "key": {
                 "message": "It is save to exit this guide at any point and directly jump ahead using the client."
             },
-            "translated": "Du kannst diese Anleitung jederzeit verlassen und mit dem Client direkt durchstarten.",
+            "translated": "Sie können diese Anleitung jederzeit verlassen und mit dem Client direkt durchstarten.",
             "flags": [
                 "human-verified",
                 "ui-visible",
@@ -24729,7 +24732,7 @@
             "key": {
                 "message": "Congratulations,<br>your done setting up TeaSpeak"
             },
-            "translated": "Herzlichen Glückwunsch, <br> Du hast TeaSpeak eingerichtet",
+            "translated": "Herzlichen Glückwunsch, <br> Sie haben TeaSpeak eingerichtet",
             "flags": [
                 "human-verified",
                 "ui-visible",
@@ -24740,7 +24743,7 @@
             "key": {
                 "message": "You're done setting up your client. But dont worry,<br>"
             },
-            "translated": "Du bist mit dem Einrichten deines Clients fertig. Aber mach dir keine Sorgen, <br>",
+            "translated": "Sie sind mit dem Einrichten deines Clients fertig. Aber mach dir keine Sorgen, <br>",
             "flags": [
                 "human-verified",
                 "ui-visible",
@@ -24751,7 +24754,7 @@
             "key": {
                 "message": "your could find all these settings within the settings menu<br>"
             },
-            "translated": "Du findest alle diese Einstellungen im Einstellungsmenü. <br>",
+            "translated": "Sie finden alle diese Einstellungen im Einstellungsmenü. <br>",
             "flags": [
                 "human-verified",
                 "ui-visible",
@@ -26200,7 +26203,7 @@
             "key": {
                 "message": "You joined at"
             },
-            "translated": "Du bist bei beigetreten",
+            "translated": "Sie sind bei beigetreten",
             "flags": [
                 "google-translated",
                 "ui-visible",
@@ -26211,7 +26214,7 @@
             "key": {
                 "message": "You left at"
             },
-            "translated": "Du bist um gegangen",
+            "translated": "Sie sind um gegangen",
             "flags": [
                 "google-translated",
                 "ui-visible",
@@ -27911,9 +27914,9 @@
             "key": {
                 "message": "You received a poke"
             },
-            "translated": "Du hast einen Sack bekommen",
+            "translated": "Sie haben einen Stupser bekommen",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "in-use-system"
             ]
         },
@@ -27921,9 +27924,9 @@
             "key": {
                 "message": "You send a poke"
             },
-            "translated": "Du schickst einen Sack",
+            "translated": "Sie haben einen Stupser gesendet",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "in-use-system"
             ]
         },
@@ -27991,9 +27994,9 @@
             "key": {
                 "message": "You've been moved or kicked"
             },
-            "translated": "Du wurdest bewegt oder getreten",
+            "translated": "Sie wurden verschoben oder gekickt",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "in-use-system"
             ]
         },
@@ -28091,9 +28094,9 @@
             "key": {
                 "message": "Remove key"
             },
-            "translated": "Schlüssel abziehen",
+            "translated": "Schlüssel entfernen",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "in-use-system"
             ]
         },
@@ -29884,9 +29887,9 @@
             "key": {
                 "message": "You've peen poked by"
             },
-            "translated": "Du hast gestochen",
+            "translated": "Sie wurden angestupst von",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "in-use-system"
             ]
         },
@@ -30659,14 +30662,14 @@
             ]
         },
         {
-            "key": {
-                "message": "Open Registry"
-            },
-            "translated": "Öffnen Sie die Registry",
+            "translated": "Registry öffnen",
             "flags": [
                 "human-verified",
                 "in-use-system"
             ]
+            "key": {
+                "message": "Open Registry"
+            },
         },
         {
             "key": {
@@ -31536,9 +31539,9 @@
             "key": {
                 "message": "You can't follow your self"
             },
-            "translated": "Du kannst dir nicht folgen",
+            "translated": "Sie können sich nicht folgen",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "in-use-system"
             ]
         },
@@ -31563,44 +31566,44 @@
             ]
         },
         {
+            "translated": "Client% s aus dem Kanal mit Grund% s kicken",
+            "flags": [
+                "human-verified",
+                "in-use-system"
+            ]
             "key": {
                 "message": "Kicking client %s from channel with reason %s"
             },
-            "translated": "Client% s aus dem Channel mit Grund% s treten",
-            "flags": [
-                "google-translated",
-                "in-use-system"
-            ]
         },
         {
-            "key": {
-                "message": "Kicking client %s from server with reason %s"
-            },
             "translated": "Client% s vom Server mit Grund% s treten",
             "flags": [
                 "google-translated",
                 "in-use-system"
             ]
+            "key": {
+                "message": "Kicking client %s from server with reason %s"
+            },
         },
         {
-            "key": {
-                "message": "failed to create window"
-            },
             "translated": "Fenster konnte nicht erstellt werden",
             "flags": [
                 "google-translated",
                 "in-use-system"
             ]
+            "key": {
+                "message": "failed to create window"
+            },
         },
         {
-            "key": {
-                "message": "Remote window connected with id %s"
-            },
             "translated": "Remote-Fenster mit ID% s verbunden",
             "flags": [
                 "google-translated",
                 "in-use-system"
             ]
+            "key": {
+                "message": "Remote window connected with id %s"
+            },
         },
         {
             "key": {
@@ -33152,9 +33155,9 @@
             "key": {
                 "message": "You poked {}."
             },
-            "translated": "Du hast angestupst {}.",
+            "translated": "Sie haben {} angestupst.",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ]
@@ -33163,9 +33166,9 @@
             "key": {
                 "message": "You received a poke from {}: {}"
             },
-            "translated": "Sie haben einen Stoß von {} erhalten: {}",
+            "translated": "Sie haben einen Stupser von {} erhalten: {}",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ]
@@ -33174,9 +33177,9 @@
             "key": {
                 "message": "You received a poke from {}."
             },
-            "translated": "Sie haben einen Poke von {} erhalten.",
+            "translated": "Sie haben einen Stupser von {} erhalten.",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "ui-visible",
                 "in-use-system"
             ]
@@ -33460,7 +33463,7 @@
             "key": {
             "message": "You received a poke"
             },
-            "translated": "Du wurdest angestubst",
+            "translated": "Sie wurden angestubst",
             "flags": [
                 "human-verified",
                 "in-use-system",
@@ -33471,7 +33474,7 @@
             "key": {
             "message": "You send a poke"
             },
-            "translated": "Du hast jemanden angestupst",
+            "translated": "Sie haben jemanden angestupst",
             "flags": [
                 "human-verified",
                 "in-use-system",
@@ -33482,7 +33485,7 @@
             "key": {
             "message": "You received a private message"
             },
-            "translated": "Du hast eine private Nachricht bekommen",
+            "translated": "Sie haben eine private Nachricht erhalten",
             "flags": [
                 "human-verified",
                 "in-use-system",
@@ -33493,7 +33496,7 @@
             "key": {
             "message": "You send a private message"
             },
-            "translated": "Du hast eine private Nachricht gesendet",
+            "translated": "Sie haben eine private Nachricht gesendet",
             "flags": [
                 "human-verified",
                 "in-use-system",
@@ -33601,7 +33604,7 @@
             "key": {
             "message": "You´ve been banned from the server"
             },
-            "translated": "Du wurdest vom Server verbannt",
+            "translated": "Sie wurden vom Server gebannt",
             "flags": [
                 "human-verified",
                 "in-use-system",
@@ -33623,7 +33626,7 @@
             "key": {
             "message": "You´re connecting to a server"
             },
-            "translated": "Du verbindest dich mit einem Server",
+            "translated": "Sie verbinden sich mit einem Server",
             "flags": [
                 "human-verified",
                 "in-use-system"
@@ -33633,7 +33636,7 @@
             "key": {
             "message": "You´ve successfully connected to the server"
             },
-            "translated": "Du wurdest erfolgreich mit dem Server verbunden",
+            "translated": "Sie wurden erfolgreich mit dem Server verbunden",
             "flags": [
                 "human-verified",
                 "in-use-system",
