@@ -62,7 +62,8 @@
         {
             "translated": "[AudioController] Die Samplerate der Quelle ist nicht gleich der Samplerate der Wiedergabe! (%o | %o)",
             "flags": [
-                "google-translate"
+                "google-translate",
+                "human-verified"
             ],
             "key": {
                 "message": "[AudioController] Source sample rate isn't equal to playback sample rate! ( %o |  %o)"
@@ -694,10 +695,10 @@
             }
         },
         {
-            "translated": "Erstellen Sie einen Musik-Bot",
+            "translated": "Einen Musik-Bot erstellen",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Create music bot"
@@ -733,7 +734,7 @@
             }
         },
         {
-            "translated": "Erstellen Sie einen Unterchannel",
+            "translated": "Einen Unterchannel erstellen",
             "flags": [
                 "human-verified",
                 "in-use-system"
@@ -1235,14 +1236,15 @@
             "translated": "Möchten Sie {0} wirklich löschen?",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Do you really want to delete {0}"
             }
         },
         {
-            "translated": "Bist du dir sicher?",
+            "translated": "Sind Sie sich sicher?",
             "flags": [
                 "human-verified",
                 "in-use-system"
@@ -1345,10 +1347,10 @@
             }
         },
         {
-            "translated": "Verschiebe Kunden in deinen Channel",
+            "translated": "Verschieben Sie Kunden in Ihren Kanal",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Move clients to your channel"
@@ -1408,7 +1410,8 @@
             "translated": "Möchten Sie wirklich löschen?",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Do you really want to delete "
@@ -1544,9 +1547,9 @@
             }
         },
         {
-            "translated": "Sockel angeschlossen",
+            "translated": "Sockel verbunden",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Socket connected"
@@ -1564,9 +1567,9 @@
             }
         },
         {
-            "translated": "Verbindung zu {0}:{1}",
+            "translated": "Verbinden zu {0}:{1}",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Connecting to {0}:{1}"
@@ -1591,9 +1594,9 @@
             }
         },
         {
-            "translated": "Anfrage trennen",
+            "translated": "Verbindungstrennung anfordern",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "request disconnect"
@@ -1603,7 +1606,8 @@
             "translated": "Verbindung geschlossen",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Connection closed"
@@ -1743,7 +1747,8 @@
             "flags": [
                 "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Connected as {0}"
@@ -2918,9 +2923,9 @@
             }
         },
         {
-            "translated": "Erstellen Sie einen neuen Dateidownload für %s: %s (Schlüssel: %s, erwartet %d Bytes).",
+            "translated": "Neuen Dateidownload für %s: %s erstellen (Schlüssel: %s, erwartet %d Bytes).",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Create new file download to  %s: %s (Key:  %s, Expect  %d bytes)"
@@ -5468,7 +5473,7 @@
             }
         },
         {
-            "translated": "Verwenden Sie diesen Bann als globaler Bann",
+            "translated": "Diesen Bann als globalen Bann verwenden",
             "flags": [
                 "human-verified",
                 "ui-visible",
@@ -7417,9 +7422,9 @@
             }
         },
         {
-            "translated": "<b>Verwenden Sie den vererbten Abonnementmodus</b>",
+            "translated": "<b>Vererbten Abonnementmodus verwenden</b>",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "<b>Use inherited subscribe mode</b>"
@@ -8761,9 +8766,9 @@
             }
         },
         {
-            "translated": "Erstellen Sie einen neuen Eintrag",
+            "translated": "Einen neuen Eintrag erstellen",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Create a new entry"
@@ -9227,10 +9232,10 @@
             }
         },
         {
-            "translated": "Erstellen Sie ein Serverabfrage-Login",
+            "translated": "Einen Serverabfrage-Login erstellen",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Create a server query login"
@@ -9548,9 +9553,9 @@
             }
         },
         {
-            "translated": "Erstellen Sie ein Serverabfrage-Login",
+            "translated": "Einen Serverabfrage-Login erstellen",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Create server query login"
@@ -9612,7 +9617,8 @@
             "flags": [
                 "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Connect Profile"
@@ -11000,9 +11006,9 @@
             }
         },
         {
-            "translated": "Erstellen Sie ein neues Lesezeichen / Verzeichnis",
+            "translated": "Ein neues Lesezeichen / Verzeichnis erstellen",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Create new bookmark/directory"
@@ -11038,7 +11044,8 @@
         {
             "translated": "Profil verbinden:",
             "flags": [
-                "google-translate"
+                "google-translate",
+                "human-verified"
             ],
             "key": {
                 "message": "Connect profile:"
@@ -12354,10 +12361,10 @@
             }
         },
         {
-            "translated": "Verwenden Sie den geerbten Abonnementmodus",
+            "translated": "Geerbten Abonnementmodus verwenden",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Use inherited subscribe mode"
@@ -12997,11 +13004,11 @@
             }
         },
         {
-            "translated": "Verwenden Sie die aufgelöste Adresse",
+            "translated": "Aufgelöste Adresse verwenden",
             "flags": [
-                "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Use resolved address"
@@ -13258,10 +13265,10 @@
             }
         },
         {
-            "translated": "Verwenden Sie einen Berechtigungsschlüssel",
+            "translated": "Einen Berechtigungsschlüssel verwenden",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Use a privilege key"
@@ -13278,7 +13285,7 @@
             }
         },
         {
-            "translated": "Verwenden Sie einen Berechtigungsschlüssel",
+            "translated": "Einen Berechtigungsschlüssel verwenden",
             "flags": [
                 "human-verified",
                 "in-use-system"
@@ -15250,7 +15257,7 @@
             }
         },
         {
-            "translated": "Verwenden Sie einen Berechtigungsschlüssel",
+            "translated": "Einen Berechtigungsschlüssel verwenden",
             "flags": [
                 "human-verified",
                 "in-use-system"
@@ -16225,7 +16232,8 @@
             "translated": "Verbindungsprofil für Profil %s zu %s konnte nicht geändert werden",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Failed to change connect profile for profile %s to %s"
@@ -16882,9 +16890,9 @@
             }
         },
         {
-            "translated": "Erstellen Sie eine Channelgruppe",
+            "translated": "Eine Channelgruppe erstellen",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Create a channel group"
@@ -17109,9 +17117,9 @@
             }
         },
         {
-            "translated": "Erstellen Sie eine Servergruppe",
+            "translated": "Eine Servergruppe erstellen",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Create a server group"
@@ -17336,9 +17344,9 @@
             }
         },
         {
-            "translated": "Erstellen Sie eine neue Gruppe",
+            "translated": "Eine neue Gruppe erstellen",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Create a new group"
@@ -17521,10 +17529,10 @@
             }
         },
         {
-            "translated": "Schreiben Sie ihre Nachricht hier...",
+            "translated": "Ihre Nachricht hier schreiben...",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Type your message here..."
@@ -20084,9 +20092,9 @@
             }
         },
         {
-            "translated": "Verwenden Sie die aufgelöste Serveradresse (IP) anstelle der angegebenen Adresse",
+            "translated": "Aufgelöste Serveradresse (IP) anstelle der angegebenen Adresse verwenden",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Use the resolved server address (IP) instead of the given address"
@@ -26394,11 +26402,11 @@
             "key": {
                 "message": "Be the first who talks in here!"
             },
-            "translated": "Sei der Erste, der hier spricht!",
+            "translated": "Seien Sie der Erste, der hier spricht!",
             "flags": [
-                "google-translated",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
