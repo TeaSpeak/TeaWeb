@@ -148,7 +148,8 @@
         {
             "translated": "Ungültiger Objekttyp %s für Eintrag %s",
             "flags": [
-                "google-translate"
+                "google-translate",
+                "human-verified"
             ],
             "key": {
                 "message": "Invalid object type  %s for entry  %s"
@@ -499,9 +500,9 @@
             }
         },
         {
-            "translated": "Fehler beim Anwenden der Remote-Beschreibung: %o",
+            "translated": "Remote-Beschreibung konnte nicht angewendet werden: %o",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Failed to apply remote description:  %o"
@@ -582,7 +583,8 @@
         {
             "translated": "Lokale Beschreibung konnte nicht angewendet werden: %o",
             "flags": [
-                "google-translate"
+                "google-translate",
+                "human-verified"
             ],
             "key": {
                 "message": "Failed to apply local description:  %o"
@@ -608,9 +610,9 @@
             }
         },
         {
-            "translated": "Stimme von einem unbekannten Kunden haben? (ClientID: %o)",
+            "translated": "Stimme von einem unbekannten Client haben? (ClientID: %o)",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Having  voice from unknown client? (ClientID:  %o)"
@@ -676,19 +678,21 @@
             }
         },
         {
-            "translated": "Geänderte Channeleigenschaften von Channel %s: %o",
+            "translated": "Geänderte Kanaleigenschaften von Kanal %s: %o",
             "flags": [
-                "google-translate"
+                "google-translate",
+                "human-verified"
             ],
             "key": {
                 "message": "Changed channel properties of channel  %s:  %o"
             }
         },
         {
-            "translated": "Channel löschen",
+            "translated": "Kanal löschen",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Delete channel"
@@ -734,7 +738,7 @@
             }
         },
         {
-            "translated": "Einen Unterchannel erstellen",
+            "translated": "Einen Unterkanal erstellen",
             "flags": [
                 "human-verified",
                 "in-use-system"
@@ -744,7 +748,7 @@
             }
         },
         {
-            "translated": "Cannel erstellen",
+            "translated": "Kanal erstellen",
             "flags": [
                 "human-verified",
                 "in-use-system"
@@ -763,9 +767,10 @@
             }
         },
         {
-            "translated": "Erhaltener Channelname: %o",
+            "translated": "Erhaltener Kanalname: %o",
             "flags": [
-                "google-translate"
+                "google-translate",
+                "human-verified"
             ],
             "key": {
                 "message": "Got channel name:  %o"
@@ -808,20 +813,20 @@
             }
         },
         {
-            "translated": "Channel-Passwort",
+            "translated": "Kanalpasswort",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Channel password"
             }
         },
         {
-            "translated": "Channel Passwort:",
+            "translated": "Kanalpasswort:",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Channel password:"
@@ -919,10 +924,10 @@
             }
         },
         {
-            "translated": "Channelgruppe setzen",
+            "translated": "Kanalgruppe festlegen",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Set channel group"
@@ -972,16 +977,17 @@
             "translated": "Beschreibung ändern",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Change description"
             }
         },
         {
-            "translated": "Kundenbeschreibung ändern",
+            "translated": "Clientbeschreibung ändern",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "in-use-system"
             ],
             "key": {
@@ -992,7 +998,8 @@
             "translated": "Neue Beschreibung: <br>",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "New description:<br>"
@@ -1081,7 +1088,8 @@
             "translated": "Eigene Beschreibung ändern",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Change own description"
@@ -1147,7 +1155,8 @@
             "translated": "Bot-Beschreibung ändern",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Change bot description"
@@ -1157,7 +1166,8 @@
             "translated": "Beschreibung der Musik-Bots ändern",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Change music bots description"
@@ -1347,7 +1357,7 @@
             }
         },
         {
-            "translated": "Verschieben Sie Kunden in Ihren Kanal",
+            "translated": "Clients in Ihren Kanal verschieben",
             "flags": [
                 "in-use-system",
                 "human-verified"
@@ -1357,7 +1367,7 @@
             }
         },
         {
-            "translated": "Treten Sie Kunden aus dem Channel",
+            "translated": "Treten Sie Clients aus dem Channel",
             "flags": [
                 "google-translate",
                 "in-use-system"
@@ -1387,9 +1397,9 @@
             }
         },
         {
-            "translated": "Kunden verbieten",
+            "translated": "Clients bannen",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "in-use-system"
             ],
             "key": {
@@ -1635,7 +1645,8 @@
         {
             "translated": "Unbekannter Befehlstyp %o",
             "flags": [
-                "google-translate"
+                "google-translate",
+                "human-verified"
             ],
             "key": {
                 "message": "Unknown command type  %o"
@@ -1698,9 +1709,9 @@
             }
         },
         {
-            "translated": "Ungültiger Versprechen-Ergebnistyp: %o. Ergebnis:",
+            "translated": "Ungültiger Versprechungsergebnistyp: %o. Ergebnis:",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Invalid promise result type:  %o. Result:"
@@ -1765,38 +1776,38 @@
             }
         },
         {
-            "translated": "Ungültiger übergeordneter Channel",
+            "translated": "Ungültiger übergeordneter Kanal",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Invalid channel parent"
             }
         },
         {
-            "translated": "Ich habe %d neue Channels",
+            "translated": "%d neue Kanäle erhalten",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Got  %d new channels"
             }
         },
         {
-            "translated": "%d Channellöschungen erhalten",
+            "translated": "%d Kanallöschungen erhalten",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Got  %d channel deletions"
             }
         },
         {
-            "translated": "Ungültiger Channel onDelete (Unbekannter Channel)",
+            "translated": "Ungültiger Kanal beim Löschen (unbekannter Kanal)",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Invalid channel onDelete (Unknown channel)"
@@ -1873,9 +1884,9 @@
             }
         },
         {
-            "translated": "Unbekannter Kunde übrig!",
+            "translated": "Unbekannter Client verlassen!",
             "flags": [
-                "google-translate",
+                "human-verified",
                 "in-use-system"
             ],
             "key": {
@@ -1936,9 +1947,9 @@
             }
         },
         {
-            "translated": "Unbekannter Kunde hat Grund gelassen",
+            "translated": "Unbekannter Client hat Grund gelassen",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Unknown client left reason!"
@@ -2327,19 +2338,19 @@
             }
         },
         {
-            "translated": "Ich habe %i Berechtigungen",
+            "translated": "%i Berechtigungen erhalten",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Got  %i permissions"
             }
         },
         {
-            "translated": "Ich benötige Berechtigungen, habe aber keine Berechtigungsliste!",
+            "translated": "Benötigte Berechtigungen erhalten, aber keine Berechtigungsliste!",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Got needed permissions but don't have a permission list!"
@@ -2437,10 +2448,10 @@
             }
         },
         {
-            "translated": "Tab customElements konnte nicht abgelehnt werden!",
+            "translated": "Registerkarte customElements konnte nicht definiert werden!",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Could not defied tab customElements!"
@@ -3596,7 +3607,8 @@
             "translated": "Berechtigungsbeschreibung anzeigen",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Show permission description"
@@ -3874,7 +3886,8 @@
             "flags": [
                 "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Description:"
@@ -3892,11 +3905,11 @@
             }
         },
         {
-            "translated": "Channeltyp",
+            "translated": "Kanaltyp",
             "flags": [
-                "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Channel Type"
@@ -3961,7 +3974,8 @@
         {
             "translated": "Benötigte Gesprächskraft:",
             "flags": [
-                "google-translate"
+                "google-translate",
+                "human-verified"
             ],
             "key": {
                 "message": "Needed Talk Power:"
@@ -4023,11 +4037,11 @@
             }
         },
         {
-            "translated": "Brauch",
+            "translated": "Benutzerdefiniert",
             "flags": [
-                "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Custom"
@@ -4038,7 +4052,8 @@
             "flags": [
                 "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Custom Settings"
@@ -4207,11 +4222,11 @@
             }
         },
         {
-            "translated": "Max Benutzer",
+            "translated": "Maximale Benutzer",
             "flags": [
-                "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Max users"
@@ -4240,11 +4255,11 @@
             }
         },
         {
-            "translated": "Family Max Benutzer",
+            "translated": "Maximale Familien-Benutzer",
             "flags": [
-                "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Family Max users"
@@ -4271,9 +4286,9 @@
             }
         },
         {
-            "translated": "Maximale Anzahl Kunden:",
+            "translated": "Maximale Clients:",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Maximum Clients:"
@@ -4878,7 +4893,8 @@
         {
             "translated": "Standardbeschreibung",
             "flags": [
-                "google-translate"
+                "google-translate",
+                "human-verified"
             ],
             "key": {
                 "message": "Default Description"
@@ -4967,7 +4983,8 @@
         {
             "translated": "Drücken, um zu sprechen",
             "flags": [
-                "google-translate"
+                "google-translate",
+                "human-verified"
             ],
             "key": {
                 "message": "Push to talk"
@@ -4983,9 +5000,9 @@
             }
         },
         {
-            "translated": "Taste zum Sprechen drücken:",
+            "translated": "Drücken-um-zu-sprechen-Taste:",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Push to talk key:"
@@ -5051,7 +5068,7 @@
             }
         },
         {
-            "translated": "Kundennummer:",
+            "translated": "Clientsnummer:",
             "flags": [
                 "google-translate"
             ],
@@ -5071,7 +5088,7 @@
             }
         },
         {
-            "translated": "Kundendatenbank-ID:",
+            "translated": "Clientsdatenbank-ID:",
             "flags": [
                 "google-translate",
                 "ui-visible",
@@ -5313,7 +5330,7 @@
             }
         },
         {
-            "translated": "Verbot des Kunden durch",
+            "translated": "Verbot des Clients durch",
             "flags": [
                 "google-translate"
             ],
@@ -5860,7 +5877,8 @@
             "flags": [
                 "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Description"
@@ -5970,9 +5988,9 @@
             }
         },
         {
-            "translated": "Fehler beim Anwenden der Remote-Beschreibung:%o",
+            "translated": "Remote-Beschreibung konnte nicht angewendet werden: %o",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Failed to apply remote description: %o"
@@ -6024,10 +6042,11 @@
             }
         },
         {
-            "translated": "Lokale Beschreibung konnte nicht angewendet werden:%o",
+            "translated": "Lokale Beschreibung konnte nicht angewendet werden: %o",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Failed to apply local description: %o"
@@ -6052,7 +6071,7 @@
             }
         },
         {
-            "translated": "Stimme von einem unbekannten Kunden haben? (ClientID:%o)",
+            "translated": "Stimme von einem unbekannten Clients haben? (ClientID:%o)",
             "flags": [
                 "google-translate"
             ],
@@ -6134,10 +6153,10 @@
             }
         },
         {
-            "translated": "Eigene Beschreibung in%s ändern",
+            "translated": "Eigene Beschreibung zu %s ändern",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Changing own description to %s"
@@ -8396,9 +8415,9 @@
             }
         },
         {
-            "translated": "Ihr Chatpartner hat die Konversation geschlossen",
+            "translated": "Ihr Chatpartner hat das Gespräch beendet",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Your chat partner has close the conversation"
@@ -8797,17 +8816,18 @@
             "translated": "Berechtigungsbeschreibung",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Permission description"
             }
         },
         {
-            "translated": "Berechtigungsbeschreibung für die Genehmigung",
+            "translated": "Berechtigungsbeschreibung für die Berechtigung",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Permission description for permission "
@@ -10336,7 +10356,7 @@
             }
         },
         {
-            "translated": "Kundennummer eindeutig",
+            "translated": "Clientsnummer eindeutig",
             "flags": [
                 "google-translate",
                 "ui-visible",
@@ -11266,9 +11286,9 @@
             }
         },
         {
-            "translated": "Lokales Angebot erstellt. Lokale Beschreibung einrichten (%o)",
+            "translated": "Lokales Angebot erstellt. Lokale Beschreibung einrichten. (%o)",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Local offer created. Setting up local description. (%o)"
@@ -11396,7 +11416,7 @@
             }
         },
         {
-            "translated": "Kundenavatar",
+            "translated": "Clientsavatar",
             "flags": [
                 "google-translate"
             ],
@@ -12100,7 +12120,7 @@
             }
         },
         {
-            "translated": "Kunden versteckt",
+            "translated": "Clients versteckt",
             "flags": [
                 "google-translate",
                 "ui-visible",
@@ -13195,20 +13215,20 @@
             }
         },
         {
-            "translated": "Channelbeschreibung bearbeitet: %o",
+            "translated": "Kanalbeschreibung bearbeitet: %o",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Channel description edited: %o"
             }
         },
         {
-            "translated": "Channel Max-Benutzermodus: %o",
+            "translated": "Max. Benutzermodus des Kanals: %o",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Channel max user mode: %o"
@@ -13218,17 +13238,18 @@
             "translated": "Maximales Benutzerlimit auf %o geändert",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Changed max user limit to %o"
             }
         },
         {
-            "translated": "Benutzermodus für die Channel-Max-Familie: %o",
+            "translated": "Maximaler Familienbenutzermodus des Kanals: %o",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Channel max family user mode: %o"
@@ -13237,8 +13258,9 @@
         {
             "translated": "Maximales Familienbenutzerlimit auf %o geändert",
             "flags": [
+                "in-use-system",
                 "google-translate",
-                "in-use-system"
+                "human-verified"
             ],
             "key": {
                 "message": "Changed max family user limit to %o"
@@ -13335,9 +13357,9 @@
             }
         },
         {
-            "translated": "Konversationsnachricht für unbekannte Konversation erhalten! (%s)",
+            "translated": "Gesprächsnachricht für unbekannte Gespräch erhalten! (%s)",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Received conversation message for unknown conversation! (%s)"
@@ -13362,9 +13384,9 @@
             }
         },
         {
-            "translated": "Konversationsverlauf für ungültige oder unbekannte Konversation empfangen (%o)",
+            "translated": "Empfangener Gesprächsverlauf für ungültige oder unbekannte Gespräch (%o)",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Received conversation history for invalid or unknown conversation (%o)"
@@ -15409,7 +15431,8 @@
             "translated": "Keine Gespräche",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "No conversations"
@@ -15419,17 +15442,18 @@
             "translated": "Ein Gespräch",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "One conversation"
             }
         },
         {
-            "translated": "Gespräche",
+            "translated": "gespräche",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "conversations"
@@ -15446,10 +15470,10 @@
             }
         },
         {
-            "translated": "Eine Konversation beginnen",
+            "translated": "Ein Gespräch beginnen",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Start a conversation"
@@ -15526,18 +15550,18 @@
             }
         },
         {
-            "translated": "Fehler beim Laden des Verlaufs der privaten Konversation für Benutzer %s auf Server %s: %o",
+            "translated": "Fehler beim Laden des privaten Gesprächsverlaufs für Benutzer %s auf Server %s: %o",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Failed to load private conversation history for user %s on server %s: %o"
             }
         },
         {
-            "translated": "Konversationsverlauf für Benutzer %s auf Server %s: %o konnte nicht gespeichert werden",
+            "translated": "Fehler beim Speichern des privaten Gesprächsverlaufs für Benutzer %s auf Server %s: %o",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Failed to save private conversation history for user %s on server %s: %o"
@@ -15604,11 +15628,11 @@
             }
         },
         {
-            "translated": "Ihr Chat-Partner hat die Konversation geschlossen",
+            "translated": "Ihr Chatpartner hat das Gespräch beendet",
             "flags": [
-                "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Your chat partner has closed the conversation"
@@ -15635,25 +15659,25 @@
             }
         },
         {
-            "translated": "Konversationsnachricht für Client %o wird aufgrund eines fehlenden Nachrichtenrückrufs gelöscht.",
+            "translated": "Gesprächnachricht für Client %o wird wegen fehlendem Nachrichtenrückruf gelöscht.",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Dropping conversation message for client %o because of no message callback."
             }
         },
         {
-            "translated": "Konversationsnachricht wird wegen keiner aktiven Konversation gelöscht.",
+            "translated": "Gesprächsnachricht wird gelöscht, da kein Gespräch aktiv ist.",
             "flags": [
-                "google-translate"
+                "human-verified"
             ],
             "key": {
                 "message": "Dropping conversation message because of no active conversation."
             }
         },
         {
-            "translated": "Beenden der Konversationstypisierungsaktion, da keine aktive Konversation vorhanden ist.",
+            "translated": "Beenden der Gesprächstypisierungsaktion, da keine aktive Gespräch vorhanden ist.",
             "flags": [
                 "google-translate"
             ],
@@ -15700,7 +15724,7 @@
             }
         },
         {
-            "translated": "Konversationsverlauf konnte nicht abgerufen werden. %o",
+            "translated": "Gesprächsverlauf konnte nicht abgerufen werden. %o",
             "flags": [
                 "google-translate",
                 "in-use-system"
@@ -15710,7 +15734,7 @@
             }
         },
         {
-            "translated": "Konversationsnachricht für Konversation %o: %o konnte nicht gelöscht werden",
+            "translated": "Gesprächsnachricht für Gespräch %o: %o konnte nicht gelöscht werden",
             "flags": [
                 "google-translate"
             ],
@@ -15729,7 +15753,7 @@
             }
         },
         {
-            "translated": "Konversationsnachricht {: br:} konnte nicht gelöscht werden Fehler: {}",
+            "translated": "Gesprächsnachricht {: br:} konnte nicht gelöscht werden Fehler: {}",
             "flags": [
                 "google-translate"
             ],
@@ -16253,28 +16277,29 @@
             "translated": "Beschreibung kopiert",
             "flags": [
                 "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Description copied"
             }
         },
         {
-            "translated": "Die Channelbeschreibung wurde in Ihre Zwischenablage kopiert!",
+            "translated": "Die Kanalbeschreibung wurde in Ihre Zwischenablage kopiert!",
             "flags": [
-                "google-translate",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "The channel description has been copied to your clipboard!"
             }
         },
         {
-            "translated": "Channel hat keine Beschreibung",
+            "translated": "Kanal hat keine Beschreibung",
             "flags": [
-                "google-translate",
                 "in-use-system",
-                "ui-visible"
+                "ui-visible",
+                "human-verified"
             ],
             "key": {
                 "message": "Channel has no description"
@@ -17333,7 +17358,7 @@
             }
         },
         {
-            "translated": "Kunden in Gruppe anzeigen",
+            "translated": "Clients in Gruppe anzeigen",
             "flags": [
                 "google-translate",
                 "ui-visible",
@@ -17698,7 +17723,7 @@
             }
         },
         {
-            "translated": "Kunden",
+            "translated": "Clients",
             "flags": [
                 "google-translate",
                 "ui-visible",
@@ -17790,7 +17815,8 @@
             "flags": [
                 "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Custom (Advanced)"
@@ -17823,40 +17849,41 @@
             "flags": [
                 "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Sorting and Talk power"
             }
         },
         {
-            "translated": "Gesprächsstärke:",
+            "translated": "Gesprächskraft:",
             "flags": [
-                "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Talk power:"
             }
         },
         {
-            "translated": "Erforderliche Energie, um in diesem Channel zu sprechen",
+            "translated": "Erforderliche Kraft, um in diesem Kanal zu sprechen",
             "flags": [
-                "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Required power to talk in this channel"
             }
         },
         {
-            "translated": "Max Benutzer, die dem Channel beitreten können",
+            "translated": "Max. Benutzer, die dem Kanal beitreten können",
             "flags": [
-                "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Max users which could join the channel"
@@ -17931,11 +17958,11 @@
             }
         },
         {
-            "translated": "Erforderliche Energie, um die Channelbeschreibung zu sehen",
+            "translated": "Erforderliche Kraft, um die Kanalbeschreibung anzuzeigen",
             "flags": [
-                "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Required power to see the channel description"
@@ -17997,11 +18024,11 @@
             }
         },
         {
-            "translated": "Max",
+            "translated": "Maximal",
             "flags": [
-                "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Max"
@@ -18056,7 +18083,8 @@
             "flags": [
                 "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Max amount of simultaneously connected clients."
@@ -18408,7 +18436,8 @@
             "flags": [
                 "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Max bandwidth used by all file transfer clients."
@@ -18430,7 +18459,8 @@
             "flags": [
                 "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Max amount of data in megabytes which could be downloaded."
@@ -18683,7 +18713,8 @@
             "flags": [
                 "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "The default client description"
@@ -18800,7 +18831,7 @@
             }
         },
         {
-            "translated": "Kunden vor dem Schweigen",
+            "translated": "Clients vor dem Schweigen",
             "flags": [
                 "google-translate",
                 "ui-visible",
@@ -19200,7 +19231,8 @@
             "flags": [
                 "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Delay on Push to Talk"
@@ -19878,7 +19910,7 @@
             }
         },
         {
-            "translated": "Kundenspezifische ID zum Verbot",
+            "translated": "Clientsspezifische ID zum Verbot",
             "flags": [
                 "google-translate",
                 "ui-visible",
@@ -20321,7 +20353,7 @@
             }
         },
         {
-            "translated": "Letzte Kundenanzahl",
+            "translated": "Letzte Clientsanzahl",
             "flags": [
                 "google-translate",
                 "ui-visible",
@@ -20717,11 +20749,11 @@
             }
         },
         {
-            "translated": "Verwendete / Maximale Dateiübertragungsquote",
+            "translated": "Verwendetes/maximales Dateiübertragungskontingent",
             "flags": [
-                "google-translate",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ],
             "key": {
                 "message": "Used/Max file transfer quota"
@@ -20761,7 +20793,7 @@
             }
         },
         {
-            "translated": "Aktuelle Kunden",
+            "translated": "Aktuelle Clients",
             "flags": [
                 "google-translate",
                 "ui-visible",
@@ -21334,7 +21366,7 @@
             "key": {
                 "message": "Unknown client left reason %d!"
             },
-            "translated": "Unbekannter Kunde hat Grund% d verlassen!",
+            "translated": "Unbekannter Client hat Grund% d verlassen!",
             "flags": [
                 "google-translated",
                 "in-use-system"
@@ -21344,7 +21376,7 @@
             "key": {
                 "message": "Received conversation message from invalid client id. Data: %o"
             },
-            "translated": "Konversationsnachricht von ungültiger Client-ID empfangen. Daten:% o",
+            "translated": "Gesprächsnachricht von ungültiger Client-ID empfangen. Daten:% o",
             "flags": [
                 "google-translated"
             ]
@@ -22844,7 +22876,7 @@
             "key": {
                 "message": "Failed to send conversation message: %o"
             },
-            "translated": "Konversationsnachricht konnte nicht gesendet werden:% o",
+            "translated": "Gesprächsnachricht konnte nicht gesendet werden:% o",
             "flags": [
                 "google-translated"
             ]
@@ -23639,10 +23671,10 @@
             "key": {
                 "message": "Failed to change max playlist size"
             },
-            "translated": "Fehler beim Ändern der maximalen Größe der Wiedergabeliste",
+            "translated": "Maximale Playlistgröße konnte nicht geändert werden",
             "flags": [
-                "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
@@ -23719,7 +23751,7 @@
             "key": {
                 "message": "Hide clients"
             },
-            "translated": "Kunden verstecken",
+            "translated": "Clients verstecken",
             "flags": [
                 "google-translated",
                 "in-use-system"
@@ -23739,7 +23771,7 @@
             "key": {
                 "message": "Search client list"
             },
-            "translated": "Kundenliste durchsuchen",
+            "translated": "Clientsliste durchsuchen",
             "flags": [
                 "google-translated",
                 "in-use-system"
@@ -23962,7 +23994,8 @@
             "translated": "Song hat keine Beschreibung",
             "flags": [
                 "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
@@ -23972,7 +24005,8 @@
             "translated": "Song hat keine Beschreibung",
             "flags": [
                 "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
@@ -24561,7 +24595,8 @@
             "flags": [
                 "google-translated",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
@@ -24876,11 +24911,11 @@
             "key": {
                 "message": "Max playlist size"
             },
-            "translated": "Maximale Größe der Wiedergabeliste",
+            "translated": "Maximale Wiedergabelistengröße",
             "flags": [
-                "google-translated",
                 "ui-visible",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
@@ -24931,7 +24966,7 @@
             "key": {
                 "message": "Search for an client:"
             },
-            "translated": "Suche nach einem Kunden:",
+            "translated": "Suche nach einem Clients:",
             "flags": [
                 "google-translated",
                 "ui-visible",
@@ -25521,7 +25556,7 @@
             "key": {
                 "message": "Clients which have special permissions:"
             },
-            "translated": "Kunden mit besonderen Berechtigungen:",
+            "translated": "Clients mit besonderen Berechtigungen:",
             "flags": [
                 "google-translated",
                 "ui-visible",
@@ -26114,7 +26149,7 @@
             "key": {
                 "message": "Received conversation message from our self. This should be impossible."
             },
-            "translated": "Konversationsnachricht von uns selbst erhalten. Das sollte unmöglich sein.",
+            "translated": "Gesprächsnachricht von uns selbst erhalten. Das sollte unmöglich sein.",
             "flags": [
                 "google-translated",
                 "in-use-system"
@@ -26336,7 +26371,7 @@
             "key": {
                 "message": "No conversation selected"
             },
-            "translated": "Keine Konversation ausgewählt",
+            "translated": "Keine Gespräch ausgewählt",
             "flags": [
                 "google-translated",
                 "ui-visible",
@@ -28237,7 +28272,7 @@
             "key": {
                 "message": "Apply to all clients"
             },
-            "translated": "Auf alle Kunden anwenden",
+            "translated": "Auf alle Clients anwenden",
             "flags": [
                 "google-translated",
                 "in-use-system"
@@ -29989,7 +30024,7 @@
             "key": {
                 "message": "Failed to register private conversation chat event for %s: %o"
             },
-            "translated": "Fehler beim Registrieren des Chat-Ereignisses für private Konversation für% s:% o",
+            "translated": "Fehler beim Registrieren des Chat-Ereignisses für private Gespräch für% s:% o",
             "flags": [
                 "google-translated",
                 "in-use-system"
@@ -30079,7 +30114,7 @@
             "key": {
                 "message": "Tried to query history for an unknown conversation with id %s"
             },
-            "translated": "Es wurde versucht, den Verlauf für eine unbekannte Konversation mit der ID% s abzufragen",
+            "translated": "Es wurde versucht, den Verlauf für eine unbekannte Gespräch mit der ID% s abzufragen",
             "flags": [
                 "google-translated",
                 "in-use-system"
@@ -30089,20 +30124,20 @@
             "key": {
                 "message": "Tried to send a chat message to an unknown conversation with id %s"
             },
-            "translated": "Es wurde versucht, eine Chat-Nachricht an eine unbekannte Konversation mit der ID% s zu senden",
+            "translated": "Es wurde versucht, eine Chat-Nachricht an eine unbekannte Gespräch mit der ID %s zu senden",
             "flags": [
-                "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
             "key": {
                 "message": "Tried to jump to present for an unknown conversation with id %s"
             },
-            "translated": "Versucht zu springen, um für ein unbekanntes Gespräch mit id% s zu präsentieren",
+            "translated": "Es wurde versucht, für eine unbekannte Gespräch mit der ID %s zur Präsentation zu springen",
             "flags": [
-                "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
@@ -30129,10 +30164,10 @@
             "key": {
                 "message": "Conversation history query task threw an error; this should never happen: %o"
             },
-            "translated": "Die Abfrageaufgabe für den Konversationsverlauf hat einen Fehler ausgelöst. Dies sollte niemals passieren:% o",
+            "translated": "Die Aufgabe zur Abfrage des Gesprächsverlaufs hat einen Fehler ausgelöst; das sollte niemals passieren: %o",
             "flags": [
-                "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
@@ -30149,40 +30184,40 @@
             "key": {
                 "message": "Failed to delete conversation message for conversation %d: %o"
             },
-            "translated": "Konversationsnachricht für Konversation% d:% o konnte nicht gelöscht werden",
+            "translated": "Gesprächsnachricht für Gespräch %d konnte nicht gelöscht werden: %o",
             "flags": [
-                "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
             "key": {
                 "message": "Failed to query conversation indexes: %o"
             },
-            "translated": "Konversationsindizes konnten nicht abgefragt werden:% o",
+            "translated": "Gesprächsindizes konnten nicht abgefragt werden: %o",
             "flags": [
-                "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
             "key": {
                 "message": "Received conversation history for an unknown conversation: %o"
             },
-            "translated": "Empfangener Konversationsverlauf für eine unbekannte Konversation:% o",
+            "translated": "Gesprächsverlauf für eine unbekannte Gespräch erhalten: %o",
             "flags": [
-                "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
             "key": {
                 "message": "Tried to delete a chat message from an unknown conversation with id %s"
             },
-            "translated": "Es wurde versucht, eine Chat-Nachricht aus einer unbekannten Konversation mit der ID% s zu löschen",
+            "translated": "Es wurde versucht, eine Chat-Nachricht aus einem unbekannten Gespräch mit der ID %s zu löschen",
             "flags": [
-                "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
@@ -30461,10 +30496,10 @@
             "key": {
                 "message": "Opened private conversations database, with an update, but update didn't happened. Trying again."
             },
-            "translated": "Geöffnete Datenbank für private Konversationen mit einem Update, aber kein Update. Ich versuche es erneut.",
+            "translated": "Geöffnete private Gesprächsdatenbank mit einem Update, aber das Update wurde nicht durchgeführt. Versuchen Sie es erneut.",
             "flags": [
-                "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
@@ -30501,30 +30536,30 @@
             "key": {
                 "message": "Successfully initialized private conversation history database"
             },
-            "translated": "Erfolgreich initialisierte private Konversationsverlaufsdatenbank",
+            "translated": "Datenbank für privaten Gesprächsverlauf erfolgreich initialisiert",
             "flags": [
-                "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
             "key": {
                 "message": "Failed to initialize private conversation history database: %o"
             },
-            "translated": "Fehler beim Initialisieren der privaten Konversationsverlaufsdatenbank:% o",
+            "translated": "Fehler beim Initialisieren der privaten Gesprächsverlaufsdatenbank: %o",
             "flags": [
-                "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
             "key": {
                 "message": "Do not saving the private conversation chat."
             },
-            "translated": "Speichern Sie den privaten Gesprächs-Chat nicht.",
+            "translated": "Speichern Sie den privaten Unterhaltungs-Chat nicht.",
             "flags": [
-                "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
@@ -31565,10 +31600,10 @@
             "key": {
                 "message": "Failed to load custom variables: %o"
             },
-            "translated": "Fehler beim Laden benutzerdefinierter Variablen:% o",
+            "translated": "Fehler beim Laden benutzerdefinierter Variablen: %o",
             "flags": [
-                "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
@@ -31605,7 +31640,7 @@
             "key": {
                 "message": "Watch clients video"
             },
-            "translated": "Sehen Sie sich das Video des Kunden an",
+            "translated": "Sehen Sie sich das Video des Clients an",
             "flags": [
                 "google-translated",
                 "in-use-system"
@@ -31896,9 +31931,9 @@
             "key": {
                 "message": "Unknown client"
             },
-            "translated": "Unbekannter Kunde",
+            "translated": "Unbekannter Client",
             "flags": [
-                "google-translated",
+                "human-verified",
                 "in-use-system"
             ]
         },
@@ -32012,10 +32047,11 @@
             "key": {
                 "message": "Dropping replay buffer because of too high replay latency. (Current: %f, Max: %f)"
             },
-            "translated": "Löschen des Wiedergabepuffers wegen zu hoher Wiedergabelatenz. (Aktuell:% f, Max:% f)",
+            "translated": "Löschen des Wiedergabepuffers wegen zu hoher Wiedergabelatenz. (Aktuell: % f, Max: %f)",
             "flags": [
                 "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
@@ -32076,7 +32112,8 @@
             "translated": "lokale Beschreibung konnte nicht angewendet werden",
             "flags": [
                 "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
@@ -32103,20 +32140,20 @@
             "key": {
                 "message": "Failed to apply remotes description: %o"
             },
-            "translated": "Beschreibung der Fernbedienungen fehlgeschlagen:% o",
+            "translated": "Die Beschreibung der Fernbedienungen konnte nicht angewendet werden: %o",
             "flags": [
-                "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
             "key": {
                 "message": "failed to apply remotes description"
             },
-            "translated": "Fernbedienungsbeschreibung konnte nicht angewendet werden",
+            "translated": "Beschreibung der Fernbedienungen konnte nicht angewendet werden",
             "flags": [
-                "google-translated",
-                "in-use-system"
+                "in-use-system",
+                "human-verified"
             ]
         },
         {
